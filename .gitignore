@@ -1,0 +1,10 @@
+/.vs/
+/build/
+/libs/
+/source/generated/
+*.sln
+*.vcxproj
+*.vcxproj.user
+
+/thirdparty/*/
+/thirdparty/gl.xml
