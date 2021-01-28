@@ -1,0 +1,4 @@
+shaders/flat/solid.frag
+shaders/flat/solid.vert
+shaders/flat/sprite.frag
+shaders/flat/sprite.vert
