@@ -11,6 +11,7 @@ Multimedia framework focused on RTS games developlent. Provides the deterministi
 
 ### From CMake
 Execute `build.sh` (in Windows use MinGW).
+
     ./build.sh
 
 ### By hand
