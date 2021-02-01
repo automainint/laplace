@@ -19,7 +19,7 @@ else
   gen_folder='./source/generated'
   embed_source='laplace_embedded.cpp'
 
-  if [ `ls $gen_folder | wc -l` -eq 1 ]
+  if [ `ls $gen_folder/gl | wc -l` -le 1 ]
     then
       cd ./thirdparty
       ./update-gl.sh
