@@ -33,6 +33,9 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) -> int
 
 #   ifndef _CONSOLE
     freopen(log_file_name, "w", stdout);
+    
+    int     argc = 0;
+    char ** argv = nullptr;
 #   endif
 
     if (run_tests(argc, argv)) {

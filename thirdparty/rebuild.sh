@@ -2,63 +2,135 @@
 #   rebuild.sh
 #
 #       Rebuild required third-party repos.
-#
-#   Copyright (c) 2021 Mitya Selivanov
-#
-#   This file is part of the Laplace project.
-#
-#   Laplace is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty
-#   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
-#   the MIT License for more details.
 
-rebuild_lib() {
-  cd $1
-  if [ -d $2 ]; then
-    rm -rf $2
-  fi
-  cmake $4 -B$2 -H.
-  cmake --build $2 --config $3
-  cd ..
+deps='deps.txt'
+
+generator=''
+config='Release'
+
+lib_folder='../../lib/'
+
+set_cmp0091() {
+  python ../set-cmp0091.py
 }
 
-gen=""
-cfg="Release"
+set_cmp0091_back() {
+  mv -f ./CMakeLists.txt.back ./CMakeLists.txt
+}
 
-if [ $# -ge 1 ]; then
-  gen=$1
-  if [ $# -eq 2 ]; then
-    cfg=$2
-  fi
+rebuild_lib() {
+  if [ -d "$folder" ]
+    then
+      echo "[ Build repo: $folder ]"
+
+      cd "$folder"
+
+      if [ -d $build_to ]; then
+        rm -rf $build_to
+      fi
+      
+      set_cmp0091
+
+      if [ -n "$generator" ]; then
+        cmake \
+          -G "$generator" \
+          $flags \
+          -D CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded \
+          -D CMAKE_BUILD_TYPE=$config \
+          -B"$build_to" -H. \
+          &> /dev/null
+      else
+        cmake \
+          $flags \
+          -D CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded \
+          -D CMAKE_BUILD_TYPE=$config \
+          -B"$build_to" -H. \
+          &> /dev/null
+      fi
+
+      cmake \
+        --build "$build_to" --config "$config" \
+        &> /dev/null
+
+      if [ -d "$lib_folder" ]; then
+        echo "[ Copy libs from $folder ]"
+
+        if [ -d "$build_to/$config" ]; then
+          cp -f "$build_to/$config"/*.a "$lib_folder" 2> /dev/null
+          cp -f "$build_to/$config"/*.lib "$lib_folder" 2> /dev/null
+        elif [ -d "$build_to/lib/$config" ]; then
+          cp -f "$build_to/lib/$config"/*.a "$lib_folder" 2> /dev/null
+          cp -f "$build_to/lib/$config"/*.lib "$lib_folder" 2> /dev/null
+        elif [ -d "$build_to/lib" ]; then
+          cp -f "$build_to/lib"/*.a "$lib_folder" 2> /dev/null
+          cp -f "$build_to/lib"/*.lib "$lib_folder" 2> /dev/null
+        elif [ -d "$build_to/src/$config" ]; then
+          cp -f "$build_to/src/$config"/*.a "$lib_folder" 2> /dev/null
+          cp -f "$build_to/src/$config"/*.lib "$lib_folder" 2> /dev/null
+        fi
+      fi
+      
+      set_cmp0091_back
+      
+      cd ..
+    fi
+}
+
+if [ $# -eq 1 ]; then
+  config=$1
+elif [ $# -eq 2 ]; then
+  generator=$1
+  config=$2
 fi
 
-ft_license="freetype/docs/LICENSE.TXT"
+next_repo() {
+  url=''
+  folder=''
+  build_to=''
+  headers=''
+  flags=''
+  i=0
+}
 
-if [ ! -a $ft_license ]; then
-  cp freetype/LICENSE.TXT $ft_license
+next_arg() {
+  case $1 in
+    0) url=$2 ;;
+    1) folder=$2 ;;
+    2) build_to=$2 ;;
+    3) headers=$2 ;;
+    *) flags="$flags $2" ;;
+  esac
+}
+
+ft_license='freetype/docs/LICENSE.TXT'
+ft_license_copy='freetype/LICENSE.TXT'
+
+if [ ! -f $ft_license ] && [ -f $ft_license_copy ]; then
+  echo "[ Fix FreeType license file ]"
+  cp $ft_license_copy $ft_license
 else
-  ft_license=""
+  ft_license=''
 fi
 
-rebuild_lib "freetype" "build-cmake" "$cfg" "$gen \
-  -D SKIP_INSTALL_ALL=ON
-  -D CMAKE_DISABLE_FIND_PACKAGE_ZLIB=ON \
-  -D CMAKE_DISABLE_FIND_PACKAGE_BZip2=ON \
-  -D CMAKE_DISABLE_FIND_PACKAGE_PNG=ON \
-  -D CMAKE_DISABLE_FIND_PACKAGE_HarfBuzz=ON \
-  -D CMAKE_DISABLE_FIND_PACKAGE_BrotliDec=ON"
+next_repo
 
-if [ -n $ft_license ]; then
+while read line; do
+  if [ -n "$line" ]; then
+    for arg in $line; do
+      if [ "`echo $arg`" = '<repo>' ]
+        then
+          rebuild_lib
+          next_repo
+        else
+          next_arg $i `echo $arg`
+          i=`expr $i + 1`
+        fi
+    done
+  fi
+done < $deps
+
+rebuild_lib
+
+if [ -n "$ft_license" ]; then
   rm $ft_license
 fi
-
-rebuild_lib "bzip2" "build-cmake" "$cfg" "$gen"
-
-rebuild_lib "wolfssl" "build-cmake" "$cfg" "$gen \
-  -D WOLFSSL_RABBIT=ON \
-  -D WOLFSSL_ECC=ON"
-
-rebuild_lib "googletest" "build-cmake" "$cfg" "$gen"
-
-rebuild_lib "benchmark" "build-cmake" "$cfg" "$gen \
-  -D BENCHMARK_ENABLE_TESTING=OFF"

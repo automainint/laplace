@@ -1,10 +1,15 @@
+/bin/**
+/lib/**
+/include/**
+/build/**
+/thirdparty/*/
+!.placeholder
+
 /.vs/
-/build/
-/libs/
-/source/generated/
 *.sln
 *.vcxproj
-*.vcxproj.user
+*.vcxproj.*
 
-/thirdparty/*/
 /thirdparty/gl.xml
+/source/generated/
+/data/lcd.h

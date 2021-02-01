@@ -2,35 +2,76 @@
 #   update.sh
 #
 #       Update required third-party repos.
-#
-#   Copyright (c) 2021 Mitya Selivanov
-#
-#   This file is part of the Laplace project.
-#
-#   Laplace is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty
-#   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
-#   the MIT License for more details.
+
+deps='deps.txt'
+
+inc_folder='../include'
 
 update_repo() {
-  if [ -d $1 ]; then
-    cd $1
-    git pull
-    cd ..
-  else
-    git clone $2
+  if [ -n "$url" ]; then
+    echo "[ Update repo: $folder ]"
+
+    if [ -d "$folder" ]
+      then
+        cd "$folder"
+        git pull &> /dev/null
+        cd ..
+      else
+        git clone $url "./$folder" &> /dev/null
+      fi
+
+    if [ -d "$folder" ]
+      then
+        cd "$folder"
+
+        if [ -d "../$inc_folder" ]; then
+          echo "[ Copy headers from $folder ]"
+          cp -r `echo $headers` "../$inc_folder"
+        fi
+
+        cd ..
+      fi
   fi
 }
 
-update_repo "freetype" "https://gitlab.freedesktop.org/freetype/freetype.git"
-update_repo "bzip2" "https://gitlab.com/federicomenaquintero/bzip2.git"
-update_repo "wolfssl" "https://github.com/wolfSSL/wolfssl.git"
-update_repo "googletest" "https://github.com/google/googletest.git"
-update_repo "benchmark" "https://github.com/google/benchmark.git"
-
-if [ ! -d "gl.xml" ]; then
-  update_repo "OpenGL-Registry" "https://github.com/KhronosGroup/OpenGL-Registry.git"
-
-  mv "OpenGL-Registry/xml/gl.xml" "gl.xml"
-  rm -rf "OpenGL-Registry"
+if [ -d "$inc_folder" ]; then
+  rm -rf "$inc_folder/*"
 fi
+
+next_repo() {
+  url=''
+  folder=''
+  build_to=''
+  headers=''
+  flags=''
+  i=0
+}
+
+next_arg() {
+  case $1 in
+    0) url=$2 ;;
+    1) folder=$2 ;;
+    2) build_to=$2 ;;
+    3) headers=$2 ;;
+    *) flags="$flags $2" ;;
+  esac
+}
+
+next_repo
+
+while read line; do
+  if [ -n "$line" ]; then
+    for arg in $line; do
+      if [ "`echo $arg`" = '<repo>' ]
+        then
+          update_repo
+          next_repo
+        else
+          next_arg $i `echo $arg`
+          i=`expr $i + 1`
+        fi
+    done
+  fi
+done < $deps
+
+update_repo

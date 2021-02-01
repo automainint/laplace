@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #include "../impact.h"
 
 namespace laplace::engine::protocol
