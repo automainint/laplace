@@ -36,7 +36,7 @@ else
       cd ..
     fi
 
-  echo '[ Build Lapalce ]'
+  echo '[ Build Laplace ]'
 
   rm -rf ./build/*
   touch ./bin/.placeholder

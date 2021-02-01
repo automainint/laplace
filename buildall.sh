@@ -29,7 +29,7 @@ echo "[ Generate embedded data code ]"
 python ./embed.py
 cd ..
 
-echo '[ Build Lapalce ]'
+echo '[ Build Laplace ]'
 
 cd ./build
 
