@@ -14,22 +14,22 @@ Execute `build.sh` (in Windows use MinGW).
     ./build.sh
 
 ### By hand
-1.  Use `thirdparty/update.sh` to download the repos.
+Use `thirdparty/update.sh` to download the repos.
 
     cd ./thirdparty
     ./update.sh
 
-2.  Use `thirdparty/update-gl.sh` to download the `gl.xml` file.
+Use `thirdparty/update-gl.sh` to download the `gl.xml` file.
 
     ./update-gl.sh
 
-3.  Use `thirdparty/rebuild.sh` to build the repos.
+Use `thirdparty/rebuild.sh` to build the repos.
 
     ./rebuild.sh
 
-4.  Use `thirdparty/gen-gl.py` to automatically generate the OpenGL interface files.
+Use `thirdparty/gen-gl.py` to automatically generate the OpenGL interface files.
 
     python ./gen-gl.py
     cd ..
 
-5.  Add `source/` to the project and build manually. Required headers will be in `include/` folder, libraries will be in `libs/` folder.
+Add `source/` to the project and build manually. Required headers will be in `include/` folder, libraries will be in `libs/` folder.
