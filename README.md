@@ -1,5 +1,5 @@
 #   The Laplace project
-Multimedia framework focused on RTS games developlent. Provide the deterministic engine with concurrency support and lockstep synchronization networking.
+Multimedia framework focused on RTS games developlent. Provides the deterministic engine with concurrency support and lockstep synchronization networking.
 
     Work in progress...
 
@@ -15,16 +15,20 @@ Execute `build.sh` (in Windows use MinGW).
 
 ### By hand
 1.  Use `thirdparty/update.sh` to download the repos.
+
     cd ./thirdparty
     ./update.sh
 
 2.  Use `thirdparty/update-gl.sh` to download the `gl.xml` file.
+
     ./update-gl.sh
 
 3.  Use `thirdparty/rebuild.sh` to build the repos.
+
     ./rebuild.sh
 
 4.  Use `thirdparty/gen-gl.py` to automatically generate the OpenGL interface files.
+
     python ./gen-gl.py
     cd ..
 
