@@ -1,6 +1,8 @@
+add_subdirectory(benchmarks)
 add_subdirectory(core)
 add_subdirectory(engine)
 add_subdirectory(format)
+add_subdirectory(fuzztests)
 add_subdirectory(graphics)
 add_subdirectory(math)
 add_subdirectory(network)

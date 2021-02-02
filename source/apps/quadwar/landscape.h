@@ -1,19 +1,17 @@
 #pragma once
 
-#include <laplace/engine/entity.h>
+#include <laplace/engine/basic_entity.h>
 
-namespace quadwar_app
-{
-    using namespace laplace;
+namespace quadwar_app {
+  using namespace laplace;
 
-    class landscape : public engine::entity
-    {
-    public:
-        landscape();
+  class landscape : public engine::basic_entity {
+  public:
+    landscape();
 
-    private:
-        landscape(int);
+  private:
+    landscape(int);
 
-        static landscape m_proto;
-    };
+    static landscape m_proto;
+  };
 }

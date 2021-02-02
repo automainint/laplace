@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../entity.h"
+#include "../basic_entity.h"
 #include "../access/entity.h"
 
 namespace laplace::engine::object
 {
-    class actor : public entity
+    class actor : public basic_entity
     {
     public:
         ~actor() override = default;

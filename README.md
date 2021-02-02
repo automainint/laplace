@@ -8,9 +8,10 @@ Multimedia framework focused on RTS games developlent. Provides the deterministi
 **Dependencies:** C++20 [MSVC](https://visualstudio.microsoft.com/ru/vs/features/cplusplus/)/[Clang](https://clang.llvm.org/)/[GCC](https://gcc.gnu.org/) for the compilation; [Python3](https://www.python.org/), [Cmake](https://cmake.org/), [Git](https://git-scm.com/) for the building and tools; [OpenGL](https://www.khronos.org/registry/OpenGL/index_gl.php) for all the graphics; [wolfSSL](https://github.com/wolfSSL/wolfssl) for encryption algorithms (ECC/Rabbit); [FreeType2](https://gitlab.freedesktop.org/freetype/freetype) for the font rendering; [googletest](https://github.com/google/googletest) for the test suite; [google/benchmark](https://github.com/google/benchmark) for the benchmarks; [Blender](https://www.blender.org/) for the content creating.
 
 ##  How to build
+To build the project CMake, Shell and Python 3 are required. In Windows I use MinGW shell.
 
-### From CMake
-Execute `build.sh` (in Windows use MinGW).
+### With CMake
+Execute `build.sh`.
 
     ./build.sh
 

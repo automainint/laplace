@@ -22,7 +22,7 @@ auto painter::get_default() -> ptr_painter
 
     if (!p)
     {
-        cout << "Init default LCD font." << endl;
+        log("Init default LCD font.");
 
         auto lcd_font = make_shared<lcd>();
 

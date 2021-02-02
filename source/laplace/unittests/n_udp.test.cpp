@@ -6,8 +6,8 @@ using namespace laplace;
 using namespace network;
 using namespace std;
 
-TEST(laplace_network, udp_message)
-{
+TEST(laplace_network, udp_message) {
+  for (size_t i = 0; i < 10; i++) {
     udp_node a;
     udp_node b(any_port);
 
@@ -20,10 +20,11 @@ TEST(laplace_network, udp_message)
     auto seq = b.receive(msg.size(), async);
 
     EXPECT_EQ(msg, seq);
+  }
 }
 
-TEST(laplace_network, udp_echo)
-{
+TEST(laplace_network, udp_echo) {
+  for (size_t i = 0; i < 10; i++) {
     udp_node a;
     udp_node b(any_port);
 
@@ -35,14 +36,15 @@ TEST(laplace_network, udp_echo)
 
     this_thread::yield();
 
-    if (b.receive(req.size(), async) == req)
-    {
-        b.send_to(b.get_remote_address(), b.get_remote_port(), msg);
+    if (b.receive(req.size(), async) == req) {
+      b.send_to(
+          b.get_remote_address(), b.get_remote_port(), msg);
 
-        this_thread::yield();
+      this_thread::yield();
 
-        seq = a.receive(msg.size(), async);
+      seq = a.receive(msg.size(), async);
     }
 
     EXPECT_EQ(msg, seq);
+  }
 }

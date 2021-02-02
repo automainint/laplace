@@ -1,18 +1,17 @@
 #pragma once
 
-#include <laplace/engine/factory.h>
+#include <laplace/engine/basic_factory.h>
 
-namespace quadwar_app
-{
-    using namespace laplace;
+namespace quadwar_app {
+  using namespace laplace;
 
-    class qw_factory : public engine::factory
-    {
-    public:
-        ~qw_factory() override = default;
+  class qw_factory : public engine::basic_factory {
+  public:
+    ~qw_factory() override = default;
 
-        auto decode(cref_vbyte seq) -> engine::ptr_impact override;
+    auto decode(cref_vbyte seq) const
+        -> engine::ptr_impact override;
 
-    private:
-    };
+  private:
+  };
 }

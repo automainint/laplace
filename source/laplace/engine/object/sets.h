@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../entity.h"
 #include <cstdint>
 
 namespace laplace::engine::object::sets

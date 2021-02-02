@@ -12,15 +12,14 @@
  *  the MIT License for more details.
  */
 
-#pragma once
-
 #ifndef LAPLACE_WINDOWS_INCLUDED
+#define LAPLACE_WINDOWS_INCLUDED
 
 #include <cstdint>
 
-using BOOL      = int32_t;
-using WPARAM    = uint64_t;
-using LPARAM    = int64_t;
+using BOOL   = int32_t;
+using WPARAM = uint64_t;
+using LPARAM = int64_t;
 
 using HWND      = struct HWND__ *;
 using HINSTANCE = struct HINSTANCE__ *;
@@ -31,7 +30,7 @@ using HDC       = struct HDC__ *;
 using HGLRC     = struct HGLRC__ *;
 using HMODULE   = HINSTANCE;
 
-using LPGLYPHMETRICSFLOAT = struct _GLYPHMETRICSFLOAT *;
+using LPGLYPHMETRICSFLOAT    = struct _GLYPHMETRICSFLOAT *;
 using LPLAYERPLANEDESCRIPTOR = struct tagLAYERPLANEDESCRIPTOR *;
 
 #endif

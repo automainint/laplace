@@ -1,40 +1,51 @@
-#include "../engine/world.h"
 #include "../engine/access/world.h"
+#include "../engine/basic_impact.h"
+#include "../engine/world.h"
 #include <gtest/gtest.h>
 #include <thread>
-#include <chrono>
 
-namespace laplace::engine::world_test
-{
-    class my_entity : public entity
-    {
-    public:
-        my_entity();
-        ~my_entity() override;
+namespace laplace::engine::world_test {
+  class my_entity : public basic_entity {
+  public:
+    my_entity(bool is_dynamic) :
+        basic_entity(is_dynamic, false, false, false, 10, box {}) {
+      using namespace object;
 
-        void tick(access::world) override;
+      setup_sets({ { sets::debug_value, 0, 0 } });
 
-    private:
-        size_t n_value = 0;
-    };
-
-    my_entity::my_entity() : entity(true, false, false, false, 10, box { })
-    {
-        using namespace object;
-
-        setup_sets({
-            { sets::debug_value, 0, 0 }
-        });
-
-        n_value = index_of(sets::debug_value);
+      n_value = index_of(sets::debug_value);
     }
 
-    my_entity::~my_entity() { }
+    ~my_entity() override = default;
 
-    void my_entity::tick(access::world)
-    {
-        apply_delta(n_value, 1);
+    void tick(access::world) override {
+      apply_delta(n_value, 1);
     }
+
+  private:
+    size_t n_value = 0;
+  };
+
+  class my_action : public basic_impact {
+  public:
+    my_action(size_t id_entity, int64_t delta) {
+      m_id = id_entity;
+      m_delta = delta;
+    }
+
+    ~my_action() override = default;
+
+    void perform(access::world w) const override {
+      using namespace object;
+
+      auto e = w.get_entity(m_id);
+      e.apply_delta(e.index_of(sets::debug_value), m_delta);
+    }
+
+  private:
+    size_t m_id = 0;
+    int64_t m_delta = 0;
+  };
 }
 
 using namespace laplace;
@@ -44,70 +55,55 @@ using namespace world_test;
 using namespace std;
 using namespace chrono;
 
-TEST(laplace_engine, world_startup_time)
-{
-    /*  TODO
-     *  Make a benchmark.
-     */
+TEST(laplace_engine, world_single_thread) {
+  auto a = make_shared<world>();
+  auto e = make_shared<my_entity>(true);
 
-    auto t0 = steady_clock::now();
+  a->set_thread_count(0);
 
-    auto a = make_shared<world>();
-    auto b = make_shared<world>();
+  a->spawn(e, id_undefined);
+  a->tick(100);
 
-    a->set_thread_count(16);
-    b->set_thread_count(16);
+  auto value = e->get(e->index_of(sets::debug_value));
 
-    a.reset();
-    b.reset();
-
-    auto duration = duration_cast<milliseconds>(steady_clock::now() - t0).count();
-
-    EXPECT_LE(duration, 500);
+  EXPECT_EQ(value, 10);
 }
 
-TEST(laplace_engine, world_single_thread)
-{
-    auto a = make_shared<world>();
-    auto e = make_shared<my_entity>();
+TEST(laplace_engine, world_multithreading) {
+  auto a = make_shared<world>();
+  auto e = make_shared<my_entity>(true);
 
-    a->set_thread_count(0);
+  a->set_thread_count(32);
 
-    a->spawn(e, id_undefined);
-    a->tick(100);
+  a->spawn(e, id_undefined);
 
-    auto value = e->get(e->index_of(sets::debug_value));
+  a->tick(100);
 
-    e.reset();
-    a.reset();
+  auto value = e->get(e->index_of(sets::debug_value));
 
-    EXPECT_EQ(value, 10);
+  EXPECT_EQ(value, 10);
 }
 
-TEST(laplace_engine, world_multithreading)
-{
-    /*  TODO
-     *  Make a benchmark.
-     */
+TEST(laplace_engine, world_async_impacts) {
+  auto a = make_shared<world>();
+  auto e = make_shared<my_entity>(false);
 
-    auto a = make_shared<world>();
-    auto e = make_shared<my_entity>();
+  a->set_thread_count(32);
+  
+  const auto id = a->spawn(e, id_undefined);
 
-    a->set_thread_count(32);
+  for (size_t i = 0; i < 100; i++) {
+    a->queue(make_shared<my_action>(id, 1));
+    a->queue(make_shared<my_action>(id, -1));
+  }
+  
+  for (size_t i = 0; i < 100; i++) { 
+      a->queue(make_shared<my_action>(id, 1));
+  }
 
-    a->spawn(e, id_undefined);
+  a->tick(1);
 
-    auto t0 = steady_clock::now();
+  auto value = e->get(e->index_of(sets::debug_value));
 
-    a->tick(100);
-
-    auto duration = duration_cast<milliseconds>(steady_clock::now() - t0).count();
-
-    auto value = e->get(e->index_of(sets::debug_value));
-
-    e.reset();
-    a.reset();
-
-    EXPECT_EQ(value, 10);
-    EXPECT_LE(duration, 300);
+  EXPECT_EQ(value, 100);
 }

@@ -1,42 +1,59 @@
-#pragma once
+/*  laplace/engine/scheduler.h
+ *
+ *      The World multithreading scheduler. Full thread-safe.
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#ifndef __laplace__engine_scheduler__
+#define __laplace__engine_scheduler__
 
 #include "world.predef.h"
+#include <condition_variable>
 #include <functional>
 #include <thread>
-#include <condition_variable>
 
-namespace laplace::engine
-{
-    /*  The World multithreading scheduler.
-     *  Full thread-safe.
-     */
-    class scheduler
-    {
-    public:
-        scheduler(ref_world w);
-        ~scheduler();
+namespace laplace::engine {
+  /*  TODO
+   *  Atomics, jthread.
+   */
+  class scheduler {
+  public:
+    static constexpr size_t overthreading_limit = 16;
 
-        void schedule(size_t delta);
-        void join();
+    scheduler(ref_world w);
+    ~scheduler();
 
-        void set_thread_count(size_t thread_count);
-        auto get_thread_count() -> size_t;
+    void schedule(size_t delta);
+    void join();
 
-    private:
-        void set_done();
-        void sync(std::function<void ()> fn);
-        void tick_thread();
+    void set_thread_count(size_t thread_count);
+    auto get_thread_count() -> size_t;
 
-        ref_world m_world;
+  private:
+    void set_done();
+    void sync(std::function<void()> fn);
+    void tick_thread();
 
-        std::mutex                  m_lock;
-        std::mutex                  m_extra_lock;
-        std::condition_variable     m_sync;
-        std::vector<std::thread>    m_threads;
+    std::reference_wrapper<world> m_world;
 
-        bool    m_done          = false;
-        size_t  m_in            = 0;
-        size_t  m_out           = 0;
-        size_t  m_tick_count    = 0;
-    };
+    std::mutex               m_lock;
+    std::mutex               m_extra_lock;
+    std::condition_variable  m_sync;
+    std::vector<std::thread> m_threads;
+
+    bool   m_done       = false;
+    size_t m_in         = 0;
+    size_t m_out        = 0;
+    size_t m_tick_count = 0;
+  };
 }
+
+#endif

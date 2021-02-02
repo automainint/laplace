@@ -7,7 +7,7 @@ using namespace object;
 
 size_t actor::n_is_local = 0;
 
-actor::actor(dummy_tag) : entity(dummy) { }
+actor::actor(dummy_tag) : basic_entity(actor::dummy) { }
 
 actor::actor(proto_tag)
 {

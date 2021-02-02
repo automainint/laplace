@@ -11,5 +11,6 @@
 *.vcxproj.*
 
 /thirdparty/gl.xml
-/source/generated/
 /data/lcd.h
+/source/generated/*.cpp
+/source/generated/gl/*.h

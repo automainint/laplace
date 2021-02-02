@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ventity.h"
-#include "../impact.predef.h"
+#include "../basic_impact.predef.h"
 #include "../world.predef.h"
 
 namespace laplace::engine::access

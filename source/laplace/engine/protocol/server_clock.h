@@ -1,67 +1,56 @@
 #pragma once
 
+#include "../basic_impact.h"
 #include "ids.h"
-#include "../impact.h"
 
-namespace laplace::engine::protocol
-{
-    class server_clock : public impact
-    {
-    public:
-        enum encoding_offset : size_t
-        {
-            n_tick_duration = 10
-        };
+namespace laplace::engine::protocol {
+  class server_clock : public basic_impact {
+  public:
+    enum encoding_offset : size_t { n_tick_duration = 10 };
 
-        static constexpr uint16_t   id = ids::server_clock;
-        static constexpr size_t     size = 18;
-        
-        ~server_clock() final = default;
+    static constexpr uint16_t id   = ids::server_clock;
+    static constexpr size_t   size = 18;
 
-        constexpr server_clock()
-        {
-            set_size(size);
-        }
+    ~server_clock() final = default;
 
-        constexpr server_clock(uint64_t tick_duration_msec)
-        {
-            set_size(size);
+    constexpr server_clock() {
+      set_size(size);
+    }
 
-            m_tick_duration_msec = tick_duration_msec;
-        }
+    constexpr server_clock(uint64_t tick_duration_msec) {
+      set_size(size);
 
-        constexpr server_clock(size_t index, uint64_t tick_duration_msec)
-        {
-            set_order({ index });
-            set_size(size);
+      m_tick_duration_msec = tick_duration_msec;
+    }
 
-            m_tick_duration_msec = tick_duration_msec;
-        }
+    constexpr server_clock(
+        size_t index, uint64_t tick_duration_msec) {
+      set_order({ index });
+      set_size(size);
 
-        static constexpr auto get_tick_duration(cref_vbyte seq)
-        {
-            return rd<uint64_t>(seq, n_tick_duration);
-        }
+      m_tick_duration_msec = tick_duration_msec;
+    }
 
-        inline void encode_to(std::span<uint8_t> bytes) const final
-        {
-            write_bytes(bytes, id, get_index64(), m_tick_duration_msec);
-        }
+    static constexpr auto get_tick_duration(cref_vbyte seq) {
+      return rd<uint64_t>(seq, n_tick_duration);
+    }
 
-        static constexpr auto scan(cref_vbyte seq)
-        {
-            return seq.size() == size && get_id(seq) == id;
-        }
+    inline void encode_to(
+        std::span<uint8_t> bytes) const final {
+      write_bytes(
+          bytes, id, get_index64(), m_tick_duration_msec);
+    }
 
-        static inline auto decode(cref_vbyte seq)
-        {
-            return server_clock {
-                get_index(seq),
-                get_tick_duration(seq)
-            };
-        }
+    static constexpr auto scan(cref_vbyte seq) {
+      return seq.size() == size && get_id(seq) == id;
+    }
 
-    private:
-        uint64_t m_tick_duration_msec = 0;
-    };
+    static inline auto decode(cref_vbyte seq) {
+      return server_clock { get_index(seq),
+        get_tick_duration(seq) };
+    }
+
+  private:
+    uint64_t m_tick_duration_msec = 0;
+  };
 }

@@ -1,426 +1,342 @@
-#include "world.h"
-#include "impact.h"
 #include "../platform/wrap.h"
+#include "basic_impact.h"
+#include "world.h"
 #include <algorithm>
 
 using namespace laplace;
 using namespace engine;
-using namespace render;
 using namespace platform;
 using namespace std;
 using namespace chrono;
 
 world::world() : m_scheduler(*this) { }
 
-void world::set_render_context(render::ptr_context con)
-{
-    auto _ul = unique_lock(m_lock);
-    m_context = con;
+auto world::reserve(size_t id) -> size_t {
+  return spawn(make_shared<basic_entity>(), id);
 }
 
-auto world::get_render_context() -> render::ptr_context
-{
-    auto _sl = shared_lock(m_lock);
-    return m_context;
-}
+auto world::spawn(ptr_entity ent, size_t id) -> size_t {
+  auto _ul = unique_lock(m_lock);
 
-void world::set_root(ptr_entity root)
-{
-    auto _ul = unique_lock(m_lock);
-
-    if (m_root)
-        m_root->reset_world();
-
-    m_root = root;
-    m_root->set_world(shared_from_this());
-}
-
-void world::set_thread_count(size_t thread_count)
-{
-    auto _ul = unique_lock(m_lock);
-    m_scheduler.set_thread_count(thread_count);
-}
-
-auto world::get_root() -> ptr_entity
-{
-    auto _sl = shared_lock(m_lock);
-    return m_root;
-}
-
-auto world::reserve(size_t id) -> size_t
-{
-    return spawn(make_shared<entity>(), id);
-}
-
-auto world::spawn(ptr_entity ent, size_t id) -> size_t
-{
-    auto _ul = unique_lock(m_lock);
-
-    if (ent)
-    {
-        if (id == id_undefined)
-        {
-            id = m_next_id;
-        }
-
-        if (id >= m_entities.size())
-        {
-            m_entities.resize(id + 1);
-        }
-
-        if (m_entities[id])
-        {
-            if (m_entities[id]->is_dynamic())
-            {
-                locked_erase_dynamic(id);
-            }
-
-            m_entities[id]->reset_world();
-        }
-
-        m_entities[id] = ent;
-
-        ent->set_id(id);
-        ent->set_world(shared_from_this());
-
-        while (m_next_id < m_entities.size() && m_entities[m_next_id])
-        {
-            m_next_id++;
-        }
-
-        if (ent->is_dynamic())
-        {
-            locked_add_dynamic(id);
-        }
-    }
-    else
-    {
-        id = id_undefined;
+  if (ent) {
+    if (id == id_undefined) {
+      id = m_next_id;
     }
 
-    return id;
-}
-
-void world::remove(size_t id)
-{
-    auto _ul = unique_lock(m_lock);
-
-    if (id < m_entities.size())
-    {
-        if (m_entities[id])
-        {
-            if (m_entities[id]->is_dynamic())
-            {
-                locked_erase_dynamic(id);
-            }
-
-            m_entities[id]->reset_world();
-            m_entities[id].reset();
-        }
-
-        if (m_next_id > id)
-        {
-            m_next_id = id;
-        }
+    if (id >= m_entities.size()) {
+      m_entities.resize(id + 1);
     }
-}
 
-void world::respawn(size_t id)
-{
-    auto _ul = unique_lock(m_lock);
+    if (m_entities[id]) {
+      if (m_entities[id]->is_dynamic()) {
+        locked_erase_dynamic(id);
+      }
 
-    if (id < m_entities.size())
-    {
-        if (m_entities[id])
-        {
-            locked_erase_dynamic(id);
-
-            if (m_entities[id]->is_dynamic())
-            {
-                locked_add_dynamic(id);
-            }
-        }
+      m_entities[id]->reset_world();
     }
+
+    m_entities[id] = ent;
+
+    ent->set_id(id);
+    ent->set_world(shared_from_this());
+
+    while (m_next_id < m_entities.size() &&
+           m_entities[m_next_id]) {
+      m_next_id++;
+    }
+
+    if (ent->is_dynamic()) {
+      locked_add_dynamic(id);
+    }
+  } else {
+    id = id_undefined;
+  }
+
+  return id;
 }
 
-void world::clear()
-{
+void world::remove(size_t id) {
+  auto _ul = unique_lock(m_lock);
+
+  if (id < m_entities.size()) {
+    if (m_entities[id]) {
+      if (m_entities[id]->is_dynamic()) {
+        locked_erase_dynamic(id);
+      }
+
+      m_entities[id]->reset_world();
+      m_entities[id].reset();
+    }
+
+    if (m_next_id > id) {
+      m_next_id = id;
+    }
+  }
+}
+
+void world::respawn(size_t id) {
+  auto _ul = unique_lock(m_lock);
+
+  if (id < m_entities.size()) {
+    if (m_entities[id]) {
+      locked_erase_dynamic(id);
+
+      if (m_entities[id]->is_dynamic()) {
+        locked_add_dynamic(id);
+      }
+    }
+  }
+}
+
+void world::clear() {
+  auto _ul = unique_lock(m_lock);
+
+  for (auto ent : m_entities) {
+    if (ent) {
+      ent->reset_world();
+    }
+  }
+
+  m_entities.clear();
+  m_dynamic_ids.clear();
+
+  m_desync = false;
+}
+
+void world::queue(ptr_impact ev) {
+  if (ev) {
+    if (ev->is_async()) {
+      auto _ul = unique_lock(m_lock);
+
+      m_queue.emplace_back(ev);
+    } else {
+      auto _ul = unique_lock(m_lock);
+
+      auto op = [](const ptr_impact &a,
+                    cref_eventorder  b) -> bool {
+        return a->get_order() < b;
+      };
+
+      auto iter = lower_bound(m_sync_queue.begin(),
+          m_sync_queue.end(), ev->get_order(), op);
+
+      m_sync_queue.emplace(iter, ev);
+    }
+  }
+}
+
+void world::tick(uint64_t delta) {
+  schedule(delta);
+
+  join();
+}
+
+void world::schedule(uint64_t delta) {
+  if (m_scheduler.get_thread_count() == 0) {
     auto _ul = unique_lock(m_lock);
 
-    for (auto ent : m_entities)
-    {
-        if (ent)
-        {
-            ent->reset_world();
+    for (uint64_t t = 0; t < delta; t++) {
+      while (!m_sync_queue.empty() || !m_queue.empty()) {
+        for (size_t i = 0; i < m_sync_queue.size(); i++) {
+          _ul.unlock();
+
+          m_sync_queue[i]->perform({ *this, access::sync });
+
+          _ul.lock();
         }
-    }
 
-    m_entities.clear();
-    m_dynamic_ids.clear();
+        m_sync_queue.clear();
 
-    m_desync = false;
-}
+        for (size_t i = 0; i < m_queue.size(); i++) {
+          _ul.unlock();
 
-void world::queue(ptr_impact ev)
-{
-    if (ev)
-    {
-        if (ev->is_async())
-        {
-            auto _ul = unique_lock(m_lock);
+          m_queue[i]->perform({ *this, access::async });
 
-            m_queue.emplace_back(ev);
+          _ul.lock();
         }
-        else
-        {
-            auto _ul = unique_lock(m_lock);
 
-            auto op = [](const ptr_impact &a, cref_eventorder b) -> bool {
-                return a->get_order() < b;
-            };
+        m_queue.clear();
+      }
 
-            auto iter = lower_bound(m_sync_queue.begin(), m_sync_queue.end(), ev->get_order(), op);
+      for (size_t i = 0; i < m_dynamic_ids.size(); i++) {
+        _ul.unlock();
 
-            m_sync_queue.emplace(iter, ev);
-        }
+        auto en = m_entities[m_dynamic_ids[i]];
+
+        if (en->clock())
+          en->tick({ *this, access::async });
+
+        _ul.lock();
+      }
+
+      for (auto &e : m_entities) {
+        e->adjust();
+      }
     }
+  } else {
+    m_scheduler.schedule(delta);
+  }
 }
 
-void world::tick(uint64_t delta)
-{
-    schedule(delta);
-
-    join();
+void world::join() {
+  m_scheduler.join();
 }
 
-void world::schedule(uint64_t delta)
-{
-    if (m_scheduler.get_thread_count() == 0)
-    {
-        auto _ul = unique_lock(m_lock);
+void world::set_thread_count(size_t thread_count) {
+  auto _ul = unique_lock(m_lock);
+  m_scheduler.set_thread_count(thread_count);
+}
 
-        for (uint64_t t = 0; t < delta; t++)
-        {
-            while (!m_sync_queue.empty() || !m_queue.empty())
-            {
-                for (size_t i = 0; i < m_sync_queue.size(); i++)
-                {
-                    _ul.unlock();
+auto world::get_thread_count() -> size_t {
+  auto _sl = shared_lock(m_lock);
+  return 0;
+}
 
-                    m_sync_queue[i]->perform({ *this, access::sync });
+void world::set_root(ptr_entity root) {
+  auto _ul = unique_lock(m_lock);
 
-                    _ul.lock();
-                }
+  if (m_root)
+    m_root->reset_world();
 
-                m_sync_queue.clear();
+  m_root = root;
+  m_root->set_world(shared_from_this());
+}
 
-                for (size_t i = 0; i < m_queue.size(); i++)
-                {
-                    _ul.unlock();
+auto world::get_root() -> ptr_entity {
+  auto _sl = shared_lock(m_lock);
+  return m_root;
+}
 
-                    m_queue[i]->perform({ *this, access::async });
+auto world::get_random() -> ref_rand {
+  return m_rand;
+}
 
-                    _ul.lock();
-                }
+auto world::get_entity(size_t id) -> ptr_entity {
+  auto _sl = shared_lock(m_lock);
 
-                m_queue.clear();
-            }
+  ptr_entity result;
 
-            for (size_t i = 0; i < m_dynamic_ids.size(); i++)
-            {
-                _ul.unlock();
+  if (id < m_entities.size()) {
+    result = m_entities[id];
+  }
 
-                auto en = m_entities[m_dynamic_ids[i]];
+  return result;
+}
 
-                if (en->clock())
-                    en->tick({ *this, access::async });
+void world::desync() {
+  auto _ul = unique_lock(m_lock);
+  m_desync = true;
+}
 
-                _ul.lock();
-            }
+auto world::is_desync() -> bool {
+  auto _sl = shared_lock(m_lock);
+  return m_desync;
+}
 
-            for (auto &e : m_entities)
-            {
-                e->adjust();
-            }
-        }
+auto world::select(condition op) -> vptr_entity {
+  vptr_entity result;
+
+  auto _sl = shared_lock(m_lock);
+
+  for (size_t i = 0; i < m_entities.size(); i++) {
+    auto ent = m_entities[i];
+
+    if (ent && (!op || op(*ent))) {
+      result.emplace_back(ent);
     }
-    else
-    {
-        m_scheduler.schedule(delta);
+  }
+
+  return result;
+}
+
+auto world::select_dynamic(condition op) -> vptr_entity {
+  vptr_entity result;
+
+  auto _sl = shared_lock(m_lock);
+
+  for (size_t i = 0; i < m_dynamic_ids.size(); i++) {
+    auto ent = m_entities[m_dynamic_ids[i]];
+
+    if (ent && (!op || op(*ent))) {
+      result.emplace_back(ent);
     }
+  }
+
+  return result;
 }
 
-void world::join()
-{
-    m_scheduler.join();
+void world::locked_add_dynamic(size_t id) {
+  auto it = lower_bound(
+      m_dynamic_ids.begin(), m_dynamic_ids.end(), id);
+
+  m_dynamic_ids.emplace(it, id);
 }
 
-auto world::get_entity(size_t id) -> ptr_entity
-{
-    auto _sl = shared_lock(m_lock);
+void world::locked_erase_dynamic(size_t id) {
+  auto it = lower_bound(
+      m_dynamic_ids.begin(), m_dynamic_ids.end(), id);
 
-    shared_ptr<entity> result;
-
-    if (id < m_entities.size())
-    {
-        result = m_entities[id];
-    }
-
-    return result;
+  if (it != m_dynamic_ids.end() && *it == id) {
+    m_dynamic_ids.erase(it);
+  }
 }
 
-auto world::get_thread_count() -> size_t
-{
-    auto _sl = shared_lock(m_lock);
-    return 0;
-}
+void world::clean_sync_queue() {
+  auto _ul = unique_lock(m_lock);
 
-auto world::get_random() -> ref_rand
-{
-    return m_rand;
-}
+  if (m_index <= m_sync_queue.size()) {
+    m_sync_queue.erase(
+        m_sync_queue.begin(), m_sync_queue.begin() + m_index);
 
-void world::desync()
-{
-    auto _ul = unique_lock(m_lock);
-    m_desync = true;
-}
-
-auto world::is_desync() -> bool
-{
-    auto _sl = shared_lock(m_lock);
-    return m_desync;
-}
-
-auto world::select(condition op) -> vptr_entity
-{
-    vptr_entity result;
-
-    auto _sl = shared_lock(m_lock);
-
-    for (size_t i = 0; i < m_entities.size(); i++)
-    {
-        auto ent = m_entities[i];
-
-        if (ent && (!op || op(*ent)))
-        {
-            result.emplace_back(ent);
-        }
-    }
-
-    return result;
-}
-
-auto world::select_dynamic(condition op) -> vptr_entity
-{
-    vptr_entity result;
-
-    auto _sl = shared_lock(m_lock);
-
-    for (size_t i = 0; i < m_dynamic_ids.size(); i++)
-    {
-        auto ent = m_entities[m_dynamic_ids[i]];
-
-        if (ent && (!op || op(*ent)))
-        {
-            result.emplace_back(ent);
-        }
-    }
-
-    return result;
-}
-
-void world::locked_add_dynamic(size_t id)
-{
-    auto it = lower_bound(m_dynamic_ids.begin(), m_dynamic_ids.end(), id);
-
-    m_dynamic_ids.emplace(it, id);
-}
-
-void world::locked_erase_dynamic(size_t id)
-{
-    auto it = lower_bound(m_dynamic_ids.begin(), m_dynamic_ids.end(), id);
-
-    if (it != m_dynamic_ids.end() && *it == id)
-    {
-        m_dynamic_ids.erase(it);
-    }
-}
-
-void world::clean_sync_queue()
-{
-    auto _ul = unique_lock(m_lock);
-
-    if (m_index <= m_sync_queue.size())
-    {
-        m_sync_queue.erase(
-            m_sync_queue.begin(),
-            m_sync_queue.begin() + m_index
-        );
-
-        m_index = 0;
-    }
-}
-
-void world::clean_async_queue()
-{
-    auto _ul = unique_lock(m_lock);
-
-    if (m_index <= m_queue.size())
-    {
-        m_queue.erase(
-            m_queue.begin(),
-            m_queue.begin() + m_index
-        );
-
-        m_index = 0;
-    }
-}
-
-void world::reset_index()
-{
-    auto _ul = unique_lock(m_lock);
     m_index = 0;
+  }
 }
 
-auto world::no_queue() -> bool
-{
-    auto _sl = shared_lock(m_lock);
-    return m_sync_queue.empty() && m_queue.empty();
+void world::clean_async_queue() {
+  auto _ul = unique_lock(m_lock);
+
+  if (m_index <= m_queue.size()) {
+    m_queue.erase(m_queue.begin(), m_queue.begin() + m_index);
+
+    m_index = 0;
+  }
 }
 
-auto world::next_sync_impact() -> ptr_impact
-{
-    auto _ul = unique_lock(m_lock);
-
-    return m_index < m_sync_queue.size() ?
-        m_sync_queue[m_index++] :
-        ptr_impact();
+void world::reset_index() {
+  auto _ul = unique_lock(m_lock);
+  m_index  = 0;
 }
 
-auto world::next_async_impact() -> ptr_impact
-{
-    auto _ul = unique_lock(m_lock);
-
-    return m_index < m_queue.size() ?
-        m_queue[m_index++] :
-        ptr_impact();
+auto world::no_queue() -> bool {
+  auto _sl = shared_lock(m_lock);
+  return m_sync_queue.empty() && m_queue.empty();
 }
 
-auto world::next_dynamic_entity() -> ptr_entity
-{
-    auto _ul = unique_lock(m_lock);
+auto world::next_sync_impact() -> ptr_impact {
+  auto _ul = unique_lock(m_lock);
 
-    return m_index < m_dynamic_ids.size() ?
-        m_entities[m_dynamic_ids[m_index++]] :
-        ptr_entity();
+  return m_index < m_sync_queue.size() ? m_sync_queue[m_index++]
+                                       : ptr_impact();
 }
 
-auto world::next_entity() -> ptr_entity
-{
-    auto _ul = unique_lock(m_lock);
+auto world::next_async_impact() -> ptr_impact {
+  auto _ul = unique_lock(m_lock);
 
-    return m_index < m_entities.size() ?
-        m_entities[m_index++] :
-        ptr_entity();
+  return m_index < m_queue.size() ? m_queue[m_index++]
+                                  : ptr_impact();
+}
+
+auto world::next_dynamic_entity() -> ptr_entity {
+  auto _ul = unique_lock(m_lock);
+
+  return m_index < m_dynamic_ids.size()
+             ? m_entities[m_dynamic_ids[m_index++]]
+             : ptr_entity();
+}
+
+auto world::next_entity() -> ptr_entity {
+  auto _ul = unique_lock(m_lock);
+
+  return m_index < m_entities.size() ? m_entities[m_index++]
+                                     : ptr_entity();
 }
