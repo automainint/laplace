@@ -1,7 +1,7 @@
 target_sources(
   ${EXE_NAME}
     PRIVATE
-       e_basic_factory.cpp e_dh_rabbit.cpp e_entity.cpp
+       e_basic_entity.cpp e_basic_factory.cpp e_dh_rabbit.cpp
       e_geometry.cpp e_host.cpp e_remote.cpp e_scheduler.cpp e_server.cpp
       e_shape.cpp e_solver.cpp e_udp_server.cpp e_world.cpp
     PUBLIC
