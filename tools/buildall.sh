@@ -16,7 +16,7 @@ fi
 
 ./cleanup.sh
 
-cd ./thirdparty
+cd ../thirdparty
 ./update.sh
 ./update-gl.sh
 ./rebuild.sh "$generator" $config

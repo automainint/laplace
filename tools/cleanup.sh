@@ -4,6 +4,7 @@
 #       Remove all build files.
 
 echo '[ Cleanup ]'
+cd ..
 
 rm -rf ./include/*
 rm -rf ./lib/*

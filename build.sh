@@ -14,6 +14,7 @@ elif [ $# -eq 2 ]; then
 fi
 
 if [ `ls ./lib | wc -l` -eq 0 ] || [ `ls ./include | wc -l` -eq 0 ]; then
+  cd ./tools
   ./buildall.sh "$generator" $config
 else
   gen_folder='./source/generated'

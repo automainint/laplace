@@ -78,7 +78,7 @@ def clean_subdirs(folder):
       if file == 'CMakeLists.txt':
         os.remove(os.path.join(r, file))
 
-out = open('CMakeLists.txt', 'w')
+out = open('../CMakeLists.txt', 'w')
 
 out.write('cmake_minimum_required(VERSION 3.18)\n\n')
 
@@ -118,8 +118,8 @@ out.write('endif()\n\n')
 
 out.write('add_subdirectory(source)\n\n')
 
-clean_subdirs('source')
-write_subdirs('source')
+clean_subdirs('../source')
+write_subdirs('../source')
 
 out.write('target_link_libraries(\n  ${EXE_NAME}\n')
 

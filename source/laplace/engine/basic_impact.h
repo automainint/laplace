@@ -24,19 +24,19 @@ namespace laplace::engine {
   /*  World event compute atom. Impacts can be SEQUENTIALLY
    *  INCONSISTENT, that allows to use parallel computation.
    *
-   *  For complete determinism all the basic_impacts should have the
+   *  For complete determinism all the Impacts should have the
    *  order index sequence, even the async ones, if they may
-   *  potentially create some sync basic_impacts.
+   *  potentially create some sync Impacts.
    *
-   *  When create a new basic_impact:
+   *  When create a new Impact:
    *
    *  ```
-   *  void my_basic_impact::perform(access::world w) const {
+   *  void my_impact::perform(access::world w) const {
    *      size_t childs_count = 0;
    *      // ...
    *
-   *      //  Create an basic_impact.
-   *      auto ev     = make_shared<my_new_basic_impact>();
+   *      //  Create an Impact.
+   *      auto ev     = make_shared<my_new_impact>();
    *
    *      //  Calculate the order index sequence.
    *      auto order  = order_of_child(childs_count);
@@ -44,7 +44,7 @@ namespace laplace::engine {
    *      //  Set the order.
    *      ev->set_order(order);
    *
-   *      //  Queue the new basic_impact.
+   *      //  Queue the new Impact.
    *      w.queue(ev);
    *
    *      // ...
