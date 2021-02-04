@@ -56,7 +56,8 @@ namespace laplace::engine {
     enum encoding_offset : size_t {
       n_id    = 0,
       n_index = 2,
-      n_time  = 10
+      n_time  = 10,
+      n_actor = 18
     };
 
     /*  Max encoded basic_impact size.
@@ -64,11 +65,14 @@ namespace laplace::engine {
     static constexpr size_t max_size =
         std::numeric_limits<uint16_t>::max();
 
-    constexpr basic_impact()               = default;
+    constexpr basic_impact()                     = default;
     constexpr basic_impact(const basic_impact &) = default;
     constexpr basic_impact(basic_impact &&)      = default;
-    constexpr basic_impact &operator=(const basic_impact &) = default;
-    constexpr basic_impact &operator=(basic_impact &&) = default;
+
+    constexpr basic_impact &
+    operator=(const basic_impact &) = default;
+    constexpr basic_impact &
+    operator=(basic_impact &&) = default;
 
     /*  TODO
      *  Make it contexpr after MSVC implements C++20.
@@ -117,15 +121,29 @@ namespace laplace::engine {
     constexpr auto get_time64() const -> uint64_t;
     constexpr auto get_actor64() const -> uint64_t;
 
-    static void set_index(ref_vbyte seq, size_t index);
+    static constexpr void set_index(ref_vbyte seq,
+                                    size_t    index);
 
-    static auto get_id_unsafe(cref_vbyte seq) -> uint16_t;
-    static auto get_index_unsafe(cref_vbyte seq) -> size_t;
-    static auto get_time_unsafe(cref_vbyte seq) -> uint64_t;
+    static constexpr auto get_id_unsafe(cref_vbyte seq)
+        -> uint16_t;
+    static constexpr auto get_index_unsafe(cref_vbyte seq)
+        -> size_t;
+    static constexpr auto get_time_unsafe(cref_vbyte seq)
+        -> uint64_t;
+    static constexpr auto get_actor_unsafe(cref_vbyte seq)
+        -> size_t;
 
-    static auto get_id(cref_vbyte seq) -> uint16_t;
-    static auto get_index(cref_vbyte seq) -> size_t;
-    static auto get_time(cref_vbyte seq) -> uint64_t;
+    static constexpr auto get_id(cref_vbyte seq) -> uint16_t;
+    static constexpr auto get_index(cref_vbyte seq) -> size_t;
+    static constexpr auto get_time(cref_vbyte seq) -> uint64_t;
+    static constexpr auto get_actor(cref_vbyte seq) -> size_t;
+
+    static inline auto get_string(cref_vbyte seq, size_t offset)
+        -> std::u8string_view;
+
+    static inline auto get_string(cref_vbyte seq, size_t offset,
+                                  size_t size)
+        -> std::u8string_view;
 
   protected:
     constexpr void set_async(bool is_async);
@@ -152,6 +170,9 @@ namespace laplace::engine {
   /*  Impact generation functor.
    */
   using impact_gen = std::function<ptr_impact()>;
+
+  template <typename impact_>
+  static constexpr auto encode(const impact_ &ev) -> vbyte;
 
   /*  Impact generation wrapper.
    */

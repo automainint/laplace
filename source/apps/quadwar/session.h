@@ -1,11 +1,24 @@
-#pragma once
+/*  apps/quadwar/session.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
 
+#ifndef __quadwar__session__
+#define __quadwar__session__
+
+#include "../../laplace/engine/server.h"
 #include "ids.h"
 #include "lobby.h"
 #include "qw_factory.h"
 #include "qw_slot_create.h"
 #include "root.h"
-#include <laplace/engine/server.h>
 
 namespace quadwar_app {
   using namespace laplace;
@@ -17,9 +30,9 @@ namespace quadwar_app {
     using event_quit = std::function<void()>;
 
     static constexpr uint16_t allowed_commands[] = {
-      ids::public_key, ids::request_events, ids::client_ping,
-      ids::client_enter, ids::client_leave, ids::client_ready,
-      ids::slot_create, ids::slot_remove
+      ids::public_key,   ids::request_events, ids::client_ping,
+      ids::client_enter, ids::client_leave,   ids::client_ready,
+      ids::slot_create,  ids::slot_remove,    ids::player_name
     };
 
     static constexpr auto     default_server_ip = "127.0.0.1";
@@ -70,3 +83,5 @@ namespace quadwar_app {
 
   using ptr_session = std::shared_ptr<session>;
 }
+
+#endif

@@ -1,8 +1,21 @@
 #include "entity.h"
 
 namespace laplace::engine::access {
+  entity::entity(entity &&ent) noexcept :
+      m_entity(std::move(ent.m_entity)),
+      m_mode(std::move(ent.m_mode)) {
+    ent.m_mode = forbidden;
+  }
+
   entity::entity(ptr_entity ent, mode access_mode) :
       m_entity(ent), m_mode(ent ? access_mode : forbidden) { }
+
+  auto entity::operator=(entity &&ent) noexcept -> entity & {
+    m_entity   = std::move(ent.m_entity);
+    m_mode     = std::move(ent.m_mode);
+    ent.m_mode = forbidden;
+    return *this;
+  }
 
   auto entity::exist() const -> bool {
     return m_entity ? true : false;

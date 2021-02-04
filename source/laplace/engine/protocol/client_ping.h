@@ -1,4 +1,17 @@
-#pragma once
+/*  laplace/engine/protocol/client_ping.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#ifndef __laplace__engine_protocol_client_ping__
+#define __laplace__engine_protocol_client_ping__
 
 #include "../basic_impact.h"
 
@@ -43,3 +56,5 @@ namespace laplace::engine::protocol {
     uint64_t m_time_msec = 0;
   };
 }
+
+#endif

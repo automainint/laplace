@@ -1,9 +1,21 @@
+/*  apps/quadwar/quadwar.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
 #ifndef __quadwar__quadwar__
 #define __quadwar__quadwar__
 
+#include "../../laplace/stem/app_flat.h"
 #include "mainmenu.h"
 #include "session.h"
-#include <laplace/stem/app_flat.h>
 
 namespace quadwar_app {
   using namespace laplace;
@@ -15,7 +27,7 @@ namespace quadwar_app {
     static constexpr auto caption = u8"Quadwar";
 
     quadwar(int argc, char **argv);
-    ~quadwar() override;
+    ~quadwar() override = default;
 
   protected:
     void init() override;

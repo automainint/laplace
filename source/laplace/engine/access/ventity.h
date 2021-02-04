@@ -6,11 +6,13 @@ namespace laplace::engine::access {
   class ventity {
   public:
     ventity(const ventity &) = delete;
-    ventity &operator=(const ventity &) = delete;
+    auto operator=(const ventity &) -> ventity & = delete;
 
-    ventity(ventity &&) noexcept = default;
-    ventity(vptr_entity ents, mode access_mode);
-    ventity &operator=(ventity &&) = default;
+    [[nodiscard]] ventity(ventity &&ents) noexcept;
+    [[nodiscard]] ventity(vptr_entity ents, mode access_mode);
+
+    auto operator=(ventity &&ents) noexcept -> ventity &;
+
     ~ventity() = default;
 
     auto size() const -> size_t;

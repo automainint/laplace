@@ -1,8 +1,21 @@
+/*  apps/quadwar/aq_session.cpp
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#include "../../laplace/core/utils.h"
+#include "../../laplace/engine/host.h"
+#include "../../laplace/engine/remote.h"
 #include "player.h"
+#include "qw_player_name.h"
 #include "session.h"
-#include <laplace/core/utils.h>
-#include <laplace/engine/host.h>
-#include <laplace/engine/remote.h>
 
 using namespace quadwar_app;
 using namespace std;
@@ -27,8 +40,22 @@ void session::tick(size_t delta_msec) {
       for (size_t i = 0; i < count; i++) {
         const auto id_actor = m_root->get_slot(i);
         const auto actor    = m_world->get_entity(id_actor);
-        const auto name =
-            player::get_name({ actor, access::sync });
+
+        const auto is_local =
+            player::is_local({ actor, access::async });
+
+        if (is_local)
+          m_id_actor = id_actor;
+
+        auto name = player::get_name({ actor, access::async });
+
+        if (name.empty()) {
+          name = u8"[ Reserved ]";
+        }
+
+        if (is_local) {
+          name.append(u8" *");
+        }
 
         m_lobby.set_slot(i, id_actor, name);
       }
@@ -100,7 +127,12 @@ void session::create() {
   /*  Create the host actor.
    */
   auto id_actor = m_world->reserve(id_undefined);
-  server->queue(protocol::slot_create(id_actor).encode());
+
+  server->queue(
+      encode(protocol::slot_create(id_actor)));
+
+  server->queue(encode(
+      qw_player_name(id_actor, m_player_name)));
 
   m_lobby.show_info(
       to_u8string(u8"Game host (port %d)", server->get_port()));
@@ -119,7 +151,10 @@ void session::join() {
   m_world->set_root(m_root);
 
   server->set_factory(m_factory);
+
   server->connect(m_server_ip, m_server_port);
+
+  server->queue(encode(qw_player_name(m_player_name)));
 
   m_lobby.show_info(u8"Game guest");
   m_lobby.set_start_enabled(false);

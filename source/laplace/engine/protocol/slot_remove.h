@@ -1,6 +1,17 @@
-#pragma once
+/*  laplace/engine/protocol/slot_remove.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
 
-#include "../basic_impact.h"
+#ifndef __laplace__engine_protocol_slot_remove__
+#define __laplace__engine_protocol_slot_remove__
 
 namespace laplace::engine::protocol {
   class slot_remove : public sync_impact {
@@ -16,8 +27,8 @@ namespace laplace::engine::protocol {
       set_size(size);
     }
 
-    constexpr slot_remove(
-        size_t index, uint64_t time, size_t id_actor) {
+    constexpr slot_remove(size_t index, uint64_t time,
+                          size_t id_actor) {
       set_order({ index });
       set_time(time);
       set_actor(id_actor);
@@ -28,10 +39,10 @@ namespace laplace::engine::protocol {
       w.remove(get_actor());
     }
 
-    inline void encode_to(
-        std::span<uint8_t> bytes) const final {
+    inline void
+    encode_to(std::span<uint8_t> bytes) const final {
       write_bytes(bytes, id, get_index64(), get_time64(),
-          get_actor64());
+                  get_actor64());
     }
 
     static constexpr auto scan(cref_vbyte seq) {
@@ -40,12 +51,9 @@ namespace laplace::engine::protocol {
 
     static inline auto decode(cref_vbyte seq) {
       return slot_remove { get_index(seq), get_time(seq),
-        get_slot_actor(seq) };
-    }
-
-    static constexpr auto get_slot_actor(cref_vbyte seq)
-        -> size_t {
-      return as_index(rd<uint64_t>(seq, n_slot_actor));
+                           get_actor(seq) };
     }
   };
 }
+
+#endif

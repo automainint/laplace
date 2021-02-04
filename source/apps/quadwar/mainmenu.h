@@ -1,10 +1,22 @@
+/*  apps/quadwar/mainmenu.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
 #ifndef __quadwar__mainmenu__
 #define __quadwar__mainmenu__
 
-#include <laplace/ui/elem/textarea.h>
-#include <laplace/ui/elem/textbutton.h>
-#include <laplace/ui/elem/textedit.h>
-#include <laplace/ui/widget.h>
+#include "../../laplace/ui/elem/textarea.h"
+#include "../../laplace/ui/elem/textbutton.h"
+#include "../../laplace/ui/elem/textedit.h"
+#include "../../laplace/ui/widget.h"
 
 namespace quadwar_app {
   using namespace laplace;

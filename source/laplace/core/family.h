@@ -194,13 +194,15 @@ namespace laplace::core {
     void assign(std::u32string_view value);
     void assign(cref_vbyte value);
 
-    static auto op_lower_bound(
-        const std::pair<family, family> &a, const family &key)
-        -> bool;
-    static auto op_lower_bound_uint(
-        const std::pair<family, family> &a, size_t key) -> bool;
+    static auto
+    op_lower_bound(const std::pair<family, family> &a,
+                   const family &key) -> bool;
+    static auto
+    op_lower_bound_uint(const std::pair<family, family> &a,
+                        size_t key) -> bool;
     static auto op_sort(const std::pair<family, family> &a,
-        const std::pair<family, family> &b) -> bool;
+                        const std::pair<family, family> &b)
+        -> bool;
 
     enum type_index : size_t {
       n_uint = 1,
@@ -215,7 +217,8 @@ namespace laplace::core {
 
     using field_type =
         std::variant<std::monostate, uint64_t, bool, int64_t,
-            double, std::u8string, vbyte, vfamily, composite>;
+                     double, std::u8string, vbyte, vfamily,
+                     composite>;
 
     field_type m_data;
   };

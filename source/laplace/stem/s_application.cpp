@@ -196,7 +196,7 @@ auto application::shader_path(
 
 auto application::open(wstring_view file_name)
     -> unique_ptr<istream> {
-  log("Load: %s", to_string(file_name).c_str());
+  verb("Load: %s", to_string(file_name).c_str());
 
   if (embedded::scan(file_name)) {
     return make_unique<ibytestream>(embedded::open(file_name));

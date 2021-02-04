@@ -16,7 +16,8 @@
 #define __laplace__engine_basic_impact_impl__
 
 namespace laplace::engine {
-  constexpr void basic_impact::set_order(cref_eventorder order) {
+  constexpr void
+  basic_impact::set_order(cref_eventorder order) {
     this->m_order = order;
   }
 
@@ -36,10 +37,11 @@ namespace laplace::engine {
     return seq;
   }
 
-  inline void basic_impact::encode_to(
-      std::span<uint8_t> bytes) const { }
+  inline void
+  basic_impact::encode_to(std::span<uint8_t> bytes) const { }
 
-  constexpr auto basic_impact::get_encoded_size() const -> size_t {
+  constexpr auto basic_impact::get_encoded_size() const
+      -> size_t {
     return this->m_size;
   }
 
@@ -47,7 +49,8 @@ namespace laplace::engine {
     return this->m_order.get_index();
   }
 
-  constexpr auto basic_impact::get_order() const -> cref_eventorder {
+  constexpr auto basic_impact::get_order() const
+      -> cref_eventorder {
     return this->m_order;
   }
 
@@ -75,50 +78,98 @@ namespace laplace::engine {
     return static_cast<uint64_t>(this->get_actor());
   }
 
-  inline void basic_impact::set_index(ref_vbyte seq, size_t index) {
+  constexpr void basic_impact::set_index(ref_vbyte seq,
+                                         size_t    index) {
     using namespace protocol;
 
     if (basic_impact::get_id(seq) >= ids::_unindexed_count)
       wr<uint64_t>(seq, basic_impact::n_index, index);
   }
 
-  inline auto basic_impact::get_id_unsafe(cref_vbyte seq)
+  constexpr auto basic_impact::get_id_unsafe(cref_vbyte seq)
       -> uint16_t {
     return rd<uint16_t>(seq, basic_impact::n_id);
   }
 
-  inline auto basic_impact::get_index_unsafe(cref_vbyte seq)
+  constexpr auto basic_impact::get_index_unsafe(cref_vbyte seq)
       -> size_t {
     return as_index(rd<uint64_t>(seq, basic_impact::n_index));
   }
 
-  inline auto basic_impact::get_time_unsafe(cref_vbyte seq)
+  constexpr auto basic_impact::get_time_unsafe(cref_vbyte seq)
       -> uint64_t {
     return rd<uint64_t>(seq, basic_impact::n_time);
   }
 
-  inline auto basic_impact::get_id(cref_vbyte seq) -> uint16_t {
-    using namespace protocol;
-
-    return seq.size() >= sizeof(uint16_t)
-               ? rd<uint16_t>(seq, basic_impact::n_id)
-               : ids::undefined;
+  constexpr auto basic_impact::get_actor_unsafe(cref_vbyte seq)
+      -> size_t {
+    return as_index(rd<uint64_t>(seq, basic_impact::n_actor));
   }
 
-  inline auto basic_impact::get_index(cref_vbyte seq) -> size_t {
+  constexpr auto basic_impact::get_id(cref_vbyte seq)
+      -> uint16_t {
     using namespace protocol;
 
-    return basic_impact::get_id(seq) < ids::_unindexed_count
-               ? id_undefined
-               : as_index(rd<uint64_t>(seq, basic_impact::n_index));
+    return seq.size() >= sizeof(uint16_t) ? get_id_unsafe(seq)
+                                          : ids::undefined;
   }
 
-  inline auto basic_impact::get_time(cref_vbyte seq) -> uint64_t {
+  constexpr auto basic_impact::get_index(cref_vbyte seq)
+      -> size_t {
     using namespace protocol;
 
-    return basic_impact::get_id(seq) < ids::_control_count
-               ? time_undefined
-               : rd<uint64_t>(seq, basic_impact::n_time);
+    if (basic_impact::get_id(seq) < ids::_unindexed_count) {
+      return -1;
+    }
+
+    return get_index_unsafe(seq);
+  }
+
+  constexpr auto basic_impact::get_time(cref_vbyte seq)
+      -> uint64_t {
+    using namespace protocol;
+
+    if (basic_impact::get_id(seq) < ids::_control_count) {
+      return time_undefined;
+    }
+
+    return get_time_unsafe(seq);
+  }
+
+  constexpr auto basic_impact::get_actor(cref_vbyte seq)
+      -> size_t {
+    using namespace protocol;
+
+    if (basic_impact::get_id(seq) < ids::_control_count) {
+      return id_undefined;
+    }
+
+    return get_actor_unsafe(seq);
+  }
+
+  inline auto basic_impact::get_string(cref_vbyte seq,
+                                       size_t     offset)
+      -> std::u8string_view {
+    if (offset >= seq.size())
+      return {};
+
+    return std::u8string_view {
+      reinterpret_cast<const char8_t *>(seq.data() + offset),
+      seq.size() - offset
+    };
+  }
+
+  inline auto basic_impact::get_string(cref_vbyte seq,
+                                       size_t     offset,
+                                       size_t     size)
+      -> std::u8string_view {
+    if (offset + size > seq.size())
+      return {};
+
+    return std::u8string_view {
+      reinterpret_cast<const char8_t *>(seq.data() + offset),
+      size
+    };
   }
 
   constexpr void basic_impact::set_async(bool is_async) {
@@ -129,7 +180,8 @@ namespace laplace::engine {
     this->m_size = size;
   }
 
-  constexpr auto basic_impact::order_of_child(ref_uint count) const
+  constexpr auto
+  basic_impact::order_of_child(ref_uint count) const
       -> eventorder {
     return this->m_order.spawn(count);
   }
@@ -138,11 +190,18 @@ namespace laplace::engine {
     this->set_async(false);
   }
 
+  template <typename impact_>
+  constexpr auto encode(const impact_ &ev) -> vbyte {
+    vbyte seq(ev.get_encoded_size());
+    ev.impact_::encode_to(seq);
+    return seq;
+  }
+
   template <typename basic_impact_type>
   inline auto gen() -> impact_gen {
     using namespace std;
 
-    return [] -> ptr_impact {
+    return []() -> ptr_impact {
       return make_shared<basic_impact_type>();
     };
   }

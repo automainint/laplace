@@ -1,6 +1,19 @@
-#pragma once
+/*  apps/quadwar/landscape.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
 
-#include <laplace/engine/basic_entity.h>
+#ifndef __quadwar__landscape__
+#define __quadwar__landscape__
+
+#include "../../laplace/engine/basic_entity.h"
 
 namespace quadwar_app {
   using namespace laplace;
@@ -15,3 +28,5 @@ namespace quadwar_app {
     static landscape m_proto;
   };
 }
+
+#endif

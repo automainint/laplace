@@ -1,9 +1,21 @@
+/*  apps/quadwar/lobby.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
 #ifndef __quadwar__lobby__
 #define __quadwar__lobby__
 
-#include <laplace/ui/elem/textarea.h>
-#include <laplace/ui/elem/textbutton.h>
-#include <laplace/ui/widget.h>
+#include "../../laplace/ui/elem/textarea.h"
+#include "../../laplace/ui/elem/textbutton.h"
+#include "../../laplace/ui/widget.h"
 
 namespace quadwar_app {
   using namespace laplace;
@@ -32,8 +44,9 @@ namespace quadwar_app {
 
     void show_info(std::u8string_view text);
 
-    void set_slot(
-        size_t index, size_t id_actor, std::u8string_view name);
+    void set_slot(size_t index, size_t id_actor,
+                  std::u8string_view name);
+
     void remove_slot(size_t index);
 
     void set_visible(bool is_visible);
@@ -41,8 +54,9 @@ namespace quadwar_app {
 
   private:
     struct slot {
-      size_t                 id_actor;
-      ui::elem::ptr_textarea ui_name;
+      size_t                 id_actor = -1;
+      ui::elem::ptr_textarea ui_name =
+          std::make_shared<ui::elem::textarea>();
     };
 
     bool                   m_is_visible = true;

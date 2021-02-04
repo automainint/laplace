@@ -51,9 +51,9 @@ namespace laplace {
 
   auto utf8_length(std::u8string_view bytes) -> size_t;
   auto utf8_decode(std::u8string_view bytes, ref_uint offset,
-      ref_char32 code) -> bool;
+                   ref_char32 code) -> bool;
   auto utf8_encode(char32_t code, std::u8string &bytes,
-      ref_uint offset) -> bool;
+                   ref_uint offset) -> bool;
 
   template <typename view_type>
   auto to_u8string(view_type s) -> std::u8string;
@@ -66,8 +66,8 @@ namespace laplace {
   /*  Write the value to specified offset.
    */
   template <typename type>
-  constexpr void wr(
-      std::span<uint8_t> seq, size_t offset, type value);
+  constexpr void wr(std::span<uint8_t> seq, size_t offset,
+                    type value);
 
   template <typename type>
   constexpr void wr(uint8_t *seq, size_t offset, type value);
@@ -86,30 +86,33 @@ namespace laplace {
       -> size_t;
 
   template <typename char_type, typename... args_>
-  constexpr auto byte_count(
-      std::basic_string_view<char_type> arg0, args_... args)
-      -> size_t;
+  constexpr auto
+  byte_count(std::basic_string_view<char_type> arg0,
+             args_... args) -> size_t;
 
   template <typename elem_type, typename... args_>
-  constexpr auto byte_count(
-      std::span<const elem_type> arg0, args_... args) -> size_t;
+  constexpr auto byte_count(std::span<const elem_type> arg0,
+                            args_... args) -> size_t;
 
-  void constexpr write_bytes(std::span<uint8_t> data);
+  template <trivial char_type_>
+  constexpr void
+  write_bytes(std::span<uint8_t>                 data,
+              std::basic_string_view<char_type_> arg0);
 
-  template <laplace::trivial char_type, typename... args_>
-  void constexpr write_bytes(std::span<uint8_t> data,
-      std::basic_string_view<char_type> arg0, args_... args);
+  template <trivial elem_type_>
+  constexpr void write_bytes(std::span<uint8_t>          data,
+                             std::span<const elem_type_> arg0);
 
-  template <laplace::trivial elem_type, typename... args_>
-  void constexpr write_bytes(std::span<uint8_t> data,
-      std::span<const elem_type> arg0, args_... args);
+  template <trivial arg0_trivial_>
+  constexpr void write_bytes(std::span<uint8_t> data,
+                             arg0_trivial_      arg0);
 
-  template <laplace::trivial arg0_trivial_, typename... args_>
-  void constexpr write_bytes(std::span<uint8_t> data,
-      arg0_trivial_ arg0, args_... args);
+  template <typename arg0_, typename... args_>
+  constexpr void write_bytes(std::span<uint8_t> data,
+                             arg0_ arg0, args_... args);
 
-  template <laplace::trivial... args_trivial_>
-  auto constexpr pack_to_array(args_trivial_... args);
+  template <trivial... args_trivial_>
+  constexpr auto pack_to_array(args_trivial_... args);
 
   template <typename... args_>
   auto pack_to_bytes(args_... args);

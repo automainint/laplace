@@ -17,11 +17,19 @@
 
 namespace laplace::engine::protocol {
   class non_inheritable { };
-  class inheritable { };
+  using inheritable = decltype([](access::world) {});
+
+  template <typename perform_>
+  concept perform_method = requires {
+    perform_()(access::world(
+        *reinterpret_cast<engine::world *>(nullptr),
+        access::forbidden));
+  }
+  || std::is_same<perform_, non_inheritable>::value;
 
   template <uint16_t id_,
-      typename inheritance_tag_ = non_inheritable,
-      typename base_class_      = basic_impact>
+      perform_method perform_ = non_inheritable,
+      typename base_class_    = basic_impact>
   class basic_event : public base_class_ {
   public:
     static constexpr uint16_t id   = id_;
@@ -30,26 +38,31 @@ namespace laplace::engine::protocol {
     ~basic_event() override = default;
 
     constexpr basic_event() {
-      set_size(size);
+      this->set_size(size);
     }
 
     constexpr basic_event(size_t index) {
-      set_order({ index });
-      set_size(size);
+      this->set_order({ index });
+      this->set_size(size);
+    }
+
+    inline void perform(access::world w) const override {
+      perform_()(std::move(w));
     }
 
     inline void encode_to(
         std::span<uint8_t> bytes) const final {
-      write_bytes(bytes, id, get_index64());
+      write_bytes(bytes, id, this->get_index64());
     }
 
     static constexpr auto scan(cref_vbyte seq) {
-      return seq.size() == size && get_id(seq) == id;
+      return seq.size() == size &&
+             base_class_::get_id(seq) == id;
     }
 
     static inline auto decode(cref_vbyte seq) {
-      return basic_event<id_, inheritance_tag_, base_class_> {
-        get_index(seq)
+      return basic_event<id_, perform_, base_class_> {
+        base_class_::get_index(seq)
       };
     }
   };
@@ -64,26 +77,27 @@ namespace laplace::engine::protocol {
     ~basic_event() final = default;
 
     constexpr basic_event() {
-      set_size(size);
+      this->set_size(size);
     }
 
     constexpr basic_event(size_t index) {
-      set_order({ index });
-      set_size(size);
+      this->set_order({ index });
+      this->set_size(size);
     }
 
     inline void encode_to(
         std::span<uint8_t> bytes) const final {
-      write_bytes(bytes, id, get_index64());
+      write_bytes(bytes, id, this->get_index64());
     }
 
     static constexpr auto scan(cref_vbyte seq) {
-      return seq.size() == size && get_id(seq) == id;
+      return seq.size() == size &&
+             base_class_::get_id(seq) == id;
     }
 
     static inline auto decode(cref_vbyte seq) {
       return basic_event<id_, non_inheritable, base_class_> {
-        get_index(seq)
+        base_class_::get_index(seq)
       };
     }
   };

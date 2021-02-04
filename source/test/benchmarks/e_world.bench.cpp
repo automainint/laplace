@@ -1,5 +1,19 @@
-#include "../engine/access/world.h"
-#include "../engine/world.h"
+/*  laplace/benchmarks/e_world.bench.cpp
+ *
+ *      LLVM libFuzzer entry.
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#include "../../laplace/engine/access/world.h"
+#include "../../laplace/engine/world.h"
 #include <benchmark/benchmark.h>
 
 namespace laplace::engine::world_test {
@@ -31,8 +45,8 @@ using namespace object;
 using namespace world_test;
 using namespace std;
 
-static void bm_laplace_engine_world_startup(
-    benchmark::State &state) {
+static void
+bm_laplace_engine_world_startup(benchmark::State &state) {
   for (auto _ : state) {
     auto a = make_shared<world>();
     a->set_thread_count(32);
@@ -41,8 +55,8 @@ static void bm_laplace_engine_world_startup(
 
 BENCHMARK(bm_laplace_engine_world_startup);
 
-static void bm_laplace_engine_world_single_thread(
-    benchmark::State &state) {
+static void
+bm_laplace_engine_world_single_thread(benchmark::State &state) {
   auto a = make_shared<world>();
   auto e = make_shared<my_entity>();
 

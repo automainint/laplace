@@ -12,7 +12,7 @@
  *  the MIT License for more details.
  */
 
-#define LAPLACE_WINDOWS_INCLUDED
+#define __laplace__windows_header__
 #include <audioclient.h>
 #include <mmdeviceapi.h>
 

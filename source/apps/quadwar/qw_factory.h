@@ -1,6 +1,19 @@
-#pragma once
+/*  apps/quadwar/qw_factory.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
 
-#include <laplace/engine/basic_factory.h>
+#ifndef __quadwar__qw_factory__
+#define __quadwar__qw_factory__
+
+#include "../../laplace/engine/basic_factory.h"
 
 namespace quadwar_app {
   using namespace laplace;
@@ -15,3 +28,5 @@ namespace quadwar_app {
   private:
   };
 }
+
+#endif

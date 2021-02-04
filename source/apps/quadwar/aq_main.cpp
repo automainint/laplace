@@ -1,10 +1,22 @@
+/*  apps/quadwar/aq_main.cpp
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#include "../../laplace/platform/socket.h"
+#include "../../laplace/platform/wrap.h"
+#include "../../laplace/stem/config.h"
 #include "quadwar.h"
 #include <atomic>
 #include <benchmark/benchmark.h>
 #include <gtest/gtest.h>
-#include <laplace/platform/socket.h>
-#include <laplace/platform/wrap.h>
-#include <laplace/stem/config.h>
 
 using namespace quadwar_app;
 using namespace platform;
@@ -60,7 +72,7 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) -> int
 
 #ifdef _CONSOLE
   cout << "\n  Press Enter... ";
-  getchar();
+  [[unused]] getchar();
 #endif
 
   return status;

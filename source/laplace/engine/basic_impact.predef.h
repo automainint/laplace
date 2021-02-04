@@ -12,14 +12,16 @@
  *  the MIT License for more details.
  */
 
-#pragma once
+#ifndef __laplace__engine_basic_impact_predef__
+#define __laplace__engine_basic_impact_predef__
 
 #include <memory>
 #include <vector>
 
-namespace laplace::engine
-{
-    class basic_impact;
-    using ptr_impact = std::shared_ptr<basic_impact>;
-    using vptr_impact = std::vector<ptr_impact>;
+namespace laplace::engine {
+  class basic_impact;
+  using ptr_impact  = std::shared_ptr<basic_impact>;
+  using vptr_impact = std::vector<ptr_impact>;
 }
+
+#endif

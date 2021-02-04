@@ -12,7 +12,7 @@
  *  the MIT License for more details.
  */
 
-#define LAPLACE_WINDOWS_INCLUDED
+#define __laplace__windows_header__
 #include <windows.h>
 
 #include "../../core/defs.h"
@@ -109,9 +109,7 @@ void window::on_drop_file(event_drop_file ev) {
 void window::set_name(string_view name) {
   m_window_name.clear();
 
-  for (auto c : name) {
-    m_window_name.append(1, c);
-  }
+  for (auto c : name) { m_window_name.append(1, c); }
 
   if (m_handle) {
     SetWindowTextW(m_handle, m_window_name.c_str());
@@ -185,7 +183,8 @@ void window::set_fullscreen_windowed() {
 }
 
 void window::set_fullscreen_mode(size_t frame_width,
-    size_t frame_height, size_t frame_rate) {
+                                 size_t frame_height,
+                                 size_t frame_rate) {
   m_fullscreen_width  = frame_width;
   m_fullscreen_height = frame_height;
   m_frame_rate        = frame_rate;
@@ -201,8 +200,8 @@ void window::set_input(shared_ptr<input> in) {
   if (m_input) {
     m_input->attach(m_handle);
 
-    m_input->set_window_rect(
-        get_x(), get_y(), get_width(), get_height());
+    m_input->set_window_rect(get_x(), get_y(), get_width(),
+                             get_height());
   }
 }
 
@@ -313,29 +312,6 @@ void window::get_exe_file_name() {
 
 void window::load_icon(HICON &icon, HICON &icon_sm) {
   icon = LoadIcon(nullptr, IDI_APPLICATION);
-
-  /*  Bugfix for lagging ExtractIconExW.
-   */
-  m_icon_loading = thread([this] {
-    HICON icon    = nullptr;
-    HICON icon_sm = nullptr;
-
-    if (ExtractIconExW(m_exe_file_name.c_str(), 0, nullptr,
-            nullptr, -1) > 0) {
-      ExtractIconExW(
-          m_exe_file_name.c_str(), 0, &icon, &icon_sm, 1);
-
-      auto _ul = unique_lock(m_handle_mutex);
-      m_window_created.wait(_ul);
-
-      if (m_handle) {
-        SendMessage(m_handle, WM_SETICON, ICON_BIG,
-            reinterpret_cast<LPARAM>(icon));
-        SendMessage(m_handle, WM_SETICON, ICON_SMALL,
-            reinterpret_cast<LPARAM>(icon_sm));
-      }
-    }
-  });
 }
 
 auto window::register_class() -> bool {
@@ -376,7 +352,7 @@ void window::create_window() {
 
     if (m_handle) {
       SetWindowLongPtr(m_handle, GWLP_USERDATA,
-          reinterpret_cast<LONG_PTR>(this));
+                       reinterpret_cast<LONG_PTR>(this));
     } else {
       error(__FUNCTION__, "CreateWindowEx failed.");
     }
@@ -386,17 +362,16 @@ void window::create_window() {
 }
 
 void window::adjust_window() {
-  RECT rc;
-  rc.left   = 0;
-  rc.right  = static_cast<LONG>(m_frame_width);
-  rc.top    = 0;
-  rc.bottom = static_cast<LONG>(m_frame_height);
+  RECT rc { .left   = 0,
+            .top    = 0,
+            .right  = static_cast<LONG>(m_frame_width),
+            .bottom = static_cast<LONG>(m_frame_height) };
 
   AdjustWindowRectEx(&rc, static_cast<DWORD>(get_style()),
-      false, static_cast<DWORD>(get_style_ex()));
+                     false, static_cast<DWORD>(get_style_ex()));
 
-  m_width = static_cast<size_t>(
-      static_cast<int64_t>(rc.right) - rc.left);
+  m_width = static_cast<size_t>(static_cast<int64_t>(rc.right) -
+                                rc.left);
   m_height = static_cast<size_t>(
       static_cast<int64_t>(rc.bottom) - rc.top);
 }
@@ -409,8 +384,8 @@ void window::update_rect() {
     size_t height = get_height();
 
     MoveWindow(m_handle, static_cast<int>(x),
-        static_cast<int>(y), static_cast<int>(width),
-        static_cast<int>(height), m_is_visible);
+               static_cast<int>(y), static_cast<int>(width),
+               static_cast<int>(height), m_is_visible);
 
     if (m_input) {
       m_input->set_window_rect(x, y, width, height);
@@ -421,9 +396,9 @@ void window::update_rect() {
 void window::update_window() {
   if (m_is_visible) {
     MoveWindow(m_handle, static_cast<int>(get_x()),
-        static_cast<int>(get_y()),
-        static_cast<int>(get_width()),
-        static_cast<int>(get_height()), true);
+               static_cast<int>(get_y()),
+               static_cast<int>(get_width()),
+               static_cast<int>(get_height()), true);
   }
 }
 
@@ -447,7 +422,7 @@ void window::update_display() {
     if (ChangeDisplaySettings(&mode, CDS_FULLSCREEN) !=
         DISP_CHANGE_SUCCESSFUL) {
       error(__FUNCTION__,
-          "Toggle on. ChangeDisplaySettings failed.");
+            "Toggle on. ChangeDisplaySettings failed.");
     }
   } else {
     /*  Reset to default settings.
@@ -456,7 +431,7 @@ void window::update_display() {
     if (ChangeDisplaySettings(nullptr, 0) !=
         DISP_CHANGE_SUCCESSFUL) {
       error(__FUNCTION__,
-          "Toggle off. ChangeDisplaySettings failed.");
+            "Toggle off. ChangeDisplaySettings failed.");
     }
   }
 }
@@ -479,12 +454,13 @@ void window::accept_files(void *drop_data) {
     size_t count = DragQueryFileW(drop, 0xFFFFFFFF, nullptr, 0);
 
     for (size_t i = 0; i < count; i++) {
-      size_t length = DragQueryFileW(
-          drop, static_cast<UINT>(i), nullptr, 0);
-      auto file_name = make_unique<wchar_t[]>(length + 1);
+      size_t length = DragQueryFileW(drop, static_cast<UINT>(i),
+                                     nullptr, 0);
+      auto   file_name = make_unique<wchar_t[]>(length + 1);
 
       auto n = DragQueryFileW(drop, static_cast<UINT>(i),
-          file_name.get(), static_cast<UINT>(length + 1));
+                              file_name.get(),
+                              static_cast<UINT>(length + 1));
 
       file_name.get()[n] = L'\0';
       m_on_drop_file(file_name.get());
@@ -544,7 +520,8 @@ auto window::process(UINT message, WPARAM wparam, LPARAM lparam)
 }
 
 auto CALLBACK window::window_proc(HWND window_handle,
-    UINT message, WPARAM wparam, LPARAM lparam) -> LRESULT {
+                                  UINT message, WPARAM wparam,
+                                  LPARAM lparam) -> LRESULT {
   LRESULT result = 0;
 
   if (message != WM_CREATE) {
@@ -554,8 +531,8 @@ auto CALLBACK window::window_proc(HWND window_handle,
     if (w) {
       result = w->process(message, wparam, lparam);
     } else {
-      result = DefWindowProcW(
-          window_handle, message, wparam, lparam);
+      result = DefWindowProcW(window_handle, message, wparam,
+                              lparam);
     }
   }
 

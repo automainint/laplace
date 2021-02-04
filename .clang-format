@@ -33,7 +33,7 @@ SpacesInCStyleCastParentheses: false
 SpacesInConditionalStatement: false
 SpacesInSquareBrackets: false
 
-AlignAfterOpenBracket: DontAlign
+AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: true
 AlignConsecutiveBitFields: true
 AlignConsecutiveDeclarations: true
@@ -42,6 +42,7 @@ AllowShortLambdasOnASingleLine: Empty
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
 AllowAllArgumentsOnNextLine: true
 AllowAllConstructorInitializersOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true

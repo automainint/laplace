@@ -1,5 +1,17 @@
+/*  apps/quadwar/aq_quadwar.cpp
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#include "../../laplace/stem/config.h"
 #include "quadwar.h"
-#include <laplace/stem/config.h>
 
 using namespace quadwar_app;
 using namespace core;
@@ -14,7 +26,6 @@ auto quadwar::get_config() -> family {
 
 quadwar::quadwar(int argc, char **argv) :
     app_flat(argc, argv, get_config()) { }
-quadwar::~quadwar() { }
 
 void quadwar::init() {
   app_flat::init();
@@ -40,7 +51,7 @@ void quadwar::init() {
     m_session->attach_to(m_ui);
 
     m_session->adjust_layout(get_window().get_frame_width(),
-        get_window().get_frame_height());
+                             get_window().get_frame_height());
 
     m_session->on_done(return_to_mainmenu);
     m_session->on_quit(quit);

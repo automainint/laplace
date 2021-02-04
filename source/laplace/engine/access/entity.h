@@ -8,12 +8,12 @@ namespace laplace::engine::access {
   class entity {
   public:
     entity(const entity &) = delete;
-    entity &operator=(const entity &) = delete;
+    auto operator=(const entity &) -> entity & = delete;
 
-    [[nodiscard]] entity(entity &&) noexcept = default;
+    [[nodiscard]] entity(entity &&ent) noexcept;
     [[nodiscard]] entity(ptr_entity ent, mode access_mode);
 
-    entity &operator=(entity &&) = default;
+    auto operator=(entity &&ent) noexcept -> entity &;
 
     ~entity() = default;
 

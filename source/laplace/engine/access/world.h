@@ -1,98 +1,99 @@
 #pragma once
 
-#include "ventity.h"
 #include "../basic_impact.predef.h"
 #include "../world.predef.h"
+#include "ventity.h"
 
-namespace laplace::engine::access
-{
-    class world
-    {
-    public:
-        world(const world &) = delete;
-        world(world &&);
-        auto operator =(const world &) -> world & = delete;
-        auto operator =(world &&) -> world & = delete;
+namespace laplace::engine::access {
+  class world {
+  public:
+    world(const world &) = delete;
+    auto operator=(const world &) -> world & = delete;
 
-        world(ref_world w, mode access_mode);
-        ~world() = default;
+    [[nodiscard]] world(world &&w) noexcept;
+    [[nodiscard]] world(ref_world w, mode access_mode);
 
-        /*  Set the desync flag.
-         */
-        void desync();
+    auto operator=(world &&w) noexcept -> world &;
 
-        /*  Reserve an entity id.
-         *  Sync.
-         */
-        auto reserve(size_t id) -> size_t;
+    ~world() = default;
 
-        /*  Spawn a new entity.
-         *  Sync.
-         */
-        auto spawn(ptr_entity ent, size_t id) -> size_t;
+    /*  Set the desync flag.
+     */
+    void desync();
 
-        /*  Remove an existing entity.
-         *  Sync.
-         */
-        void remove(size_t id);
+    /*  Reserve an entity id.
+     *  Sync.
+     */
+    auto reserve(size_t id) -> size_t;
 
-        /*  Respawn an entity.
-         *  Sync.
-         */
-        void respawn(size_t id);
+    /*  Spawn a new entity.
+     *  Sync.
+     */
+    auto spawn(ptr_entity ent, size_t id) -> size_t;
 
-        /*  Remove all entities.
-         *  Sync.
-         */
-        void clear();
+    /*  Remove an existing entity.
+     *  Sync.
+     */
+    void remove(size_t id);
 
-        /*  Queue an event.
-         *  Async.
-         */
-        void queue(ptr_impact ev);
+    /*  Respawn an entity.
+     *  Sync.
+     */
+    void respawn(size_t id);
 
-        /*  Set the root entity.
-         *  Sync.
-         */
-        void set_root(ptr_entity root);
+    /*  Remove all entities.
+     *  Sync.
+     */
+    void clear();
 
-        /*  Get the root entity.
-         *  Async.
-         */
-        auto get_root() -> access::entity;
+    /*  Queue an event.
+     *  Async.
+     */
+    void queue(ptr_impact ev);
 
-        /*  If the world has an entity.
-         *  Async.
-         */
-        auto has_entity(size_t id) -> bool;
+    /*  Set the root entity.
+     *  Sync.
+     */
+    void set_root(ptr_entity root);
 
-        /*  Get an entity.
-         *  Async.
-         */
-        auto get_entity(size_t id) -> access::entity;
+    /*  Get the root entity.
+     *  Async.
+     */
+    auto get_root() -> access::entity;
 
-        /*  Select entities.
-         *  Async.
-         */
-        auto select(condition op) -> access::ventity;
+    /*  If the world has an entity.
+     *  Async.
+     */
+    auto has_entity(size_t id) -> bool;
 
-        /*  Select dynamic entities.
-         *  Async.
-         */
-        auto select_dynamic(condition op) -> access::ventity;
+    /*  Get an entity.
+     *  Async.
+     */
+    auto get_entity(size_t id) -> access::entity;
 
-        /*  Generate a random number.
-         *  Sync.
-         */
-        template <typename distribution>
-        auto random(distribution &dist) -> typename distribution::result_type;
+    /*  Select entities.
+     *  Async.
+     */
+    auto select(condition op) -> access::ventity;
 
-    private:
-        auto get_random_engine() -> ref_rand;
+    /*  Select dynamic entities.
+     *  Async.
+     */
+    auto select_dynamic(condition op) -> access::ventity;
 
-        ref_world   m_world;
-        mode        m_mode  = forbidden;
-    };
+    /*  Generate a random number.
+     *  Sync.
+     */
+    template <typename distribution>
+    auto random(distribution &dist) ->
+        typename distribution::result_type;
+
+  private:
+    auto get_random_engine() -> ref_rand;
+
+    std::reference_wrapper<engine::world> m_world;
+    mode                                  m_mode = forbidden;
+  };
 }
 
 #include "world.impl.h"

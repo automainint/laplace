@@ -1,4 +1,4 @@
-/*  laplace/fuzztests/laplace_fuzz.cpp
+/*  test/fuzztests/laplace_fuzz.cpp
  *
  *      LLVM libFuzzer entry.
  *

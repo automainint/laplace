@@ -21,6 +21,7 @@
 #include <iostream>
 #include <span>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace laplace {
@@ -53,7 +54,11 @@ namespace laplace {
   void log(const char *c_format, ...);
 
   void error(std::string_view sender, std::string_view message);
-  void error(std::string_view sender, const char *c_format, ...);
+  void error(
+      std::string_view sender, const char *c_format, ...);
+
+  void verb(std::string_view s);
+  void verb(const char *c_format, ...);
 }
 
 #endif
