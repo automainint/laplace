@@ -28,7 +28,6 @@ namespace laplace::engine {
 
   host::~host() {
     if (m_node) {
-      verb("[ host ] -> Laplace/server_quit");
       perform_event(slot_host, encode(server_quit()));
 
       send_events();
@@ -43,13 +42,11 @@ namespace laplace::engine {
     m_node = make_unique<udp_node>();
     m_node->bind(port);
 
-    verb("[ host ] -> Laplace/server_clock ");
-    perform_event(slot_host,
-                  encode(server_clock(get_tick_duration())));
+    perform_event(
+        slot_host, encode(server_clock(get_tick_duration())));
 
-    verb("[ host ] -> Laplace/server_seed");
-    perform_event(slot_host, encode(server_seed(
-                                 get_solver()->get_seed())));
+    perform_event(slot_host,
+                  encode(server_seed(get_solver()->get_seed())));
   }
 
   void host::queue(cref_vbyte seq) {
@@ -99,8 +96,8 @@ namespace laplace::engine {
   void host::receive_chunks() {
     if (m_node) {
       for (;;) {
-        auto n = m_node->receive_to(m_buffer.data(),
-                                    get_chunk_size(), async);
+        auto n = m_node->receive_to(
+            m_buffer.data(), get_chunk_size(), async);
         if (n == 0)
           break;
 
@@ -121,8 +118,10 @@ namespace laplace::engine {
 
         dump(plain);
 
-        verb("[ host ] RECV %zd bytes on slot %zd",
-             plain.size(), slot);
+        if (is_verbose()) {
+          verb("[ host ] RECV %zd bytes on slot %zd",
+               plain.size(), slot);
+        }
 
         m_slots[slot].buffer.insert(m_slots[slot].buffer.end(),
                                     plain.begin(), plain.end());
@@ -139,7 +138,7 @@ namespace laplace::engine {
         const size_t size = rd<uint16_t>(buf, index);
 
         if (buf.size() - index < size + 2) {
-          verb("[ host ] ignore invalid data");
+          verb("[ host ] ignore corrupted data");
 
           buf.clear();
           break;
@@ -158,7 +157,12 @@ namespace laplace::engine {
         if (is_allowed) {
           add_event(slot, { buf.data() + index + 2, size });
         } else {
-          verb("[ host ] command %hd not allowed", id);
+          if (id < ids::_native_count) {
+            verb("[ host ] command '%s (%hd)' not allowed",
+                 ids::table[id].data(), id);
+          } else {
+            verb("[ host ] command '%hd' not allowed", id);
+          }
         }
 
         index += size + 2;
@@ -194,7 +198,6 @@ namespace laplace::engine {
         }
       }
 
-      verb("[ host ] %zd :: Laplace/request_events", slot);
       send_event_to(slot, encode(request_events(events)));
     }
 
@@ -259,18 +262,22 @@ namespace laplace::engine {
 
         dump(chunk);
 
-        verb("[ host ] SEND %zd bytes to %s:%d (encrypted)",
-             chunk.size(), m_slots[i].address.c_str(),
-             static_cast<int>(m_slots[i].port));
+        if (is_verbose()) {
+          verb("[ host ] SEND %zd bytes to %s:%d (encrypted)",
+               chunk.size(), m_slots[i].address.c_str(),
+               static_cast<int>(m_slots[i].port));
+        }
 
-        m_node->send_to(m_slots[i].address, m_slots[i].port,
-                        chunk);
+        m_node->send_to(
+            m_slots[i].address, m_slots[i].port, chunk);
       } else {
         m_slots[i].encrypt = m_slots[i].cipher.is_ready();
 
-        verb("[ host ] SEND %zd bytes to %s:%d", chunk_size,
-             m_slots[i].address.c_str(),
-             static_cast<int>(m_slots[i].port));
+        if (is_verbose()) {
+          verb("[ host ] SEND %zd bytes to %s:%d", chunk_size,
+               m_slots[i].address.c_str(),
+               static_cast<int>(m_slots[i].port));
+        }
 
         m_node->send_to(m_slots[i].address, m_slots[i].port,
                         { buf.data(), chunk_size });
@@ -283,8 +290,7 @@ namespace laplace::engine {
   auto host::find_slot(string_view address, uint16_t port)
       -> size_t {
     for (size_t i = 0; i < m_slots.size(); i++) {
-      if (m_slots[i].address == address &&
-          m_slots[i].port == port)
+      if (m_slots[i].address == address && m_slots[i].port == port)
         return i;
     }
 
@@ -382,44 +388,32 @@ namespace laplace::engine {
   auto host::perform_control(size_t slot, cref_vbyte seq)
       -> bool {
     if (client_ping::scan(seq)) {
-      verb("[ host ] %zd :: Laplace/client_ping", slot);
-
       send_event_to(slot, seq);
       return true;
     }
 
     if (server_launch::scan(seq)) {
-      verb("[ host ] %zd :: Laplace/server_launch", slot);
-
       /*  Send the event to clients.
        */
       return false;
     }
 
     if (server_action::scan(seq)) {
-      verb("[ host ] %zd :: Laplace/server_action", slot);
-
       set_state(server_state::action);
       return true;
     }
 
     if (server_pause::scan(seq)) {
-      verb("[ host ] %zd :: Laplace/server_pause", slot);
-
       set_state(server_state::pause);
       return true;
     }
 
     if (server_clock::scan(seq)) {
-      verb("[ host ] %zd :: Laplace/server_clock", slot);
-
       set_tick_duration(server_clock::get_tick_duration(seq));
       return false;
     }
 
     if (server_seed::scan(seq)) {
-      verb("[ host ] %zd :: Laplace/server_seed", slot);
-
       if (get_state() == server_state::prepare) {
         /*  It makes no sense to change the seed
          *  after preparation.
@@ -427,7 +421,7 @@ namespace laplace::engine {
         set_random_seed(server_seed::get_seed(seq));
         return false;
       } else {
-        verb("[ host ] ignore command");
+        verb("[ host ] ignore seed command");
       }
 
       return true;
@@ -440,10 +434,7 @@ namespace laplace::engine {
     }
 
     if (public_key::scan(seq)) {
-      verb("[ host ] %zd :: Laplace/public_key", slot);
-
-      if (public_key::get_cipher(seq) ==
-          ids::cipher_dh_rabbit) {
+      if (public_key::get_cipher(seq) == ids::cipher_dh_rabbit) {
         send_event_to(
             slot, encode(public_key(
                       ids::cipher_dh_rabbit,
@@ -454,7 +445,10 @@ namespace laplace::engine {
         m_slots[slot].cipher.set_remote_key(
             public_key::get_key(seq));
 
-        verb("[ host ] mutual key");
+        if (is_verbose()) {
+          verb("[ host ] mutual key");
+        }
+
         dump(m_slots[slot].cipher.get_mutual_key());
       } else {
         verb("[ host ] unknown cipher");
@@ -464,17 +458,14 @@ namespace laplace::engine {
     }
 
     if (request_events::scan(seq) && slot != slot_host) {
-      verb("[ host ] %zd :: Laplace/request_events", slot);
-
       const auto count = request_events::get_event_count(seq);
 
       for (size_t i = 0; i < count; i++) {
         auto n = request_events::get_event(seq, i);
 
         if (n < m_queue.events.size()) {
-          verb("[ host ] resend event %zd", n);
           send_event_to(slot, m_queue.events[n]);
-        } else {
+        } else if (is_verbose()) {
           verb("[ host ] no requested event %zd", n);
         }
       }
@@ -483,20 +474,14 @@ namespace laplace::engine {
     }
 
     if (client_enter::scan(seq) && slot != slot_host) {
-      verb("[ host ] %zd :: Laplace/client_enter", slot);
+      m_slots[slot].id_actor = get_world()->reserve(id_undefined);
 
-      m_slots[slot].id_actor =
-          get_world()->reserve(id_undefined);
-
-      verb("[ host ] -> %zd :: Laplace/slot_create", slot);
       perform_event(slot, encode(slot_create(false)));
 
       return true;
     }
 
     if (client_leave::scan(seq) && slot != slot_host) {
-      verb("[ host ] %zd :: Laplace/client_leave", slot);
-
       if (get_state() == server_state::prepare) {
         perform_event(slot, encode(slot_remove()));
 
@@ -507,8 +492,6 @@ namespace laplace::engine {
     }
 
     if (client_ready::scan(seq) && slot != slot_host) {
-      verb("[ host ] %zd :: Laplace/client_ready", slot);
-
       if (get_state() == server_state::prepare) {
         if (auto f = get_factory(); f) {
           auto ev = f->decode(seq);

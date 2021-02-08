@@ -27,8 +27,8 @@ using namespace graphics;
 using namespace platform;
 using namespace std;
 
-application::application(
-    int argc, char **argv, core::cref_family def_cfg) {
+application::application(int argc, char **argv,
+                         core::cref_family def_cfg) {
   m_config = config::load(argc, argv, def_cfg);
 }
 
@@ -54,8 +54,7 @@ auto application::run() -> int {
   m_input = make_shared<input>();
 
   m_window->set_input(m_input);
-  m_window->set_name(
-      to_wstring(m_config[k_caption].get_string()));
+  m_window->set_name(to_wstring(m_config[k_caption].get_string()));
   m_window->set_size(frame_width, frame_height);
   m_window->set_fullscreen_mode(
       frame_width, frame_height, frame_rate);
@@ -138,8 +137,8 @@ void application::load_shaders() {
       auto frag_path = shader_path(k_flat_solid, k_fragment);
       auto vert      = open(vert_path);
       auto frag      = open(frag_path);
-      m_flat_solid =
-          make_shared<flat::solid_shader>(*vert, *frag);
+      m_flat_solid   = make_shared<flat::solid_shader>(
+          *vert, *frag);
     }
 
     if (s_cfg.has(k_flat_sprite)) {
@@ -148,8 +147,8 @@ void application::load_shaders() {
       auto frag_path = shader_path(k_flat_sprite, k_fragment);
       auto vert      = open(vert_path);
       auto frag      = open(frag_path);
-      m_flat_sprite =
-          make_shared<flat::sprite_shader>(*vert, *frag);
+      m_flat_sprite  = make_shared<flat::sprite_shader>(
+          *vert, *frag);
     }
 
     if (setup_flat) {
@@ -162,8 +161,7 @@ void application::load_shaders() {
   }
 }
 
-void application::adjust_frame_size(
-    size_t width, size_t height) {
+void application::adjust_frame_size(size_t width, size_t height) {
   if (m_flat_solid) {
     m_flat_solid->use();
     m_flat_solid->set_position({ -1.f, 1.f });
@@ -186,17 +184,15 @@ void application::setup_to(ui::ptr_context cont) {
 
 void application::setup_to(render::ptr_context cont) { }
 
-auto application::shader_path(
-    const char *name, const char *type) const -> wstring {
-  return to_wstring(
-             m_config[k_shaders][k_folder].get_string()) +
-         to_wstring(
-             m_config[k_shaders][name][type].get_string());
+auto application::shader_path(const char *name,
+                              const char *type) const -> wstring {
+  return to_wstring(m_config[k_shaders][k_folder].get_string()) +
+         to_wstring(m_config[k_shaders][name][type].get_string());
 }
 
 auto application::open(wstring_view file_name)
     -> unique_ptr<istream> {
-  verb("Load: %s", to_string(file_name).c_str());
+  verb("Load: '%s'", to_string(file_name).c_str());
 
   if (embedded::scan(file_name)) {
     return make_unique<ibytestream>(embedded::open(file_name));

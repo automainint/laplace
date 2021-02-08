@@ -48,9 +48,10 @@ namespace laplace::engine {
     basic_entity(dummy_tag);
 
     basic_entity(bool is_dynamic, bool is_markable = false,
-        bool is_selectable = false, bool is_vulnerable = false,
-        uint64_t tick_period = default_tick_period,
-        cref_box bounds      = box {});
+                 bool     is_selectable = false,
+                 bool     is_vulnerable = false,
+                 uint64_t tick_period   = default_tick_period,
+                 cref_box bounds        = box {});
 
     virtual ~basic_entity() = default;
 
@@ -102,16 +103,16 @@ namespace laplace::engine {
     void set_world(ptr_world w);
     void reset_world();
 
-    auto index_of(size_t id) const -> size_t;
-    auto get_count() const -> size_t;
+    [[nodiscard]] auto index_of(size_t id) const -> size_t;
+    [[nodiscard]] auto get_count() const -> size_t;
 
-    auto id_of(size_t index) const -> size_t;
-    auto scale_of(size_t index) const -> size_t;
+    [[nodiscard]] auto id_of(size_t index) const -> size_t;
+    [[nodiscard]] auto scale_of(size_t index) const -> size_t;
 
     /*  Get a state value.
      *  Thread-safe.
      */
-    auto get(size_t index) -> int64_t;
+    [[nodiscard]] auto get(size_t index) -> int64_t;
 
     /*  Change a state value. It will apply
      *  calculated delta for the value. The actual
@@ -133,7 +134,8 @@ namespace laplace::engine {
     /*  Perform an universal request.
      *  Thread-safe.
      */
-    auto request(size_t id, cref_vbyte args = {}) -> vbyte;
+    [[nodiscard]] auto request(size_t id, cref_vbyte args = {})
+        -> vbyte;
 
     /*  Perform an universal modification.
      *  Thread-safe.
@@ -154,46 +156,46 @@ namespace laplace::engine {
     /*  Returns true if the Entity was changed.
      *  Thread-safe.
      */
-    auto is_changed() -> bool;
+    [[nodiscard]] auto is_changed() -> bool;
 
     /*  Returns true if the Entity is dynamic.
      *  Thread-safe.
      */
-    auto is_dynamic() -> bool;
+    [[nodiscard]] auto is_dynamic() -> bool;
 
     /*  Returns true if the Entity is markable.
      *  Thread-safe.
      */
-    auto is_markable() -> bool;
+    [[nodiscard]] auto is_markable() -> bool;
 
     /*  Returns true if the Entity is selectable.
      *  Thread-safe.
      */
-    auto is_selectable() -> bool;
+    [[nodiscard]] auto is_selectable() -> bool;
 
     /*  Returns true if the Entity is vulnerable.
      *  Thread-safe.
      */
-    auto is_vulnerable() -> bool;
+    [[nodiscard]] auto is_vulnerable() -> bool;
 
     /*  Returns the tick period.
      *  Thread-safe.
      */
-    auto get_tick_period() -> uint64_t;
+    [[nodiscard]] auto get_tick_period() -> uint64_t;
 
     /*  Returns the bounding box.
      *  Thread-safe.
      */
-    auto get_bounds() -> box;
+    [[nodiscard]] auto get_bounds() -> box;
 
     /*  Returns the Entity id.
      */
-    auto get_id() const -> size_t;
+    [[nodiscard]] auto get_id() const -> size_t;
 
     /*  Get a state value by id.
      *  Thread-safe.
      */
-    auto get_by_id(size_t id) -> int64_t;
+    [[nodiscard]] auto get_by_id(size_t id) -> int64_t;
 
   protected:
     /*  State values' indices in PRECISE order.
@@ -235,12 +237,13 @@ namespace laplace::engine {
     /*  Get a state value without
      *  locking.
      */
-    auto locked_get(size_t index) const -> int64_t;
+    [[nodiscard]] auto locked_get(size_t index) const -> int64_t;
 
     /*  Get a state value by id
      *  without locking.
      */
-    auto locked_get_by_id(size_t id) const -> int64_t;
+    [[nodiscard]] auto locked_get_by_id(size_t id) const
+        -> int64_t;
 
     void self_destruct(access::world w);
 
@@ -249,7 +252,8 @@ namespace laplace::engine {
      *  Thread-safe methods not allowed
      *  from here due to the locking.
      */
-    virtual auto do_request(size_t id, cref_vbyte args) const
+    [[nodiscard]] virtual auto do_request(size_t     id,
+                                          cref_vbyte args) const
         -> vbyte;
 
     /*  Universal modification implementation.

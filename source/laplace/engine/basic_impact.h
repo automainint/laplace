@@ -32,14 +32,14 @@ namespace laplace::engine {
    *
    *  ```
    *  void my_impact::perform(access::world w) const {
-   *      size_t childs_count = 0;
+   *      size_t child_count = 0;
    *      // ...
    *
    *      //  Create an Impact.
-   *      auto ev     = make_shared<my_new_impact>();
+   *      auto ev = make_shared<my_new_impact>();
    *
    *      //  Calculate the order index sequence.
-   *      auto order  = order_of_child(childs_count);
+   *      auto order = order_of_child(child_count);
    *
    *      //  Set the order.
    *      ev->set_order(order);
@@ -60,7 +60,7 @@ namespace laplace::engine {
       n_actor = 18
     };
 
-    /*  Max encoded basic_impact size.
+    /*  Max encoded Impact size.
      */
     static constexpr size_t max_size =
         std::numeric_limits<uint16_t>::max();
@@ -69,37 +69,35 @@ namespace laplace::engine {
     constexpr basic_impact(const basic_impact &) = default;
     constexpr basic_impact(basic_impact &&)      = default;
 
-    constexpr basic_impact &
-    operator=(const basic_impact &) = default;
-    constexpr basic_impact &
-    operator=(basic_impact &&) = default;
+    constexpr auto operator=(const basic_impact &)
+        -> basic_impact &  = default;
+    constexpr auto operator=(basic_impact &&)
+        -> basic_impact &  = default;
 
     /*  TODO
      *  Make it contexpr after MSVC implements C++20.
      */
     virtual ~basic_impact() = default;
 
-    /*  Set the order index sequence. Required
-     *  for the sync basic_impacts to be sequentially
-     *  consistent.
+    /*  Set the order index sequence. Required for the sync
+     *  Impacts to be sequentially consistent.
      */
     constexpr void set_order(cref_eventorder order);
 
-    /*  Set event time. If time is undefined
-     *  it will be assigned by Solver due
-     *  performing.
+    /*  Set event time. If time is undefined it will be assigned
+     *  by Solver due performing.
      */
     constexpr void set_time(uint64_t time);
 
-    /*  Set actor entity id. Can be undefined. Allows
-     *  to verify players' permissions.
+    /*  Set actor entity id. Can be undefined. Allows to verify
+     *  players' permissions.
      */
     constexpr void set_actor(size_t id);
 
     virtual void perform(access::world w) const;
 
-    /*  Encode into byte sequence. The sequence
-     *  can be decoded by the Impact Factory.
+    /*  Encode into byte sequence. The sequence can be decoded
+     *  by the Impact Factory.
      */
     auto encode() const -> vbyte;
 
@@ -159,7 +157,7 @@ namespace laplace::engine {
     size_t     m_size     = 0;
   };
 
-  /*  Sequentially consistent basic_impact.
+  /*  Sequentially consistent Impact.
    */
   class sync_impact : public basic_impact {
   public:
@@ -176,7 +174,7 @@ namespace laplace::engine {
 
   /*  Impact generation wrapper.
    */
-  template <typename basic_impact_type>
+  template <typename basic_impact_>
   auto gen() -> impact_gen;
 }
 

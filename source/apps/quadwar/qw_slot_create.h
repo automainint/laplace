@@ -28,13 +28,11 @@ namespace quadwar_app {
                              size_t id_actor, bool is_local) :
         slot_create(index, time, id_actor, is_local) { }
 
-    inline void
-    perform(engine::access::world w) const override {
+    inline void perform(engine::access::world w) const override {
       verb(" :: event  Quadwar/slot_create: %s",
            is_local() ? "local" : "remote");
 
-      w.spawn(std::make_shared<player>(is_local()),
-              get_actor());
+      w.spawn(std::make_shared<player>(is_local()), get_actor());
 
       root::slot_create(w.get_root(), get_actor());
     }

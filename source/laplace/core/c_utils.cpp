@@ -26,14 +26,14 @@ namespace laplace {
 #ifdef LAPLACE_VERBOSE
   static bool g_verbose = true;
 
-  void verb(std::string_view s) {
-    if (g_verbose) {
+  void verb(std::string_view s) noexcept {
+    if (g_verbose) [[unlikely]] {
       log(s);
     }
   }
 
   void verb(const char *c_format, ...) {
-    if (g_verbose) {
+    if (g_verbose) [[unlikely]] {
       va_list ap;
       va_start(ap, c_format);
       verb(to_string(c_format, ap));
@@ -41,11 +41,11 @@ namespace laplace {
     }
   }
 #else
-  void verb(std::string_view s) { }
+  void verb(std::string_view s) noexcept { }
   void verb(const char *c_format, ...) { }
 #endif
 
-  void log(string_view s) {
+  void log(string_view s) noexcept {
     auto _lck = unique_lock(g_log_mutex);
     cout << s << '\n';
   }
@@ -57,7 +57,8 @@ namespace laplace {
     va_end(ap);
   }
 
-  void error(std::string_view sender, string_view message) {
+  void error(std::string_view sender,
+             string_view      message) noexcept {
     auto _lck = unique_lock(g_log_mutex);
     cerr << "[ error in " << sender << " ] " << message << '\n';
   }

@@ -1,3 +1,15 @@
+/*  laplace/engine/server.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
 #ifndef __laplace__engine_server__
 #define __laplace__engine_server__
 
@@ -10,12 +22,14 @@ namespace laplace::engine {
 
   class server {
   public:
+    static constexpr bool     default_verbose = false;
     static constexpr uint64_t default_tick_duration_msec = 10;
 
     server();
     virtual ~server() = default;
 
     void set_factory(ptr_factory fac);
+    void set_verbose(bool verbose);
 
     virtual void queue(cref_vbyte seq);
     virtual void tick(size_t delta_msec);
@@ -29,6 +43,8 @@ namespace laplace::engine {
     auto get_state() const -> server_state;
     auto get_tick_duration() -> size_t;
 
+    auto is_verbose() const -> bool;
+
   protected:
     void set_tick_duration(uint64_t tick_duration_msec);
     void set_random_seed(seed_type seed);
@@ -41,7 +57,11 @@ namespace laplace::engine {
      */
     auto adjust_delta(size_t delta_msec) -> uint64_t;
 
+    void dump(cref_vbyte bytes);
+
   private:
+    bool m_verbose = default_verbose;
+
     ptr_factory m_factory;
     ptr_solver  m_solver = std::make_shared<solver>();
     ptr_world   m_world  = std::make_shared<world>();

@@ -51,5 +51,5 @@ target_link_directories(
 
 target_include_directories(
   ${EXE_NAME}
-    PUBLIC include source
+    PUBLIC include
 )

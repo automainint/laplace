@@ -25,14 +25,14 @@
 
 extern "C" {
 
-/*  Require high performance for Nvidia.
- */
-__declspec(dllexport) uint32_t NvOptimusEnablement = 1;
+  /*  Require high performance for Nvidia.
+   */
+  __declspec(dllexport) uint32_t NvOptimusEnablement = 1;
 
-/*  Require high performance for AMD.
- */
-__declspec(dllexport) uint32_t
-    AmdPowerXpressRequestHighPerformance = 1;
+  /*  Require high performance for AMD.
+   */
+  __declspec(dllexport) uint32_t
+      AmdPowerXpressRequestHighPerformance = 1;
 }
 
 using namespace laplace;
@@ -110,15 +110,19 @@ glcontext::glcontext(shared_ptr<window> win) {
     gl::glGetIntegerv(gl::GL_MINOR_VERSION, &minor);
 
     int32_t attrs[] = { gl::WGL_CONTEXT_MAJOR_VERSION_ARB,
-      major, gl::WGL_CONTEXT_MINOR_VERSION_ARB, minor,
-      gl::WGL_CONTEXT_FLAGS_ARB, 0, 0 };
+                        major,
+                        gl::WGL_CONTEXT_MINOR_VERSION_ARB,
+                        minor,
+                        gl::WGL_CONTEXT_FLAGS_ARB,
+                        0,
+                        0 };
 
     if (is_forward_compatible) {
       attrs[5] = gl::WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
     }
 
-    HGLRC hRC =
-        gl::wglCreateContextAttribsARB(m_hDC, nullptr, attrs);
+    HGLRC hRC = gl::wglCreateContextAttribsARB(
+        m_hDC, nullptr, attrs);
 
     if (!hRC) {
       error(__FUNCTION__, "wglCreateContextAttribsARB failed.");

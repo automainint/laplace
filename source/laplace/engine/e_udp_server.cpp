@@ -13,7 +13,6 @@
 #include "../core/utils.h"
 #include "protocol/prime.h"
 #include "udp_server.h"
-#include <iomanip>
 
 namespace laplace::engine {
   using namespace network;
@@ -56,17 +55,5 @@ namespace laplace::engine {
     } else {
       error(__FUNCTION__, "Incorrect event size: %zd.", size);
     }
-  }
-
-  void udp_server::dump(cref_vbyte bytes) {
-    ostringstream ss;
-    ss << " ";
-    for (size_t i = 0; i < bytes.size(); i++) {
-      ss << " " << setw(2) << hex
-         << static_cast<unsigned>(bytes[i]);
-      if ((i % 16) == 15)
-        ss << "\n ";
-    }
-    verb("  DUMP\n%s\n", ss.str().c_str());
   }
 }

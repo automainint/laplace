@@ -19,8 +19,6 @@ namespace laplace::engine::protocol {
   using namespace std;
 
   void debug::perform(access::world w) const {
-    verb(" :: event debug/Laplace");
-
     auto root = w.get_root();
 
     if (root.exist()) {

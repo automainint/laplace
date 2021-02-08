@@ -186,40 +186,40 @@ sys.stdout = open(folder + 'types.h', 'w')
 print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
 print('#include <cstdint>\n')
 print('#define LAPLACE_GL_API __stdcall\n')
-print('namespace laplace::gl\n{')
+print('namespace laplace::gl {')
 for type in types:
-  print('    ' + type)
+  print('  ' + type)
 print('}')
 
 sys.stdout = open(folder + 'enums.h', 'w')
 
 print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
 print('#include "types.h"\n')
-print('namespace laplace::gl\n{')
+print('namespace laplace::gl {')
 
 comma = ','
-print('    enum __glenum : GLenum {')
+print('  enum __glenum : GLenum {')
 for i, en in enumerate(enums):
   if i + 1 == len(enums):
     comma = ''
-  print('        ' + en[0] + ' = ' + en[1] + comma)
-print('    };')
+  print('    ' + en[0] + ' = ' + en[1] + comma)
+print('  };')
 
 comma = ','
-print('\n    enum __glenum64 : uint64_t {')
+print('\n  enum __glenum64 : uint64_t {')
 for i, en in enumerate(enums64):
   if i + 1 == len(enums64):
     comma = ''
-  print('        ' + en[0] + ' = ' + en[1] + comma)
-print('    };')
+  print('    ' + en[0] + ' = ' + en[1] + comma)
+print('  };')
 
 comma = ','
-print('\n    enum __glenum_int32 : int32_t {')
+print('\n  enum __glenum_int32 : int32_t {')
 for i, en in enumerate(enumsSigned):
   if i + 1 == len(enumsSigned):
     comma = ''
-  print('        ' + en[0] + ' = ' + en[1] + comma)
-print('    };')
+  print('    ' + en[0] + ' = ' + en[1] + comma)
+print('  };')
 
 print('}')
 
@@ -227,15 +227,15 @@ sys.stdout = open(folder + 'decls.h', 'w')
 
 print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
 print('#include "types.h"\n')
-print('namespace laplace::gl\n{')
+print('namespace laplace::gl {')
 
 for f in funcs:
-  print('    using pfn_' + f[0] + ' = ' + adjust_arg(f[1]) + '(LAPLACE_GL_API *)' + args_str(f[2]) + ';')
+  print('  using pfn_' + f[0] + ' = ' + adjust_arg(f[1]) + '(LAPLACE_GL_API *)' + args_str(f[2]) + ';')
 
 print('')
 
 for f in funcs:
-  print('    extern pfn_' + f[0] + ' ' + f[0] + ';')
+  print('  extern pfn_' + f[0] + ' ' + f[0] + ';')
 
 print('}')
 
@@ -243,21 +243,21 @@ sys.stdout = open(folder + 'funcs.impl.h', 'w')
 
 print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
 print('#include "decls.h"\n')
-print('namespace laplace::gl\n{')
+print('namespace laplace::gl {')
 
 for f in funcs:
-  print('    pfn_' + f[0] + ' ' + f[0] + ' = nullptr;')
+  print('  pfn_' + f[0] + ' ' + f[0] + ' = nullptr;')
 
 print('}')
 
 sys.stdout = open(folder + 'loads.impl.h', 'w')
 
 print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
-print('#ifndef LAPLACE_GL_HAS\n#define LAPLACE_GL_HAS(x) false\n#endif\n')
-print('#ifndef LAPLACE_GL_LOAD\n#define LAPLACE_GL_LOAD(x) { }\n#endif\n')
-print('#ifndef LAPLACE_GL_LOAD_EX\n#define LAPLACE_GL_LOAD(x) { }\n#endif\n')
-print('#ifndef LAPLACE_GL_BEGIN_EX\n#define LAPLACE_GL_BEGIN_EX() { }\n#endif\n')
-print('#ifndef LAPLACE_GL_END_EX\n#define LAPLACE_GL_END_EX(x) { }\n#endif\n')
+print('#ifndef LAPLACE_GL_HAS\n#  define LAPLACE_GL_HAS(x) false\n#endif\n')
+print('#ifndef LAPLACE_GL_LOAD\n#  define LAPLACE_GL_LOAD(x) { }\n#endif\n')
+print('#ifndef LAPLACE_GL_LOAD_EX\n#  define LAPLACE_GL_LOAD(x) { }\n#endif\n')
+print('#ifndef LAPLACE_GL_BEGIN_EX\n#  define LAPLACE_GL_BEGIN_EX() { }\n#endif\n')
+print('#ifndef LAPLACE_GL_END_EX\n#  define LAPLACE_GL_END_EX(x) { }\n#endif\n')
 
 for f in funcs:
   if f[3] == 0:
@@ -269,11 +269,11 @@ for ex in extensions:
     if funcs[n][3] == 1:
       ex_fns.append(funcs[n][0])
   if len(ex_fns) > 0:
-    print('\nif (LAPLACE_GL_HAS(' + ex[0] + '))\n{')
-    print('    LAPLACE_GL_BEGIN_EX();')
+    print('\nif (LAPLACE_GL_HAS(' + ex[0] + ')) {')
+    print('  LAPLACE_GL_BEGIN_EX();')
     for f in ex_fns:
-      print('    LAPLACE_GL_LOAD_EX(' + f + ');')
-    print('    LAPLACE_GL_END_EX(' + ex[0] + ')')
+      print('  LAPLACE_GL_LOAD_EX(' + f + ');')
+    print('  LAPLACE_GL_END_EX(' + ex[0] + ')')
     print('}')
 
 # Custom dictionary utility
@@ -338,12 +338,12 @@ for ex in ex2_funcs:
     if len(reqs) > 0:
       reqs += ' && '
     reqs += 'LAPLACE_GL_HAS(' + name + ')'
-  print('\nif (' + reqs + ')\n{')
-  print('    LAPLACE_GL_BEGIN_EX();')
+  print('\nif (' + reqs + ') {')
+  print('  LAPLACE_GL_BEGIN_EX();')
   for f in ex[1]:
-    print('    LAPLACE_GL_LOAD_EX(' + f + ');')
+    print('  LAPLACE_GL_LOAD_EX(' + f + ');')
   for name in ex[0]:
-    print('    LAPLACE_GL_END_EX(' + name + ')')
+    print('  LAPLACE_GL_END_EX(' + name + ')')
   print('}')
 
 sys.stdout = previous_stdout

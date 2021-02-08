@@ -27,9 +27,8 @@ namespace laplace::engine::protocol {
   }
   || std::is_same<perform_, non_inheritable>::value;
 
-  template <uint16_t id_,
-      perform_method perform_ = non_inheritable,
-      typename base_class_    = basic_impact>
+  template <uint16_t id_, perform_method perform_ = non_inheritable,
+            typename base_class_ = basic_impact>
   class basic_event : public base_class_ {
   public:
     static constexpr uint16_t id   = id_;
@@ -50,14 +49,12 @@ namespace laplace::engine::protocol {
       perform_()(std::move(w));
     }
 
-    inline void encode_to(
-        std::span<uint8_t> bytes) const final {
+    inline void encode_to(std::span<uint8_t> bytes) const final {
       write_bytes(bytes, id, this->get_index64());
     }
 
     static constexpr auto scan(cref_vbyte seq) {
-      return seq.size() == size &&
-             base_class_::get_id(seq) == id;
+      return seq.size() == size && base_class_::get_id(seq) == id;
     }
 
     static inline auto decode(cref_vbyte seq) {
@@ -85,14 +82,12 @@ namespace laplace::engine::protocol {
       this->set_size(size);
     }
 
-    inline void encode_to(
-        std::span<uint8_t> bytes) const final {
+    inline void encode_to(std::span<uint8_t> bytes) const final {
       write_bytes(bytes, id, this->get_index64());
     }
 
     static constexpr auto scan(cref_vbyte seq) {
-      return seq.size() == size &&
-             base_class_::get_id(seq) == id;
+      return seq.size() == size && base_class_::get_id(seq) == id;
     }
 
     static inline auto decode(cref_vbyte seq) {
@@ -109,8 +104,7 @@ namespace laplace::engine::protocol {
   using server_pause  = basic_event<ids::server_pause>;
   using server_quit   = basic_event<ids::server_quit>;
 
-  using server_launch =
-      basic_event<ids::server_launch, inheritable>;
+  using server_launch = basic_event<ids::server_launch, inheritable>;
 }
 
 #endif

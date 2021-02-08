@@ -1,71 +1,82 @@
+/*  laplace/platform/p_socket.cpp
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
 #include "../core/defs.h"
 #include "socket.h"
 #include <iostream>
 
-using namespace laplace;
-using namespace std;
-
+namespace laplace {
 #if !defined(LAPLACE_POSIX_SOCKETS) && \
     (defined(_WIN32) || defined(_WINDOWS))
-/*  Windows implementation.
- */
+  /*  Windows implementation.
+   */
 
-laplace::socket_library::socket_library() {
-  m_is_ok = true;
+  socket_library::socket_library() {
+    m_is_ok = true;
 
-  WORD version = MAKEWORD(laplace::sockets_version_major,
-      laplace::sockets_version_minor);
+    WORD version = MAKEWORD(
+        winsock_version_major, winsock_version_minor);
 
-  WSAData data;
+    WSAData data;
 
-  if (WSAStartup(version, &data) != ERROR_SUCCESS) {
-    error(__FUNCTION__, "WSAStartup failed.");
-    m_is_ok = false;
+    if (WSAStartup(version, &data) != ERROR_SUCCESS) {
+      error(__FUNCTION__, "WSAStartup failed.");
+      m_is_ok = false;
+    }
   }
-}
 
-laplace::socket_library::~socket_library() {
-  if (m_is_ok) {
-    WSACleanup();
-    m_is_ok = false;
+  socket_library::~socket_library() {
+    if (m_is_ok) {
+      WSACleanup();
+      m_is_ok = false;
+    }
   }
-}
 
-auto laplace::socket_error() -> int {
-  return WSAGetLastError();
-}
+  auto socket_error() -> int {
+    return WSAGetLastError();
+  }
 
-auto laplace::socket_wouldblock() -> int {
-  return WSAEWOULDBLOCK;
-}
+  auto socket_wouldblock() -> int {
+    return WSAEWOULDBLOCK;
+  }
 
-auto laplace::socket_msgsize() -> int {
-  return WSAEMSGSIZE;
-}
+  auto socket_msgsize() -> int {
+    return WSAEMSGSIZE;
+  }
 
-auto laplace::socket_isconn() -> int {
-  return WSAEISCONN;
-}
+  auto socket_isconn() -> int {
+    return WSAEISCONN;
+  }
 #else
-/*  Default platform implementation. Use POSIX sockets.
- */
+  /*  Default platform implementation. Use POSIX sockets.
+   */
 
-laplace::socket_library::socket_library() { }
-laplace::socket_library::~socket_library() { }
+  socket_library::socket_library() { }
+  socket_library::~socket_library() { }
 
-auto laplace::socket_error() -> int {
-  return errno;
-}
+  auto socket_error() -> int {
+    return errno;
+  }
 
-auto laplace::socket_wouldblock() -> int {
-  return EWOULDBLOCK;
-}
+  auto socket_wouldblock() -> int {
+    return EWOULDBLOCK;
+  }
 
-auto laplace::socket_msgsize() -> int {
-  return EMSGSIZE;
-}
+  auto socket_msgsize() -> int {
+    return EMSGSIZE;
+  }
 
-auto laplace::socket_isconn() -> int {
-  return EISCONN;
-}
+  auto socket_isconn() -> int {
+    return EISCONN;
+  }
 #endif
+}

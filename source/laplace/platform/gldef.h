@@ -1,4 +1,4 @@
-/*  laplace/platform/opengl.h
+/*  laplace/platform/gldef.h
  *
  *      OpenGL declarations.
  *
@@ -12,8 +12,11 @@
  *  the MIT License for more details.
  */
 
-#pragma once
+#ifndef __laplace__platform_gldef__
+#define __laplace__platform_gldef__
 
-#include "../../generated/gl/types.h"
-#include "../../generated/gl/enums.h"
 #include "../../generated/gl/decls.h"
+#include "../../generated/gl/enums.h"
+#include "../../generated/gl/types.h"
+
+#endif

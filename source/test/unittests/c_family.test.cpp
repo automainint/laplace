@@ -23,8 +23,8 @@ TEST(laplace_core, family_construct) {
   EXPECT_TRUE(family().is_empty());
   EXPECT_TRUE(family {}.is_empty());
   EXPECT_TRUE(family(vfamily { family() }).is_vector());
-  EXPECT_TRUE(family(composite { { family(), family() } })
-                  .is_composite());
+  EXPECT_TRUE(
+      family(composite { { family(), family() } }).is_composite());
   EXPECT_TRUE(family(true).is_boolean());
   EXPECT_TRUE(family(int8_t(0)).is_integer());
   EXPECT_TRUE(family(int16_t(0)).is_integer());
@@ -135,8 +135,7 @@ TEST(laplace_core, family_compare) {
   EXPECT_TRUE(family(0) < family(0.));
   EXPECT_TRUE(family(0.) < family(""));
   EXPECT_TRUE(family("") < family(vbyte { 0 }));
-  EXPECT_TRUE(family(vbyte { 0 }) <
-              family(vfamily { family() }));
+  EXPECT_TRUE(family(vbyte { 0 }) < family(vfamily { family() }));
   EXPECT_TRUE(family(vfamily { family() }) <
               family(composite { { family(), family() } }));
 
@@ -159,25 +158,19 @@ TEST(laplace_core, family_compare) {
 
   EXPECT_TRUE(family(vbyte { 0, 1, 2 }) ==
               family(vbyte { 0, 1, 2 }));
-  EXPECT_TRUE(family(vbyte { 0, 1 }) <
-              family(vbyte { 0, 1, 2 }));
-  EXPECT_TRUE(family(vbyte { 0, 1, 2 }) <
-              family(vbyte { 1, 2 }));
-  EXPECT_TRUE(family(vbyte { 0, 1, 2 }) <
-              family(vbyte { 1, 0 }));
+  EXPECT_TRUE(family(vbyte { 0, 1 }) < family(vbyte { 0, 1, 2 }));
+  EXPECT_TRUE(family(vbyte { 0, 1, 2 }) < family(vbyte { 1, 2 }));
+  EXPECT_TRUE(family(vbyte { 0, 1, 2 }) < family(vbyte { 1, 0 }));
 
   EXPECT_TRUE(
       family(vfamily { family(0), family(1), family(2) }) ==
       family(vfamily { family(0), family(1), family(2) }));
-  EXPECT_TRUE(
-      family(vfamily { family(0), family(1) }) <
-      family(vfamily { family(0), family(1), family(2) }));
-  EXPECT_TRUE(
-      family(vfamily { family(0), family(1), family(2) }) <
-      family(vfamily { family(1), family(2) }));
-  EXPECT_TRUE(
-      family(vfamily { family(0), family(1), family(2) }) <
-      family(vfamily { family(1), family(0) }));
+  EXPECT_TRUE(family(vfamily { family(0), family(1) }) <
+              family(vfamily { family(0), family(1), family(2) }));
+  EXPECT_TRUE(family(vfamily { family(0), family(1), family(2) }) <
+              family(vfamily { family(1), family(2) }));
+  EXPECT_TRUE(family(vfamily { family(0), family(1), family(2) }) <
+              family(vfamily { family(1), family(0) }));
 
   EXPECT_TRUE(family(composite { { family(0), family(1) } }) ==
               family(composite { { family(0), family(1) } }));
@@ -212,4 +205,9 @@ TEST(laplace_core, family_nothrow) {
   EXPECT_EQ(cf["abc"], family());
   EXPECT_EQ(cf[0], family());
   EXPECT_EQ(cf["a"][1]["b"][3], family());
+}
+
+TEST(laplace_core, family_get_string) {
+  EXPECT_EQ(family()["unexisting value"].get_string(), u8string_view(u8""));
+  EXPECT_EQ(family(u8"my string").get_string(), u8string_view(u8"my string"));
 }

@@ -1,48 +1,61 @@
-#pragma once
+/*  laplace/platform/socket.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
 
-namespace laplace
-{
-    class socket_library
-    {
-    public:
-        socket_library();
-        ~socket_library();
+#ifndef __laplace__platform_socket__
+#define __laplace__platform_socket__
 
-        socket_library(const socket_library &) = delete;
-        socket_library(socket_library &&) = delete;
+namespace laplace {
+  class socket_library {
+  public:
+    socket_library();
+    ~socket_library();
 
-    private:
-        bool m_is_ok;
-    };
+    socket_library(const socket_library &) = delete;
+    socket_library(socket_library &&)      = delete;
 
-    /*  Equivalent for errno or WSAGetLastError().
-     */
-    auto socket_error() -> int;
+  private:
+    bool m_is_ok;
+  };
 
-    auto socket_wouldblock() -> int;
-    auto socket_msgsize() -> int;
-    auto socket_isconn() -> int;
+  /*  Equivalent for errno or WSAGetLastError().
+   */
+  auto socket_error() -> int;
+
+  auto socket_wouldblock() -> int;
+  auto socket_msgsize() -> int;
+  auto socket_isconn() -> int;
 }
 
-#if defined(_WIN32) || defined(_WINDOWS)
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#if !defined(LAPLACE_POSIX_SOCKETS) && \
+    (defined(_WIN32) || defined(_WINDOWS))
+#  include <winsock2.h>
+#  include <ws2tcpip.h>
 
-namespace laplace
-{
-    static constexpr int sockets_version_major = 2;
-    static constexpr int sockets_version_minor = 2;
+namespace laplace {
+  static constexpr int winsock_version_major = 2;
+  static constexpr int winsock_version_minor = 2;
 }
 #else
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#  include <netinet/in.h>
+#  include <sys/socket.h>
+#  include <sys/types.h>
 #endif
 
 #ifdef min
-#undef min
+#  undef min
 #endif
 
 #ifdef max
-#undef max
+#  undef max
+#endif
+
 #endif

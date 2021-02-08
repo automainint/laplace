@@ -2,8 +2,13 @@
 #include <algorithm>
 #include <cassert>
 
-#undef min
-#undef max
+#ifdef min
+#  undef min
+#endif
+
+#ifdef max
+#  undef max
+#endif
 
 namespace laplace::engine {
   using namespace std;
@@ -43,9 +48,7 @@ namespace laplace::engine {
   }
 
   void append(ref_box a, cref_polygon b) {
-    for (auto &p : b) {
-      append(a, p);
-    }
+    for (auto &p : b) { append(a, p); }
   }
 
   auto is_empty(cref_box a) -> bool {
@@ -96,7 +99,7 @@ namespace laplace::engine {
 
   auto center_of(cref_triangle a) -> vec3i {
     return vec3i { flat_center_of(a, 0), flat_center_of(a, 1),
-      flat_center_of(a, 2) };
+                   flat_center_of(a, 2) };
   }
 
   auto point_of(cref_ray a, vecval t) -> vec3i {
@@ -123,16 +126,16 @@ namespace laplace::engine {
       return plane { a.min, vec3i(0, 0, -1) };
     if (index == 1)
       return plane { vec3i(a.min.x, a.min.y, a.max.z),
-        vec3i(0, 0, 1) };
+                     vec3i(0, 0, 1) };
     if (index == 2)
       return plane { vec3i(a.min.x, a.min.y, a.max.z),
-        vec3i(0, -1, 0) };
+                     vec3i(0, -1, 0) };
     if (index == 3)
       return plane { vec3i(a.min.x, a.max.y, a.max.z),
-        vec3i(0, 1, 0) };
+                     vec3i(0, 1, 0) };
     if (index == 4)
       return plane { vec3i(a.min.x, a.max.y, a.max.z),
-        vec3i(-1, 0, 0) };
+                     vec3i(-1, 0, 0) };
     return plane { a.max, vec3i(1, 0, 0) };
   }
 
@@ -193,8 +196,7 @@ namespace laplace::engine {
 
   auto bounds_of(cref_vtriangle v) -> box {
     box bounds;
-    for (size_t i = 1; i < v.size(); i++)
-      append(bounds, v[i]);
+    for (size_t i = 1; i < v.size(); i++) append(bounds, v[i]);
     return bounds;
   }
 
@@ -259,8 +261,8 @@ namespace laplace::engine {
     return -safe_limit;
   }
 
-  auto abs_square_distance(
-      cref_triangle plane, cref_vec3i point) -> vecval {
+  auto abs_square_distance(cref_triangle plane,
+                           cref_vec3i    point) -> vecval {
     auto n = raw_normal(plane);
     auto l = math::square_length(n);
 
@@ -431,7 +433,7 @@ namespace laplace::engine {
 
   auto intersects(cref_box a, cref_cylinder b) -> bool {
     auto contains_flat = [](vecval x, vecval y,
-                             const cylinder &b) -> bool {
+                            const cylinder &b) -> bool {
       if (auto dx = abs(b.base.x - x); dx - epsilon <= b.radius)
         if (auto dy = abs(b.base.y - y);
             dy - epsilon <= b.radius) {
@@ -749,11 +751,11 @@ namespace laplace::engine {
       return true;
 
     auto t0 = min(intersection(a, plane_of(b, 0)),
-        intersection(a, plane_of(b, 1)));
+                  intersection(a, plane_of(b, 1)));
     auto t1 = min(intersection(a, plane_of(b, 2)),
-        intersection(a, plane_of(b, 3)));
+                  intersection(a, plane_of(b, 3)));
     auto t2 = min(intersection(a, plane_of(b, 4)),
-        intersection(a, plane_of(b, 5)));
+                  intersection(a, plane_of(b, 5)));
 
     auto t = max(t0, max(t1, t2));
     auto p = point_of(a, t);
@@ -764,8 +766,8 @@ namespace laplace::engine {
   auto intersects(cref_ray ra, cref_cylinder cyl) -> bool {
     auto rr = cyl.radius * cyl.radius;
 
-    if (square_distance(
-            ra, ray { cyl.base, vec3i { 0, 0, 1 } }) +
+    if (square_distance(ra,
+                        ray { cyl.base, vec3i { 0, 0, 1 } }) +
             epsilon >=
         rr) {
       return false;
@@ -779,10 +781,10 @@ namespace laplace::engine {
       return true;
     }
 
-    auto t1 =
-        intersection(ra, plane { vec3i { cyl.base.x, cyl.base.y,
-                                     cyl.base.z + cyl.height },
-                             vec3i { 0, 0, 1 } });
+    auto t1 = intersection(
+        ra, plane { vec3i { cyl.base.x, cyl.base.y,
+                            cyl.base.z + cyl.height },
+                    vec3i { 0, 0, 1 } });
 
     if (t1 + epsilon >= 0 &&
         contains_flat(cyl, point_of(ra, t1))) {
@@ -867,21 +869,21 @@ namespace laplace::engine {
   auto intersection(cref_ray a, cref_box b) -> vecval {
     if (contains(b, a.base)) {
       auto t0 = max(intersection(a, plane_of(b, 0)),
-          intersection(a, plane_of(b, 1)));
+                    intersection(a, plane_of(b, 1)));
       auto t1 = max(intersection(a, plane_of(b, 2)),
-          intersection(a, plane_of(b, 3)));
+                    intersection(a, plane_of(b, 3)));
       auto t2 = max(intersection(a, plane_of(b, 4)),
-          intersection(a, plane_of(b, 5)));
+                    intersection(a, plane_of(b, 5)));
 
       return min(t0, min(t1, t2));
     }
 
     auto t0 = min(intersection(a, plane_of(b, 0)),
-        intersection(a, plane_of(b, 1)));
+                  intersection(a, plane_of(b, 1)));
     auto t1 = min(intersection(a, plane_of(b, 2)),
-        intersection(a, plane_of(b, 3)));
+                  intersection(a, plane_of(b, 3)));
     auto t2 = min(intersection(a, plane_of(b, 4)),
-        intersection(a, plane_of(b, 5)));
+                  intersection(a, plane_of(b, 5)));
 
     auto t = max(t0, max(t1, t2));
     auto p = point_of(a, t);
@@ -930,8 +932,8 @@ namespace laplace::engine {
   auto intersection(cref_ray ra, cref_cylinder cyl) -> vecval {
     auto rr = cyl.radius * cyl.radius;
 
-    if (square_distance(
-            ra, ray { cyl.base, vec3i { 0, 0, 1 } }) +
+    if (square_distance(ra,
+                        ray { cyl.base, vec3i { 0, 0, 1 } }) +
             epsilon >=
         rr) {
       return -safe_limit;
@@ -940,10 +942,10 @@ namespace laplace::engine {
     auto t0 =
         intersection(ra, plane { cyl.base, vec3i { 0, 0, 1 } });
 
-    auto t1 =
-        intersection(ra, plane { vec3i { cyl.base.x, cyl.base.y,
-                                     cyl.base.z + cyl.height },
-                             vec3i { 0, 0, 1 } });
+    auto t1 = intersection(
+        ra, plane { vec3i { cyl.base.x, cyl.base.y,
+                            cyl.base.z + cyl.height },
+                    vec3i { 0, 0, 1 } });
 
     auto p0 = point_of(ra, t0);
     auto p1 = point_of(ra, t1);
@@ -994,7 +996,8 @@ namespace laplace::engine {
      */
 
     auto t = quadratic_solution(vx * vx + vy * vy,
-        2 * (vx * dx + vy * dy), dx * dx + dy * dy - rr);
+                                2 * (vx * dx + vy * dy),
+                                dx * dx + dy * dy - rr);
 
     if (t > -safe_limit) {
       auto z = ra.base.z + ra.direction.z * t;
@@ -1069,8 +1072,8 @@ namespace laplace::engine {
      */
 
     return quadratic_solution(vx * vx + vy * vy + vz * vz,
-        2 * (vx * dx + vy * dy + vz * vz),
-        dx * dx + dy * dy + dz * dz - rr);
+                              2 * (vx * dx + vy * dy + vz * vz),
+                              dx * dx + dy * dy + dz * dz - rr);
   }
 
   auto intersection(cref_ray a, cref_octree b) -> vecval {

@@ -19,8 +19,12 @@ using namespace std;
 
 auto quadwar::get_config() -> family {
   using namespace stem::config;
-  family cfg     = get_default();
-  cfg[k_caption] = caption;
+
+  family cfg = get_default();
+
+  cfg[k_caption]        = caption;
+  cfg[k_server_address] = default_server_address;
+
   return cfg;
 }
 
@@ -32,6 +36,9 @@ void quadwar::init() {
 
   m_mainmenu = make_shared<mainmenu>();
   m_mainmenu->attach_to(m_ui);
+
+  m_mainmenu->set_server_address(
+      m_config[k_server_address].get_string());
 
   auto return_to_mainmenu = [=] {
     m_session.reset();

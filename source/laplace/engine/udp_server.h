@@ -40,7 +40,6 @@ namespace laplace::engine {
     auto get_chunk_size() -> size_t;
     auto adjust_chunk_size(cref_vbyte chunk) -> size_t;
     void append_event(vbyte &chunk, cref_vbyte seq);
-    void dump(cref_vbyte bytes);
 
     size_t m_overhead = default_chunk_overhead;
     vbyte  m_buffer =

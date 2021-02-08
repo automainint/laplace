@@ -72,6 +72,7 @@ namespace quadwar_app {
     void refresh();
 
     void set_visible(bool is_visible);
+    void set_server_address(std::u8string_view ip);
 
     void attach_to(ui::ptr_widget w);
     void adjust_layout(size_t width, size_t height);

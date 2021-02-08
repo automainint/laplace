@@ -24,12 +24,10 @@ previous_stdout = sys.stdout
 sys.stdout = open(folder + 'laplace_embedded.cpp', 'w')
 
 print('/*  Generated with the Laplace embed files tool.\n */\n')
+print('#include <cstdint>')
 print('#include <string>')
-print('#include <vector>')
-print('#include <cstdint>\n')
-print('using namespace std;\n')
-print('namespace laplace::embedded')
-print('{');
+print('#include <vector>\n')
+print('namespace laplace::embedded {')
 
 lines = list_file.readlines()
 aliases = list()
@@ -39,18 +37,18 @@ for line in lines:
   if len(s) > 0:
     aliases.append(s)
 
-print('    vector<wstring> aliases = {')
+print('  std::vector<std::wstring> aliases = {')
 
 k = 0
 for alias in aliases:
-  s = '        L":/' + alias + '"'
+  s = '    L":/' + alias + '"'
   k += 1
   if k < len(aliases):
     s += ','
   print(s)
 
-print('    };\n')
-print('    vector<vector<uint8_t>> bytes = {')
+print('  };\n')
+print('  std::vector<std::vector<uint8_t>> bytes = {')
 
 k = 0
 for alias in aliases:
@@ -68,12 +66,12 @@ for alias in aliases:
         else:
           s += ' '
   k += 1
-  s = '        {   ' + s + ' }'
+  s = '    {   ' + s + ' }'
   if k < len(aliases):
     s += ','
   print(s)
 
-print('    };')
+print('  };')
 print('}')
 
 sys.stdout = previous_stdout

@@ -137,5 +137,5 @@ out.write('    PUBLIC lib\n')
 out.write(')\n\n')
 
 out.write('target_include_directories(\n  ${EXE_NAME}\n')
-out.write('    PUBLIC include source\n')
+out.write('    PUBLIC include\n')
 out.write(')\n')

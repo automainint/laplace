@@ -20,85 +20,82 @@
 
 #include "../../generated/gl/funcs.impl.h"
 
-#define LAPLACE_GL_LOAD(a)                                  \
-  if (!gl::a) {                                             \
-    if (gl::a = reinterpret_cast<gl::pfn_##a>(              \
-            gl::get_proc_address(#a));                      \
-        !gl::a) {                                           \
-      error(__FUNCTION__, "Unable to get %s function." #a); \
-      gl::ok = false;                                       \
-    }                                                       \
+#define LAPLACE_GL_LOAD(a)                                   \
+  if (!a) {                                                  \
+    if (a = reinterpret_cast<pfn_##a>(get_proc_address(#a)); \
+        !a) {                                                \
+      error(__FUNCTION__, "Unable to get %s function." #a);  \
+      ok = false;                                            \
+    }                                                        \
   }
 
 #define LAPLACE_GL_LOAD_EX(a)                                \
-  if (!gl::a) {                                              \
-    if (gl::a = reinterpret_cast<gl::pfn_##a>(               \
-            gl::get_proc_address(#a));                       \
-        !gl::a) {                                            \
+  if (!a) {                                                  \
+    if (a = reinterpret_cast<pfn_##a>(get_proc_address(#a)); \
+        !a) {                                                \
       error(__FUNCTION__, "Unable to get %s function.", #a); \
       status = false;                                        \
     }                                                        \
   }
 
-#define LAPLACE_GL_HAS(a) gl::has(#a)
+#define LAPLACE_GL_HAS(a) has(#a)
 
 #define LAPLACE_GL_BEGIN_EX() \
   { status = true; }
 
-#define LAPLACE_GL_END_EX(x)                                  \
-  {                                                           \
-    if (!status)                                              \
-      error(                                                  \
-          __FUNCTION__, "%s OpenGL extension disabled.", #x); \
-    auto i = find(                                            \
-        gl::extensions.begin(), gl::extensions.end(), #x);    \
-    if (i != gl::extensions.end()) {                          \
-      gl::extensions.erase(i);                                \
-    }                                                         \
+#define LAPLACE_GL_END_EX(x)                                    \
+  {                                                             \
+    if (!status)                                                \
+      error(__FUNCTION__, "%s OpenGL extension disabled.", #x); \
+    auto i = find(extensions.begin(), extensions.end(), #x);    \
+    if (i != extensions.end()) {                                \
+      extensions.erase(i);                                      \
+    }                                                           \
   }
 
 namespace laplace::gl {
-  bool                     ok                      = false;
-  bool                     has_extensions_required = false;
-  std::vector<std::string> extensions;
-  std::vector<std::string> extensions_required;
-}
+  using std::find, std::lower_bound, std::vector, std::string,
+      std::string_view;
 
-using namespace laplace;
-using namespace std;
+  bool ok                      = false;
+  bool has_extensions_required = false;
 
-auto gl::is_ok() -> bool {
-  return gl::ok;
-}
+  vector<string> extensions;
+  vector<string> extensions_required;
 
-void gl::require_extensions(vector<string_view> extensions) {
-  gl::has_extensions_required = true;
-  gl::extensions_required.assign(
-      extensions.begin(), extensions.end());
-}
-
-auto gl::init() -> bool {
-  gl::ok = true;
-
-  if (has_extensions_required) {
-    gl::extensions = gl::extensions_required;
-    sort(gl::extensions.begin(), gl::extensions.end());
+  auto is_ok() -> bool {
+    return ok;
   }
 
-  bool status = true;
+  void require_extensions(vector<string_view> extensions) {
+    has_extensions_required = true;
+    extensions_required.assign(
+        extensions.begin(), extensions.end());
+  }
+
+  auto init() -> bool {
+    ok = true;
+
+    if (has_extensions_required) {
+      extensions = extensions_required;
+      sort(extensions.begin(), extensions.end());
+    }
+
+    bool status = true;
 
 #include "../../generated/gl/loads.impl.h"
 
-  if (has_extensions_required && !status) {
-    gl::ok = false;
+    if (has_extensions_required && !status) {
+      ok = false;
+    }
+
+    return ok;
   }
 
-  return gl::ok;
-}
+  auto has(string_view extension) -> bool {
+    auto i = lower_bound(
+        extensions.begin(), extensions.end(), extension);
 
-auto gl::has(std::string_view extension) -> bool {
-  auto i = lower_bound(
-      gl::extensions.begin(), gl::extensions.end(), extension);
-
-  return i != gl::extensions.end() && *i == extension;
+    return i != extensions.end() && *i == extension;
+  }
 }

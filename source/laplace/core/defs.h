@@ -45,19 +45,19 @@ namespace laplace {
   using cref_vuint   = std::span<const size_t>;
   using cref_vuint16 = std::span<const uint16_t>;
   using cref_vuint32 = std::span<const uint32_t>;
-  using cref_vstring = std::span<const std::string>;
 
   using ref_istream = std::istream &;
   using ref_ostream = std::ostream &;
 
-  void log(std::string_view s);
+  void log(std::string_view s) noexcept;
   void log(const char *c_format, ...);
 
-  void error(std::string_view sender, std::string_view message);
+  void error(std::string_view sender,
+             std::string_view message) noexcept;
   void error(
       std::string_view sender, const char *c_format, ...);
 
-  void verb(std::string_view s);
+  void verb(std::string_view s) noexcept;
   void verb(const char *c_format, ...);
 }
 

@@ -25,7 +25,10 @@
 #endif
 
 namespace laplace::core {
-  using namespace std;
+  using std::min, std::move, std::lower_bound, std::string_view,
+      std::wstring_view, std::u8string_view, std::u16string_view,
+      std::u32string_view, std::numeric_limits, std::pair,
+      std::vector, std::monostate, std::u8string;
 
   family::family(cref_vfamily value) {
     assign(value);
@@ -301,8 +304,7 @@ namespace laplace::core {
     return value(key);
   }
 
-  auto family::operator[](cref_family key) const
-      -> cref_family {
+  auto family::operator[](cref_family key) const -> cref_family {
     return get_value(key);
   }
 
@@ -343,8 +345,7 @@ namespace laplace::core {
   }
 
   auto family::get_boolean() const -> bool {
-    return m_data.index() == n_bool ? get<n_bool>(m_data)
-                                    : false;
+    return m_data.index() == n_bool ? get<n_bool>(m_data) : false;
   }
 
   auto family::get_integer() const -> int64_t {
@@ -363,10 +364,10 @@ namespace laplace::core {
   }
 
   auto family::get_string() const -> u8string_view {
-    static u8string empty;
+    static const auto nil = u8string(u8"");
 
     return m_data.index() == n_string ? get<n_string>(m_data)
-                                      : empty;
+                                      : nil;
   }
 
   auto family::get_uint() const -> uint64_t {
@@ -374,19 +375,14 @@ namespace laplace::core {
       return static_cast<uint64_t>(get<n_int>(m_data));
     }
 
-    return m_data.index() == n_uint ? get<n_uint>(m_data)
-                                    : 0ull;
+    return m_data.index() == n_uint ? get<n_uint>(m_data) : 0ull;
   }
 
   auto family::get_bytes() const -> cref_vbyte {
-    static vbyte empty;
-
-    if (m_data.index() == 0) {
-      return empty;
-    }
+    static const vbyte nil;
 
     return m_data.index() == n_bytes ? get<n_bytes>(m_data)
-                                     : empty;
+                                     : nil;
   }
 
   auto family::get_size() const -> size_t {
@@ -443,8 +439,7 @@ namespace laplace::core {
                          op_lower_bound);
 
     if (i == get<n_composite>(m_data).end()) {
-      get<n_composite>(m_data).emplace_back(
-          pair { k, family() });
+      get<n_composite>(m_data).emplace_back(pair { k, family() });
     } else if (i->first != k) {
       get<n_composite>(m_data).emplace(i, pair { k, family() });
     }
@@ -460,8 +455,7 @@ namespace laplace::core {
                          op_lower_bound);
 
     if (i == get<n_composite>(m_data).end()) {
-      get<n_composite>(m_data).emplace_back(
-          pair { k, family() });
+      get<n_composite>(m_data).emplace_back(pair { k, family() });
     } else if (i->first != k) {
       get<n_composite>(m_data).emplace(i, pair { k, family() });
     }
@@ -488,17 +482,13 @@ namespace laplace::core {
                          get<n_composite>(m_data).end(), key,
                          op_lower_bound);
 
-    if (i == get<n_composite>(m_data).end()) {
-      return get<n_composite>(m_data)
-          .emplace_back(pair { key, family() })
-          .second;
-    } else if (i->first != key) {
+    if (i == get<n_composite>(m_data).end() || i->first != key) {
       return get<n_composite>(m_data)
           .emplace(i, pair { key, family() })
           ->second;
-    } else {
-      return i->second;
     }
+
+    return i->second;
   }
 
   auto family::get_key(size_t index) const -> cref_family {
@@ -556,8 +546,7 @@ namespace laplace::core {
       return get<n_composite>(m_data)
           .emplace_back(pair { key, family() })
           .second;
-    } else if (!i->first.is_uint() ||
-               i->first.get_uint() != key) {
+    } else if (!i->first.is_uint() || i->first.get_uint() != key) {
       return get<n_composite>(m_data)
           .emplace(i, pair { key, family() })
           ->second;
@@ -577,8 +566,7 @@ namespace laplace::core {
 
     if (i == get<n_composite>(m_data).end()) {
       return out_of_range();
-    } else if (!i->first.is_uint() ||
-               i->first.get_uint() != key) {
+    } else if (!i->first.is_uint() || i->first.get_uint() != key) {
       return out_of_range();
     }
 
@@ -738,12 +726,12 @@ namespace laplace::core {
   }
 
   auto family::logic_error() -> cref_family {
-    static family result;
+    static const family result;
     return result;
   }
 
   auto family::out_of_range() -> cref_family {
-    static family result;
+    static const family result;
     return result;
   }
 
@@ -811,9 +799,8 @@ namespace laplace::core {
     return a.first < key;
   }
 
-  auto
-  family::op_lower_bound_uint(const pair<family, family> &a,
-                              size_t key) -> bool {
+  auto family::op_lower_bound_uint(const pair<family, family> &a,
+                                   size_t key) -> bool {
     return a.first.is_uint() ? a.first.get_uint() < key
                              : a.first.m_data.index() < n_uint;
   }

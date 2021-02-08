@@ -28,15 +28,17 @@ namespace laplace::engine {
 
     virtual auto decode(cref_vbyte seq) const -> ptr_impact;
 
-    auto parse_multi(std::string_view commands) const 
+    auto parse_multi(std::string_view commands) const
         -> std::vector<vbyte>;
     auto print_multi(std::span<const cref_vbyte> seqs) const
         -> std::string;
 
-    static auto parse_native(
-        cref_vstring table, std::string_view command) -> vbyte;
-    static auto print_native(cref_vstring table, cref_vbyte seq)
-        -> std::string;
+    static auto parse_native(std::span<const std::string_view> table,
+                             std::string_view command) -> vbyte;
+
+    static auto print_native(std::span<const std::string_view> table,
+                             cref_vbyte seq) -> std::string;
+
     static auto decode_native(cref_vbyte seq) -> ptr_impact;
 
     template <typename impact_type>

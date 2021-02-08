@@ -16,8 +16,7 @@
 #define __laplace__engine_basic_impact_impl__
 
 namespace laplace::engine {
-  constexpr void
-  basic_impact::set_order(cref_eventorder order) {
+  constexpr void basic_impact::set_order(cref_eventorder order) {
     this->m_order = order;
   }
 
@@ -37,8 +36,8 @@ namespace laplace::engine {
     return seq;
   }
 
-  inline void
-  basic_impact::encode_to(std::span<uint8_t> bytes) const { }
+  inline void basic_impact::encode_to(std::span<uint8_t> bytes) const {
+  }
 
   constexpr auto basic_impact::get_encoded_size() const
       -> size_t {
@@ -160,15 +159,13 @@ namespace laplace::engine {
   }
 
   inline auto basic_impact::get_string(cref_vbyte seq,
-                                       size_t     offset,
-                                       size_t     size)
+                                       size_t offset, size_t size)
       -> std::u8string_view {
     if (offset + size > seq.size())
       return {};
 
     return std::u8string_view {
-      reinterpret_cast<const char8_t *>(seq.data() + offset),
-      size
+      reinterpret_cast<const char8_t *>(seq.data() + offset), size
     };
   }
 
@@ -180,8 +177,7 @@ namespace laplace::engine {
     this->m_size = size;
   }
 
-  constexpr auto
-  basic_impact::order_of_child(ref_uint count) const
+  constexpr auto basic_impact::order_of_child(ref_uint count) const
       -> eventorder {
     return this->m_order.spawn(count);
   }
@@ -197,12 +193,10 @@ namespace laplace::engine {
     return seq;
   }
 
-  template <typename basic_impact_type>
+  template <typename basic_impact_>
   inline auto gen() -> impact_gen {
-    using namespace std;
-
-    return []() -> ptr_impact {
-      return make_shared<basic_impact_type>();
+    return [] {
+      return std::make_shared<basic_impact_>();
     };
   }
 }

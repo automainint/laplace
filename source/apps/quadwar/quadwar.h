@@ -22,6 +22,10 @@ namespace quadwar_app {
 
   static constexpr auto log_file_name = "quadwar.log";
 
+  static constexpr auto k_server_address = "server_address";
+
+  static constexpr auto default_server_address = "127.0.0.1";
+
   class quadwar : public stem::app_flat {
   public:
     static constexpr auto caption = u8"Quadwar";

@@ -37,11 +37,11 @@ namespace laplace::core {
     family()  = default;
     ~family() = default;
 
-    family(cref_family) = default;
-    family(family &&)   = default;
+    family(cref_family)        = default;
+    family(family &&) noexcept = default;
 
     auto operator=(cref_family) -> ref_family = default;
-    auto operator=(family &&) -> ref_family = default;
+    auto operator=(family &&) noexcept -> ref_family = default;
 
     family(cref_vfamily value);
     family(cref_composite value);
@@ -194,12 +194,10 @@ namespace laplace::core {
     void assign(std::u32string_view value);
     void assign(cref_vbyte value);
 
-    static auto
-    op_lower_bound(const std::pair<family, family> &a,
-                   const family &key) -> bool;
-    static auto
-    op_lower_bound_uint(const std::pair<family, family> &a,
-                        size_t key) -> bool;
+    static auto op_lower_bound(const std::pair<family, family> &a,
+                               const family &key) -> bool;
+    static auto op_lower_bound_uint(
+        const std::pair<family, family> &a, size_t key) -> bool;
     static auto op_sort(const std::pair<family, family> &a,
                         const std::pair<family, family> &b)
         -> bool;
@@ -216,9 +214,8 @@ namespace laplace::core {
     };
 
     using field_type =
-        std::variant<std::monostate, uint64_t, bool, int64_t,
-                     double, std::u8string, vbyte, vfamily,
-                     composite>;
+        std::variant<std::monostate, uint64_t, bool, int64_t, double,
+                     std::u8string, vbyte, vfamily, composite>;
 
     field_type m_data;
   };

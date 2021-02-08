@@ -18,11 +18,9 @@
 #include <algorithm>
 
 namespace laplace::ui {
-  using namespace graphics;
-  using namespace std;
+  using std::vector, graphics::prepare_ui, platform::ref_input;
 
-  auto widget::tick(size_t delta_msec, platform::ref_input in)
-      -> bool {
+  auto widget::tick(size_t delta_msec, ref_input in) -> bool {
     return widget_tick(delta_msec, in);
   }
 
@@ -106,15 +104,13 @@ namespace laplace::ui {
     for (size_t i = 0; i < m_childs.size(); i++) {
       auto &w = m_childs[i];
 
-      if (w->is_visible() &&
-          intersects(local_area, w->m_rect)) {
+      if (w->is_visible() && intersects(local_area, w->m_rect)) {
         indices.emplace_back(i);
       }
     }
 
     auto op = [this](size_t a, size_t b) -> bool {
-      return m_childs[a]->get_level() <
-             m_childs[b]->get_level();
+      return m_childs[a]->get_level() < m_childs[b]->get_level();
     };
 
     sort(indices.begin(), indices.end(), op);
@@ -129,8 +125,8 @@ namespace laplace::ui {
     m_is_changed = false;
   }
 
-  auto widget::widget_tick(size_t              delta_msec,
-                           platform::ref_input in) -> bool {
+  auto widget::widget_tick(size_t delta_msec, ref_input in)
+      -> bool {
     bool result = false;
 
     if (!m_is_attached) {
@@ -207,8 +203,7 @@ namespace laplace::ui {
     if (child->m_is_attached &&
         child->m_parent.lock() == shared_from_this()) {
       if (child->m_attach_index < m_childs.size()) {
-        m_childs.erase(m_childs.begin() +
-                       child->m_attach_index);
+        m_childs.erase(m_childs.begin() + child->m_attach_index);
 
         update_indices(child->m_attach_index);
       }
@@ -359,8 +354,7 @@ namespace laplace::ui {
   }
 
   void widget::refresh_childs() {
-    for (auto p = shared_from_this(); p;
-         p      = p->m_parent.lock()) {
+    for (auto p = shared_from_this(); p; p = p->m_parent.lock()) {
       p->m_expired_childs = true;
     }
   }

@@ -1,18 +1,26 @@
 BasedOnStyle: LLVM
-Language: Cpp
-Standard: c++20
-
 UseTab: Never
 TabWidth: 2
 IndentWidth: 2
+
+Language: Cpp
+Standard: c++20
+
 ColumnLimit: 64
 MaxEmptyLinesToKeep: 1
 SpacesBeforeTrailingComments: 1
 AccessModifierOffset: -2
+PenaltyBreakAssignment: 100
+PenaltyBreakBeforeFirstCallParameter: 0
+PenaltyExcessCharacter: 10
+# PenaltyIndentedWhitespace: 5
+PenaltyReturnTypeOnItsOwnLine: 200
 
 IndentCaseLabels: true
+IndentExternBlock: Indent
 IndentGotoLabels: false
 IndentPPDirectives: AfterHash
+# IndentRequires: true
 IndentWrappedFunctionNames: false
 NamespaceIndentation: All
 
@@ -47,8 +55,10 @@ AllowAllArgumentsOnNextLine: true
 AllowAllConstructorInitializersOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AlwaysBreakTemplateDeclarations: Yes
+# BreakBeforeConceptDeclarations: true
 BreakConstructorInitializers: AfterColon
 Cpp11BracedListStyle: false
+# EmptyLineBeforeAccessModifier: LogicalBlock
 FixNamespaceComments: false
 PointerAlignment: Right
 ReflowComments: true

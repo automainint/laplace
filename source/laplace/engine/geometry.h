@@ -120,8 +120,8 @@ namespace laplace::engine {
       -> vecval;
   auto square_distance(cref_ray a, cref_vec3i point) -> vecval;
   auto square_distance(cref_ray a, cref_ray b) -> vecval;
-  auto abs_square_distance(
-      cref_triangle plane, cref_vec3i point) -> vecval;
+  auto abs_square_distance(cref_triangle plane,
+                           cref_vec3i    point) -> vecval;
   auto contains_flat(cref_triangle a, cref_vec3i point) -> bool;
   auto contains_flat(cref_quad a, cref_vec3i point) -> bool;
   auto contains_flat(cref_polygon a, cref_vec3i point) -> bool;

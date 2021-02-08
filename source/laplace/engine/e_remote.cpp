@@ -42,11 +42,9 @@ namespace laplace::engine {
     m_host_address = host_address;
     m_host_port    = host_port;
 
-    verb("[ client ] :: Laplace/public_key");
-    send_event(encode(public_key(ids::cipher_dh_rabbit,
-                                 m_cipher.get_public_key())));
+    send_event(encode(public_key(
+        ids::cipher_dh_rabbit, m_cipher.get_public_key())));
 
-    verb("[ client ] :: Laplace/client_enter");
     queue(encode(client_enter()));
   }
 
@@ -82,7 +80,6 @@ namespace laplace::engine {
 
   void remote::cleanup() {
     if (m_node) {
-      verb("[ client ] :: Laplace/client_leave");
       queue(encode(client_leave()));
 
       send_events();
@@ -120,12 +117,11 @@ namespace laplace::engine {
         }
       }
 
-      verb("[ client ] :: Laplace/request_events");
       send_event(encode(request_events(events)));
     }
 
-    m_queue.events.erase(m_queue.events.begin(),
-                         m_queue.events.begin() + n);
+    m_queue.events.erase(
+        m_queue.events.begin(), m_queue.events.begin() + n);
 
     m_queue.index += n;
   }
@@ -147,8 +143,8 @@ namespace laplace::engine {
   void remote::receive_chunks() {
     if (m_node) {
       for (;;) {
-        auto n = m_node->receive_to(m_buffer.data(),
-                                    get_chunk_size(), async);
+        auto n = m_node->receive_to(
+            m_buffer.data(), get_chunk_size(), async);
         if (n == 0)
           break;
 
@@ -158,7 +154,9 @@ namespace laplace::engine {
           continue;
         }
 
-        verb("[ client ] RECV %zd bytes", n);
+        if (is_verbose()) {
+          verb("[ client ] RECV %zd bytes", n);
+        }
 
         if (m_cipher.is_ready()) {
           dump({ m_buffer.data(), n });
@@ -166,14 +164,14 @@ namespace laplace::engine {
 
         auto plain = m_cipher.decrypt({ m_buffer.data(), n });
 
-        if (plain.empty()) {
+        if (!plain.empty()) {
+          dump(plain);
+
+          m_client_buffer.insert(m_client_buffer.end(),
+                                 plain.begin(), plain.end());
+        } else {
           verb("[ client ] unable to decrypt chunk");
         }
-
-        dump(plain);
-
-        m_client_buffer.insert(m_client_buffer.end(),
-                               plain.begin(), plain.end());
       }
     }
   }
@@ -185,7 +183,7 @@ namespace laplace::engine {
       size_t size = rd<uint16_t>(m_client_buffer, index);
 
       if (m_client_buffer.size() - index < size + 2) {
-        verb("[ client ] ignore invalid data");
+        verb("[ client ] ignore corrupted data");
 
         m_client_buffer.clear();
         break;
@@ -235,8 +233,7 @@ namespace laplace::engine {
   auto remote::convert_delta(size_t delta_msec) -> uint64_t {
     auto time = get_solver()->get_time();
 
-    auto delta =
-        adjust_delta(delta_msec) + adjust_overtake(time);
+    auto delta = adjust_delta(delta_msec) + adjust_overtake(time);
 
     return min(delta, m_time_limit - time);
   }
@@ -260,8 +257,8 @@ namespace laplace::engine {
         dump({ m_chunks.data(), chunk_size });
       }
 
-      auto chunk =
-          m_cipher.encrypt({ m_chunks.data(), chunk_size });
+      auto chunk = m_cipher.encrypt(
+          { m_chunks.data(), chunk_size });
 
       if (chunk.size() == 0) {
         verb("[ client ] unable to encrypt chunk");
@@ -270,17 +267,19 @@ namespace laplace::engine {
         return;
       }
 
-      dump(chunk);
+        dump(chunk);
 
-      verb("[ client ] SEND %zd bytes to %s:%d%s", chunk.size(),
-           m_host_address.c_str(),
-           static_cast<int>(m_host_port),
-           m_cipher.is_ready() ? " (encrypted)" : "");
+      if (is_verbose()) {
+        verb("[ client ] SEND %zd bytes to %s:%d%s",
+             chunk.size(), m_host_address.c_str(),
+             static_cast<int>(m_host_port),
+             m_cipher.is_ready() ? " (encrypted)" : "");
+      }
 
       m_node->send_to(m_host_address, m_host_port, chunk);
 
-      m_chunks.erase(m_chunks.begin(),
-                     m_chunks.begin() + chunk_size);
+      m_chunks.erase(
+          m_chunks.begin(), m_chunks.begin() + chunk_size);
     }
   }
 
@@ -313,13 +312,13 @@ namespace laplace::engine {
 
   auto remote::perform_control(cref_vbyte seq) -> bool {
     if (public_key::scan(seq)) {
-      verb("[ client ] set remote key");
-
-      if (public_key::get_cipher(seq) ==
-          ids::cipher_dh_rabbit) {
+      if (public_key::get_cipher(seq) == ids::cipher_dh_rabbit) {
         m_cipher.set_remote_key(public_key::get_key(seq));
 
-        verb("[ client ] mutual key");
+        if (is_verbose()) {
+          verb("[ client ] mutual key");
+        }
+
         dump(m_cipher.get_mutual_key());
       }
 
@@ -327,8 +326,6 @@ namespace laplace::engine {
     }
 
     if (request_events::scan(seq)) {
-      verb("[ client ] resend events");
-
       const auto count = request_events::get_event_count(seq);
 
       for (size_t i = 0; i < count; i++) {
@@ -343,33 +340,28 @@ namespace laplace::engine {
     }
 
     if (server_launch::scan(seq)) {
-      verb("[ client ] server launch");
+      /*  Perform event.
+       */
       return false;
     }
 
     if (server_action::scan(seq)) {
-      verb("[ client ] server action");
       set_state(server_state::action);
       return true;
     }
 
     if (server_pause::scan(seq)) {
-      verb("[ client ] server pause");
       set_state(server_state::pause);
       return true;
     }
 
     if (server_clock::scan(seq)) {
-      verb("[ client ] set tick duration: %ld",
-           server_clock::get_tick_duration(seq));
       set_tick_duration(server_clock::get_tick_duration(seq));
       return true;
     }
 
     if (server_seed::scan(seq)) {
       const auto seed = server_seed::get_seed(seq);
-
-      verb("[ client ] set random seed: %lld", seed);
 
       if (get_state() == server_state::prepare) {
         set_random_seed(seed);
@@ -379,16 +371,13 @@ namespace laplace::engine {
     }
 
     if (server_quit::scan(seq)) {
-      verb("[ client ] quit");
       m_node.reset();
       return true;
     }
 
     if (client_ping::scan(seq)) {
-      const auto ping =
-          m_time_msec - client_ping::get_ping_time(seq);
-
-      verb("[ client ] ping: %lld", ping);
+      const auto ping = m_time_msec -
+                        client_ping::get_ping_time(seq);
 
       set_ping(ping);
       return true;
