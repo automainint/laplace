@@ -14,7 +14,6 @@
 #define __laplace__engine_protocol_server_clock__
 
 #include "../basic_impact.h"
-#include "ids.h"
 
 namespace laplace::engine::protocol {
   class server_clock : public basic_impact {

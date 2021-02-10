@@ -15,9 +15,3 @@ rm -rf ./source/generated/*.cpp
 rm -rf ./thirdparty/*/
 rm -f ./thirdparty/gl.xml
 rm -f ./data/lcd.h
-
-touch ./include/.placeholder
-touch ./lib/.placeholder
-touch ./bin/.placeholder
-touch ./build/.placeholder
-touch ./source/generated/gl/.placeholder

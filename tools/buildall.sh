@@ -31,6 +31,10 @@ cd ..
 
 echo '[ Build Laplace ]'
 
+if [ ! -f './build' ]; then
+  mkdir build
+fi
+
 cd ./build
 
 if [ -n "$generator" ]; then

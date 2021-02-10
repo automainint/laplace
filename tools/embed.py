@@ -1,4 +1,4 @@
-#!  /usr/bin/python3
+#!  /usr/bin/python
 #   embed.py
 #
 #       The Laplace embed files tool.
@@ -28,6 +28,7 @@ print('#include <cstdint>')
 print('#include <string>')
 print('#include <vector>\n')
 print('namespace laplace::embedded {')
+print('  using std::vector, std::wstring;\n')
 
 lines = list_file.readlines()
 aliases = list()

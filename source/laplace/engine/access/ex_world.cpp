@@ -3,8 +3,7 @@
 
 namespace laplace::engine::access {
   world::world(world &&w) noexcept :
-      m_world(std::move(w.m_world)),
-      m_mode(std::move(w.m_mode)) {
+      m_world(std::move(w.m_world)), m_mode(std::move(w.m_mode)) {
     w.m_mode = forbidden;
   }
 
@@ -79,7 +78,11 @@ namespace laplace::engine::access {
   }
 
   auto world::has_entity(size_t id) -> bool {
-    return m_world.get().get_entity(id) ? true : false;
+    if (m_mode != forbidden) {
+      return m_world.get().get_entity(id) ? true : false;
+    }
+
+    return false;
   }
 
   auto world::get_entity(size_t id) -> access::entity {

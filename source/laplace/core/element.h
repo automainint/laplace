@@ -24,21 +24,22 @@ namespace laplace::core {
   public:
     std::wstring file_name = L"";
 
-    element();
-    virtual ~element();
+    element() noexcept          = default;
+    virtual ~element() noexcept = default;
 
-    auto        get_type_id() const -> size_t;
-    static auto type_id() -> size_t;
+    [[nodiscard]] auto get_type_id() const noexcept -> size_t;
+
+    [[nodiscard]] static auto type_id() noexcept -> size_t;
 
   protected:
-    void set_type_id(size_t id);
+    void set_type_id(size_t id) noexcept;
 
     class type {
     public:
-      type();
-      ~type();
+      type() noexcept;
+      ~type() noexcept = default;
 
-      auto get_id() const -> size_t;
+      [[nodiscard]] auto get_id() const noexcept -> size_t;
 
     private:
       static std::atomic_size_t m_count;
@@ -47,7 +48,7 @@ namespace laplace::core {
     };
 
   private:
-    size_t m_type_id;
+    size_t m_type_id = type_id();
   };
 
   using ptr_element  = std::shared_ptr<element>;

@@ -1,7 +1,5 @@
 /*  laplace/benchmarks/e_world.bench.cpp
  *
- *      LLVM libFuzzer entry.
- *
  *  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.

@@ -11,14 +11,17 @@
  */
 
 #include "qw_factory.h"
-#include "qw_slot_create.h"
 #include "qw_player_name.h"
+#include "qw_slot_create.h"
+#include "qw_slot_remove.h"
 
 namespace quadwar_app {
   auto qw_factory::decode(cref_vbyte seq) const
       -> engine::ptr_impact {
     if (qw_slot_create::scan(seq))
       return make<qw_slot_create>(seq);
+    if (qw_slot_remove::scan(seq))
+      return make<qw_slot_remove>(seq);
     if (qw_player_name::scan(seq))
       return make<qw_player_name>(seq);
 

@@ -23,8 +23,18 @@ namespace quadwar_app {
   static constexpr auto log_file_name = "quadwar.log";
 
   static constexpr auto k_server_address = "server_address";
+  static constexpr auto k_game_name      = "game_name";
+  static constexpr auto k_player_name    = "player_name";
+  static constexpr auto k_map_size       = "map_size";
+  static constexpr auto k_player_count   = "player_count";
+  static constexpr auto k_unit_count     = "unit_count";
 
   static constexpr auto default_server_address = "127.0.0.1";
+  static constexpr auto default_game_name      = "Unknown";
+  static constexpr auto default_player_name    = "Newbye";
+  static constexpr auto default_player_count   = 4u;
+  static constexpr auto default_unit_count     = 8u;
+  static constexpr auto default_map_size       = 16;
 
   class quadwar : public stem::app_flat {
   public:
@@ -38,7 +48,7 @@ namespace quadwar_app {
     void cleanup() override;
     void update(size_t delta_msec) override;
     void render() override;
-    void set_frame_size(size_t width, size_t height) override;
+    void adjust_layout(int width, int height) override;
 
   private:
     static auto get_config() -> core::family;

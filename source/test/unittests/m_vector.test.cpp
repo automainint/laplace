@@ -1,7 +1,5 @@
 /*  laplace/unittests/m_vector.test.cpp
  *
- *      LLVM libFuzzer entry.
- *
  *  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.

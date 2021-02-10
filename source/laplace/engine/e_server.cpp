@@ -15,11 +15,7 @@
 #include <iomanip>
 
 namespace laplace::engine {
-  using std::ostringstream, std::hex, std::setw;
-
-  server::server() {
-    m_solver->set_world(m_world);
-  }
+  using std::ostringstream, std::hex, std::setw, std::make_shared;
 
   void server::set_factory(ptr_factory fac) {
     m_factory = fac;
@@ -30,14 +26,14 @@ namespace laplace::engine {
   }
 
   void server::queue(cref_vbyte seq) {
-    if (m_factory) {
+    if (m_factory && m_solver) {
       m_solver->apply(m_factory->decode(seq));
     }
   }
 
   void server::tick(size_t delta_msec) {
-    if (m_state == server_state::action) {
-      m_solver->solve(adjust_delta(delta_msec));
+    if (m_state == server_state::action && m_solver) {
+      m_solver->schedule(adjust_delta(delta_msec));
     }
   }
 
@@ -69,12 +65,43 @@ namespace laplace::engine {
     return m_verbose;
   }
 
+  auto server::is_connected() const -> bool {
+    return m_is_connected;
+  }
+
+  void server::setup_solver() {
+    if (!m_solver) {
+      m_solver = make_shared<solver>();
+
+      if (m_world) {
+        m_solver->set_world(m_world);
+      }
+    }
+  }
+
+  void server::setup_world() {
+    if (!m_world) {
+      if (!m_solver) {
+        m_solver = make_shared<solver>();
+      }
+
+      m_world = make_shared<world>();
+      m_solver->set_world(m_world);
+    }
+  }
+
+  void server::set_connected(bool is_connected) {
+    m_is_connected = is_connected;
+  }
+
   void server::set_tick_duration(uint64_t tick_duration_msec) {
     m_tick_duration_msec = tick_duration_msec;
   }
 
   void server::set_random_seed(seed_type seed) {
-    m_solver->set_seed(seed);
+    if (m_solver) {
+      m_solver->set_seed(seed);
+    }
   }
 
   void server::set_ping(uint64_t ping_msec) {

@@ -36,8 +36,8 @@ void textarea::textarea_render()
 {
     size_t i0 = 0;
  
-    int y1 = get_absolute_y() + static_cast<int>(get_rect().height);
-    int y = m_line_height > 0 ? get_absolute_y() : y1 - m_line_height;
+    const auto y1 = get_absolute_y() + get_rect().height;
+    auto y = m_line_height > 0 ? get_absolute_y() : y1 - m_line_height;
 
     for (size_t i = 0; i <= m_text.length(); i++)
     {

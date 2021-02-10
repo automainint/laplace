@@ -38,13 +38,15 @@ namespace quadwar_app {
     static constexpr auto     default_server_ip = "127.0.0.1";
     static constexpr uint16_t default_port      = 0;
 
+    session();
+
     void on_done(event_done ev);
     void on_quit(event_quit ev);
 
     void tick(size_t delta_msec);
 
     void attach_to(ui::ptr_widget w);
-    void adjust_layout(size_t width, size_t height);
+    void adjust_layout(int width, int height);
 
     void set_server_ip(std::string_view server_ip);
     void set_server_port(uint16_t port);
@@ -57,9 +59,10 @@ namespace quadwar_app {
     void create();
     void join();
 
-    void cleanup();
-
   private:
+    event_done m_on_done;
+    event_quit m_on_quit;
+
     /*  Local actor id.
      */
     size_t m_id_actor = -1;

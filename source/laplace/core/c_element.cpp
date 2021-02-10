@@ -13,34 +13,28 @@
 #include "element.h"
 
 namespace laplace::core {
-  element::element() {
-    m_type_id = type_id();
-  }
+  using std::atomic_size_t, std::memory_order_acq_rel;
 
-  element::~element() { }
-
-  auto element::get_type_id() const -> size_t {
+  auto element::get_type_id() const noexcept -> size_t {
     return m_type_id;
   }
 
-  void element::set_type_id(size_t id) {
+  void element::set_type_id(size_t id) noexcept {
     m_type_id = id;
   }
 
-  auto element::type_id() -> size_t {
+  auto element::type_id() noexcept -> size_t {
     static const type type_void;
     return type_void.get_id();
   }
 
-  std::atomic_size_t element::type::m_count = 0;
+  atomic_size_t element::type::m_count = 0;
 
-  element::type::type() {
-    m_id = m_count.fetch_add(1u, std::memory_order_acq_rel);
+  element::type::type() noexcept {
+    m_id = m_count.fetch_add(1u, memory_order_acq_rel);
   }
 
-  element::type::~type() { }
-
-  auto element::type::get_id() const -> size_t {
+  auto element::type::get_id() const noexcept -> size_t {
     return m_id;
   }
 }

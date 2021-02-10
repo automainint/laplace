@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __laplace__engine_access_world__
+#define __laplace__engine_access_world__
 
 #include "../basic_impact.predef.h"
 #include "../world.predef.h"
@@ -97,3 +98,5 @@ namespace laplace::engine::access {
 }
 
 #include "world.impl.h"
+
+#endif

@@ -26,12 +26,14 @@ namespace laplace::ui::elem {
 
     static constexpr size_t default_length_limit = 24;
 
+    textedit();
     ~textedit() final = default;
 
     void setup_filter(filter f);
 
-    auto tick(size_t delta_msec, platform::ref_input in)
-        -> bool final;
+    auto tick(size_t delta_msec, platform::ref_input in,
+              bool is_handled) -> bool final;
+
     void render() final;
 
     void set_text(std::u8string_view text);

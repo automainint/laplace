@@ -12,28 +12,30 @@
  *  the MIT License for more details.
  */
 
-#pragma once
+#ifndef __laplace__stem_app_flat__
+#define __laplace__stem_app_flat__
 
-#include "application.h"
 #include "../ui/frame.h"
+#include "application.h"
 
-namespace laplace::stem
-{
-    class app_flat : public application
-    {
-    public:
-        static constexpr graphics::vec4 clear_color = { .1f, .09f, .12f, 1.f };
+namespace laplace::stem {
+  class app_flat : public application {
+  public:
+    static constexpr graphics::vec4 clear_color = { .1f, .09f,
+                                                    .12f, 1.f };
 
-        app_flat(int argc, char **argv, core::cref_family def_cfg);
-        ~app_flat() override;
+    app_flat(int argc, char **argv, core::cref_family def_cfg);
+    ~app_flat() override;
 
-    protected:
-        void init() override;
-        void cleanup() override;
-        void update(size_t delta_msec) override;
-        void render() override;
-        void set_frame_size(size_t width, size_t height) override;
+  protected:
+    void init() override;
+    void cleanup() override;
+    void update(size_t delta_msec) override;
+    void render() override;
+    void adjust_layout(int width, int height) override;
 
-        ui::ptr_frame m_ui;
-    };
+    ui::ptr_frame m_ui;
+  };
 }
+
+#endif

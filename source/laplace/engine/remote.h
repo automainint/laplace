@@ -21,6 +21,7 @@ namespace laplace::engine {
    */
   class remote final : public udp_server {
   public:
+    remote();
     ~remote() final;
 
     void set_port(uint16_t port);

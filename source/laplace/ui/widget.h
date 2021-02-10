@@ -14,12 +14,13 @@
 #define __laplace__ui_widget__
 
 #include "../platform/wrap.h"
-#include "rect.h"
+#include "layout.h"
 #include <memory>
 #include <vector>
 
 namespace laplace::ui {
   class context;
+
   using ptr_context = std::shared_ptr<context>;
 
   /*  UI Widget base class.
@@ -34,7 +35,7 @@ namespace laplace::ui {
     /*  Widget live loop. Returns true if
      *  any event was handled.
      */
-    virtual auto tick(size_t delta_msec, platform::ref_input in)
+    virtual auto tick(size_t delta_msec, platform::ref_input in, bool is_handled)
         -> bool;
 
     virtual void render();
@@ -44,6 +45,7 @@ namespace laplace::ui {
      */
     virtual auto event_allowed(int x, int y) -> bool;
 
+    void set_layout(layout fn);
     void set_level(size_t level);
     void set_rect(cref_rect r);
     void set_visible(bool state);
@@ -100,10 +102,14 @@ namespace laplace::ui {
     static auto get_default_context() -> ptr_context;
 
   protected:
+    /*  Set if the widget can handle focus.
+     */
+    void set_handler(bool is_handler);
+
     void draw_childs();
     void up_to_date();
 
-    auto widget_tick(size_t delta_msec, platform::ref_input in)
+    auto widget_tick(size_t delta_msec, platform::ref_input in, bool is_handled)
         -> bool;
     void widget_render();
 
@@ -111,11 +117,13 @@ namespace laplace::ui {
 
   private:
     void update_indices(size_t begin);
+    void adjust_layout();
     void refresh_childs();
 
     bool m_expired        = true;
     bool m_expired_childs = true;
 
+    layout m_layout;
     size_t m_level = 0;
     rect   m_rect;
     int    m_absolute_x   = 0;
@@ -123,6 +131,7 @@ namespace laplace::ui {
     bool   m_is_changed   = true;
     bool   m_is_visible   = true;
     bool   m_is_enabled   = true;
+    bool   m_is_handler   = false;
     bool   m_is_attached  = false;
     bool   m_has_focus    = false;
     size_t m_attach_index = 0;

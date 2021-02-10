@@ -5,5 +5,6 @@ target_sources(
       aq_quadwar.cpp aq_qw_factory.cpp aq_root.cpp aq_session.cpp
     PUBLIC
        ids.h landscape.h lobby.h mainmenu.h player.h quadwar.h
-      qw_factory.h qw_player_name.h qw_slot_create.h root.h session.h sets.h
+      qw_factory.h qw_player_name.h qw_slot_create.h qw_slot_remove.h root.h
+      session.h sets.h
 )

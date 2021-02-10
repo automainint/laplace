@@ -22,6 +22,7 @@
 #include "protocol/public_key.h"
 #include "protocol/request_events.h"
 #include "protocol/server_clock.h"
+#include "protocol/server_idle.h"
 #include "protocol/server_seed.h"
 #include "protocol/slot_create.h"
 #include "protocol/slot_remove.h"
@@ -167,6 +168,8 @@ namespace laplace::engine {
       return make<public_key>(seq);
     if (request_events::scan(seq))
       return make<request_events>(seq);
+    if (server_idle::scan(seq))
+      return make<server_idle>(seq);
     if (server_launch::scan(seq))
       return make<server_launch>(seq);
     if (server_action::scan(seq))

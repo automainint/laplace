@@ -93,12 +93,18 @@ namespace laplace::core {
     auto operator=(const char32_t *value) -> ref_family;
     auto operator=(cref_vbyte value) -> ref_family;
 
-    auto operator==(cref_family value) const -> bool;
-    auto operator!=(cref_family value) const -> bool;
-    auto operator<(cref_family value) const -> bool;
-    auto operator>(cref_family value) const -> bool;
-    auto operator<=(cref_family value) const -> bool;
-    auto operator>=(cref_family value) const -> bool;
+    [[nodiscard]] auto operator==(cref_family value) const noexcept
+        -> bool;
+    [[nodiscard]] auto operator!=(cref_family value) const noexcept
+        -> bool;
+    [[nodiscard]] auto operator<(cref_family value) const noexcept
+        -> bool;
+    [[nodiscard]] auto operator>(cref_family value) const noexcept
+        -> bool;
+    [[nodiscard]] auto operator<=(cref_family value) const noexcept
+        -> bool;
+    [[nodiscard]] auto operator>=(cref_family value) const noexcept
+        -> bool;
 
     operator bool() const;
     operator int64_t() const;
@@ -151,7 +157,8 @@ namespace laplace::core {
     auto by_key(size_t key) -> ref_family;
     auto by_key(size_t key) const -> cref_family;
 
-    auto compare(cref_family value) const -> int;
+    [[nodiscard]] auto compare(cref_family value) const noexcept
+        -> int;
 
     auto value(int index) -> ref_family;
     auto value(const char *key) -> ref_family;

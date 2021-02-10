@@ -26,8 +26,12 @@ namespace laplace::ui {
 
   void frame::render() {
     if (m_context) {
-      rect r = { 0, 0, m_context->get_frame_width(),
-                 m_context->get_frame_height() };
+      rect r = {
+        .x     = 0,
+        .y     = 0,
+        .width = static_cast<int>(m_context->get_frame_width()),
+        .height = static_cast<int>(m_context->get_frame_height())
+      };
 
       if (is_widget_changed()) {
         m_buffer.set_size(r.width, r.height);

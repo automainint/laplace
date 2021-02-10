@@ -24,6 +24,10 @@ update_repo() {
       then
         cd "$folder"
 
+        if [ ! -f "../$inc_folder" ]; then
+          mkdir "../$inc_folder"
+        fi
+
         if [ -d "../$inc_folder" ]; then
           echo "[ Copy headers from $folder ]"
           cp -r `echo $headers` "../$inc_folder"

@@ -52,6 +52,10 @@ rebuild_lib() {
         --build "$build_to" --config "$config" \
         &> /dev/null
 
+      if [ ! -f "$lib_folder" ]; then
+        mkdir "$lib_folder"
+      fi
+
       if [ -d "$lib_folder" ]; then
         echo "[ Copy libs from $folder ]"
 

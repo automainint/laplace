@@ -16,6 +16,7 @@
 #include "protocol/public_key.h"
 #include "protocol/request_events.h"
 #include "protocol/server_clock.h"
+#include "protocol/server_idle.h"
 #include "protocol/server_seed.h"
 #include "remote.h"
 
@@ -23,6 +24,10 @@ namespace laplace::engine {
   using namespace network;
   using namespace protocol;
   using namespace std;
+
+  remote::remote() {
+    setup_world();
+  }
 
   remote::~remote() {
     cleanup();
@@ -35,6 +40,8 @@ namespace laplace::engine {
   void remote::connect(string_view host_address,
                        uint16_t    host_port) {
     cleanup();
+
+    set_connected(true);
 
     m_node = make_unique<udp_node>();
     m_node->bind(m_client_port);
@@ -87,6 +94,8 @@ namespace laplace::engine {
 
     m_local_queue.index = 0;
     m_local_queue.events.clear();
+
+    set_connected(false);
   }
 
   void remote::receive_events() {
@@ -136,7 +145,11 @@ namespace laplace::engine {
 
   void remote::update_world(size_t delta_msec) {
     if (get_state() != server_state::prepare) {
-      get_solver()->solve(convert_delta(delta_msec));
+      if (auto sol = get_solver(); sol) {
+        sol->solve(convert_delta(delta_msec));
+      } else {
+        verb("[ client ] no solver");
+      }
     }
   }
 
@@ -225,17 +238,26 @@ namespace laplace::engine {
         if (m_time_limit < ev->get_time())
           m_time_limit = ev->get_time();
 
-        get_solver()->apply(ev);
+        if (auto sol = get_solver(); sol) {
+          sol->apply(ev);
+        } else {
+          verb("[ client ] no solver");
+        }
       }
     }
   }
 
   auto remote::convert_delta(size_t delta_msec) -> uint64_t {
-    auto time = get_solver()->get_time();
+    if (auto sol = get_solver(); sol) {
+      auto time = sol->get_time();
 
-    auto delta = adjust_delta(delta_msec) + adjust_overtake(time);
+      auto delta = adjust_delta(delta_msec) +
+                   adjust_overtake(time);
 
-    return min(delta, m_time_limit - time);
+      return min(delta, m_time_limit - time);
+    }
+
+    return 0;
   }
 
   void remote::send_event(cref_vbyte seq) {
@@ -267,7 +289,7 @@ namespace laplace::engine {
         return;
       }
 
-        dump(chunk);
+      dump(chunk);
 
       if (is_verbose()) {
         verb("[ client ] SEND %zd bytes to %s:%d%s",
@@ -337,6 +359,13 @@ namespace laplace::engine {
       }
 
       return true;
+    }
+
+    if (server_idle::scan(seq)) {
+      const auto time = server_idle::get_idle_time(seq);
+
+      if (m_time_limit < time)
+        m_time_limit = time;
     }
 
     if (server_launch::scan(seq)) {

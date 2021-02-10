@@ -49,6 +49,14 @@ namespace laplace {
   using ref_istream = std::istream &;
   using ref_ostream = std::ostream &;
 
+  inline void _unreachable() {
+#if defined(_MSC_VER)
+    __assume(0);
+#elif defined(__GNUC__) || defined(__clang__)
+    __builtin_unreachable();
+#endif
+  }
+
   void log(std::string_view s) noexcept;
   void log(const char *c_format, ...);
 

@@ -198,7 +198,7 @@ print('#include "types.h"\n')
 print('namespace laplace::gl {')
 
 comma = ','
-print('  enum __glenum : GLenum {')
+print('  enum _glenum : GLenum {')
 for i, en in enumerate(enums):
   if i + 1 == len(enums):
     comma = ''
@@ -206,7 +206,7 @@ for i, en in enumerate(enums):
 print('  };')
 
 comma = ','
-print('\n  enum __glenum64 : uint64_t {')
+print('\n  enum _glenum64 : uint64_t {')
 for i, en in enumerate(enums64):
   if i + 1 == len(enums64):
     comma = ''
@@ -214,7 +214,7 @@ for i, en in enumerate(enums64):
 print('  };')
 
 comma = ','
-print('\n  enum __glenum_int32 : int32_t {')
+print('\n  enum _glenum_int32 : int32_t {')
 for i, en in enumerate(enumsSigned):
   if i + 1 == len(enumsSigned):
     comma = ''

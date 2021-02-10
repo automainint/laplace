@@ -8,9 +8,8 @@ cd ../thirdparty
 ./update-gl.sh
 echo "[ Generate OpenGL interface ]"
 python ./gen-gl.py
-cd ..
 
-cd ./tools
+cd ../tools
 echo "[ Generate embedded data code ]"
 python ./embed.py
 cd ..

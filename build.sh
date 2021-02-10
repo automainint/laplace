@@ -39,8 +39,11 @@ else
 
   echo '[ Build Laplace ]'
 
-  rm -rf ./build/*
-  touch ./bin/.placeholder
+  if [ -f './build' ]; then
+    rm -rf ./build/*
+  else
+    mkdir build
+  fi
 
   cd ./build
 

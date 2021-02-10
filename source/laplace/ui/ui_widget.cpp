@@ -20,8 +20,8 @@
 namespace laplace::ui {
   using std::vector, graphics::prepare_ui, platform::ref_input;
 
-  auto widget::tick(size_t delta_msec, ref_input in) -> bool {
-    return widget_tick(delta_msec, in);
+  auto widget::tick(size_t delta_msec, ref_input in, bool is_handled) -> bool {
+    return widget_tick(delta_msec, in, is_handled);
   }
 
   void widget::render() {
@@ -42,24 +42,39 @@ namespace laplace::ui {
     return p->event_allowed(x, y);
   }
 
+  void widget::set_layout(layout fn) {
+    m_layout = fn;
+
+    adjust_layout();
+    set_expired(true);
+  }
+
   void widget::set_level(size_t level) {
     m_level = level;
     set_expired(true);
   }
 
   void widget::set_rect(cref_rect r) {
-    m_rect = r;
-    set_expired(true);
+    if (m_rect != r) {
+      m_rect = r;
+
+      adjust_layout();
+      set_expired(true);
+    }
   }
 
   void widget::set_visible(bool state) {
-    m_is_visible = state;
-    set_expired(true);
+    if (m_is_visible != state) {
+      m_is_visible = state;
+      set_expired(true);
+    }
   }
 
   void widget::set_enabled(bool state) {
-    m_is_enabled = state;
-    set_expired(true);
+    if (m_is_enabled != state) {
+      m_is_enabled = state;
+      set_expired(true);
+    }
   }
 
   void widget::set_focus(bool has_focus) {
@@ -84,9 +99,12 @@ namespace laplace::ui {
   }
 
   void widget::move_to(int x, int y) {
-    m_rect.x = x;
-    m_rect.y = y;
-    set_expired(true);
+    if (m_rect.x != x || m_rect.y != y) {
+      m_rect.x = x;
+      m_rect.y = y;
+
+      set_expired(true);
+    }
   }
 
   void widget::draw_childs() {
@@ -125,10 +143,8 @@ namespace laplace::ui {
     m_is_changed = false;
   }
 
-  auto widget::widget_tick(size_t delta_msec, ref_input in)
+  auto widget::widget_tick(size_t delta_msec, ref_input in, bool is_handled)
       -> bool {
-    bool result = false;
-
     if (!m_is_attached) {
       m_absolute_x = m_rect.x;
       m_absolute_y = m_rect.y;
@@ -144,11 +160,11 @@ namespace laplace::ui {
       }
 
       for (auto &c : list) {
-        result |= c->tick(delta_msec, in);
+        is_handled |= c->tick(delta_msec, in, is_handled);
       }
     }
 
-    return result;
+    return is_handled;
   }
 
   void widget::widget_render() {
@@ -247,8 +263,10 @@ namespace laplace::ui {
   }
 
   auto widget::get_absolute_rect() const -> rect {
-    return { m_absolute_x, m_absolute_y, m_rect.width,
-             m_rect.height };
+    return { .x      = m_absolute_x,
+             .y      = m_absolute_y,
+             .width  = m_rect.width,
+             .height = m_rect.height };
   }
 
   void widget::next_tab() {
@@ -266,10 +284,10 @@ namespace laplace::ui {
     }
 
     for (; j < m_childs.size(); j++) {
-      auto &c = m_childs[(i + j) % m_childs.size()];
+      auto &c = *m_childs[(i + j) % m_childs.size()];
 
-      if (c->is_visible() && c->is_enabled()) {
-        c->set_focus(true);
+      if (c.m_is_handler && c.is_visible() && c.is_enabled()) {
+        c.set_focus(true);
         break;
       }
     }
@@ -347,9 +365,45 @@ namespace laplace::ui {
     return context::get_default();
   }
 
+  void widget::set_handler(bool is_handler) {
+    m_is_handler = is_handler;
+  }
+
   void widget::update_indices(size_t begin) {
     for (size_t i = begin; i < m_childs.size(); i++) {
       m_childs[i]->m_attach_index = i;
+    }
+  }
+
+  void widget::adjust_layout() {
+    if (m_layout) {
+      vuint           childs;
+      vlayout_context context;
+
+      childs.reserve(m_childs.size());
+      context.reserve(m_childs.size());
+
+      for (size_t i = 0; i < m_childs.size(); i++) {
+        auto &c = *m_childs[i];
+
+        if (c.is_visible()) {
+          childs.emplace_back(i);
+
+          context.emplace_back(
+              layout_context { .level = c.get_level(), //
+                               .box   = c.get_rect() });
+        }
+      }
+
+      auto rects = m_layout(m_rect, context);
+
+      if (rects.size() == childs.size()) {
+        for (size_t i = 0; i < childs.size(); i++) {
+          m_childs[childs[i]]->set_rect(rects[i]);
+        }
+      } else {
+        error(__FUNCTION__, "Invalid layout.");
+      }
     }
   }
 

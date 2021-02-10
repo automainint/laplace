@@ -21,9 +21,8 @@ namespace laplace::engine::protocol {
 
   template <typename perform_>
   concept perform_method = requires {
-    perform_()(access::world(
-        *reinterpret_cast<engine::world *>(nullptr),
-        access::forbidden));
+    perform_()(access::world { *static_cast<world *>(nullptr),
+                               access::forbidden });
   }
   || std::is_same<perform_, non_inheritable>::value;
 

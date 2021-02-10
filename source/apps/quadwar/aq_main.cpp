@@ -72,7 +72,7 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) -> int
 
 #ifdef _CONSOLE
   cout << "\n  Press Enter... ";
-  [[unused]] getchar();
+  static_cast<void>(getchar());
 #endif
 
   return status;

@@ -11,16 +11,19 @@
  */
 
 #include "mainmenu.h"
-#include <iostream>
 #include <laplace/core/utils.h>
 
 namespace quadwar_app {
-  using ui::rect;
+  using ui::column_layout, ui::rect, std::u8string,
+      std::u8string_view;
 
   mainmenu::mainmenu() {
     m_page_root->attach(m_create);
     m_page_root->attach(m_join);
     m_page_root->attach(m_quit);
+
+    m_page_root->set_layout(
+        column_layout(menu_width, line_height, spacing));
 
     m_page_create->attach(m_c_game_name_label);
     m_page_create->attach(m_c_player_name_label);
@@ -192,9 +195,46 @@ namespace quadwar_app {
     }
   }
 
-  void mainmenu::set_server_address(std::u8string_view ip) {
+  void mainmenu::set_server_address(u8string_view ip) {
     m_j_server_ip->set_text(ip);
     m_j_server_ip->set_cursor(ip.size());
+  }
+
+  void mainmenu::set_game_name(u8string_view game_name) {
+    m_c_game_name->set_text(game_name);
+    m_c_game_name->set_cursor(game_name.size());
+
+    m_j_game_name->set_text(game_name);
+    m_j_game_name->set_cursor(game_name.size());
+  }
+
+  void mainmenu::set_player_name(u8string_view player_name) {
+    m_c_player_name->set_text(player_name);
+    m_c_player_name->set_cursor(player_name.size());
+
+    m_j_player_name->set_text(player_name);
+    m_j_player_name->set_cursor(player_name.size());
+  }
+
+  void mainmenu::set_map_size(size_t map_size) {
+    const auto s = as_u8string(to_string("%zd", map_size));
+
+    m_c_map_size->set_text(s);
+    m_c_map_size->set_cursor(s.size());
+  }
+
+  void mainmenu::set_player_count(size_t player_count) {
+    const auto s = as_u8string(to_string("%zd", player_count));
+
+    m_c_player_count->set_text(s);
+    m_c_player_count->set_cursor(s.size());
+  }
+
+  void mainmenu::set_unit_count(size_t unit_count) {
+    const auto s = as_u8string(to_string("%zd", unit_count));
+
+    m_c_unit_count->set_text(s);
+    m_c_unit_count->set_cursor(s.size());
   }
 
   void mainmenu::attach_to(ui::ptr_widget w) {
@@ -207,165 +247,122 @@ namespace quadwar_app {
     }
   }
 
-  void mainmenu::adjust_layout(size_t width, size_t height) {
-    size_t lines_height    = line_height * line_count;
-    size_t full_height     = lines_height + info_height;
-    size_t half_menu_width = menu_width / 2;
+  void mainmenu::adjust_layout(int width, int height) {
+    auto lines_height    = line_height * line_count;
+    auto full_height     = lines_height + info_height;
+    auto half_menu_width = menu_width / 2;
 
-    int x0 = (static_cast<int>(width) - menu_width) / 2;
-    int y0 = (static_cast<int>(height) - full_height) / 2;
+    auto x0 = (width - menu_width) / 2;
+    auto y0 = (height - full_height) / 2;
 
-    m_info->set_rect(rect { static_cast<int>(x0 + spacing),
-                            static_cast<int>(y0 + spacing),
+    m_info->set_rect(rect { x0 + spacing, y0 + spacing,
                             menu_width - spacing * 2,
                             info_height - spacing * 2 });
 
-    const auto lines_rect = rect {
-      x0, static_cast<int>(y0 + info_height), menu_width,
-      lines_height
-    };
+    const auto lines_rect = rect { x0, y0 + info_height,
+                                   menu_width, lines_height };
 
     m_page_root->set_rect(lines_rect);
     m_page_create->set_rect(lines_rect);
     m_page_join->set_rect(lines_rect);
 
-    /*  Page: Root
-     */
+    m_c_game_name_label->set_rect(
+        rect { spacing, spacing, half_menu_width - spacing * 2,
+               line_height - spacing * 2 });
 
-    m_create->set_rect(rect {
-        static_cast<int>(spacing), static_cast<int>(spacing),
-        menu_width - spacing * 2, line_height - spacing * 2 });
-
-    m_join->set_rect(rect {
-        static_cast<int>(spacing),
-        static_cast<int>(spacing + line_height),
-        menu_width - spacing * 2, line_height - spacing * 2 });
-
-    m_quit->set_rect(rect {
-        static_cast<int>(spacing),
-        static_cast<int>(spacing + line_height * 2),
-        menu_width - spacing * 2, line_height - spacing * 2 });
-
-    /*  Page: Create
-     */
-
-    m_c_game_name_label->set_rect(rect {
-        static_cast<int>(spacing), static_cast<int>(spacing),
-        half_menu_width - spacing * 2,
-        line_height - spacing * 2 });
-
-    m_c_game_name->set_rect(rect {
-        static_cast<int>(spacing + half_menu_width),
-        static_cast<int>(spacing), half_menu_width - spacing * 2,
-        line_height - spacing * 2 });
+    m_c_game_name->set_rect(rect { spacing + half_menu_width,
+                                   spacing,
+                                   half_menu_width - spacing * 2,
+                                   line_height - spacing * 2 });
 
     m_c_player_name_label->set_rect(
-        rect { static_cast<int>(spacing),
-               static_cast<int>(spacing + line_height),
+        rect { spacing, spacing + line_height,
                half_menu_width - spacing * 2,
                line_height - spacing * 2 });
 
     m_c_player_name->set_rect(
-        rect { static_cast<int>(spacing + half_menu_width),
-               static_cast<int>(spacing + line_height),
+        rect { spacing + half_menu_width, spacing + line_height,
                half_menu_width - spacing * 2,
                line_height - spacing * 2 });
 
     m_c_map_size_label->set_rect(
-        rect { static_cast<int>(spacing),
-               static_cast<int>(spacing + line_height * 2),
+        rect { spacing, spacing + line_height * 2,
                half_menu_width - spacing * 2,
                line_height - spacing * 2 });
 
-    m_c_map_size->set_rect(
-        rect { static_cast<int>(spacing + half_menu_width),
-               static_cast<int>(spacing + line_height * 2),
-               half_menu_width - spacing * 2,
-               line_height - spacing * 2 });
+    m_c_map_size->set_rect(rect { spacing + half_menu_width,
+                                  spacing + line_height * 2,
+                                  half_menu_width - spacing * 2,
+                                  line_height - spacing * 2 });
 
     m_c_player_count_label->set_rect(
-        rect { static_cast<int>(spacing),
-               static_cast<int>(spacing + line_height * 3),
+        rect { spacing, spacing + line_height * 3,
                half_menu_width - spacing * 2,
                line_height - spacing * 2 });
 
-    m_c_player_count->set_rect(
-        rect { static_cast<int>(spacing + half_menu_width),
-               static_cast<int>(spacing + line_height * 3),
-               half_menu_width - spacing * 2,
-               line_height - spacing * 2 });
+    m_c_player_count->set_rect(rect {
+        spacing + half_menu_width, spacing + line_height * 3,
+        half_menu_width - spacing * 2,
+        line_height - spacing * 2 });
 
     m_c_unit_count_label->set_rect(
-        rect { static_cast<int>(spacing),
-               static_cast<int>(spacing + line_height * 4),
+        rect { spacing, spacing + line_height * 4,
                half_menu_width - spacing * 2,
                line_height - spacing * 2 });
 
-    m_c_unit_count->set_rect(
-        rect { static_cast<int>(spacing + half_menu_width),
-               static_cast<int>(spacing + line_height * 4),
-               half_menu_width - spacing * 2,
-               line_height - spacing * 2 });
+    m_c_unit_count->set_rect(rect {
+        spacing + half_menu_width, spacing + line_height * 4,
+        half_menu_width - spacing * 2,
+        line_height - spacing * 2 });
 
-    m_c_cancel->set_rect(
-        rect { static_cast<int>(spacing),
-               static_cast<int>(spacing + line_height * 5),
-               half_menu_width - spacing * 2,
-               line_height - spacing * 2 });
+    m_c_cancel->set_rect(rect { spacing, spacing + line_height * 5,
+                                half_menu_width - spacing * 2,
+                                line_height - spacing * 2 });
 
-    m_c_continue->set_rect(
-        rect { static_cast<int>(spacing + half_menu_width),
-               static_cast<int>(spacing + line_height * 5),
-               half_menu_width - spacing * 2,
-               line_height - spacing * 2 });
+    m_c_continue->set_rect(rect { spacing + half_menu_width,
+                                  spacing + line_height * 5,
+                                  half_menu_width - spacing * 2,
+                                  line_height - spacing * 2 });
 
     /*  Page: Join
      */
 
-    m_j_server_ip_label->set_rect(rect {
-        static_cast<int>(spacing), static_cast<int>(spacing),
+    m_j_server_ip_label->set_rect(
+        rect { spacing, spacing, half_menu_width - spacing * 2,
+               line_height - spacing * 2 });
+
+    m_j_server_ip->set_rect(rect { spacing + half_menu_width,
+                                   spacing,
+                                   half_menu_width - spacing * 2,
+                                   line_height - spacing * 2 });
+
+    m_j_game_name_label->set_rect(
+        rect { spacing, spacing + line_height,
+               half_menu_width - spacing * 2,
+               line_height - spacing * 2 });
+
+    m_j_game_name->set_rect(rect { spacing + half_menu_width,
+                                   spacing + line_height,
+                                   half_menu_width - spacing * 2,
+                                   line_height - spacing * 2 });
+
+    m_j_player_name_label->set_rect(
+        rect { spacing, spacing + line_height * 2,
+               half_menu_width - spacing * 2,
+               line_height - spacing * 2 });
+
+    m_j_player_name->set_rect(rect {
+        spacing + half_menu_width, spacing + line_height * 2,
         half_menu_width - spacing * 2,
         line_height - spacing * 2 });
 
-    m_j_server_ip->set_rect(rect {
-        static_cast<int>(spacing + half_menu_width),
-        static_cast<int>(spacing), half_menu_width - spacing * 2,
-        line_height - spacing * 2 });
+    m_j_cancel->set_rect(rect { spacing, spacing + line_height * 3,
+                                half_menu_width - spacing * 2,
+                                line_height - spacing * 2 });
 
-    m_j_game_name_label->set_rect(
-        rect { static_cast<int>(spacing),
-               static_cast<int>(spacing + line_height),
-               half_menu_width - spacing * 2,
-               line_height - spacing * 2 });
-
-    m_j_game_name->set_rect(
-        rect { static_cast<int>(spacing + half_menu_width),
-               static_cast<int>(spacing + line_height),
-               half_menu_width - spacing * 2,
-               line_height - spacing * 2 });
-
-    m_j_player_name_label->set_rect(
-        rect { static_cast<int>(spacing),
-               static_cast<int>(spacing + line_height * 2),
-               half_menu_width - spacing * 2,
-               line_height - spacing * 2 });
-
-    m_j_player_name->set_rect(
-        rect { static_cast<int>(spacing + half_menu_width),
-               static_cast<int>(spacing + line_height * 2),
-               half_menu_width - spacing * 2,
-               line_height - spacing * 2 });
-
-    m_j_cancel->set_rect(
-        rect { static_cast<int>(spacing),
-               static_cast<int>(spacing + line_height * 3),
-               half_menu_width - spacing * 2,
-               line_height - spacing * 2 });
-
-    m_j_continue->set_rect(
-        rect { static_cast<int>(spacing + half_menu_width),
-               static_cast<int>(spacing + line_height * 3),
-               half_menu_width - spacing * 2,
-               line_height - spacing * 2 });
+    m_j_continue->set_rect(rect { spacing + half_menu_width,
+                                  spacing + line_height * 3,
+                                  half_menu_width - spacing * 2,
+                                  line_height - spacing * 2 });
   }
 }

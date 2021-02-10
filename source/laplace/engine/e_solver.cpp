@@ -9,8 +9,9 @@ void solver::set_world(ptr_world w) {
   if (m_world != w) {
     m_world = w;
 
-    if (m_world)
+    if (m_world) {
       m_world->get_random().seed(m_seed);
+    }
   }
 }
 
@@ -64,8 +65,9 @@ void solver::schedule(uint64_t delta) {
 }
 
 void solver::join() {
-  if (m_world)
+  if (m_world) {
     m_world->join();
+  }
 }
 
 void solver::allow_rewind(bool is_rewind_allowed) {
@@ -113,10 +115,12 @@ auto solver::get_history(size_t index) const -> ptr_impact {
 }
 
 void solver::adjust(uint64_t time) {
-  if (m_world && m_time != time) {
+  if (m_time != time) {
     if (time < m_time) {
-      m_world->clear();
-      m_world->get_random().seed(m_seed);
+      if (m_world) {
+        m_world->clear();
+        m_world->get_random().seed(m_seed);
+      }
 
       m_time     = 0;
       m_position = 0;
@@ -136,14 +140,18 @@ void solver::adjust(uint64_t time) {
       auto t1 = (*i)->get_time();
 
       if (t0 < t1) {
-        m_world->tick(t1 - t0);
+        if (m_world) {
+          m_world->tick(t1 - t0);
+        }
         t0 = t1;
       }
 
-      m_world->queue(*i);
+      if (m_world) {
+        m_world->queue(*i);
+      }
     }
 
-    if (t0 < time) {
+    if (t0 < time && m_world) {
       m_world->schedule(time - t0);
     }
 

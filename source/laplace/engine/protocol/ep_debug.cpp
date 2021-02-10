@@ -15,24 +15,23 @@
 #include "debug.h"
 
 namespace laplace::engine::protocol {
-  using namespace object;
-  using namespace std;
+  using std::make_shared, object::sets::debug_value;
 
   void debug::perform(access::world w) const {
     auto root = w.get_root();
 
     if (root.exist()) {
-      root.set(root.index_of(sets::debug_value), m_value);
+      root.set(root.index_of(debug_value), m_value);
     } else {
       auto e = make_shared<debug_root>();
 
-      e->set(e->index_of(sets::debug_value), m_value);
+      e->set(e->index_of(debug_value), m_value);
 
       w.set_root(e);
     }
   }
 
   debug::debug_root::debug_root() {
-    setup_sets({ { sets::debug_value, 1, 0 } });
+    setup_sets({ { debug_value, 1, 0 } });
   }
 }

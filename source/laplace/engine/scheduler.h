@@ -26,7 +26,7 @@ namespace laplace::engine {
    */
   class scheduler {
   public:
-    static constexpr size_t overthreading_limit = 16;
+    static constexpr size_t overthreading_limit = 8;
 
     scheduler(ref_world w);
     ~scheduler();

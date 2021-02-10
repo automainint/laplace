@@ -21,45 +21,60 @@ namespace quadwar_app {
   using std::find, std::make_shared, std::string,
       std::string_view, std::u8string_view;
 
-  void session::on_done(session::event_done ev) {
+  session::session() {
     m_lobby.on_abort([=] {
-      cleanup();
-
-      ev();
+      if (m_on_done)
+        m_on_done();
     });
   }
 
-  void session::on_quit(session::event_quit ev) { }
+  void session::on_done(session::event_done ev) {
+    m_on_done = ev;
+  }
+
+  void session::on_quit(session::event_quit ev) {
+    m_on_quit = ev;
+  }
 
   void session::tick(size_t delta_msec) {
     if (m_server && m_root && m_world) {
       m_server->tick(delta_msec);
 
-      if (m_root->changed()) {
-        auto count = m_root->get_slot_count();
+      if (m_server->is_connected()) {
+        if (m_root->changed()) {
+          auto count = m_root->get_slot_count();
 
-        for (size_t i = 0; i < count; i++) {
-          const auto id_actor = m_root->get_slot(i);
-          const auto actor    = m_world->get_entity(id_actor);
+          for (size_t i = 0; i < count; i++) {
+            const auto id_actor = m_root->get_slot(i);
+            const auto actor    = m_world->get_entity(id_actor);
 
-          const auto is_local = player::is_local(
-              { actor, access::async });
+            const auto is_local = player::is_local(
+                { actor, access::async });
 
-          if (is_local)
-            m_id_actor = id_actor;
+            if (is_local)
+              m_id_actor = id_actor;
 
-          auto name = player::get_name({ actor, access::async });
+            auto name = player::get_name({ actor, access::async });
 
-          if (name.empty()) {
-            name = u8"[ Reserved ]";
+            if (name.empty()) {
+              name = u8"[ Reserved ]";
+            }
+
+            if (is_local) {
+              name.append(u8" *");
+            }
+
+            m_lobby.set_slot(i, id_actor, name);
           }
 
-          if (is_local) {
-            name.append(u8" *");
+          for (size_t i = count; i < m_lobby.get_slot_count();
+               i++) {
+            m_lobby.remove_slot(i);
           }
-
-          m_lobby.set_slot(i, id_actor, name);
         }
+      } else {
+        if (m_on_done)
+          m_on_done();
       }
     }
   }
@@ -68,7 +83,7 @@ namespace quadwar_app {
     m_lobby.attach_to(w);
   }
 
-  void session::adjust_layout(size_t width, size_t height) {
+  void session::adjust_layout(int width, int height) {
     m_lobby.adjust_layout(width, height);
   }
 
@@ -134,7 +149,7 @@ namespace quadwar_app {
     server->queue<qw_player_name>(id_actor, m_player_name);
 
     m_lobby.show_info(to_u8string(
-        u8"Game host (port %d)", server->get_port()));
+        u8"Game host (port %hu)", server->get_port()));
 
     m_lobby.set_start_enabled(true);
 
@@ -159,11 +174,5 @@ namespace quadwar_app {
     m_lobby.set_start_enabled(false);
 
     m_server = server;
-  }
-
-  void session::cleanup() {
-    m_root.reset();
-    m_world.reset();
-    m_server.reset();
   }
 }

@@ -13,107 +13,119 @@
 #include "../../laplace/stem/config.h"
 #include "quadwar.h"
 
-using namespace quadwar_app;
-using namespace core;
-using namespace std;
+namespace quadwar_app {
+  using std::make_shared, core::family;
 
-auto quadwar::get_config() -> family {
-  using namespace stem::config;
+  auto quadwar::get_config() -> family {
+    using namespace stem::config;
 
-  family cfg = get_default();
+    family cfg = get_default();
 
-  cfg[k_caption]        = caption;
-  cfg[k_server_address] = default_server_address;
+    cfg[k_caption]        = caption;
+    cfg[k_server_address] = default_server_address;
+    cfg[k_game_name]      = default_game_name;
+    cfg[k_player_name]    = default_player_name;
+    cfg[k_map_size]       = default_map_size;
+    cfg[k_player_count]   = default_player_count;
+    cfg[k_unit_count]     = default_unit_count;
 
-  return cfg;
-}
+    return cfg;
+  }
 
-quadwar::quadwar(int argc, char **argv) :
-    app_flat(argc, argv, get_config()) { }
+  quadwar::quadwar(int argc, char **argv) :
+      app_flat(argc, argv, get_config()) { }
 
-void quadwar::init() {
-  app_flat::init();
+  void quadwar::init() {
+    app_flat::init();
 
-  m_mainmenu = make_shared<mainmenu>();
-  m_mainmenu->attach_to(m_ui);
+    m_mainmenu = make_shared<mainmenu>();
+    m_mainmenu->attach_to(m_ui);
 
-  m_mainmenu->set_server_address(
-      m_config[k_server_address].get_string());
+    m_mainmenu->set_server_address(
+        m_config[k_server_address].get_string());
+    m_mainmenu->set_game_name(m_config[k_game_name].get_string());
+    m_mainmenu->set_player_name(
+        m_config[k_player_name].get_string());
+    m_mainmenu->set_map_size(m_config[k_map_size].get_uint());
+    m_mainmenu->set_player_count(
+        m_config[k_player_count].get_uint());
+    m_mainmenu->set_unit_count(m_config[k_unit_count].get_uint());
 
-  auto return_to_mainmenu = [=] {
+    auto return_to_mainmenu = [=] {
+      m_session.reset();
+
+      m_mainmenu->refresh();
+      m_mainmenu->set_visible(true);
+    };
+
+    auto quit = [=] {
+      get_window().quit();
+    };
+
+    auto init_session = [=] {
+      m_mainmenu->set_visible(false);
+
+      m_session = make_shared<session>();
+      m_session->attach_to(m_ui);
+
+      m_session->adjust_layout(
+          m_ui->get_rect().width, m_ui->get_rect().height);
+
+      m_session->on_done(return_to_mainmenu);
+      m_session->on_quit(quit);
+    };
+
+    m_mainmenu->on_create([=](mainmenu::create_info info) {
+      init_session();
+
+      m_session->set_game_name(info.game_name);
+      m_session->set_player_name(info.player_name);
+      m_session->set_map_size(info.map_size);
+      m_session->set_player_count(info.player_count);
+      m_session->set_unit_count(info.unit_count);
+
+      m_session->create();
+    });
+
+    m_mainmenu->on_join([=](mainmenu::join_info info) {
+      init_session();
+
+      m_session->set_server_ip(info.server_ip);
+      m_session->set_game_name(info.game_name);
+      m_session->set_player_name(info.player_name);
+
+      m_session->join();
+    });
+
+    m_mainmenu->on_quit(quit);
+  }
+
+  void quadwar::cleanup() {
+    m_mainmenu.reset();
     m_session.reset();
 
-    m_mainmenu->refresh();
-    m_mainmenu->set_visible(true);
-  };
-
-  auto quit = [=] {
-    get_window().quit();
-  };
-
-  auto init_session = [=] {
-    m_mainmenu->set_visible(false);
-
-    m_session = make_shared<session>();
-    m_session->attach_to(m_ui);
-
-    m_session->adjust_layout(get_window().get_frame_width(),
-                             get_window().get_frame_height());
-
-    m_session->on_done(return_to_mainmenu);
-    m_session->on_quit(quit);
-  };
-
-  m_mainmenu->on_create([=](mainmenu::create_info info) {
-    init_session();
-
-    m_session->set_game_name(info.game_name);
-    m_session->set_player_name(info.player_name);
-    m_session->set_map_size(info.map_size);
-    m_session->set_player_count(info.player_count);
-    m_session->set_unit_count(info.unit_count);
-
-    m_session->create();
-  });
-
-  m_mainmenu->on_join([=](mainmenu::join_info info) {
-    init_session();
-
-    m_session->set_server_ip(info.server_ip);
-    m_session->set_game_name(info.game_name);
-    m_session->set_player_name(info.player_name);
-
-    m_session->join();
-  });
-
-  m_mainmenu->on_quit(quit);
-}
-
-void quadwar::cleanup() {
-  m_mainmenu.reset();
-  m_session.reset();
-
-  app_flat::cleanup();
-}
-
-void quadwar::update(size_t delta_msec) {
-  app_flat::update(delta_msec);
-
-  if (m_session) {
-    m_session->tick(delta_msec);
-  }
-}
-
-void quadwar::render() {
-  app_flat::render();
-}
-
-void quadwar::set_frame_size(size_t width, size_t height) {
-  m_mainmenu->adjust_layout(width, height);
-
-  if (m_session) {
-    m_session->adjust_layout(width, height);
+    app_flat::cleanup();
   }
 
-  app_flat::set_frame_size(width, height);
+  void quadwar::update(size_t delta_msec) {
+    app_flat::update(delta_msec);
+
+    if (m_session) {
+      m_session->tick(delta_msec);
+    }
+  }
+
+  void quadwar::render() {
+    app_flat::render();
+  }
+
+  void quadwar::adjust_layout(int width, int height) {
+    app_flat::adjust_layout(width, height);
+
+    m_mainmenu->adjust_layout(width, height);
+
+    if (m_session) {
+      m_session->adjust_layout(width, height);
+    }
+  }
 }

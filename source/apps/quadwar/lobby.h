@@ -13,22 +13,20 @@
 #ifndef __quadwar__lobby__
 #define __quadwar__lobby__
 
-#include "../../laplace/ui/elem/textarea.h"
-#include "../../laplace/ui/elem/textbutton.h"
-#include "../../laplace/ui/widget.h"
+#include "../../laplace/ui/helper.h"
 
 namespace quadwar_app {
   using namespace laplace;
 
-  class lobby {
+  class lobby : ui::helper {
   public:
     using event_abort = std::function<void()>;
     using event_start = std::function<void()>;
 
-    static constexpr size_t spacing      = 4;
-    static constexpr size_t side_size    = 16;
-    static constexpr size_t button_width = 260;
-    static constexpr size_t line_height  = 60;
+    static constexpr int spacing      = 4;
+    static constexpr int side_size    = 16;
+    static constexpr int button_width = 260;
+    static constexpr int line_height  = 60;
 
     static constexpr auto c_abort = u8"Abort";
     static constexpr auto c_start = u8"Start";
@@ -40,7 +38,7 @@ namespace quadwar_app {
     void on_start(event_start ev);
 
     void attach_to(ui::ptr_widget w);
-    void adjust_layout(size_t width, size_t height);
+    void adjust_layout(int width, int height);
 
     void show_info(std::u8string_view text);
 
@@ -49,26 +47,24 @@ namespace quadwar_app {
 
     void remove_slot(size_t index);
 
+    auto get_slot_count() const -> size_t;
+
     void set_visible(bool is_visible);
     void set_start_enabled(bool is_enabled);
 
   private:
     struct slot {
-      size_t                 id_actor = -1;
-      ui::elem::ptr_textarea ui_name =
-          std::make_shared<ui::elem::textarea>();
+      size_t       id_actor = -1;
+      ptr_textarea ui_name  = make<textarea>();
     };
 
-    bool                   m_is_visible = true;
-    std::vector<slot>      m_slots;
-    ui::elem::ptr_textarea m_info =
-        std::make_shared<ui::elem::textarea>();
-    ui::ptr_widget m_slots_area =
-        std::make_shared<ui::widget>();
-    ui::elem::ptr_textbutton m_abort =
-        std::make_shared<ui::elem::textbutton>();
-    ui::elem::ptr_textbutton m_start =
-        std::make_shared<ui::elem::textbutton>();
+    bool              m_is_visible = true;
+    std::vector<slot> m_slots;
+
+    ptr_textarea   m_info       = make<textarea>();
+    ptr_widget     m_slots_area = make<widget>();
+    ptr_textbutton m_abort      = make<textbutton>();
+    ptr_textbutton m_start      = make<textbutton>();
   };
 }
 

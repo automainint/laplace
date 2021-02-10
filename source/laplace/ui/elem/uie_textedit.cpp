@@ -5,16 +5,21 @@
 #include <cassert>
 
 namespace laplace::ui::elem {
-  using std::u8string_view, std::u8string, platform::ctrl_delete,
-      platform::ctrl_backspace, platform::key_lbutton;
+  using std::u8string_view, std::u8string, platform::ref_input,
+      platform::ctrl_delete, platform::ctrl_backspace,
+      platform::key_lbutton, platform::key_tab;
+
+  textedit::textedit() {
+    set_handler(true);
+  }
 
   void textedit::setup_filter(filter f) {
     m_filter = f;
   }
 
-  auto textedit::tick(size_t delta_msec, platform::ref_input in)
-      -> bool {
-    return textedit_tick(in);
+  auto textedit::tick(size_t delta_msec, ref_input in,
+                      bool is_handled) -> bool {
+    return is_handled || textedit_tick(in);
   }
 
   void textedit::render() {
@@ -72,10 +77,9 @@ namespace laplace::ui::elem {
              get_cursor(),         get_selection() };
   }
 
-  auto textedit::update(ptr_widget          object,
-                        textedit::state     textedit_state,
-                        textedit::filter    f,
-                        platform::ref_input in)
+  auto textedit::update(ptr_widget       object,
+                        textedit::state  textedit_state,
+                        textedit::filter f, ref_input in)
       -> textedit::update_result {
     auto event_status = false;
     auto has_focus    = textedit_state.has_focus;
@@ -127,14 +131,24 @@ namespace laplace::ui::elem {
   }
 
   auto textedit::textedit_tick(platform::ref_input in) -> bool {
-    auto s = update(
-        shared_from_this(), get_state(), m_filter, in);
+    if (in.is_key_pressed(key_tab)) {
+      if (auto p = get_parent(); p) {
+        p->next_tab();
 
-    set_focus(s.has_focus);
-    set_text(s.text);
-    set_cursor(s.cursor);
-    set_selection(s.selection);
+        return true;
+      }
+    } else {
+      auto s = update(
+          shared_from_this(), get_state(), m_filter, in);
 
-    return s.event_status;
+      set_focus(s.has_focus);
+      set_text(s.text);
+      set_cursor(s.cursor);
+      set_selection(s.selection);
+
+      return s.event_status;
+    }
+
+    return false;
   }
 }

@@ -26,6 +26,10 @@ namespace laplace::engine {
   using namespace protocol;
   using namespace std;
 
+  host::host() {
+    setup_world();
+  }
+
   host::~host() {
     if (m_node) {
       perform_event(slot_host, encode(server_quit()));
@@ -39,6 +43,8 @@ namespace laplace::engine {
   }
 
   void host::listen(uint16_t port) {
+    set_connected(true);
+
     m_node = make_unique<udp_node>();
     m_node->bind(port);
 
@@ -359,18 +365,24 @@ namespace laplace::engine {
       m_queue.events.emplace_back(ev->encode());
 
       if (get_state() == server_state::prepare) {
-        /*  Perform the event. The event
-         *  time will be undefined.
-         */
-        ev->perform({ *get_world(), access::sync });
+        if (auto wor = get_world(); wor) {
+          /*  Perform the event. The event
+           *  time will be undefined.
+           */
+          ev->perform({ *wor, access::sync });
+        } else {
+          verb("[ host ] no world");
+        }
       } else {
-        /*  Apply the event and
-         *  set the event time.
-         */
-        get_solver()->apply(ev);
+        if (auto sol = get_solver(); sol) {
+          /*  Apply the event and
+           *  set the event time.
+           */
+          sol->apply(ev);
+        }
       }
     } else {
-      verb("[ host ] No factory.");
+      verb("[ host ] no factory");
     }
   }
 
@@ -474,9 +486,14 @@ namespace laplace::engine {
     }
 
     if (client_enter::scan(seq) && slot != slot_host) {
-      m_slots[slot].id_actor = get_world()->reserve(id_undefined);
+      if (auto wor = get_world(); wor) {
+        m_slots[slot].id_actor = get_world()->reserve(
+            id_undefined);
 
-      perform_event(slot, encode(slot_create(false)));
+        perform_event(slot, encode(slot_create(false)));
+      } else {
+        verb("[ host ] no world");
+      }
 
       return true;
     }
@@ -497,7 +514,11 @@ namespace laplace::engine {
           auto ev = f->decode(seq);
 
           if (ev) {
-            ev->perform({ *get_world(), access::sync });
+            if (auto wor = get_world(); wor) {
+              ev->perform({ *get_world(), access::sync });
+            } else {
+              verb("[ host ] no world");
+            }
           } else {
             verb("[ host ] unable to decode command");
           }

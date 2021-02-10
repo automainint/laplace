@@ -13,6 +13,8 @@
 #ifndef __laplace__engine_protocol_slot_remove__
 #define __laplace__engine_protocol_slot_remove__
 
+#include "../basic_impact.h"
+
 namespace laplace::engine::protocol {
   class slot_remove : public sync_impact {
   public:

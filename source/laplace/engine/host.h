@@ -23,6 +23,7 @@ namespace laplace::engine {
   public:
     static constexpr size_t slot_host = -1;
 
+    host();
     ~host() final;
 
     void set_allowed_commands(cref_vuint16 commands);

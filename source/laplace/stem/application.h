@@ -12,57 +12,61 @@
  *  the MIT License for more details.
  */
 
-#pragma once
+#ifndef __laplace__stem_application__
+#define __laplace__stem_application__
 
 #include "../core/family.h"
-#include "../platform/wrap.h"
 #include "../graphics/defs.h"
 #include "../graphics/flat/solid_shader.h"
 #include "../graphics/flat/sprite_shader.h"
-#include "../ui/context.h"
+#include "../platform/wrap.h"
 #include "../render/context.h"
+#include "../ui/context.h"
 
-namespace laplace::stem
-{
-    class application
-    {
-    public:
-        application(int argc, char **argv, core::cref_family def_cfg);
-        virtual ~application();
+namespace laplace::stem {
+  class application {
+  public:
+    application(int argc, char **argv, core::cref_family def_cfg);
+    virtual ~application();
 
-        auto run() -> int;
+    auto run() -> int;
 
-    protected:
-        graphics::flat::ptr_solid_shader    m_flat_solid;
-        graphics::flat::ptr_sprite_shader   m_flat_sprite;
+  protected:
+    graphics::flat::ptr_solid_shader  m_flat_solid;
+    graphics::flat::ptr_sprite_shader m_flat_sprite;
 
-        core::family m_config;
+    core::family m_config;
 
-        virtual void init();
-        virtual void cleanup();
-        virtual void update(size_t delta_msec);
-        virtual void render();
-        virtual void set_frame_size(size_t width, size_t height);
+    virtual void init();
+    virtual void cleanup();
+    virtual void update(size_t delta_msec);
+    virtual void render();
+    virtual void set_frame_size(size_t width, size_t height);
+    virtual void adjust_layout(int width, int height);
 
-        auto get_window()   -> platform::ref_window;
-        auto get_gl()       -> platform::ref_glcontext;
-        auto get_input()    -> platform::ref_input;
+    auto get_window() -> platform::ref_window;
+    auto get_gl() -> platform::ref_glcontext;
+    auto get_input() -> platform::ref_input;
 
-    private:
-        void load_shaders();
-        void adjust_frame_size(size_t width, size_t height);
+  private:
+    void load_shaders();
+    void adjust_frame_size(int width, int height);
 
-        void setup_to(ui::ptr_context cont);
-        void setup_to(render::ptr_context cont);
+    void setup_to(ui::ptr_context cont);
+    void setup_to(render::ptr_context cont);
 
-        auto shader_path(const char *name, const char *type) const->std::wstring;
-        auto open(std::wstring_view file_name)->std::unique_ptr<std::istream>;
+    auto shader_path(const char *name, const char *type) const
+        -> std::wstring;
+    auto open(std::wstring_view file_name)
+        -> std::unique_ptr<std::istream>;
 
-        platform::ptr_window    m_window;
-        platform::ptr_glcontext m_gl;
-        platform::ptr_input     m_input;
+    platform::ptr_window    m_window;
+    platform::ptr_glcontext m_gl;
+    platform::ptr_input     m_input;
 
-        ui::ptr_context         m_ui;
-        render::ptr_context     m_render;
-    };
+    ui::ptr_context     m_ui;
+    render::ptr_context m_render;
+  };
 }
+
+#endif

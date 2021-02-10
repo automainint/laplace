@@ -248,27 +248,33 @@ namespace laplace::core {
     return *this;
   }
 
-  auto family::operator==(cref_family value) const -> bool {
+  auto family::operator==(cref_family value) const noexcept
+      -> bool {
     return compare(value) == 0;
   }
 
-  auto family::operator!=(cref_family value) const -> bool {
+  auto family::operator!=(cref_family value) const noexcept
+      -> bool {
     return compare(value) != 0;
   }
 
-  auto family::operator<(cref_family value) const -> bool {
+  auto family::operator<(cref_family value) const noexcept
+      -> bool {
     return compare(value) < 0;
   }
 
-  auto family::operator>(cref_family value) const -> bool {
+  auto family::operator>(cref_family value) const noexcept
+      -> bool {
     return compare(value) > 0;
   }
 
-  auto family::operator<=(cref_family value) const -> bool {
+  auto family::operator<=(cref_family value) const noexcept
+      -> bool {
     return compare(value) <= 0;
   }
 
-  auto family::operator>=(cref_family value) const -> bool {
+  auto family::operator>=(cref_family value) const noexcept
+      -> bool {
     return compare(value) >= 0;
   }
 
@@ -381,8 +387,7 @@ namespace laplace::core {
   auto family::get_bytes() const -> cref_vbyte {
     static const vbyte nil;
 
-    return m_data.index() == n_bytes ? get<n_bytes>(m_data)
-                                     : nil;
+    return m_data.index() == n_bytes ? get<n_bytes>(m_data) : nil;
   }
 
   auto family::get_size() const -> size_t {
@@ -573,7 +578,7 @@ namespace laplace::core {
     return i->second;
   }
 
-  auto family::compare(cref_family value) const -> int {
+  auto family::compare(cref_family value) const noexcept -> int {
     if (m_data.index() != value.m_data.index()) {
       if (m_data.index() < value.m_data.index())
         return -1;
@@ -581,116 +586,132 @@ namespace laplace::core {
     }
 
     if (m_data.index() == n_uint) {
-      if (get<n_uint>(m_data) == get<n_uint>(value.m_data))
-        return 0;
-      else if (get<n_uint>(m_data) < get<n_uint>(value.m_data))
-        return -1;
-      return 1;
+      try {
+        if (get<n_uint>(m_data) == get<n_uint>(value.m_data))
+          return 0;
+        else if (get<n_uint>(m_data) < get<n_uint>(value.m_data))
+          return -1;
+        return 1;
+      } catch (...) { _unreachable(); }
     }
 
     if (m_data.index() == n_int) {
-      if (get<n_int>(m_data) == get<n_int>(value.m_data))
-        return 0;
-      else if (get<n_int>(m_data) < get<n_int>(value.m_data))
-        return -1;
-      return 1;
+      try {
+        if (get<n_int>(m_data) == get<n_int>(value.m_data))
+          return 0;
+        else if (get<n_int>(m_data) < get<n_int>(value.m_data))
+          return -1;
+        return 1;
+      } catch (...) { _unreachable(); }
     }
 
     if (m_data.index() == n_bool) {
-      if (get<n_bool>(m_data) == get<n_bool>(value.m_data))
-        return 0;
-      else if (get<n_bool>(m_data) == true)
-        return 1;
-      return -1;
+      try {
+        if (get<n_bool>(m_data) == get<n_bool>(value.m_data))
+          return 0;
+        else if (get<n_bool>(m_data) == true)
+          return 1;
+        return -1;
+      } catch (...) { _unreachable(); }
     }
 
     if (m_data.index() == n_real) {
-      if (get<n_real>(m_data) == get<n_real>(value.m_data))
-        return 0;
-      else if (get<n_real>(m_data) < get<n_real>(value.m_data))
-        return -1;
-      return 1;
+      try {
+        if (get<n_real>(m_data) == get<n_real>(value.m_data))
+          return 0;
+        else if (get<n_real>(m_data) < get<n_real>(value.m_data))
+          return -1;
+        return 1;
+      } catch (...) { _unreachable(); }
     }
 
     if (m_data.index() == n_string) {
-      return get<n_string>(m_data).compare(
-          get<n_string>(value.m_data));
+      try {
+        return get<n_string>(m_data).compare(
+            get<n_string>(value.m_data));
+      } catch (...) { _unreachable(); }
     }
 
     if (m_data.index() == n_bytes) {
-      size_t na = get<n_bytes>(m_data).size();
-      size_t nb = get<n_bytes>(value.m_data).size();
+      try {
+        size_t na = get<n_bytes>(m_data).size();
+        size_t nb = get<n_bytes>(value.m_data).size();
 
-      size_t n = min(na, nb);
+        size_t n = min(na, nb);
 
-      for (size_t i = 0; i < n; i++) {
-        if (get<n_bytes>(m_data)[i] <
-            get<n_bytes>(value.m_data)[i])
+        for (size_t i = 0; i < n; i++) {
+          if (get<n_bytes>(m_data)[i] <
+              get<n_bytes>(value.m_data)[i])
+            return -1;
+          if (get<n_bytes>(m_data)[i] >
+              get<n_bytes>(value.m_data)[i])
+            return 1;
+        }
+
+        if (na < nb)
           return -1;
-        if (get<n_bytes>(m_data)[i] >
-            get<n_bytes>(value.m_data)[i])
+        if (na > nb)
           return 1;
-      }
-
-      if (na < nb)
-        return -1;
-      if (na > nb)
-        return 1;
-      return 0;
+        return 0;
+      } catch (...) { _unreachable(); }
     }
 
     if (m_data.index() == n_vector) {
-      size_t na = get<n_vector>(m_data).size();
-      size_t nb = get<n_vector>(value.m_data).size();
+      try {
+        size_t na = get<n_vector>(m_data).size();
+        size_t nb = get<n_vector>(value.m_data).size();
 
-      size_t n = min(na, nb);
+        size_t n = min(na, nb);
 
-      for (size_t i = 0; i < n; i++) {
-        auto x = get<n_vector>(m_data)[i].compare(
-            get<n_vector>(value.m_data)[i]);
+        for (size_t i = 0; i < n; i++) {
+          auto x = get<n_vector>(m_data)[i].compare(
+              get<n_vector>(value.m_data)[i]);
 
-        if (x < 0)
+          if (x < 0)
+            return -1;
+          if (x > 0)
+            return 1;
+        }
+
+        if (na < nb)
           return -1;
-        if (x > 0)
+        if (na > nb)
           return 1;
-      }
-
-      if (na < nb)
-        return -1;
-      if (na > nb)
-        return 1;
-      return 0;
+        return 0;
+      } catch (...) { _unreachable(); }
     }
 
     if (m_data.index() == n_composite) {
-      size_t na = get<n_composite>(m_data).size();
-      size_t nb = get<n_composite>(value.m_data).size();
+      try {
+        size_t na = get<n_composite>(m_data).size();
+        size_t nb = get<n_composite>(value.m_data).size();
 
-      size_t n = min(na, nb);
+        size_t n = min(na, nb);
 
-      for (size_t i = 0; i < n; i++) {
-        auto x = get<n_composite>(m_data)[i].first.compare(
-            get<n_composite>(value.m_data)[i].first);
+        for (size_t i = 0; i < n; i++) {
+          auto x = get<n_composite>(m_data)[i].first.compare(
+              get<n_composite>(value.m_data)[i].first);
 
-        if (x < 0)
+          if (x < 0)
+            return -1;
+          if (x > 0)
+            return 1;
+
+          x = get<n_composite>(m_data)[i].second.compare(
+              get<n_composite>(value.m_data)[i].second);
+
+          if (x < 0)
+            return -1;
+          if (x > 0)
+            return 1;
+        }
+
+        if (na < nb)
           return -1;
-        if (x > 0)
+        if (na > nb)
           return 1;
-
-        x = get<n_composite>(m_data)[i].second.compare(
-            get<n_composite>(value.m_data)[i].second);
-
-        if (x < 0)
-          return -1;
-        if (x > 0)
-          return 1;
-      }
-
-      if (na < nb)
-        return -1;
-      if (na > nb)
-        return 1;
-      return 0;
+        return 0;
+      } catch (...) { _unreachable(); }
     }
 
     return 0;

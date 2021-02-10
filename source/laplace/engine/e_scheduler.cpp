@@ -40,11 +40,14 @@ void scheduler::set_thread_count(size_t thread_count) {
   auto _ul_ex = unique_lock(m_extra_lock);
   auto _ul    = unique_lock(m_lock);
 
-  if (thread_count >
-      thread::hardware_concurrency() * overthreading_limit) {
-    error(__FUNCTION__, "Invalid thread count %zd.",
-        thread_count);
-    return;
+  const auto thread_count_limit = thread::hardware_concurrency() *
+                                  overthreading_limit;
+
+  if (thread_count > thread_count_limit) {
+    verb("%s: Invalid thread count %zd (max %zd).", __FUNCTION__,
+         thread_count, thread_count_limit);
+
+    thread_count = thread_count_limit;
   }
 
   size_t n = m_threads.size();
@@ -129,10 +132,10 @@ void scheduler::tick_thread() {
   auto _ul = unique_lock(m_lock);
 
   while (m_sync.wait(_ul,
-             [=] {
-               return m_tick_count > 0 || m_done;
-             }),
-      !m_done) {
+                     [=] {
+                       return m_tick_count > 0 || m_done;
+                     }),
+         !m_done) {
     while (m_tick_count > 0) {
       _ul.unlock();
 

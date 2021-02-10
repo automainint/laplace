@@ -25,7 +25,7 @@ namespace laplace::engine {
     static constexpr bool     default_verbose = false;
     static constexpr uint64_t default_tick_duration_msec = 10;
 
-    server();
+    server()          = default;
     virtual ~server() = default;
 
     void set_factory(ptr_factory fac);
@@ -44,11 +44,15 @@ namespace laplace::engine {
     auto get_tick_duration() -> size_t;
 
     auto is_verbose() const -> bool;
+    auto is_connected() const -> bool;
 
   protected:
+    void setup_solver();
+    void setup_world();
+
+    void set_connected(bool is_connected);
     void set_tick_duration(uint64_t tick_duration_msec);
     void set_random_seed(seed_type seed);
-
     void set_ping(uint64_t ping_msec);
     void set_state(server_state state);
 
@@ -60,11 +64,12 @@ namespace laplace::engine {
     void dump(cref_vbyte bytes);
 
   private:
-    bool m_verbose = default_verbose;
+    bool m_verbose      = default_verbose;
+    bool m_is_connected = false;
 
     ptr_factory m_factory;
-    ptr_solver  m_solver = std::make_shared<solver>();
-    ptr_world   m_world  = std::make_shared<world>();
+    ptr_solver  m_solver;
+    ptr_world   m_world;
 
     uint64_t m_ping_msec          = 0;
     uint64_t m_tick_clock_msec    = 0;

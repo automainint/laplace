@@ -13,7 +13,7 @@
 #include "lobby.h"
 
 namespace quadwar_app {
-  using namespace std;
+  using std::u8string_view;
 
   lobby::lobby() {
     m_abort->set_text(c_abort);
@@ -57,42 +57,34 @@ namespace quadwar_app {
     }
   }
 
-  void lobby::adjust_layout(size_t width, size_t height) {
+  void lobby::adjust_layout(int width, int height) {
     m_info->set_rect(
-        { static_cast<int>(side_size + spacing),
-          static_cast<int>(height - line_height * 2 + spacing),
+        { side_size + spacing, height - line_height * 2 + spacing,
           width - spacing * 2 - side_size * 2,
           line_height - spacing * 2 - side_size * 2 });
 
-    m_slots_area->set_rect(
-        { static_cast<int>(side_size + spacing),
-          static_cast<int>(side_size + spacing),
-          width - spacing * 2 - side_size * 2,
-          height - line_height * 2 - spacing * 2 -
-              side_size * 2 });
+    m_slots_area->set_rect({ side_size + spacing,
+                             side_size + spacing,
+                             width - spacing * 2 - side_size * 2,
+                             height - line_height * 2 -
+                                 spacing * 2 - side_size * 2 });
 
-    m_abort->set_rect({ static_cast<int>(spacing + side_size),
-                        static_cast<int>(height - side_size -
-                                         line_height + spacing),
+    m_abort->set_rect({ spacing + side_size,
+                        height - side_size - line_height + spacing,
                         button_width - spacing * 2,
                         line_height - spacing * 2 });
 
     m_start->set_rect(
-        { static_cast<int>(width - side_size - button_width +
-                           spacing),
-          static_cast<int>(height - side_size - line_height +
-                           spacing),
-          button_width - spacing * 2,
-          line_height - spacing * 2 });
+        { width - side_size - button_width + spacing,
+          height - side_size - line_height + spacing,
+          button_width - spacing * 2, line_height - spacing * 2 });
 
     const auto area_width = m_slots_area->get_rect().width;
 
     for (size_t i = 0; i < m_slots.size(); i++) {
       m_slots[i].ui_name->set_rect(
-          { static_cast<int>(spacing),
-            static_cast<int>(line_height * i + spacing),
-            area_width - spacing * 2,
-            line_height - spacing * 2 });
+          { spacing, line_height * static_cast<int>(i) + spacing,
+            area_width - spacing * 2, line_height - spacing * 2 });
     }
   }
 
@@ -113,6 +105,10 @@ namespace quadwar_app {
       m_slots[index].id_actor = -1;
       m_slots[index].ui_name->set_text(u8"[ Open ]");
     }
+  }
+
+  auto lobby::get_slot_count() const -> size_t {
+    return m_slots.size();
   }
 
   void lobby::set_visible(bool is_visible) {

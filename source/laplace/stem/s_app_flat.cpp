@@ -1,4 +1,4 @@
-/*  laplace/stem/app_flat.cpp
+/*  laplace/stem/s_app_flat.cpp
  *
  *      Base class for UI and 2D graphics application.
  *
@@ -12,50 +12,49 @@
  *  the MIT License for more details.
  */
 
-#include "app_flat.h"
 #include "../graphics/utils.h"
+#include "app_flat.h"
 
-using namespace laplace;
-using namespace core;
-using namespace stem;
-using namespace ui;
-using namespace std;
+namespace laplace::stem {
+  using std::make_shared, std::abs, core::cref_family, ui::frame;
 
-app_flat::app_flat(int argc, char **argv, cref_family def_cfg) : application(argc, argv, def_cfg) { }
-app_flat::~app_flat() { }
+  app_flat::app_flat(int argc, char **argv, cref_family def_cfg) :
+      application(argc, argv, def_cfg) { }
 
-void app_flat::init()
-{
+  app_flat::~app_flat() { }
+
+  void app_flat::init() {
     application::init();
 
     m_ui = make_shared<frame>();
-}
+  }
 
-void app_flat::cleanup()
-{
+  void app_flat::cleanup() {
     m_ui.reset();
 
     application::cleanup();
-}
+  }
 
-void app_flat::update(size_t delta_msec)
-{
-    m_ui->tick(delta_msec, get_input());
-}
+  void app_flat::update(size_t delta_msec) {
+    m_ui->tick(delta_msec, get_input(), false);
+  }
 
-void app_flat::render()
-{
+  void app_flat::render() {
     graphics::clear(clear_color);
 
     m_ui->render();
 
     get_gl().swap_buffers();
-}
+  }
 
-void app_flat::set_frame_size(size_t width, size_t height)
-{
-    application::set_frame_size(width, height);
+  void app_flat::adjust_layout(int width, int height) {
+    application::adjust_layout(width, height);
 
-    m_ui->set_rect({ 0, 0, width, height });
+    m_ui->set_rect({ .x      = 0,     //
+                     .y      = 0,     //
+                     .width  = abs(width), //
+                     .height = abs(height) });
+
     m_ui->refresh();
+  }
 }
