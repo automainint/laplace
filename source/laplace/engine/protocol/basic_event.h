@@ -98,11 +98,11 @@ namespace laplace::engine::protocol {
 
   using client_enter  = basic_event<ids::client_enter>;
   using client_leave  = basic_event<ids::client_leave>;
-  using client_ready  = basic_event<ids::client_ready>;
   using server_action = basic_event<ids::server_action>;
   using server_pause  = basic_event<ids::server_pause>;
   using server_quit   = basic_event<ids::server_quit>;
 
+  using client_ready = basic_event<ids::client_ready, inheritable>;
   using server_launch = basic_event<ids::server_launch, inheritable>;
 }
 

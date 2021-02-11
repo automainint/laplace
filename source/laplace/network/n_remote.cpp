@@ -168,24 +168,25 @@ namespace laplace::network {
           continue;
         }
 
-        if (is_verbose()) {
-          verb("[ client ] RECV %zd bytes", n);
-        }
-
         if (m_cipher.is_ready()) {
           dump({ m_buffer.data(), n });
         }
 
         auto plain = m_cipher.decrypt({ m_buffer.data(), n });
 
-        if (!plain.empty()) {
-          dump(plain);
-
-          m_client_buffer.insert(m_client_buffer.end(),
-                                 plain.begin(), plain.end());
-        } else {
+        if (plain.empty()) {
           verb("[ client ] unable to decrypt chunk");
+          continue;
         }
+
+        dump(plain);
+
+        if (is_verbose()) {
+          verb("[ client ] RECV %zd bytes", plain.size());
+        }
+
+        m_client_buffer.insert(
+            m_client_buffer.end(), plain.begin(), plain.end());
       }
     }
   }

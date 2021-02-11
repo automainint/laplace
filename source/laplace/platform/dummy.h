@@ -121,7 +121,7 @@ namespace laplace::platform::dummy {
 
   class window {
   public:
-    using native_handle = void *;
+    using native_handle = std::nullptr_t;
 
     window() { }
     window(native_handle) { }

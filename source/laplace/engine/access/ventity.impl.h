@@ -1,4 +1,17 @@
-#pragma once
+/*  laplace/engine/access/ventity.impl.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#ifndef __laplace__engine_access_ventity_impl__
+#define __laplace__engine_access_ventity_impl__
 
 namespace laplace::engine::access {
   inline ventity::ventity(ventity &&ents) noexcept :
@@ -26,3 +39,5 @@ namespace laplace::engine::access {
     return { m_entities[i], m_mode };
   }
 }
+
+#endif

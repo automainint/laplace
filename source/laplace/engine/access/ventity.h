@@ -1,4 +1,17 @@
-#pragma once
+/*  laplace/engine/access/ventity.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#ifndef __laplace__engine_access_ventity__
+#define __laplace__engine_access_ventity__
 
 #include "entity.h"
 
@@ -25,3 +38,5 @@ namespace laplace::engine::access {
 }
 
 #include "ventity.impl.h"
+
+#endif

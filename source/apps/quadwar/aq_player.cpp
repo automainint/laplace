@@ -15,8 +15,10 @@
 #include "sets.h"
 
 namespace quadwar_app {
-  using namespace engine;
-  using namespace std;
+  using std::u8string_view, std::u8string;
+
+  namespace object = engine::object;
+  namespace access = engine::access;
 
   player player::m_proto(player::proto);
 

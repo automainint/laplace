@@ -119,8 +119,7 @@ namespace laplace::engine {
     constexpr auto get_time64() const -> uint64_t;
     constexpr auto get_actor64() const -> uint64_t;
 
-    static constexpr void set_index(ref_vbyte seq,
-                                    size_t    index);
+    static constexpr void set_index(ref_vbyte seq, size_t index);
 
     static constexpr auto get_id_unsafe(cref_vbyte seq)
         -> uint16_t;

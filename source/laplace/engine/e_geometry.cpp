@@ -1,9 +1,23 @@
+/*  laplace/engine/e_geometry.cpp
+ *
+ *      Integer geometry features.
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
 #include "geometry.h"
 #include <algorithm>
 #include <cassert>
 
 namespace laplace::engine {
-  using namespace std;
+  using std::min, std::max;
 
   void append(ref_box a, cref_vec3i point) {
     if (a.min.x > a.max.x || a.min.y > a.max.y ||
@@ -95,8 +109,7 @@ namespace laplace::engine {
   }
 
   auto point_of(cref_ray a, vecval t) -> vec3i {
-    return a.base +
-           (a.direction * t) / math::length(a.direction);
+    return a.base + (a.direction * t) / math::length(a.direction);
   }
 
   auto plane_of(cref_triangle a) -> plane {
@@ -132,8 +145,7 @@ namespace laplace::engine {
   }
 
   auto flat_center_of(cref_box a, size_t index) -> vecval {
-    return index < 3 ? (a.max[index] + a.min[index]) / 2ll
-                     : 0ll;
+    return index < 3 ? (a.max[index] + a.min[index]) / 2ll : 0ll;
   }
 
   auto flat_center_of(cref_triangle a, size_t index) -> vecval {
@@ -253,8 +265,8 @@ namespace laplace::engine {
     return -safe_limit;
   }
 
-  auto abs_square_distance(cref_triangle plane,
-                           cref_vec3i    point) -> vecval {
+  auto abs_square_distance(cref_triangle plane, cref_vec3i point)
+      -> vecval {
     auto n = raw_normal(plane);
     auto l = math::square_length(n);
 
@@ -267,8 +279,7 @@ namespace laplace::engine {
     return safe_limit;
   }
 
-  auto contains_flat(cref_triangle a, cref_vec3i point)
-      -> bool {
+  auto contains_flat(cref_triangle a, cref_vec3i point) -> bool {
     for (size_t i = 0; i < 3; i++) {
       auto  i1 = (i == 2 ? 0 : i + 1);
       auto  i2 = (i == 0 ? 2 : i - 1);
@@ -316,8 +327,7 @@ namespace laplace::engine {
     return true;
   }
 
-  auto contains_flat(cref_cylinder a, cref_vec3i point)
-      -> bool {
+  auto contains_flat(cref_cylinder a, cref_vec3i point) -> bool {
     if (auto dx = abs(point.x - a.base.x);
         dx - epsilon <= a.radius)
       if (auto dy = abs(point.y - a.base.y);
@@ -512,8 +522,7 @@ namespace laplace::engine {
       return false;
     auto d = a.radius + b.radius;
     if (auto dx = abs(a.base.x - b.base.x); dx - epsilon <= d)
-      if (auto dy = abs(a.base.y - b.base.y);
-          dy - epsilon <= d) {
+      if (auto dy = abs(a.base.y - b.base.y); dy - epsilon <= d) {
         auto r = dx * dx + dy * dy;
         return r - epsilon <= d;
       }
@@ -758,15 +767,14 @@ namespace laplace::engine {
   auto intersects(cref_ray ra, cref_cylinder cyl) -> bool {
     auto rr = cyl.radius * cyl.radius;
 
-    if (square_distance(ra,
-                        ray { cyl.base, vec3i { 0, 0, 1 } }) +
+    if (square_distance(ra, ray { cyl.base, vec3i { 0, 0, 1 } }) +
             epsilon >=
         rr) {
       return false;
     }
 
-    auto t0 =
-        intersection(ra, plane { cyl.base, vec3i { 0, 0, 1 } });
+    auto t0 = intersection(
+        ra, plane { cyl.base, vec3i { 0, 0, 1 } });
 
     if (t0 + epsilon >= 0 &&
         contains_flat(cyl, point_of(ra, t0))) {
@@ -914,8 +922,8 @@ namespace laplace::engine {
       return -safe_limit;
     }
 
-    auto delta =
-        static_cast<vecval>(sqrtl(static_cast<long double>(d)));
+    auto delta = static_cast<vecval>(
+        sqrtl(static_cast<long double>(d)));
 
     return (b <= 0 && -b >= delta ? -b - delta : -b + delta) /
            (2 * a);
@@ -924,15 +932,14 @@ namespace laplace::engine {
   auto intersection(cref_ray ra, cref_cylinder cyl) -> vecval {
     auto rr = cyl.radius * cyl.radius;
 
-    if (square_distance(ra,
-                        ray { cyl.base, vec3i { 0, 0, 1 } }) +
+    if (square_distance(ra, ray { cyl.base, vec3i { 0, 0, 1 } }) +
             epsilon >=
         rr) {
       return -safe_limit;
     }
 
-    auto t0 =
-        intersection(ra, plane { cyl.base, vec3i { 0, 0, 1 } });
+    auto t0 = intersection(
+        ra, plane { cyl.base, vec3i { 0, 0, 1 } });
 
     auto t1 = intersection(
         ra, plane { vec3i { cyl.base.x, cyl.base.y,

@@ -1,4 +1,17 @@
-#pragma once
+/*  laplace/engine/object/timer.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#ifndef __laplace__engine_object_timer__
+#define __laplace__engine_object_timer__
 
 #include "../basic_entity.h"
 #include "../basic_impact.h"
@@ -22,3 +35,5 @@ namespace laplace::engine::object {
     impact_gen m_gen;
   };
 }
+
+#endif

@@ -18,17 +18,13 @@ cd ./tools
 if [ `ls ./lib | wc -l` -eq 0 ] || [ `ls ./include | wc -l` -eq 0 ]; then
   ./buildall.sh "$generator" $config
 else
-  gen_folder='./source/generated'
+  gen_folder='../source/generated'
   embed_source='laplace_embedded.cpp'
 
   if [ ! -f './tools/update.sh' ] || [ ! -f './tools/rebuild.sh' ]
     then
-      cd ./tools
-
       echo "[ Generate build scripts ]"
       python ./gen-deps.py
-
-      cd ..
     fi
 
   if [ `ls $gen_folder/gl | wc -l` -le 1 ]

@@ -1,4 +1,15 @@
-/*  Integer geometry features.
+/*  laplace/engine/geometry.h
+ *
+ *      Integer geometry features.
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
  */
 
 #ifndef __laplace__engine_geometry__
@@ -33,8 +44,7 @@ namespace laplace::engine {
   struct octree {
     box bounds;
 
-    std::variant<std::vector<octree>, std::vector<triangle>>
-        childs;
+    std::variant<std::vector<octree>, std::vector<triangle>> childs;
   };
 
   struct ray {
@@ -120,8 +130,8 @@ namespace laplace::engine {
       -> vecval;
   auto square_distance(cref_ray a, cref_vec3i point) -> vecval;
   auto square_distance(cref_ray a, cref_ray b) -> vecval;
-  auto abs_square_distance(cref_triangle plane,
-                           cref_vec3i    point) -> vecval;
+  auto abs_square_distance(cref_triangle plane, cref_vec3i point)
+      -> vecval;
   auto contains_flat(cref_triangle a, cref_vec3i point) -> bool;
   auto contains_flat(cref_quad a, cref_vec3i point) -> bool;
   auto contains_flat(cref_polygon a, cref_vec3i point) -> bool;

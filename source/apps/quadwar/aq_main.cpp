@@ -14,14 +14,14 @@
 #include "../../laplace/platform/wrap.h"
 #include "../../laplace/stem/config.h"
 #include "quadwar.h"
-#include <atomic>
 #include <benchmark/benchmark.h>
 #include <gtest/gtest.h>
 
-using namespace quadwar_app;
-using namespace platform;
-using namespace stem::config;
-using namespace std;
+namespace cfg = laplace::stem::config;
+
+using cfg::scan_flag, cfg::f_tests, cfg::a_tests,
+    cfg::f_benchmarks, cfg::a_benchmarks,
+    laplace::socket_library, quadwar_app::quadwar;
 
 auto run_tests(int &argc, char **argv) -> bool {
   if (scan_flag(argc, argv, f_tests, a_tests)) {
@@ -71,7 +71,7 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) -> int
   }
 
 #ifdef _CONSOLE
-  cout << "\n  Press Enter... ";
+  std::cout << "\n  Press Enter... ";
   static_cast<void>(getchar());
 #endif
 

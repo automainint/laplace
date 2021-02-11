@@ -43,14 +43,14 @@ namespace laplace::test {
     size_t n_value = 0;
   };
 
-  class my_action : public basic_impact {
+  class my_additioner : public basic_impact {
   public:
-    my_action(size_t id_entity, int64_t delta) {
+    my_additioner(size_t id_entity, int64_t delta) {
       m_id    = id_entity;
       m_delta = delta;
     }
 
-    ~my_action() override = default;
+    ~my_additioner() override = default;
 
     void perform(access::world w) const override {
       auto e = w.get_entity(m_id);
@@ -99,12 +99,12 @@ namespace laplace::test {
     const auto id = a->spawn(e, id_undefined);
 
     for (size_t i = 0; i < 100; i++) {
-      a->queue(make_shared<my_action>(id, 1));
-      a->queue(make_shared<my_action>(id, -1));
+      a->queue(make_shared<my_additioner>(id, 1));
+      a->queue(make_shared<my_additioner>(id, -1));
     }
 
     for (size_t i = 0; i < 100; i++) {
-      a->queue(make_shared<my_action>(id, 1));
+      a->queue(make_shared<my_additioner>(id, 1));
     }
 
     a->tick(1);
