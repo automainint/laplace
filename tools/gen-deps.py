@@ -154,7 +154,7 @@ cd ../thirdparty
     out.write('headers=\'' + dep['include'] + '\'\n')
     out.write('update_repo\n\n')
 
-  out.write('cd ../tools/\n\n')
+  out.write('cd ../tools\n\n')
 
 def write_rebuild(deps, file):
   out = open(file, 'w')
@@ -282,5 +282,5 @@ cd ../tools
 ''')
 
 deps = parse_deps('deps.txt')
-write_update(deps, '../thirdparty/update.sh')
-write_rebuild(deps, '../thirdparty/rebuild.sh')
+write_update(deps, 'update.sh')
+write_rebuild(deps, 'rebuild.sh')
