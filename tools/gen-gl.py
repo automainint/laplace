@@ -75,7 +75,7 @@ def args_str(args):
     s += adjust_arg(arg[0]) + arg[1]
   return '(' + s + ')'
 
-gl_xml = xml.etree.ElementTree.parse('gl.xml')
+gl_xml = xml.etree.ElementTree.parse('../thirdparty/gl.xml')
 root = gl_xml.getroot()
 
 types = list()

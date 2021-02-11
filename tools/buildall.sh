@@ -16,26 +16,29 @@ fi
 
 ./cleanup.sh
 
-cd ../thirdparty
 ./update.sh
 ./update-gl.sh
 ./rebuild.sh "$generator" $config
+
+if [ ! -f './update.sh' ] || [ ! -f './rebuild.sh' ]
+  then
+    echo "[ Generate build scripts ]"
+    python ./gen-deps.py
+  fi
+
 echo "[ Generate OpenGL interface ]"
 python ./gen-gl.py
-cd ..
 
-cd ./tools
 echo "[ Generate embedded data code ]"
 python ./embed.py
-cd ..
 
 echo '[ Build Laplace ]'
 
-if [ ! -f './build' ]; then
-  mkdir build
+if [ ! -f '../build' ]; then
+  mkdir ../build
 fi
 
-cd ./build
+cd ../build
 
 if [ -n "$generator" ]; then
   cmake \
@@ -53,4 +56,4 @@ fi
 cmake \
   --build . --config $config
 
-cd ..
+cd ../tools/

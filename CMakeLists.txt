@@ -41,7 +41,7 @@ add_subdirectory(source)
 
 target_link_libraries(
   ${EXE_NAME}
-     Threads::Threads Sockets gtest freetype wolfssl
+    Threads::Threads Sockets gtest freetype wolfssl
 )
 
 target_link_directories(

@@ -27,7 +27,7 @@ def check_subdirs(folder):
 def print_list(s, offset):
   buf = ''
   char_count = offset
-  for i in range(char_count):
+  for i in range(char_count - 1):
     buf += ' '
   for f in s:
     char_count += len(f) + 1

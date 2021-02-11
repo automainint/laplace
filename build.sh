@@ -13,39 +13,47 @@ elif [ $# -eq 2 ]; then
   config=$2
 fi
 
+cd ./tools
+
 if [ `ls ./lib | wc -l` -eq 0 ] || [ `ls ./include | wc -l` -eq 0 ]; then
-  cd ./tools
   ./buildall.sh "$generator" $config
 else
   gen_folder='./source/generated'
   embed_source='laplace_embedded.cpp'
 
+  if [ ! -f './tools/update.sh' ] || [ ! -f './tools/rebuild.sh' ]
+    then
+      cd ./tools
+
+      echo "[ Generate build scripts ]"
+      python ./gen-deps.py
+
+      cd ..
+    fi
+
   if [ `ls $gen_folder/gl | wc -l` -le 1 ]
     then
-      cd ./thirdparty
       ./update-gl.sh
+
       echo "[ Generate OpenGL interface ]"
       python ./gen-gl.py
-      cd ..
     fi
 
   if [ ! -f "$gen_folder/$embed_source" ]
     then
-      cd ./tools
       echo "[ Generate embedded data code ]"
       python ./embed.py
-      cd ..
     fi
 
   echo '[ Build Laplace ]'
 
-  if [ -f './build' ]; then
-    rm -rf ./build/*
+  if [ -f '../build' ]; then
+    rm -rf ../build/*
   else
-    mkdir build
+    mkdir ../build
   fi
 
-  cd ./build
+  cd ../build
 
   if [ -n "$generator" ]; then
     cmake \
@@ -62,6 +70,6 @@ else
 
   cmake \
     --build . --config $config
-
-  cd ..
 fi
+
+cd ..

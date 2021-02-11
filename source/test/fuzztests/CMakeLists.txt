@@ -1,5 +1,5 @@
 target_sources(
   ${EXE_NAME}
     PRIVATE
-       laplace_fuzz.cpp
+      laplace_fuzz.cpp
 )

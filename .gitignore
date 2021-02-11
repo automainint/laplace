@@ -2,14 +2,15 @@
 /lib/**
 /include/**
 /build/**
-/thirdparty/*/
+/thirdparty/**
 
 /.vs/
 *.sln
 *.vcxproj
 *.vcxproj.*
 
-/thirdparty/gl.xml
 /data/lcd.h
 /source/generated/*.cpp
 /source/generated/gl/*.h
+/tools/update.sh
+/tools/rebuild.sh

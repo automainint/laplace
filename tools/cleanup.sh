@@ -12,6 +12,7 @@ rm -rf ./bin/*
 rm -rf ./build/*
 rm -rf ./source/generated/gl/*.h
 rm -rf ./source/generated/*.cpp
-rm -rf ./thirdparty/*/
-rm -f ./thirdparty/gl.xml
+rm -rf ./thirdparty/*
 rm -f ./data/lcd.h
+rm -f ./tools/update.sh
+rm -f ./tools/rebuild.sh

@@ -4,20 +4,25 @@
 #       Getting OpenGL specification XML.
 
 url='https://github.com/KhronosGroup/OpenGL-Registry.git'
-folder='OpenGL-Registry'
+glxml='../thirdparty/gl.xml'
+folder='../thirdparty/OpenGL-Registry'
 
-if [ ! -f './gl.xml' ]
+if [ ! -d '../thirdparty' ]; then
+  mkdir ../thirdparty
+fi
+
+if [ ! -f "$glxml" ]
   then
     echo '[ Update OpenGL specification ]'
 
-    if [ -d $folder ]
+    if [ -d "$folder" ]
       then
         cd $folder
         git pull &> /dev/null
-        cd ..
+        cd ../../tools
       else
         git clone $url $folder &> /dev/null
       fi
 
-    cp "$folder/xml/gl.xml" './gl.xml'
+    cp "$folder/xml/gl.xml" "$glxml"
   fi
