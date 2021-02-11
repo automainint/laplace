@@ -51,7 +51,6 @@ namespace laplace::core {
     auto parse(const char *format, ...) -> bool;
 
     void set_stream(input_stream stream);
-
     auto get_stream() const -> input_stream;
 
     auto is_eof() const -> bool;
@@ -60,10 +59,12 @@ namespace laplace::core {
     auto get_column() const -> size_t;
 
     void push_offset();
+
+    /*  apply - if true, returns saved offset.
+     */
     void pop_offset(bool apply);
 
-    static auto wrap(std::string_view s, size_t i = 0)
-        -> parser;
+    static auto wrap(std::string_view s, size_t i = 0) -> parser;
     static auto wrap(std::u8string_view s, size_t i = 0)
         -> parser;
 
@@ -83,8 +84,8 @@ namespace laplace::core {
     };
 
     std::vector<char32_t> m_buffer;
-    std::vector<position> m_buffer_offset =
-        std::vector<position>(1);
+    std::vector<position> m_buffer_offset = std::vector<position>(
+        1);
 
     size_t       m_line   = 0;
     size_t       m_column = 0;

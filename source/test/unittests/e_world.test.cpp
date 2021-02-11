@@ -16,20 +16,24 @@
 #include <gtest/gtest.h>
 #include <thread>
 
-namespace laplace::engine::world_test {
-  class my_entity : public basic_entity {
+namespace laplace::test {
+  using std::make_shared, engine::basic_entity,
+      engine::basic_impact, engine::world, engine::box,
+      engine::id_undefined;
+
+  namespace access = engine::access;
+  namespace sets   = engine::object::sets;
+
+  class my_counter : public basic_entity {
   public:
-    my_entity(bool is_dynamic) :
-        basic_entity(is_dynamic, false, false, false, 10,
-                     box {}) {
-      using namespace object;
+    my_counter(bool is_dynamic) :
+        basic_entity(is_dynamic, false, false, false, 10, box {}) {
 
       setup_sets({ { sets::debug_value, 0, 0 } });
-
       n_value = index_of(sets::debug_value);
     }
 
-    ~my_entity() override = default;
+    ~my_counter() override = default;
 
     void tick(access::world) override {
       apply_delta(n_value, 1);
@@ -49,8 +53,6 @@ namespace laplace::engine::world_test {
     ~my_action() override = default;
 
     void perform(access::world w) const override {
-      using namespace object;
-
       auto e = w.get_entity(m_id);
       e.apply_delta(e.index_of(sets::debug_value), m_delta);
     }
@@ -59,64 +61,56 @@ namespace laplace::engine::world_test {
     size_t  m_id    = 0;
     int64_t m_delta = 0;
   };
-}
 
-using namespace laplace;
-using namespace engine;
-using namespace object;
-using namespace world_test;
-using namespace std;
-using namespace chrono;
+  TEST(engine, world_single_thread) {
+    auto a = make_shared<world>();
+    auto e = make_shared<my_counter>(true);
 
-TEST(laplace_engine, world_single_thread) {
-  auto a = make_shared<world>();
-  auto e = make_shared<my_entity>(true);
+    a->set_thread_count(0);
 
-  a->set_thread_count(0);
+    a->spawn(e, id_undefined);
+    a->tick(100);
 
-  a->spawn(e, id_undefined);
-  a->tick(100);
+    auto value = e->get(e->index_of(sets::debug_value));
 
-  auto value = e->get(e->index_of(sets::debug_value));
-
-  EXPECT_EQ(value, 10);
-}
-
-TEST(laplace_engine, world_multithreading) {
-  auto a = make_shared<world>();
-  auto e = make_shared<my_entity>(true);
-
-  a->set_thread_count(32);
-
-  a->spawn(e, id_undefined);
-
-  a->tick(100);
-
-  auto value = e->get(e->index_of(sets::debug_value));
-
-  EXPECT_EQ(value, 10);
-}
-
-TEST(laplace_engine, world_async_impacts) {
-  auto a = make_shared<world>();
-  auto e = make_shared<my_entity>(false);
-
-  a->set_thread_count(32);
-
-  const auto id = a->spawn(e, id_undefined);
-
-  for (size_t i = 0; i < 100; i++) {
-    a->queue(make_shared<my_action>(id, 1));
-    a->queue(make_shared<my_action>(id, -1));
+    EXPECT_EQ(value, 10);
   }
 
-  for (size_t i = 0; i < 100; i++) {
-    a->queue(make_shared<my_action>(id, 1));
+  TEST(engine, world_multithreading) {
+    auto a = make_shared<world>();
+    auto e = make_shared<my_counter>(true);
+
+    a->set_thread_count(32);
+
+    a->spawn(e, id_undefined);
+    a->tick(100);
+
+    auto value = e->get(e->index_of(sets::debug_value));
+
+    EXPECT_EQ(value, 10);
   }
 
-  a->tick(1);
+  TEST(engine, world_async_impacts) {
+    auto a = make_shared<world>();
+    auto e = make_shared<my_counter>(false);
 
-  auto value = e->get(e->index_of(sets::debug_value));
+    a->set_thread_count(32);
 
-  EXPECT_EQ(value, 100);
+    const auto id = a->spawn(e, id_undefined);
+
+    for (size_t i = 0; i < 100; i++) {
+      a->queue(make_shared<my_action>(id, 1));
+      a->queue(make_shared<my_action>(id, -1));
+    }
+
+    for (size_t i = 0; i < 100; i++) {
+      a->queue(make_shared<my_action>(id, 1));
+    }
+
+    a->tick(1);
+
+    auto value = e->get(e->index_of(sets::debug_value));
+
+    EXPECT_EQ(value, 100);
+  }
 }

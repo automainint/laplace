@@ -1,10 +1,10 @@
 import bpy
 
 class save(bpy.types.Operator):
-    """PlainTeq export operator."""
+    """Laplace export operator."""
 
-    bl_idname = "export.plainteq"
-    bl_label = "Export TEQ"
+    bl_idname = "export.laplace"
+    bl_label = "Export Laplace VEC"
 
     export_format: bpy.props.EnumProperty(
         name = 'Format',
@@ -22,14 +22,14 @@ class save(bpy.types.Operator):
         default = 'BINARY'
     )
 
-    filter_glob: bpy.props.StringProperty(default = '*.teq', options = {'HIDDEN'})
+    filter_glob: bpy.props.StringProperty(default = '*.vec', options = {'HIDDEN'})
 
     filepath: bpy.props.StringProperty(subtype = "FILE_PATH")
     
     def execute(self, context):
         data = model.from_context(context)
         package = data.to_family()
-        file_name = bpy.path.ensure_ext(self.filepath, ".teq")
+        file_name = bpy.path.ensure_ext(self.filepath, ".vec")
 
         if self.export_format == 'BINARY':
             package.pack()

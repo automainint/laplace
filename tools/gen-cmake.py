@@ -106,7 +106,7 @@ out.write('    TARGET ${EXE_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded"\
 out.write('  )\n\n')
 out.write('  set_target_properties(\n')
 out.write('    ${EXE_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE"\n')
-out.write('  )\n\n')
+out.write('  )\n')
 out.write('endif()\n\n')
 
 out.write('if(WIN32)\n')

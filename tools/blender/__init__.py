@@ -1,7 +1,7 @@
 bl_info = {
-    "name" : "PlainTeq Model",
+    "name" : "Laplace Model",
     "author" : "Mitya Selivanov",
-    "description" : "PlainTeq model file format import and export features.",
+    "description" : "Laplace model file format import and export features.",
     "blender" : (2, 80, 0),
     "version" : (0, 0, 1),
     "location" : "File > Import-Export",
@@ -10,16 +10,16 @@ bl_info = {
 }
 
 import bpy
-from .plainteq.load import load
-from .plainteq.save import save
+from .laplace.load import load
+from .laplace.save import save
 
 def menu_func_import(self, context):
     self.layout.operator_context = 'INVOKE_DEFAULT'
-    self.layout.operator(load.bl_idname, text="PlainTeq Model (.teq)")
+    self.layout.operator(load.bl_idname, text="Laplace Model (.vec)")
 
 def menu_func_export(self, context):
     self.layout.operator_context = 'INVOKE_DEFAULT'
-    self.layout.operator(save.bl_idname, text="PlainTeq Model (.teq)")
+    self.layout.operator(save.bl_idname, text="Laplace Model (.vec)")
 
 def register():
     bpy.utils.register_class(load)

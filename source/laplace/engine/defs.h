@@ -21,13 +21,17 @@
 #include <variant>
 #include <vector>
 
+#ifdef max
+#  undef max
+#endif
+
 namespace laplace::engine {
   using vecval = int64_t;
 
   constexpr vecval epsilon    = 1;
   constexpr vecval safe_delta = 2;
-  constexpr vecval infinity =
-      std::numeric_limits<vecval>::max() >> 8;
+  constexpr vecval infinity = std::numeric_limits<vecval>::max() >>
+                              8;
   constexpr vecval safe_limit =
       std::numeric_limits<vecval>::max() >> 4;
 

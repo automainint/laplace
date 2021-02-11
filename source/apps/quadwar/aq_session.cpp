@@ -11,15 +11,16 @@
  */
 
 #include "../../laplace/core/utils.h"
-#include "../../laplace/engine/host.h"
-#include "../../laplace/engine/remote.h"
+#include "../../laplace/network/host.h"
+#include "../../laplace/network/remote.h"
 #include "player.h"
 #include "qw_player_name.h"
 #include "session.h"
 
 namespace quadwar_app {
   using std::find, std::make_shared, std::string,
-      std::string_view, std::u8string_view;
+      std::string_view, std::u8string_view, network::host,
+      network::remote;
 
   session::session() {
     m_lobby.on_abort([=] {

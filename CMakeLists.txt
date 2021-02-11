@@ -26,7 +26,6 @@ if(MSVC)
   set_target_properties(
     ${EXE_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE"
   )
-
 endif()
 
 if(WIN32)

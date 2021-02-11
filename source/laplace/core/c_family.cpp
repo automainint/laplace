@@ -16,14 +16,6 @@
 #include "utils.h"
 #include <algorithm>
 
-#ifdef min
-#  undef min
-#endif
-
-#ifdef max
-#  undef max
-#endif
-
 namespace laplace::core {
   using std::min, std::move, std::lower_bound, std::string_view,
       std::wstring_view, std::u8string_view, std::u16string_view,

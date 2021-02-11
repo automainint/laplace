@@ -35,142 +35,147 @@ extern "C" {
       AmdPowerXpressRequestHighPerformance = 1;
 }
 
-using namespace laplace;
-using namespace win32;
-using namespace std;
+namespace laplace::win32 {
+  using std::shared_ptr;
 
-bool glcontext::is_forward_compatible = false;
+  bool glcontext::m_is_forward_compatible = false;
 
-glcontext::glcontext(shared_ptr<window> win) {
-  if (!win) {
-    error(__FUNCTION__, "No window.");
-    return;
-  }
-
-  if (!gl::platform_init()) {
-    error(__FUNCTION__, "WGL initialization failed.");
-    return;
-  }
-
-  m_window = win;
-
-  PIXELFORMATDESCRIPTOR pfd;
-  memset(&pfd, 0, sizeof pfd);
-
-  pfd.nSize    = sizeof pfd;
-  pfd.nVersion = 1;
-  pfd.dwFlags  = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL |
-                PFD_DOUBLEBUFFER;
-  pfd.iPixelType = PFD_TYPE_RGBA;
-  pfd.cColorBits = 32;
-
-  if (is_forward_compatible) {
-    /*  OpenGL forward-compatibility.
-     */
-    pfd.iLayerType = PFD_MAIN_PLANE;
-  }
-
-  m_hDC = GetDC(win->get_native_handle());
-
-  if (!m_hDC) {
-    error(__FUNCTION__, "GetDC failed.");
-    cleanup();
-    return;
-  }
-
-  int pf = ChoosePixelFormat(m_hDC, &pfd);
-
-  if (!SetPixelFormat(m_hDC, pf, &pfd)) {
-    error(__FUNCTION__, "SetPixelFormat failed.");
-    cleanup();
-    return;
-  }
-
-  m_hRC = gl::wglCreateContext(m_hDC);
-
-  if (!m_hRC) {
-    error(__FUNCTION__, "wglCreateContext failed.");
-    cleanup();
-    return;
-  }
-
-  if (!gl::wglMakeCurrent(m_hDC, m_hRC)) {
-    error(__FUNCTION__, "wglMakeCurrent failed.");
-    cleanup();
-    return;
-  }
-
-  if (gl::preload() && gl::has("WGL_ARB_create_context")) {
-    /*  Specify the OpenGL version.
-     */
-
-    int32_t major, minor;
-
-    gl::glGetIntegerv(gl::GL_MAJOR_VERSION, &major);
-    gl::glGetIntegerv(gl::GL_MINOR_VERSION, &minor);
-
-    int32_t attrs[] = { gl::WGL_CONTEXT_MAJOR_VERSION_ARB,
-                        major,
-                        gl::WGL_CONTEXT_MINOR_VERSION_ARB,
-                        minor,
-                        gl::WGL_CONTEXT_FLAGS_ARB,
-                        0,
-                        0 };
-
-    if (is_forward_compatible) {
-      attrs[5] = gl::WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+  glcontext::glcontext(shared_ptr<window> win) {
+    if (!win) {
+      error(__FUNCTION__, "No window.");
+      return;
     }
 
-    HGLRC hRC = gl::wglCreateContextAttribsARB(
-        m_hDC, nullptr, attrs);
+    if (!gl::platform_init()) {
+      error(__FUNCTION__, "WGL initialization failed.");
+      return;
+    }
 
-    if (!hRC) {
-      error(__FUNCTION__, "wglCreateContextAttribsARB failed.");
+    m_window = win;
+
+    PIXELFORMATDESCRIPTOR pfd;
+    memset(&pfd, 0, sizeof pfd);
+
+    pfd.nSize    = sizeof pfd;
+    pfd.nVersion = 1;
+    pfd.dwFlags  = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL |
+                  PFD_DOUBLEBUFFER;
+    pfd.iPixelType = PFD_TYPE_RGBA;
+    pfd.cColorBits = 32;
+
+    if (m_is_forward_compatible) {
+      /*  OpenGL forward-compatibility.
+       */
+      pfd.iLayerType = PFD_MAIN_PLANE;
+    }
+
+    m_hDC = GetDC(win->get_native_handle());
+
+    if (!m_hDC) {
+      error(__FUNCTION__, "GetDC failed.");
       cleanup();
       return;
     }
 
-    gl::wglMakeCurrent(nullptr, nullptr);
-    gl::wglDeleteContext(m_hRC);
+    int pf = ChoosePixelFormat(m_hDC, &pfd);
 
-    m_hRC = hRC;
+    if (!SetPixelFormat(m_hDC, pf, &pfd)) {
+      error(__FUNCTION__, "SetPixelFormat failed.");
+      cleanup();
+      return;
+    }
+
+    m_hRC = gl::wglCreateContext(m_hDC);
+
+    if (!m_hRC) {
+      error(__FUNCTION__, "wglCreateContext failed.");
+      cleanup();
+      return;
+    }
 
     if (!gl::wglMakeCurrent(m_hDC, m_hRC)) {
       error(__FUNCTION__, "wglMakeCurrent failed.");
       cleanup();
       return;
     }
-  }
 
-  if (!gl::init()) {
-    error(__FUNCTION__, "OpenGL initialization failed.");
-    cleanup();
-    return;
-  }
-}
+    if (gl::preload() && gl::has("WGL_ARB_create_context")) {
+      /*  Specify the OpenGL version.
+       */
 
-glcontext::~glcontext() {
-  cleanup();
-}
+      int32_t major, minor;
 
-void glcontext::swap_buffers() {
-  SwapBuffers(m_hDC);
-}
+      gl::glGetIntegerv(gl::GL_MAJOR_VERSION, &major);
+      gl::glGetIntegerv(gl::GL_MINOR_VERSION, &minor);
 
-void glcontext::cleanup() {
-  if (m_hDC) {
-    if (m_hRC) {
-      gl::wglMakeCurrent(m_hDC, nullptr);
+      int32_t attrs[] = { gl::WGL_CONTEXT_MAJOR_VERSION_ARB,
+                          major,
+                          gl::WGL_CONTEXT_MINOR_VERSION_ARB,
+                          minor,
+                          gl::WGL_CONTEXT_FLAGS_ARB,
+                          0,
+                          0 };
+
+      if (m_is_forward_compatible) {
+        attrs[5] = gl::WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+      }
+
+      HGLRC hRC = gl::wglCreateContextAttribsARB(
+          m_hDC, nullptr, attrs);
+
+      if (!hRC) {
+        error(
+            __FUNCTION__, "wglCreateContextAttribsARB failed.");
+        cleanup();
+        return;
+      }
+
+      gl::wglMakeCurrent(nullptr, nullptr);
       gl::wglDeleteContext(m_hRC);
+
+      m_hRC = hRC;
+
+      if (!gl::wglMakeCurrent(m_hDC, m_hRC)) {
+        error(__FUNCTION__, "wglMakeCurrent failed.");
+        cleanup();
+        return;
+      }
     }
 
-    if (m_window && m_window->get_native_handle()) {
-      ReleaseDC(m_window->get_native_handle(), m_hDC);
+    if (!gl::init()) {
+      error(__FUNCTION__, "OpenGL initialization failed.");
+      cleanup();
+      return;
     }
   }
 
-  gl::platform_cleanup();
+  glcontext::~glcontext() {
+    cleanup();
+  }
 
-  m_hDC = nullptr;
-  m_hRC = nullptr;
+  void glcontext::swap_buffers() {
+    SwapBuffers(m_hDC);
+  }
+
+  void glcontext::set_forward_compatible(bool is_forward_compatible) {
+    m_is_forward_compatible = is_forward_compatible;
+  }
+
+  void glcontext::cleanup() {
+    if (m_hDC) {
+      if (m_hRC) {
+        gl::wglMakeCurrent(m_hDC, nullptr);
+        gl::wglDeleteContext(m_hRC);
+      }
+
+      if (m_window && m_window->get_native_handle()) {
+        ReleaseDC(m_window->get_native_handle(), m_hDC);
+      }
+    }
+
+    gl::platform_cleanup();
+
+    m_hDC = nullptr;
+    m_hRC = nullptr;
+  }
 }

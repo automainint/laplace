@@ -13,7 +13,7 @@
 #ifndef __quadwar__session__
 #define __quadwar__session__
 
-#include "../../laplace/engine/server.h"
+#include "../../laplace/network/server.h"
 #include "ids.h"
 #include "lobby.h"
 #include "qw_factory.h"
@@ -79,7 +79,7 @@ namespace quadwar_app {
     size_t        m_unit_count   = 0;
 
     ptr_factory m_factory = std::make_shared<qw_factory>();
-    ptr_server  m_server;
+    network::ptr_server m_server;
 
     lobby m_lobby;
   };

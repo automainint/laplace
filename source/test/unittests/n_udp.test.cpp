@@ -14,49 +14,52 @@
 #include <gtest/gtest.h>
 #include <thread>
 
-using namespace laplace;
-using namespace network;
-using namespace std;
+namespace laplace::test {
+  using network::udp_node, network::any_port,
+      network::localhost, network::async;
 
-TEST(laplace_network, udp_message) {
-  for (size_t i = 0; i < 10; i++) {
-    udp_node a;
-    udp_node b(any_port);
+  namespace this_thread = std::this_thread;
 
-    vbyte msg = { 1, 2, 3 };
+  TEST(network, udp_message) {
+    for (size_t i = 0; i < 10; i++) {
+      udp_node a;
+      udp_node b(any_port);
 
-    a.send_to(localhost, b.get_port(), msg);
+      vbyte msg = { 1, 2, 3 };
 
-    this_thread::yield();
-
-    auto seq = b.receive(msg.size(), async);
-
-    EXPECT_EQ(msg, seq);
-  }
-}
-
-TEST(laplace_network, udp_echo) {
-  for (size_t i = 0; i < 10; i++) {
-    udp_node a;
-    udp_node b(any_port);
-
-    vbyte msg = { 1, 2, 3 };
-    vbyte req = { 5 };
-    vbyte seq;
-
-    a.send_to(localhost, b.get_port(), req);
-
-    this_thread::yield();
-
-    if (b.receive(req.size(), async) == req) {
-      b.send_to(b.get_remote_address(), b.get_remote_port(),
-                msg);
+      a.send_to(localhost, b.get_port(), msg);
 
       this_thread::yield();
 
-      seq = a.receive(msg.size(), async);
-    }
+      auto seq = b.receive(msg.size(), async);
 
-    EXPECT_EQ(msg, seq);
+      EXPECT_EQ(msg, seq);
+    }
+  }
+
+  TEST(network, udp_echo) {
+    for (size_t i = 0; i < 10; i++) {
+      udp_node a;
+      udp_node b(any_port);
+
+      vbyte msg = { 1, 2, 3 };
+      vbyte req = { 5 };
+      vbyte seq;
+
+      a.send_to(localhost, b.get_port(), req);
+
+      this_thread::yield();
+
+      if (b.receive(req.size(), async) == req) {
+        b.send_to(
+            b.get_remote_address(), b.get_remote_port(), msg);
+
+        this_thread::yield();
+
+        seq = a.receive(msg.size(), async);
+      }
+
+      EXPECT_EQ(msg, seq);
+    }
   }
 }

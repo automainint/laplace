@@ -1,4 +1,4 @@
-/*  laplace/platform/win32/input.h
+/*  laplace/platform/win32/glcontext.h
  *
  *      Win32 OpenGL context declarations.
  *
@@ -12,33 +12,36 @@
  *  the MIT License for more details.
  */
 
-#pragma once
+#ifndef __laplace__platform_win32_glcontext__
+#define __laplace__platform_win32_glcontext__
 
+#include "../events.h"
 #include "wgl.h"
 #include "windef.h"
-#include "../events.h"
 #include <memory>
 
-namespace laplace::win32
-{
-    class window;
+namespace laplace::win32 {
+  class window;
 
-    class glcontext
-    {
-    public:
-        static bool is_forward_compatible;
+  class glcontext {
+  public:
+    glcontext(std::shared_ptr<window> win);
+    ~glcontext();
 
-        glcontext(std::shared_ptr<window> win);
-        ~glcontext();
+    void swap_buffers();
 
-        void swap_buffers();
+    static void set_forward_compatible(bool is_forward_compatible);
 
-    private:
-        void cleanup();
+  private:
+    void cleanup();
 
-        std::shared_ptr<window> m_window;
+    static bool m_is_forward_compatible;
 
-        HDC     m_hDC   = nullptr;
-        HGLRC   m_hRC   = nullptr;
-    };
+    std::shared_ptr<window> m_window;
+
+    HDC   m_hDC = nullptr;
+    HGLRC m_hRC = nullptr;
+  };
 }
+
+#endif

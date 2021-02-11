@@ -15,14 +15,6 @@
 #ifndef __laplace__core_utils_impl__
 #define __laplace__core_utils_impl__
 
-#ifdef min
-#  undef min
-#endif
-
-#ifdef max
-#  undef max
-#endif
-
 namespace laplace {
   constexpr auto hex_to_int(char x) -> int {
     int result = 0;

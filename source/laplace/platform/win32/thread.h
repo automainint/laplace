@@ -12,17 +12,19 @@
  *  the MIT License for more details.
  */
 
-#pragma once
+#ifndef __laplace__platform_win32_thread__
+#define __laplace__platform_win32_thread__
 
 #include "../thread.h"
 
-namespace laplace::win32
-{
-    void set_background_mode(bool is_background_mode);
-    void set_realtime_mode(bool is_realtime_mode);
+namespace laplace::win32 {
+  void set_background_mode(bool is_background_mode);
+  void set_realtime_mode(bool is_realtime_mode);
 
-    /*  Thread priority from 1 to 7.
-     */
-    void set_thread_priority(int priority);
-    void set_thread_priority(std::thread &th, int priority);
+  /*  Thread priority from 1 to 7.
+   */
+  void set_thread_priority(int priority);
+  void set_thread_priority(std::thread &th, int priority);
 }
+
+#endif

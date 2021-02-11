@@ -1,16 +1,28 @@
-#pragma once
+/*  laplace/network/defs.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
 
+#ifndef __laplace__network_defs__
+#define __laplace__network_defs__
+
+#include "../core/defs.h"
+#include "../platform/socket.h"
 #include <cstdint>
 
-namespace laplace::network
-{
-    static constexpr size_t     max_chunk_size  = 0x7fffffff;
-    static constexpr auto       localhost       = "127.0.0.1";
-    static constexpr uint16_t   any_port        = 0;
+namespace laplace::network {
+  static constexpr size_t   max_chunk_size = 0x7fffffff;
+  static constexpr auto     localhost      = "127.0.0.1";
+  static constexpr uint16_t any_port       = 0;
 
-    enum io_mode
-    {
-        async,
-        sync
-    };
+  enum io_mode { async, sync };
 }
+
+#endif

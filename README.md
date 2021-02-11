@@ -18,20 +18,20 @@ Execute `build.sh`.
 Done!
 
 ### By hand
-Use `thirdparty/update.sh` to download the repos.
+Use `tools/update.sh` to download the repos.
 
-    cd ./thirdparty
+    cd ./tools
     ./update.sh
 
-Use `thirdparty/update-gl.sh` to download the `gl.xml` file.
+Use `tools/update-gl.sh` to download the `gl.xml` file.
 
     ./update-gl.sh
 
-Use `thirdparty/rebuild.sh` to build the repos.
+Use `tools/rebuild.sh` to build the repos.
 
     ./rebuild.sh
 
-Use `thirdparty/gen-gl.py` to automatically generate the OpenGL interface files.
+Use `tools/gen-gl.py` to automatically generate the OpenGL interface files.
 
     python ./gen-gl.py
     cd ..

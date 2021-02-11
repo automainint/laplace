@@ -15,9 +15,18 @@
 #ifndef __laplace__platform_wrap__
 #define __laplace__platform_wrap__
 
-#if defined(_WIN32) || defined(_WINDOWS)
+#if !defined(LAPLACE_POSIX_SOCKETS) && \
+    (defined(_WIN32) || defined(_WINDOWS))
 #  include <winsock2.h>
 #  include <ws2tcpip.h>
+#else
+#  include <netinet/in.h>
+#  include <sys/socket.h>
+#  include <sys/types.h>
+#endif
+
+#if !defined(LAPLACE_PLATFORM_DUMMY) && \
+    (defined(_WIN32) || defined(_WINDOWS))
 
 #  include "win32/audio.h"
 #  include "win32/clipboard.h"

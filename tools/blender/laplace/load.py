@@ -3,10 +3,10 @@ from .model import model
 from .family import family
 
 class load(bpy.types.Operator):
-    """PlainTeq import operator."""
+    """Laplace import operator."""
 
-    bl_idname = "import.plainteq"
-    bl_label = "Import TEQ"
+    bl_idname = "import.laplace"
+    bl_label = "Import Laplace VEC"
 
     filepath: bpy.props.StringProperty(subtype = "FILE_PATH")
 

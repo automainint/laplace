@@ -16,6 +16,9 @@
 #define __laplace__windows_header__
 #include <windows.h>
 
+#undef min
+#undef max
+
 #include "../../core/utils.h"
 #include "../gldef.h"
 #include "wgl.h"
