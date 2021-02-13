@@ -21,6 +21,8 @@ namespace laplace::network {
    */
   class host final : public udp_server {
   public:
+    using server::queue;
+
     static constexpr size_t slot_host = -1;
 
     host();
@@ -34,11 +36,6 @@ namespace laplace::network {
     void tick(size_t delta_msec) final;
 
     auto get_port() const -> uint16_t;
-
-    template <typename impact_, typename... args_>
-    inline void queue(args_... args) {
-      this->queue(engine::encode(impact_(args...)));
-    }
 
   private:
     void receive_events();

@@ -1,6 +1,6 @@
 /*  laplace/engine/basic_factory.h
  *
- *      Basic Impact factory.
+ *      Prime impact factory.
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -15,9 +15,11 @@
 #ifndef __laplace__engine_basic_factory__
 #define __laplace__engine_basic_factory__
 
-#include "basic_impact.h"
+#include "prime_impact.h"
 
 namespace laplace::engine {
+  /*  Prime impact factory performs deserialization.
+   */
   class basic_factory {
   public:
     basic_factory()          = default;
@@ -26,7 +28,7 @@ namespace laplace::engine {
     virtual auto parse(std::string_view command) const -> vbyte;
     virtual auto print(cref_vbyte seq) const -> std::string;
 
-    virtual auto decode(cref_vbyte seq) const -> ptr_impact;
+    virtual auto decode(cref_vbyte seq) const -> ptr_prime_impact;
 
     auto parse_multi(std::string_view commands) const
         -> std::vector<vbyte>;
@@ -39,10 +41,10 @@ namespace laplace::engine {
     static auto print_native(std::span<const std::string_view> table,
                              cref_vbyte seq) -> std::string;
 
-    static auto decode_native(cref_vbyte seq) -> ptr_impact;
+    static auto decode_native(cref_vbyte seq) -> ptr_prime_impact;
 
-    template <typename impact_type>
-    static auto make(cref_vbyte seq) -> ptr_impact;
+    template <typename impact_type_>
+    static auto make(cref_vbyte seq) -> ptr_prime_impact;
   };
 
   using ptr_factory = std::shared_ptr<basic_factory>;

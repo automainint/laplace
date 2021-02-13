@@ -60,11 +60,6 @@ namespace laplace::engine {
       n_actor = 18
     };
 
-    /*  Max encoded Impact size.
-     */
-    static constexpr size_t max_size =
-        std::numeric_limits<uint16_t>::max();
-
     constexpr basic_impact()                     = default;
     constexpr basic_impact(const basic_impact &) = default;
     constexpr basic_impact(basic_impact &&)      = default;
@@ -96,18 +91,6 @@ namespace laplace::engine {
 
     virtual void perform(access::world w) const;
 
-    /*  Encode into byte sequence. The sequence can be decoded
-     *  by the Impact Factory.
-     */
-    auto encode() const -> vbyte;
-
-    /*  TODO
-     *  Make it constexpr.
-     */
-    virtual void encode_to(std::span<uint8_t> bytes) const;
-
-    constexpr auto get_encoded_size() const -> size_t;
-
     constexpr auto get_index() const -> size_t;
     constexpr auto get_order() const -> cref_eventorder;
     constexpr auto get_time() const -> uint64_t;
@@ -119,32 +102,8 @@ namespace laplace::engine {
     constexpr auto get_time64() const -> uint64_t;
     constexpr auto get_actor64() const -> uint64_t;
 
-    static constexpr void set_index(ref_vbyte seq, size_t index);
-
-    static constexpr auto get_id_unsafe(cref_vbyte seq)
-        -> uint16_t;
-    static constexpr auto get_index_unsafe(cref_vbyte seq)
-        -> size_t;
-    static constexpr auto get_time_unsafe(cref_vbyte seq)
-        -> uint64_t;
-    static constexpr auto get_actor_unsafe(cref_vbyte seq)
-        -> size_t;
-
-    static constexpr auto get_id(cref_vbyte seq) -> uint16_t;
-    static constexpr auto get_index(cref_vbyte seq) -> size_t;
-    static constexpr auto get_time(cref_vbyte seq) -> uint64_t;
-    static constexpr auto get_actor(cref_vbyte seq) -> size_t;
-
-    static inline auto get_string(cref_vbyte seq, size_t offset)
-        -> std::u8string_view;
-
-    static inline auto get_string(cref_vbyte seq, size_t offset,
-                                  size_t size)
-        -> std::u8string_view;
-
   protected:
     constexpr void set_async(bool is_async);
-    constexpr void set_size(size_t size);
     constexpr auto order_of_child(ref_uint count) const
         -> eventorder;
 
@@ -153,10 +112,9 @@ namespace laplace::engine {
     uint64_t   m_time     = time_undefined;
     size_t     m_id_actor = id_undefined;
     bool       m_is_async = true;
-    size_t     m_size     = 0;
   };
 
-  /*  Sequentially consistent Impact.
+  /*  Sequentially consistent impact.
    */
   class sync_impact : public basic_impact {
   public:
@@ -167,9 +125,6 @@ namespace laplace::engine {
   /*  Impact generation functor.
    */
   using impact_gen = std::function<ptr_impact()>;
-
-  template <typename impact_>
-  static constexpr auto encode(const impact_ &ev) -> vbyte;
 
   /*  Impact generation wrapper.
    */

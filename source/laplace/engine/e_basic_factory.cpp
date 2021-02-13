@@ -42,7 +42,8 @@ namespace laplace::engine {
     return print_native({ ids::table, ids::_native_count }, seq);
   }
 
-  auto basic_factory::decode(cref_vbyte seq) const -> ptr_impact {
+  auto basic_factory::decode(cref_vbyte seq) const
+      -> ptr_prime_impact {
     return decode_native(seq);
   }
 
@@ -148,7 +149,7 @@ namespace laplace::engine {
     s.reserve(max_id_size + seq.size() * 3);
 
     if (seq.size() >= 2) {
-      auto id = basic_impact::get_id_unsafe(seq);
+      auto id = prime_impact::get_id_unsafe(seq);
 
       if (id < table.size()) {
         s.append(table[id]);
@@ -163,7 +164,8 @@ namespace laplace::engine {
   }
 
   auto basic_factory::decode_native(cref_vbyte seq)
-      -> ptr_impact {
+      -> ptr_prime_impact {
+
     if (public_key::scan(seq))
       return make<public_key>(seq);
     if (request_events::scan(seq))
@@ -197,6 +199,6 @@ namespace laplace::engine {
     if (slot_remove::scan(seq))
       return make<slot_remove>(seq);
 
-    return ptr_impact();
+    return {};
   }
 }

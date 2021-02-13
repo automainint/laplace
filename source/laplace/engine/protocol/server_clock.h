@@ -13,10 +13,10 @@
 #ifndef __laplace__engine_protocol_server_clock__
 #define __laplace__engine_protocol_server_clock__
 
-#include "../basic_impact.h"
+#include "../prime_impact.h"
 
 namespace laplace::engine::protocol {
-  class server_clock : public basic_impact {
+  class server_clock : public prime_impact {
   public:
     enum encoding_offset : size_t { n_tick_duration = 10 };
 
@@ -26,11 +26,11 @@ namespace laplace::engine::protocol {
     ~server_clock() final = default;
 
     constexpr server_clock() {
-      set_size(size);
+      set_encoded_size(size);
     }
 
     constexpr server_clock(uint64_t tick_duration_msec) {
-      set_size(size);
+      set_encoded_size(size);
 
       m_tick_duration_msec = tick_duration_msec;
     }
@@ -38,7 +38,7 @@ namespace laplace::engine::protocol {
     constexpr server_clock(
         size_t index, uint64_t tick_duration_msec) {
       set_order({ index });
-      set_size(size);
+      set_encoded_size(size);
 
       m_tick_duration_msec = tick_duration_msec;
     }

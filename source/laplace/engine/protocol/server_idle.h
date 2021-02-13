@@ -13,10 +13,10 @@
 #ifndef __laplace__engine_protocol_server_idle__
 #define __laplace__engine_protocol_server_idle__
 
-#include "../basic_impact.h"
+#include "../prime_impact.h"
 
 namespace laplace::engine::protocol {
-  class server_idle final : public basic_impact {
+  class server_idle final : public prime_impact {
   public:
     enum encoding_offset : size_t { n_idle_time = 2 };
 
@@ -26,12 +26,12 @@ namespace laplace::engine::protocol {
     ~server_idle() final = default;
 
     constexpr server_idle() {
-      set_size(size);
+      set_encoded_size(size);
     }
 
     constexpr server_idle(uint64_t time_msec) {
       set_time(time_msec);
-      set_size(size);
+      set_encoded_size(size);
     }
 
     static constexpr auto get_idle_time(cref_vbyte seq) {

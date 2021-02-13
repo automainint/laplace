@@ -13,10 +13,10 @@
 #ifndef __laplace__engine_protocol_slot_create__
 #define __laplace__engine_protocol_slot_create__
 
-#include "../basic_impact.h"
+#include "../prime_impact.h"
 
 namespace laplace::engine::protocol {
-  class slot_create : public sync_impact {
+  class slot_create : public sync_prime_impact {
   public:
     enum encoding_offset : size_t { n_local_flag = 26 };
 
@@ -26,18 +26,18 @@ namespace laplace::engine::protocol {
     ~slot_create() override = default;
 
     constexpr slot_create() {
-      set_size(size);
+      set_encoded_size(size);
     }
 
     constexpr slot_create(bool is_local) {
-      set_size(size);
+      set_encoded_size(size);
 
       m_is_local = is_local;
     }
 
     constexpr slot_create(size_t id_host_actor) {
       set_actor(id_host_actor);
-      set_size(size);
+      set_encoded_size(size);
 
       m_is_local = true;
     }
@@ -47,7 +47,7 @@ namespace laplace::engine::protocol {
       set_order({ index });
       set_time(time);
       set_actor(id_actor);
-      set_size(size);
+      set_encoded_size(size);
 
       m_is_local = is_local;
     }

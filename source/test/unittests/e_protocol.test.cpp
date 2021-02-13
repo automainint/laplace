@@ -14,7 +14,7 @@
 #include <gtest/gtest.h>
 
 namespace laplace::test {
-  using engine::encode, engine::basic_impact,
+  using engine::encode, engine::prime_impact,
       engine::protocol::slot_create;
 
   TEST(engine, protocol_slot_create) {
@@ -25,16 +25,16 @@ namespace laplace::test {
 
     auto seq = encode(slot_create(index, time, actor, is_local));
 
-    EXPECT_EQ(basic_impact::get_index(seq), index);
-    EXPECT_EQ(basic_impact::get_time(seq), time);
-    EXPECT_EQ(basic_impact::get_actor(seq), actor);
+    EXPECT_EQ(prime_impact::get_index(seq), index);
+    EXPECT_EQ(prime_impact::get_time(seq), time);
+    EXPECT_EQ(prime_impact::get_actor(seq), actor);
     EXPECT_EQ(slot_create::get_local_flag(seq), is_local);
 
     seq = slot_create(index, time, actor, is_local).encode();
 
-    EXPECT_EQ(basic_impact::get_index(seq), index);
-    EXPECT_EQ(basic_impact::get_time(seq), time);
-    EXPECT_EQ(basic_impact::get_actor(seq), actor);
+    EXPECT_EQ(prime_impact::get_index(seq), index);
+    EXPECT_EQ(prime_impact::get_time(seq), time);
+    EXPECT_EQ(prime_impact::get_actor(seq), actor);
     EXPECT_EQ(slot_create::get_local_flag(seq), is_local);
 
     auto ev = slot_create::decode(seq);

@@ -13,10 +13,10 @@
 #ifndef __laplace__engine_protocol_client_ping__
 #define __laplace__engine_protocol_client_ping__
 
-#include "../basic_impact.h"
+#include "../prime_impact.h"
 
 namespace laplace::engine::protocol {
-  class client_ping final : public basic_impact {
+  class client_ping final : public prime_impact {
   public:
     enum encoding_offset : size_t { n_ping_time = 2 };
 
@@ -26,11 +26,11 @@ namespace laplace::engine::protocol {
     ~client_ping() final = default;
 
     constexpr client_ping() {
-      set_size(size);
+      set_encoded_size(size);
     }
 
     constexpr client_ping(uint64_t time_msec) {
-      set_size(size);
+      set_encoded_size(size);
 
       m_time_msec = time_msec;
     }

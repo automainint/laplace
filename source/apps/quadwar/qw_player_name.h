@@ -21,7 +21,7 @@
 namespace quadwar_app {
   using namespace laplace;
 
-  class qw_player_name : public engine::sync_impact {
+  class qw_player_name : public engine::sync_prime_impact {
   public:
     enum encoding_offset { n_name = 26 };
 
@@ -30,7 +30,7 @@ namespace quadwar_app {
     ~qw_player_name() override = default;
 
     inline qw_player_name(std::u8string_view name) {
-      set_size(n_name + name.size());
+      set_encoded_size(n_name + name.size());
 
       m_name = name;
     }
@@ -38,7 +38,7 @@ namespace quadwar_app {
     inline qw_player_name(size_t             id_host_actor,
                           std::u8string_view name) {
       set_actor(id_host_actor);
-      set_size(n_name + name.size());
+      set_encoded_size(n_name + name.size());
 
       m_name = name;
     }
@@ -49,7 +49,7 @@ namespace quadwar_app {
       set_order({ index });
       set_time(time);
       set_actor(id_actor);
-      set_size(n_name + name.size());
+      set_encoded_size(n_name + name.size());
 
       m_name = name;
     }

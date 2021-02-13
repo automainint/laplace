@@ -13,10 +13,10 @@
 #ifndef __laplace__engine_protocol_slot_remove__
 #define __laplace__engine_protocol_slot_remove__
 
-#include "../basic_impact.h"
+#include "../prime_impact.h"
 
 namespace laplace::engine::protocol {
-  class slot_remove : public sync_impact {
+  class slot_remove : public sync_prime_impact {
   public:
     enum encoding_offset : size_t { n_slot_actor = 18 };
 
@@ -26,7 +26,7 @@ namespace laplace::engine::protocol {
     ~slot_remove() override = default;
 
     constexpr slot_remove() {
-      set_size(size);
+      set_encoded_size(size);
     }
 
     constexpr slot_remove(size_t index, uint64_t time,
@@ -34,7 +34,7 @@ namespace laplace::engine::protocol {
       set_order({ index });
       set_time(time);
       set_actor(id_actor);
-      set_size(size);
+      set_encoded_size(size);
     }
 
     inline void perform(access::world w) const override {

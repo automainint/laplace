@@ -25,7 +25,7 @@ namespace laplace::network {
   namespace access = engine::access;
   using namespace engine::protocol;
   using std::make_unique, std::string_view, engine::encode,
-      engine::basic_impact, engine::time_undefined,
+      engine::prime_impact, engine::time_undefined,
       engine::id_undefined;
 
   host::host() {
@@ -313,7 +313,7 @@ namespace laplace::network {
   }
 
   void host::add_event(size_t slot, cref_vbyte seq) {
-    auto  index = basic_impact::get_index(seq);
+    auto  index = prime_impact::get_index(seq);
     auto &qu    = m_slots[slot].queue;
 
     if (index == -1) {
@@ -337,7 +337,7 @@ namespace laplace::network {
   }
 
   void host::perform_event(size_t slot, cref_vbyte seq) {
-    if (basic_impact::get_time(seq) != time_undefined) {
+    if (prime_impact::get_time(seq) != time_undefined) {
       verb("[ host ] ignore timed event");
       return;
     }

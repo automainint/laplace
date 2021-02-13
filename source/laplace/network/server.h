@@ -14,7 +14,6 @@
 #define __laplace__network_server__
 
 #include "../engine/basic_factory.h"
-#include "../engine/basic_impact.h"
 #include "../engine/solver.h"
 
 namespace laplace::network {
@@ -45,6 +44,11 @@ namespace laplace::network {
 
     auto is_verbose() const -> bool;
     auto is_connected() const -> bool;
+
+    template <typename prime_impact_, typename... args_>
+    inline void queue(args_... args) {
+      this->queue(engine::encode(prime_impact_(args...)));
+    }
 
   protected:
     void setup_solver();

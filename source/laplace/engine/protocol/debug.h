@@ -13,10 +13,10 @@
 #ifndef __laplace__engine_protocol_debug__
 #define __laplace__engine_protocol_debug__
 
-#include "../basic_impact.h"
+#include "../prime_impact.h"
 
 namespace laplace::engine::protocol {
-  class debug final : public sync_impact {
+  class debug final : public sync_prime_impact {
   public:
     enum encoding_offset { n_value = 18 };
 
@@ -26,11 +26,11 @@ namespace laplace::engine::protocol {
     ~debug() final = default;
 
     constexpr debug() {
-      set_size(size);
+      set_encoded_size(size);
     }
 
     constexpr debug(int64_t value) {
-      set_size(size);
+      set_encoded_size(size);
 
       m_value = value;
     }
@@ -39,7 +39,7 @@ namespace laplace::engine::protocol {
         size_t index, uint64_t time, int64_t value) {
       set_order({ index });
       set_time(time);
-      set_size(size);
+      set_encoded_size(size);
 
       m_value = value;
     }

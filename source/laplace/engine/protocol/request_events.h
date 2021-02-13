@@ -13,10 +13,10 @@
 #ifndef __laplace__engine_protocol_request_events__
 #define __laplace__engine_protocol_request_events__
 
-#include "../basic_impact.h"
+#include "../prime_impact.h"
 
 namespace laplace::engine::protocol {
-  class request_events final : public basic_impact {
+  class request_events final : public prime_impact {
   public:
     enum encoding_offset : size_t { n_events = 2 };
 
@@ -31,11 +31,11 @@ namespace laplace::engine::protocol {
     ~request_events() final = default;
 
     inline request_events() {
-      set_size(n_events);
+      set_encoded_size(n_events);
     }
 
     inline request_events(cref_vuint events) {
-      set_size(n_events + events.size() * event_size);
+      set_encoded_size(n_events + events.size() * event_size);
 
       m_events.assign(events.begin(), events.end());
     }

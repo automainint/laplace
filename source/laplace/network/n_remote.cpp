@@ -24,7 +24,7 @@ namespace laplace::network {
   namespace access = engine::access;
   using namespace engine::protocol;
   using std::min, std::make_unique, std::string_view,
-      engine::basic_impact, engine::time_undefined;
+      engine::prime_impact, engine::time_undefined;
 
   remote::remote() {
     setup_world();
@@ -62,7 +62,7 @@ namespace laplace::network {
 
       qu.emplace_back(vbyte(seq.begin(), seq.end()));
 
-      basic_impact::set_index(qu.back(), qu.size() - 1);
+      prime_impact::set_index(qu.back(), qu.size() - 1);
     }
   }
 
@@ -216,7 +216,7 @@ namespace laplace::network {
   }
 
   void remote::perform_event(cref_vbyte seq) {
-    if (basic_impact::get_time(seq) == time_undefined) {
+    if (prime_impact::get_time(seq) == time_undefined) {
       if (perform_control(seq))
         return;
 
@@ -308,7 +308,7 @@ namespace laplace::network {
   }
 
   void remote::add_event(cref_vbyte seq) {
-    auto index = basic_impact::get_index(seq);
+    auto index = prime_impact::get_index(seq);
 
     if (index == -1) {
       /*  For public_key, request_events and client_ping.

@@ -13,10 +13,10 @@
 #ifndef __laplace__engine_protocol_public_key__
 #define __laplace__engine_protocol_public_key__
 
-#include "../basic_impact.h"
+#include "../prime_impact.h"
 
 namespace laplace::engine::protocol {
-  class public_key final : public basic_impact {
+  class public_key final : public prime_impact {
   public:
     enum encoding_offset : size_t { n_cipher = 2, n_key = 4 };
 
@@ -28,14 +28,14 @@ namespace laplace::engine::protocol {
     ~public_key() final = default;
 
     constexpr public_key() {
-      set_size(n_key);
+      set_encoded_size(n_key);
     }
 
     constexpr public_key(uint16_t cipher_id, cref_vbyte key) {
       m_cipher_id = cipher_id;
       m_key_size  = std::min(key.size(), max_key_size);
 
-      set_size(n_key + m_key_size);
+      set_encoded_size(n_key + m_key_size);
 
       std::copy(key.begin(), key.begin() + m_key_size,
                 m_key.begin());

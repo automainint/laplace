@@ -21,6 +21,8 @@ namespace laplace::network {
    */
   class remote final : public udp_server {
   public:
+    using server::queue;
+
     remote();
     ~remote() final;
 
@@ -34,11 +36,6 @@ namespace laplace::network {
 
     auto is_connected() -> bool;
     auto get_port() const -> uint16_t;
-
-    template <typename impact_, typename... args_>
-    inline void queue(args_... args) {
-      this->queue(engine::encode(impact_(args...)));
-    }
 
   private:
     void cleanup();

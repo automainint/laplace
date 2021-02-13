@@ -13,10 +13,10 @@
 #ifndef __laplace__engine_protocol_server_seed__
 #define __laplace__engine_protocol_server_seed__
 
-#include "../basic_impact.h"
+#include "../prime_impact.h"
 
 namespace laplace::engine::protocol {
-  class server_seed final : public basic_impact {
+  class server_seed final : public prime_impact {
   public:
     enum encoding_offset : size_t { n_seed = 18 };
 
@@ -26,7 +26,7 @@ namespace laplace::engine::protocol {
     ~server_seed() final = default;
 
     constexpr server_seed(uint32_t seed) {
-      set_size(size);
+      set_encoded_size(size);
 
       m_seed = seed;
     }
@@ -35,7 +35,7 @@ namespace laplace::engine::protocol {
         size_t index, uint64_t time, uint32_t seed) {
       set_order({ index });
       set_time(time);
-      set_size(size);
+      set_encoded_size(size);
 
       m_seed = seed;
     }

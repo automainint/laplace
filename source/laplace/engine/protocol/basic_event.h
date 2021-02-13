@@ -13,7 +13,7 @@
 #ifndef __laplace__engine_protocol_basic_event__
 #define __laplace__engine_protocol_basic_event__
 
-#include "../basic_impact.h"
+#include "../prime_impact.h"
 
 namespace laplace::engine::protocol {
   class non_inheritable { };
@@ -27,7 +27,7 @@ namespace laplace::engine::protocol {
   || std::is_same<perform_, non_inheritable>::value;
 
   template <uint16_t id_, perform_method perform_ = non_inheritable,
-            typename base_class_ = basic_impact>
+            typename base_class_ = prime_impact>
   class basic_event : public base_class_ {
   public:
     static constexpr uint16_t id   = id_;
@@ -36,12 +36,12 @@ namespace laplace::engine::protocol {
     ~basic_event() override = default;
 
     constexpr basic_event() {
-      this->set_size(size);
+      this->set_encoded_size(size);
     }
 
     constexpr basic_event(size_t index) {
       this->set_order({ index });
-      this->set_size(size);
+      this->set_encoded_size(size);
     }
 
     inline void perform(access::world w) const override {
@@ -73,12 +73,12 @@ namespace laplace::engine::protocol {
     ~basic_event() final = default;
 
     constexpr basic_event() {
-      this->set_size(size);
+      this->set_encoded_size(size);
     }
 
     constexpr basic_event(size_t index) {
       this->set_order({ index });
-      this->set_size(size);
+      this->set_encoded_size(size);
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {

@@ -17,25 +17,30 @@
 #include <string>
 
 namespace laplace::engine::protocol::ids {
-  constexpr std::string_view table[] = { "",
-                                         "publickey",
-                                         "requestevents",
-                                         "clientping",
-                                         "serveridle",
-                                         "serverlaunch",
-                                         "serveraction",
-                                         "serverpause",
-                                         "serverclock",
-                                         "serverseed",
-                                         "serverquit",
-                                         "cliententer",
-                                         "clientleave",
-                                         "clientready",
-                                         "debug",
-                                         "slotcreate",
-                                         "slotremove" };
+  constexpr std::string_view table[] = { //
+    "",
+    "publickey",
+    "requestevents",
+    "clientping",
+    "serveridle",
+    "serverlaunch",
+    "serveraction",
+    "serverpause",
+    "serverclock",
+    "serverseed",
+    "serverquit",
+    "cliententer",
+    "clientleave",
+    "clientready",
+    "debug",
+    "slotcreate",
+    "slotremove"
+  };
 
-  enum cipher_id : uint16_t { cipher_plain, cipher_dh_rabbit };
+  enum cipher_id : uint16_t { //
+    cipher_plain,             //
+    cipher_dh_rabbit
+  };
 
   enum command_id : uint16_t {
     undefined = 0,

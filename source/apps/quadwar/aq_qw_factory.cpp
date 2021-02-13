@@ -17,7 +17,7 @@
 
 namespace quadwar_app {
   auto qw_factory::decode(cref_vbyte seq) const
-      -> engine::ptr_impact {
+      -> engine::ptr_prime_impact {
 
     if (qw_slot_create::scan(seq))
       return make<qw_slot_create>(seq);

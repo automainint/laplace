@@ -16,10 +16,11 @@
 #define __laplace__engine_basic_factory_impl__
 
 namespace laplace::engine {
-  template <typename impact_type>
-  inline auto basic_factory::make(cref_vbyte seq) -> ptr_impact {
-    return std::make_shared<impact_type>(
-        std::move(impact_type::decode(seq)));
+  template <typename impact_type_>
+  inline auto basic_factory::make(cref_vbyte seq)
+      -> ptr_prime_impact {
+    return std::make_shared<impact_type_>(
+        std::move(impact_type_::decode(seq)));
   }
 }
 
