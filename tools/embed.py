@@ -1,5 +1,5 @@
 #!  /usr/bin/python
-#   embed.py
+#   tools/embed.py
 #
 #       The Laplace embed files tool.
 #

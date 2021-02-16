@@ -17,8 +17,8 @@
 
 #include "access/world.predef.h"
 #include "basic_entity.predef.h"
+#include "eval/shape.h"
 #include "object/sets.h"
-#include "shape.h"
 #include "world.predef.h"
 #include <memory>
 #include <shared_mutex>
@@ -51,7 +51,7 @@ namespace laplace::engine {
                  bool     is_selectable = false,
                  bool     is_vulnerable = false,
                  uint64_t tick_period   = default_tick_period,
-                 cref_box bounds        = box {});
+                 eval::cref_box bounds  = eval::box {});
 
     virtual ~basic_entity() = default;
 
@@ -93,7 +93,7 @@ namespace laplace::engine {
     /*  Set the Entity bounding box.
      *  Thread-safe.
      */
-    void set_bounds(cref_box val);
+    void set_bounds(eval::cref_box val);
 
     /*  Set the Entity id. Do not modify the
      *  id set by the World.
@@ -186,7 +186,7 @@ namespace laplace::engine {
     /*  Returns the bounding box.
      *  Thread-safe.
      */
-    [[nodiscard]] auto get_bounds() -> box;
+    [[nodiscard]] auto get_bounds() -> eval::box;
 
     /*  Returns the Entity id.
      */

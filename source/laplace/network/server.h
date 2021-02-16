@@ -21,7 +21,7 @@ namespace laplace::network {
 
   class server {
   public:
-    static constexpr bool     default_verbose = false;
+    static constexpr bool     default_verbose            = true;
     static constexpr uint64_t default_tick_duration_msec = 10;
 
     server()          = default;
@@ -33,17 +33,17 @@ namespace laplace::network {
     virtual void queue(cref_vbyte seq);
     virtual void tick(size_t delta_msec);
 
-    auto get_factory() const -> engine::ptr_factory;
-    auto get_solver() const -> engine::ptr_solver;
-    auto get_world() const -> engine::ptr_world;
+    [[nodiscard]] auto get_factory() const -> engine::ptr_factory;
+    [[nodiscard]] auto get_solver() const -> engine::ptr_solver;
+    [[nodiscard]] auto get_world() const -> engine::ptr_world;
 
-    auto get_ping() const -> uint64_t;
+    [[nodiscard]] auto get_ping() const -> uint64_t;
 
-    auto get_state() const -> server_state;
-    auto get_tick_duration() -> size_t;
+    [[nodiscard]] auto get_state() const -> server_state;
+    [[nodiscard]] auto get_tick_duration() -> size_t;
 
-    auto is_verbose() const -> bool;
-    auto is_connected() const -> bool;
+    [[nodiscard]] auto is_verbose() const -> bool;
+    [[nodiscard]] auto is_connected() const -> bool;
 
     template <typename prime_impact_, typename... args_>
     inline void queue(args_... args) {
@@ -63,7 +63,8 @@ namespace laplace::network {
     /*  Update tick timer. Returns time
      *  delta in ticks.
      */
-    auto adjust_delta(size_t delta_msec) -> uint64_t;
+    [[nodiscard]] auto adjust_delta(size_t delta_msec)
+        -> uint64_t;
 
     void dump(cref_vbyte bytes);
 

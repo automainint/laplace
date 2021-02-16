@@ -30,7 +30,7 @@ namespace quadwar_app {
     using event_quit = std::function<void()>;
 
     static constexpr uint16_t allowed_commands[] = {
-      ids::public_key,   ids::request_events, ids::client_ping,
+      ids::public_key,   ids::request_events, ids::ping_request,
       ids::client_enter, ids::client_leave,   ids::client_ready,
       ids::slot_create,  ids::slot_remove,    ids::player_name
     };

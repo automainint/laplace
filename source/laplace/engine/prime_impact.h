@@ -20,9 +20,9 @@ namespace laplace::engine {
    */
   class prime_impact : public basic_impact {
   public:
+    using basic_impact::get_actor;
     using basic_impact::get_index;
     using basic_impact::get_time;
-    using basic_impact::get_actor;
 
     /*  Max encoded impact size.
      */
@@ -34,7 +34,7 @@ namespace laplace::engine {
     /*  Encode into byte sequence. The sequence can be decoded
      *  by the Impact Factory.
      */
-    auto encode() const -> vbyte;
+    [[nodiscard]] auto encode() const -> vbyte;
 
     /*  Serialization.
      *
@@ -43,29 +43,36 @@ namespace laplace::engine {
      */
     virtual void encode_to(std::span<uint8_t> bytes) const;
 
-    constexpr auto get_encoded_size() const -> size_t;
+    [[nodiscard]] constexpr auto get_encoded_size() const
+        -> size_t;
 
     static constexpr void set_index(ref_vbyte seq, size_t index);
 
-    static constexpr auto get_id_unsafe(cref_vbyte seq)
+    [[nodiscard]] static constexpr auto get_id_unsafe(cref_vbyte seq)
         -> uint16_t;
-    static constexpr auto get_index_unsafe(cref_vbyte seq)
+    [[nodiscard]] static constexpr auto get_index_unsafe(
+        cref_vbyte seq) -> size_t;
+    [[nodiscard]] static constexpr auto get_time_unsafe(
+        cref_vbyte seq) -> uint64_t;
+    [[nodiscard]] static constexpr auto get_actor_unsafe(
+        cref_vbyte seq) -> size_t;
+
+    [[nodiscard]] static constexpr auto get_id(cref_vbyte seq)
+        -> uint16_t;
+    [[nodiscard]] static constexpr auto get_index(cref_vbyte seq)
         -> size_t;
-    static constexpr auto get_time_unsafe(cref_vbyte seq)
+    [[nodiscard]] static constexpr auto get_time(cref_vbyte seq)
         -> uint64_t;
-    static constexpr auto get_actor_unsafe(cref_vbyte seq)
+    [[nodiscard]] static constexpr auto get_actor(cref_vbyte seq)
         -> size_t;
 
-    static constexpr auto get_id(cref_vbyte seq) -> uint16_t;
-    static constexpr auto get_index(cref_vbyte seq) -> size_t;
-    static constexpr auto get_time(cref_vbyte seq) -> uint64_t;
-    static constexpr auto get_actor(cref_vbyte seq) -> size_t;
-
-    static inline auto get_string(cref_vbyte seq, size_t offset)
+    [[nodiscard]] static inline auto get_string(cref_vbyte seq,
+                                                size_t offset)
         -> std::u8string_view;
 
-    static inline auto get_string(cref_vbyte seq, size_t offset,
-                                  size_t size)
+    [[nodiscard]] static inline auto get_string(cref_vbyte seq,
+                                                size_t offset,
+                                                size_t size)
         -> std::u8string_view;
 
   protected:

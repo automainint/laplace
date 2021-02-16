@@ -36,7 +36,7 @@ namespace laplace::engine::access {
     void set_selectable(bool is_selectable);
     void set_vulnerable(bool is_vulnerable);
     void set_tick_period(size_t tick_period);
-    void set_bounds(cref_box val);
+    void set_bounds(eval::cref_box val);
 
     [[nodiscard]] auto index_of(size_t id) -> size_t;
     [[nodiscard]] auto get_count() -> size_t;
@@ -59,7 +59,7 @@ namespace laplace::engine::access {
     [[nodiscard]] auto is_vulnerable() -> bool;
 
     [[nodiscard]] auto get_tick_period() -> size_t;
-    [[nodiscard]] auto get_bounds() -> box;
+    [[nodiscard]] auto get_bounds() -> eval::box;
     [[nodiscard]] auto get_id() -> size_t;
 
   private:

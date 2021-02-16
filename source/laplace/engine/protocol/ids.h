@@ -21,7 +21,8 @@ namespace laplace::engine::protocol::ids {
     "",
     "publickey",
     "requestevents",
-    "clientping",
+    "pingrequest",
+    "pingresponse",
     "serveridle",
     "serverlaunch",
     "serveraction",
@@ -63,7 +64,12 @@ namespace laplace::engine::protocol::ids {
     /*  uint16_t    id
      *  uint64_t    time msec
      */
-    client_ping,
+    ping_request,
+
+    /*  uint16_t    id
+     *  uint64_t    time msec
+     */
+    ping_response,
 
     /*  uint16_t    id
      *  uint64_t    time msec

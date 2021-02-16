@@ -1,8 +1,17 @@
 #!  /bin/sh
-#   buildall.py
+#   tools/buildall.py
 #
 #       Rebuild the entire project with
 #       all the dependencies.
+#
+#   Copyright (c) 2021 Mitya Selivanov
+#
+#   This file is part of the Laplace project.
+#
+#   Laplace is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty
+#   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+#   the MIT License for more details.
 
 generator=''
 config='Release'
@@ -16,15 +25,18 @@ fi
 
 ./cleanup.sh
 
-./update.sh
-./update-gl.sh
-./rebuild.sh "$generator" $config
-
 if [ ! -f './update.sh' ] || [ ! -f './rebuild.sh' ]
   then
     echo "[ Generate build scripts ]"
     python ./gen-deps.py
+
+    chmod a+x ./update.sh
+    chmod a+x ./rebuild.sh
   fi
+
+./update.sh
+./update-gl.sh
+./rebuild.sh "$generator" $config
 
 echo "[ Generate OpenGL interface ]"
 python ./gen-gl.py

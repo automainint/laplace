@@ -50,6 +50,8 @@ namespace laplace::engine {
     auto get_history_count() const -> size_t;
     auto get_history(size_t index) const -> ptr_impact;
 
+    static auto generate_seed() -> seed_type;
+
   private:
     void adjust(uint64_t time);
 
@@ -59,10 +61,7 @@ namespace laplace::engine {
     uint64_t  m_time              = 0;
     size_t    m_position          = 0;
     bool      m_is_rewind_allowed = default_is_rewind_allowed;
-    seed_type m_seed =
-        static_cast<seed_type>(std::chrono::system_clock::now()
-                                   .time_since_epoch()
-                                   .count());
+    seed_type m_seed              = generate_seed();
   };
 
   using ptr_solver = std::shared_ptr<solver>;

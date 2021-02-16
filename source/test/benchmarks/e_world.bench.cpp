@@ -15,16 +15,15 @@
 #include <benchmark/benchmark.h>
 
 namespace laplace::bench {
-  using std::make_shared, engine::basic_entity, engine::box,
-      engine::world, engine::id_undefined;
+  using std::make_shared, engine::basic_entity, engine::world,
+      engine::id_undefined;
 
   namespace access = engine::access;
   namespace sets   = engine::object::sets;
 
   class my_entity : public basic_entity {
   public:
-    my_entity() :
-        basic_entity(true, false, false, false, 10, box {}) {
+    my_entity() : basic_entity(true) {
 
       setup_sets({ { sets::debug_value, 0, 0 } });
       n_value = index_of(sets::debug_value);
@@ -40,8 +39,7 @@ namespace laplace::bench {
     size_t n_value = 0;
   };
 
-  static void engine_world_startup(
-      benchmark::State &state) {
+  static void engine_world_startup(benchmark::State &state) {
     for (auto _ : state) {
       auto a = make_shared<world>();
       a->set_thread_count(32);
@@ -50,8 +48,7 @@ namespace laplace::bench {
 
   BENCHMARK(engine_world_startup);
 
-  static void engine_world_single_thread(
-      benchmark::State &state) {
+  static void engine_world_single_thread(benchmark::State &state) {
     auto a = make_shared<world>();
     auto e = make_shared<my_entity>();
 
@@ -67,8 +64,7 @@ namespace laplace::bench {
 
   BENCHMARK(engine_world_single_thread);
 
-  static void engine_world_multithreading(
-      benchmark::State &state) {
+  static void engine_world_multithreading(benchmark::State &state) {
     auto a = make_shared<world>();
     auto e = make_shared<my_entity>();
 

@@ -20,7 +20,7 @@
 #include <algorithm>
 
 namespace laplace::engine {
-  using namespace object;
+  namespace sets = object::sets;
 
   using std::unique_lock, std::shared_lock, std::move,
       std::make_shared;
@@ -65,10 +65,10 @@ namespace laplace::engine {
   basic_entity::basic_entity(dummy_tag) { }
 
   basic_entity::basic_entity(bool is_dynamic, bool is_markable,
-                             bool     is_selectable,
-                             bool     is_vulnerable,
-                             uint64_t tick_period,
-                             cref_box bounds) {
+                             bool           is_selectable,
+                             bool           is_vulnerable,
+                             uint64_t       tick_period,
+                             eval::cref_box bounds) {
     setup_sets(
         { { sets::is_dynamic, 1, is_dynamic },
           { sets::is_markable, 1, is_markable },
@@ -158,7 +158,7 @@ namespace laplace::engine {
     m_clock = period - 1;
   }
 
-  void basic_entity::set_bounds(cref_box val) {
+  void basic_entity::set_bounds(eval::cref_box val) {
     auto _ul = unique_lock(m_lock);
 
     m_sets[n_bounds_min_x].delta += val.min.x -
@@ -326,15 +326,15 @@ namespace laplace::engine {
     return static_cast<uint64_t>(m_sets[n_tick_period].value);
   }
 
-  auto basic_entity::get_bounds() -> box {
+  auto basic_entity::get_bounds() -> eval::box {
     auto _sl = shared_lock(m_lock);
 
-    return box { { m_sets[n_bounds_min_x].value,
-                   m_sets[n_bounds_min_y].value,
-                   m_sets[n_bounds_min_z].value },
-                 { m_sets[n_bounds_max_x].value,
-                   m_sets[n_bounds_max_y].value,
-                   m_sets[n_bounds_max_z].value } };
+    return eval::box { { m_sets[n_bounds_min_x].value,
+                         m_sets[n_bounds_min_y].value,
+                         m_sets[n_bounds_min_z].value },
+                       { m_sets[n_bounds_max_x].value,
+                         m_sets[n_bounds_max_y].value,
+                         m_sets[n_bounds_max_z].value } };
   }
 
   auto basic_entity::get_id() const -> size_t {

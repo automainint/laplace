@@ -63,7 +63,7 @@ namespace laplace::engine::access {
     }
   }
 
-  void entity::set_bounds(cref_box val) {
+  void entity::set_bounds(eval::cref_box val) {
     if (m_mode != forbidden) {
       m_entity->set_bounds(val);
     }
@@ -146,9 +146,9 @@ namespace laplace::engine::access {
                                : 0;
   }
 
-  auto entity::get_bounds() -> box {
+  auto entity::get_bounds() -> eval::box {
     return m_mode != forbidden ? m_entity->get_bounds()
-                               : box {};
+                               : eval::box {};
   }
 
   auto entity::get_id() -> size_t {

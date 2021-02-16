@@ -1,8 +1,17 @@
 #!  /usr/bin/python
-#   gen-gl.py
+#   tools/gen-gl.py
 #
 #       Generate OpenGL interface files
 #       from XML registry.
+#
+#   Copyright (c) 2021 Mitya Selivanov
+#
+#   This file is part of the Laplace project.
+#
+#   Laplace is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty
+#   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+#   the MIT License for more details.
 
 import xml.etree.ElementTree
 import os, sys

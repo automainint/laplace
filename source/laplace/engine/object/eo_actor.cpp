@@ -19,7 +19,7 @@ namespace laplace::engine::object {
   actor::actor(dummy_tag) : basic_entity(actor::dummy) { }
 
   actor::actor(proto_tag) {
-    setup_sets({ { sets::is_local, 1, 0 } });
+    setup_sets({ { .id = sets::is_local, .scale = 1 } });
 
     n_is_local = index_of(sets::is_local);
   }

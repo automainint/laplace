@@ -6,4 +6,6 @@ target_sources(
       dummy.h events.h gldef.h keys.h opengl.h socket.h
       thread.h wrap.h
 )
-add_subdirectory(win32)
+if(WIN32)
+  add_subdirectory(win32)
+endif()

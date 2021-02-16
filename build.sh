@@ -1,7 +1,16 @@
 #!  /bin/sh
-#   cleanup.py
+#   build.sh
 #
 #       Build the project.
+#
+#   Copyright (c) 2021 Mitya Selivanov
+#
+#   This file is part of the Laplace project.
+#
+#   Laplace is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty
+#   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+#   the MIT License for more details.
 
 generator=''
 config='Release'
@@ -20,12 +29,6 @@ if [ `ls ./lib | wc -l` -eq 0 ] || [ `ls ./include | wc -l` -eq 0 ]; then
 else
   gen_folder='../source/generated'
   embed_source='laplace_embedded.cpp'
-
-  if [ ! -f './tools/update.sh' ] || [ ! -f './tools/rebuild.sh' ]
-    then
-      echo "[ Generate build scripts ]"
-      python ./gen-deps.py
-    fi
 
   if [ `ls $gen_folder/gl | wc -l` -le 1 ]
     then

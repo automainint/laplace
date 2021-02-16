@@ -16,9 +16,9 @@
 #include "../core/utils.h"
 #include "basic_factory.h"
 #include "protocol/basic_event.h"
-#include "protocol/client_ping.h"
 #include "protocol/debug.h"
 #include "protocol/ids.h"
+#include "protocol/ping.h"
 #include "protocol/public_key.h"
 #include "protocol/request_events.h"
 #include "protocol/server_clock.h"
@@ -184,8 +184,10 @@ namespace laplace::engine {
       return make<server_seed>(seq);
     if (server_quit::scan(seq))
       return make<server_quit>(seq);
-    if (client_ping::scan(seq))
-      return make<client_ping>(seq);
+    if (ping_request::scan(seq))
+      return make<ping_request>(seq);
+    if (ping_response::scan(seq))
+      return make<ping_response>(seq);
     if (client_enter::scan(seq))
       return make<client_enter>(seq);
     if (client_leave::scan(seq))

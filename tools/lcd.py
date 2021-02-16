@@ -1,5 +1,5 @@
 #!  /usr/bin/python3
-#   lcd.py
+#   tools/lcd.py
 #
 #       Generate the LCD font bits from image file.
 #

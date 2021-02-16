@@ -53,13 +53,12 @@ namespace laplace::engine::protocol {
     }
 
     static constexpr auto scan(cref_vbyte seq) {
-      return seq.size() == size && base_class_::get_id(seq) == id;
+      return seq.size() == size &&
+             prime_impact::get_id(seq) == id;
     }
 
     static inline auto decode(cref_vbyte seq) {
-      return basic_event<id_, perform_, base_class_> {
-        base_class_::get_index(seq)
-      };
+      return basic_event { prime_impact::get_index(seq) };
     }
   };
 
@@ -86,13 +85,12 @@ namespace laplace::engine::protocol {
     }
 
     static constexpr auto scan(cref_vbyte seq) {
-      return seq.size() == size && base_class_::get_id(seq) == id;
+      return seq.size() == size &&
+             prime_impact::get_id(seq) == id;
     }
 
     static inline auto decode(cref_vbyte seq) {
-      return basic_event<id_, non_inheritable, base_class_> {
-        base_class_::get_index(seq)
-      };
+      return basic_event { prime_impact::get_index(seq) };
     }
   };
 

@@ -18,16 +18,14 @@
 
 namespace laplace::test {
   using std::make_shared, engine::basic_entity,
-      engine::basic_impact, engine::world, engine::box,
-      engine::id_undefined;
+      engine::basic_impact, engine::world, engine::id_undefined;
 
   namespace access = engine::access;
   namespace sets   = engine::object::sets;
 
   class my_counter : public basic_entity {
   public:
-    my_counter(bool is_dynamic) :
-        basic_entity(is_dynamic, false, false, false, 10, box {}) {
+    my_counter(bool is_dynamic) : basic_entity(is_dynamic) {
 
       setup_sets({ { sets::debug_value, 0, 0 } });
       n_value = index_of(sets::debug_value);
