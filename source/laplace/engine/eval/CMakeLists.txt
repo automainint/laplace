@@ -1,7 +1,7 @@
 target_sources(
   ${EXE_NAME}
     PRIVATE
-      ee_geometry.cpp ee_shape.cpp
+      ee_geometry.cpp ee_integral.cpp ee_shape.cpp
     PUBLIC
-      geometry.h shape.h
+      geometry.h integral.h shape.h
 )

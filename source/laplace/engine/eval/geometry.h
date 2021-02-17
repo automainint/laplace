@@ -1,7 +1,5 @@
 /*  laplace/engine/eval/geometry.h
  *
- *      Integer deterministic geometry features.
- *
  *  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
@@ -17,9 +15,6 @@
 
 #include "../defs.h"
 
-/*  TODO
- *  constexpr.
- */
 namespace laplace::engine::eval {
   struct box {
     vec3i min = { safe_delta, safe_delta, safe_delta };
@@ -91,6 +86,8 @@ namespace laplace::engine::eval {
   using cref_vquad     = const vquad &;
   using cref_vpolygon  = const vpolygon &;
   using cref_voctree   = const voctree &;
+
+  auto length(cref_vec3i v) -> vecval;
 
   void append(ref_box a, cref_vec3i point);
   void append(ref_box a, cref_triangle b);

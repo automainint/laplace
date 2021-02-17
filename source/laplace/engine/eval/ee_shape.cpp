@@ -15,19 +15,27 @@
 namespace laplace::engine::eval {
   using std::monostate;
 
-  static void build(ref_octree tree, int64_t delta,
-                    cref_box bounds) {
+  static void build(    //
+      ref_octree tree,  //
+      int64_t    delta, //
+      cref_box   bounds) {
+
     tree.bounds = bounds;
 
-    int64_t d[3] = { bounds.max.x - bounds.min.x,
-                     bounds.max.y - bounds.min.y,
-                     bounds.max.z - bounds.min.z };
+    int64_t d[3] =                         //
+        { bounds.max.x() - bounds.min.x(), //
+          bounds.max.y() - bounds.min.y(), //
+          bounds.max.z() - bounds.min.z() };
 
-    bool f[3] = { d[0] > delta, d[1] > delta, d[2] > delta };
+    bool f[3] =         //
+        { d[0] > delta, //
+          d[1] > delta, //
+          d[2] > delta };
 
-    int64_t s[3] = { f[0] ? d[0] / 2 : d[0],
-                     f[1] ? d[1] / 2 : d[1],
-                     f[2] ? d[2] / 2 : d[2] };
+    int64_t s[3] =                //
+        { f[0] ? d[0] / 2 : d[0], //
+          f[1] ? d[1] / 2 : d[1], //
+          f[2] ? d[2] / 2 : d[2] };
 
     int n = (f[0] ? 2 : 1) * (f[1] ? 2 : 1) * (f[2] ? 2 : 1);
 
@@ -52,19 +60,18 @@ namespace laplace::engine::eval {
               continue;
 
             build(v[index], delta,
-                  box { vec3i { i == 0 ? bounds.min.x
-                                       : bounds.min.x + s[0],
-                                j == 0 ? bounds.min.y
-                                       : bounds.min.y + s[1],
-                                k == 0 ? bounds.min.z
-                                       : bounds.min.z + s[2] },
-                        vec3i {
-                            i == 0 && f[0] ? bounds.min.x + s[0]
-                                           : bounds.max.x,
-                            j == 0 && f[1] ? bounds.min.y + s[1]
-                                           : bounds.max.y,
-                            k == 0 && f[2] ? bounds.min.z + s[2]
-                                           : bounds.max.z } });
+                  box { { i == 0 ? bounds.min.x()
+                                 : bounds.min.x() + s[0],
+                          j == 0 ? bounds.min.y()
+                                 : bounds.min.y() + s[1],
+                          k == 0 ? bounds.min.z()
+                                 : bounds.min.z() + s[2] },
+                        { i == 0 && f[0] ? bounds.min.x() + s[0]
+                                         : bounds.max.x(),
+                          j == 0 && f[1] ? bounds.min.y() + s[1]
+                                         : bounds.max.y(),
+                          k == 0 && f[2] ? bounds.min.z() + s[2]
+                                         : bounds.max.z() } });
 
             index++;
           }
@@ -80,7 +87,6 @@ namespace laplace::engine::eval {
           put(get<0>(tree.childs)[i], tr);
         }
       } else {
-        assert(tree.childs.index() == 1);
         get<1>(tree.childs).emplace_back(tr);
       }
     }
@@ -92,7 +98,6 @@ namespace laplace::engine::eval {
         return get<0>(tree.childs).empty();
       }
 
-      assert(tree.childs.index() == 1);
       return get<1>(tree.childs).empty();
     };
 

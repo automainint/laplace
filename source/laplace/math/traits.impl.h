@@ -1,143 +1,141 @@
-#pragma once
+/*  laplace/math/traits.impl.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
 
-namespace laplace::math
-{
-    template <typename vecval>
-    inline void traits<vecval>::set(vecval &v, size_t i, vecval value)
-    {
-        if (i == 0)
-        {
-            v = value;
-        }
-    }
+#ifndef __laplace__math_traits_impl__
+#define __laplace__math_traits_impl__
 
-    template <typename vecval>
-    inline auto traits<vecval>::get(const vecval &v, size_t i) -> vecval
-    {
-        return i == 0 ? v : vecval();
-    }
+namespace laplace::math {
+  template <typename type_>
+  struct _helper {
 
-    template <size_t valcount, typename vecval>
-    inline void traits<vector<valcount, vecval>>::set(vector<valcount, vecval> &v, size_t i, vecval value)
-    {
-        v[i] = value;
-    }
+    static constexpr auto size = type_::size;
 
-    template <size_t valcount, typename vecval>
-    inline auto traits<vector<valcount, vecval>>::get(const vector<valcount, vecval> &v, size_t i) -> vecval
-    {
-        return v[i];
-    }
+    static constexpr auto zero = //
+        type_(_helper<elem_type<type_>>::zero);
 
-    template <typename vecval>
-    inline void traits<complex<vecval>>::set(complex<vecval> &v, size_t i, vecval value)
-    {
-        v[i] = value;
-    }
+    static constexpr auto unit = //
+        type_(_helper<elem_type<type_>>::unit);
+  };
 
-    template <typename vecval>
-    inline auto traits<complex<vecval>>::get(const complex<vecval> &v, size_t i) -> vecval
-    {
-        return v[i];
-    }
+  template <typename type_>
+  requires is_scalar<type_> //
+      struct _helper<type_> {
 
-    template <typename vecval>
-    inline void traits<quaternion<vecval>>::set(quaternion<vecval> &v, size_t i, vecval value)
-    {
-        v[i] = value;
-    }
+    static constexpr size_t size = 1;
+    static constexpr auto   zero = type_(0);
+    static constexpr auto   unit = type_(1);
+  };
 
-    template <typename vecval>
-    inline auto traits<quaternion<vecval>>::get(const quaternion<vecval> &v, size_t i) -> vecval
-    {
-        return v[i];
-    }
+  template <typename type_>
+  struct _get_helper {
+    [[nodiscard]] static constexpr auto get( //
+        const type_  v,                      //
+        const size_t i                       //
+        ) -> elem_type<type_> {
 
-    template <size_t rowcount, size_t colcount, typename vecval>
-    inline void traits<matrix<rowcount, colcount, vecval>>::set(matrix<rowcount, colcount, vecval> &v, size_t i, vecval value)
-    {
-        v.v[i] = value;
-    }
-
-    template <size_t rowcount, size_t colcount, typename vecval>
-    inline auto traits<matrix<rowcount, colcount, vecval>>::get(const matrix<rowcount, colcount, vecval> &v, size_t i) -> vecval
-    {
+      if (i < get_size<type_>()) {
         return v.v[i];
+      }
+
+      return {};
     }
+  };
 
-    template <typename vecval>
-    inline auto linear_equals(const vecval &a, const vecval &b) -> bool
-    {
-        return a == b;
+  template <typename type_>
+  requires is_scalar<type_> //
+      struct _get_helper<type_> {
+
+    [[nodiscard]] static constexpr auto get( //
+        const type_  v,                      //
+        const size_t i                       //
+        ) -> type_ {
+
+      if (i == 0) {
+        return v;
+      }
+
+      return {};
     }
+  };
 
-    template <>
-    inline auto linear_equals(const float &a, const float &b) -> bool
-    {
-        return
-            a - b <= std::numeric_limits<float>::epsilon() &&
-            b - a <= std::numeric_limits<float>::epsilon();
+  template <typename type_>
+  struct _set_helper {
+    static constexpr void set(    //
+        type_ &                v, //
+        const size_t           i, //
+        const elem_type<type_> x) {
+
+      if (i < get_size<type_>()) {
+        v.v[i] = x;
+      }
     }
+  };
 
-    template <>
-    inline auto linear_equals(const double &a, const double &b) -> bool
-    {
-        return
-            a - b <= std::numeric_limits<double>::epsilon() &&
-            b - a <= std::numeric_limits<double>::epsilon();
+  template <typename type_>
+  requires is_scalar<type_> //
+      struct _set_helper<type_> {
+
+    static constexpr void set( //
+        type_ &      v,        //
+        const size_t i,        //
+        const type_  x) {
+
+      if (i == 0) {
+        v = x;
+      }
     }
+  };
 
-    template <>
-    inline auto linear_equals(const long double &a, const long double &b) -> bool
-    {
-        return
-            a - b <= std::numeric_limits<long double>::epsilon() &&
-            b - a <= std::numeric_limits<long double>::epsilon();
-    }
+  template <typename type_>
+  constexpr auto get_zero() -> type_ {
+    return _helper<type_>::zero;
+  }
 
-    template <typename vecval>
-    inline auto linear_equals(const vecval &a, const vecval &b, const vecval &epsilon) -> bool
-    {
-        return a - b <= epsilon && b - a <= epsilon;
-    }
+  template <typename type_>
+  constexpr auto get_unit() -> type_ {
+    return _helper<type_>::unit;
+  }
 
-    template <typename vecval>
-    inline auto equals(const vecval &a, const vecval &b) -> bool
-    {
-        for (size_t i = 0; i < traits<vecval>::count; i++)
-        {
-            if (!linear_equals(traits<vecval>::get(a, i), traits<vecval>::get(b, i)))
-            {
-                return false;
-            }
-        }
+  template <typename type_>
+  constexpr auto get_size() -> size_t {
+    return _helper<type_>::size;
+  }
 
-        return true;
-    }
+  template <typename type_>
+  constexpr auto get_row_count() -> size_t {
+    return type_::row_count;
+  }
 
-    template <typename vecval>
-    inline auto equals(const vecval &a, const vecval &b, const typename traits<vecval>::type &epsilon) -> bool
-    {
-        for (size_t i = 0; i < traits<vecval>::count; i++)
-        {
-            if (!linear_equals(traits<vecval>::get(a, i), traits<vecval>::get(b, i), epsilon))
-            {
-                return false;
-            }
-        }
+  template <typename type_>
+  constexpr auto get_column_count() -> size_t {
+    return type_::column_count;
+  }
 
-        return true;
-    }
+  template <typename type_>
+  constexpr auto get( //
+      const type_  v, //
+      const size_t i) -> elem_type<type_> {
 
-    template <typename vecval>
-    inline auto lerp(const vecval &begin, const vecval &end, realmax_t t) -> vecval
-    {
-        return vecval(begin + (end - begin) * vecval(t));
-    }
+    return _get_helper<type_>::get(v, i);
+  }
 
-    template <typename vecval>
-    inline auto lerp(const quaternion<vecval> &begin, const quaternion<vecval> &end, realmax_t t) -> vecval
-    {
-        return slerp(begin, end, t);
-    }
+  template <typename type_>
+  constexpr void set(           //
+      type_ &                v, //
+      const size_t           i, //
+      const elem_type<type_> x) {
+
+    _set_helper<type_>::set(v, i, x);
+  }
 }
+
+#endif

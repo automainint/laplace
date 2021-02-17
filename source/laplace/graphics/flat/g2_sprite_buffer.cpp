@@ -20,14 +20,14 @@ void sprite_buffer::render(float x, float y, float width, float height)
 {
     vertex v[4];
 
-    v[0].position.x = x;
-    v[0].position.y = y;
-    v[1].position.x = x;
-    v[1].position.y = y + height;
-    v[2].position.x = x + width;
-    v[2].position.y = y;
-    v[3].position.x = x + width;
-    v[3].position.y = y + height;
+    v[0].position.x() = x;
+    v[0].position.y() = y;
+    v[1].position.x() = x;
+    v[1].position.y() = y + height;
+    v[2].position.x() = x + width;
+    v[2].position.y() = y;
+    v[3].position.x() = x + width;
+    v[3].position.y() = y + height;
 
     v[0].texcoord = { 0.f, 1.f };
     v[1].texcoord = { 0.f, 0.f };

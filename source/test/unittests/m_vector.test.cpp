@@ -10,43 +10,175 @@
  *  the MIT License for more details.
  */
 
+#include "../../laplace/math/shortnames.h"
 #include "../../laplace/math/vector.h"
 #include <gtest/gtest.h>
 
 namespace laplace::test {
-  using math::dot, math::cross, math::vector;
+  using math::equals, math::add, math::sub, math::mul,
+      math::div, math::mul_by_elem, math::div_by_elem, math::dot,
+      math::cross, math::square_length, math::shortnames::vec3;
 
-  TEST(math, vector_comparison) {
-    const auto a = vector<3, double>(1.0, 2.0, 3.0);
-    const auto b = vector<3, double>(1.0, 2.0, 3.0);
-    const auto c = vector<3, double>(2.0, 3.0, 1.0);
+  TEST(math, vector_arithmetic_constexpr) {
+    constexpr auto a = vec3 { 1., 2., 3. };
+    constexpr auto b = vec3 { 4., 5., 6. };
 
-    EXPECT_TRUE(a == b);
-    EXPECT_FALSE(a == c);
-    EXPECT_FALSE(a != b);
-    EXPECT_TRUE(a != c);
+    constexpr auto add1 = add(a, b);
+    constexpr auto sub1 = sub(a, b);
+    constexpr auto mul1 = mul(a, 2.);
+    constexpr auto mul2 = mul(2., a);
+    constexpr auto mul3 = mul_by_elem(a, b);
+    constexpr auto div1 = div(a, 2.);
+    constexpr auto div2 = div(6., a);
+    constexpr auto div3 = div_by_elem(b, a);
+
+    EXPECT_TRUE(equals(     //
+        add1,               //
+        vec3 { 5., 7., 9. } //
+        ));
+
+    EXPECT_TRUE(equals(        //
+        sub1,                  //
+        vec3 { -3., -3., -3. } //
+        ));
+
+    EXPECT_TRUE(equals(     //
+        mul1,               //
+        vec3 { 2., 4., 6. } //
+        ));
+
+    EXPECT_TRUE(equals(     //
+        mul2,               //
+        vec3 { 2., 4., 6. } //
+        ));
+
+    EXPECT_TRUE(equals(       //
+        mul3,                 //
+        vec3 { 4., 10., 18. } //
+        ));
+
+    EXPECT_TRUE(equals(      //
+        div1,                //
+        vec3 { .5, 1., 1.5 } //
+        ));
+
+    EXPECT_TRUE(equals(     //
+        div2,               //
+        vec3 { 6., 3., 2. } //
+        ));
+
+    EXPECT_TRUE(equals(      //
+        div3,                //
+        vec3 { 4., 2.5, 2. } //
+        ));
   }
 
-  TEST(math, vector_dot) {
-    auto a = vector<3, double>(2.0, 2.0, 2.0);
-    auto b = vector<3, double>(-2.0, 2.0, -1.0);
+  TEST(math, vector_arithmetic) {
+    auto a = vec3 { 1., 2., 3. };
+    auto b = vec3 { 4., 5., 6. };
 
-    const auto     d0 = dot(a, b);
-    constexpr auto d1 = 2.0 * (-2) + 2. * 2. + (2. * -1.);
+    auto add1 = add(a, b);
+    auto sub1 = sub(a, b);
+    auto mul1 = mul(a, 2.);
+    auto mul2 = mul(2., a);
+    auto mul3 = mul_by_elem(a, b);
+    auto div1 = div(a, 2.);
+    auto div2 = div(6., a);
+    auto div3 = div_by_elem(b, a);
 
-    EXPECT_NEAR(d0, d1, 1e-10);
+    EXPECT_TRUE(equals(     //
+        add1,               //
+        vec3 { 5., 7., 9. } //
+        ));
+
+    EXPECT_TRUE(equals(        //
+        sub1,                  //
+        vec3 { -3., -3., -3. } //
+        ));
+
+    EXPECT_TRUE(equals(     //
+        mul1,               //
+        vec3 { 2., 4., 6. } //
+        ));
+
+    EXPECT_TRUE(equals(     //
+        mul2,               //
+        vec3 { 2., 4., 6. } //
+        ));
+
+    EXPECT_TRUE(equals(       //
+        mul3,                 //
+        vec3 { 4., 10., 18. } //
+        ));
+
+    EXPECT_TRUE(equals(      //
+        div1,                //
+        vec3 { .5, 1., 1.5 } //
+        ));
+
+    EXPECT_TRUE(equals(     //
+        div2,               //
+        vec3 { 6., 3., 2. } //
+        ));
+
+    EXPECT_TRUE(equals(      //
+        div3,                //
+        vec3 { 4., 2.5, 2. } //
+        ));
   }
 
-  TEST(math, vector_cross) {
-    auto a = vector<3, double>(2.0, 2.0, 2.0);
-    auto b = vector<3, double>(-2.0, 2.0, -1.0);
+  TEST(math, vector_dot_product_constexpr) {
+    constexpr auto a = vec3 { 1, 2, 3 };
+    constexpr auto b = vec3 { 4, 5, 6 };
+    constexpr auto c = dot(a, b);
 
-    const auto d0 = cross(a, b);
+    EXPECT_DOUBLE_EQ(c, 32.);
+  }
 
-    const auto d1 = vector<3, double>(2.0 * (-1.) - 2. * 2.,
-                                      2.0 * (-2.) - 2. * (-1.),
-                                      2.0 * 2. - 2. * (-2.));
+  TEST(math, vector_dot_product) {
+    auto a = vec3 { 1, 2, 3 };
+    auto b = vec3 { 4, 5, 6 };
 
-    EXPECT_TRUE(d0 == d1);
+    EXPECT_DOUBLE_EQ( //
+        dot(a, b),    //
+        32.           //
+    );
+  }
+
+  TEST(math, vector_cross_product_constexpr) {
+    constexpr auto a = vec3 { 1, 2, 3 };
+    constexpr auto b = vec3 { 4, 5, 6 };
+    constexpr auto c = cross(a, b);
+
+    EXPECT_TRUE(equals(       //
+        c,                    //
+        vec3 { -3., 6., -3. } //
+        ));
+  }
+
+  TEST(math, vector_cross_product) {
+    constexpr auto a = vec3 { 1, 2, 3 };
+    constexpr auto b = vec3 { 4, 5, 6 };
+
+    EXPECT_TRUE(equals(       //
+        cross(a, b),          //
+        vec3 { -3., 6., -3. } //
+        ));
+  }
+
+  TEST(math, vector_square_length_constexpr) {
+    constexpr auto a = vec3 { 1, 2, 3 };
+    constexpr auto l = square_length(a);
+
+    EXPECT_DOUBLE_EQ(l, 14.);
+  }
+
+  TEST(math, vector_square_length) {
+    auto a = vec3 { 1, 2, 3 };
+
+    EXPECT_DOUBLE_EQ(     //
+        square_length(a), //
+        14.               //
+    );
   }
 }

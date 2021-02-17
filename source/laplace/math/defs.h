@@ -1,0 +1,83 @@
+/*  laplace/math/defs.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#ifndef __laplace__math_defs__
+#define __laplace__math_defs__
+
+#include <cstdint>
+
+namespace laplace::math {
+  using realmax_t = long double;
+
+  template <size_t size_, typename type_>
+  class vector;
+
+  template <size_t rows_, size_t cols_, typename type_>
+  class matrix;
+
+  template <typename type_>
+  class complex;
+
+  template <typename type_>
+  class quaternion;
+
+  template <typename type_>
+  struct type_helper {
+    using scalar_type = type_;
+    using elem_type   = type_;
+
+    static constexpr bool is_scalar = true;
+  };
+
+  template <size_t size_, typename type_>
+  struct type_helper<vector<size_, type_>> {
+    using scalar_type = typename type_helper<type_>::scalar_type;
+    using elem_type   = type_;
+
+    static constexpr bool is_scalar = false;
+  };
+
+  template <size_t rows_, size_t cols_, typename type_>
+  struct type_helper<matrix<rows_, cols_, type_>> {
+    using scalar_type = typename type_helper<type_>::scalar_type;
+    using elem_type   = type_;
+
+    static constexpr bool is_scalar = false;
+  };
+
+  template <typename type_>
+  struct type_helper<complex<type_>> {
+    using scalar_type = typename type_helper<type_>::scalar_type;
+    using elem_type   = type_;
+
+    static constexpr bool is_scalar = false;
+  };
+
+  template <typename type_>
+  struct type_helper<quaternion<type_>> {
+    using scalar_type = typename type_helper<type_>::scalar_type;
+    using elem_type   = type_;
+
+    static constexpr bool is_scalar = false;
+  };
+
+  template <typename type_>
+  using scalar_type = typename type_helper<type_>::scalar_type;
+
+  template <typename type_>
+  using elem_type = typename type_helper<type_>::elem_type;
+
+  template <typename type_>
+  constexpr auto is_scalar = type_helper<type_>::is_scalar;
+}
+
+#endif

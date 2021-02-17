@@ -10,55 +10,118 @@
  *  the MIT License for more details.
  */
 
+#include "../../laplace/core/defs.h"
+#include "../../laplace/math/basic.h"
 #include "../../laplace/math/matrix.h"
-#include "../../laplace/math/traits.h"
+#include "../../laplace/math/shortnames.h"
 #include <gtest/gtest.h>
 #include <random>
 
 namespace laplace::test {
-  using math::add, math::subtract, math::equals, math::matrix,
-      std::default_random_engine, std::uniform_real_distribution;
+  using math::add, math::sub, math::equals,
+      math::shortnames::mat4, std::default_random_engine,
+      std::uniform_real_distribution;
+
+  TEST(math, matrix_add_constexpr) {
+    constexpr auto a = mat4 //
+        { 1,  2,  3,  4,    //
+          5,  6,  7,  8,    //
+          -1, -2, -3, -4,   //
+          -5, -6, -7, -8 };
+
+    constexpr auto b = mat4 //
+        { -1, -2, -3, -4,   //
+          -5, -6, -7, -8,   //
+          1,  2,  3,  4,    //
+          5,  6,  7,  8 };
+
+    constexpr auto c = mat4 //
+        { 0, 0, 0, 0,       //
+          0, 0, 0, 0,       //
+          0, 0, 0, 0,       //
+          0, 0, 0, 0 };
+
+    constexpr auto d = add(a, b);
+
+    EXPECT_TRUE(equals(c, d));
+  }
 
   TEST(math, matrix_add) {
-    matrix<4, 4, float> a = { 1,  2,  3,  4,  5,  6,  7,  8,
-                              -1, -2, -3, -4, -5, -6, -7, -8 };
+    auto a = mat4         //
+        { 1,  2,  3,  4,  //
+          5,  6,  7,  8,  //
+          -1, -2, -3, -4, //
+          -5, -6, -7, -8 };
 
-    matrix<4, 4, float> b = { -1, -2, -3, -4, -5, -6, -7, -8,
-                              1,  2,  3,  4,  5,  6,  7,  8 };
+    auto b = mat4         //
+        { -1, -2, -3, -4, //
+          -5, -6, -7, -8, //
+          1,  2,  3,  4,  //
+          5,  6,  7,  8 };
 
-    matrix<4, 4, float> c = { 0, 0, 0, 0, 0, 0, 0, 0,
-                              0, 0, 0, 0, 0, 0, 0, 0 };
+    auto c = mat4     //
+        { 0, 0, 0, 0, //
+          0, 0, 0, 0, //
+          0, 0, 0, 0, //
+          0, 0, 0, 0 };
 
     auto d = add(a, b);
 
     EXPECT_TRUE(equals(c, d));
   }
 
-  TEST(math, matrix_subtract) {
-    matrix<4, 4, float> a = { 1,  2,  3,  4,  5,  6,  7,  8,
-                              -1, -2, -3, -4, -5, -6, -7, -8 };
+  TEST(math, matrix_sub_constexpr) {
+    constexpr auto a = mat4 //
+        { 1,  2,  3,  4,    //
+          5,  6,  7,  8,    //
+          -1, -2, -3, -4,   //
+          -5, -6, -7, -8 };
 
-    matrix<4, 4, float> b = { 0, 0, 0, 0, 0, 0, 0, 0,
-                              0, 0, 0, 0, 0, 0, 0, 0 };
+    constexpr auto b = mat4 //
+        { 0, 0, 0, 0,       //
+          0, 0, 0, 0,       //
+          0, 0, 0, 0,       //
+          0, 0, 0, 0 };
 
-    auto c = subtract(a, a);
+    constexpr auto c = sub(a, a);
+
+    EXPECT_TRUE(equals(b, c));
+  }
+
+  TEST(math, matrix_sub) {
+    auto a = mat4         //
+        { 1,  2,  3,  4,  //
+          5,  6,  7,  8,  //
+          -1, -2, -3, -4, //
+          -5, -6, -7, -8 };
+
+    auto b = mat4     //
+        { 0, 0, 0, 0, //
+          0, 0, 0, 0, //
+          0, 0, 0, 0, //
+          0, 0, 0, 0 };
+
+    auto c = sub(a, a);
 
     EXPECT_TRUE(equals(b, c));
   }
 
   TEST(math, matrix_add_sub) {
+    constexpr size_t test_count = 10;
+
     default_random_engine            rnd;
     uniform_real_distribution<float> dst(-100, 100);
 
-    for (size_t i = 0; i < 10; i++) {
-      matrix<4, 4, float> a, b;
+    for (size_t i = 0; i < test_count; i++) {
+      auto a = mat4 {};
+      auto b = mat4 {};
 
       for (size_t i = 0; i < 16; i++) {
         a.v[i] = dst(rnd);
         b.v[i] = dst(rnd);
       }
 
-      auto c = subtract(add(a, b), b);
+      auto c = sub(add(a, b), b);
 
       EXPECT_TRUE(equals(a, c, 1e-5f));
     }
