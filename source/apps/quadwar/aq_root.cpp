@@ -19,56 +19,79 @@ namespace quadwar_app {
   using std::lower_bound, std::unique_lock, std::shared_lock,
       engine::id_undefined, engine::access::entity;
 
-  auto root::changed() -> bool {
-    auto _ul = unique_lock(m_lock);
+  size_t root::n_is_changed  = 0;
+  size_t root::n_is_launched = 0;
+  size_t root::n_slot_count  = 0;
 
-    if (m_is_changed) {
-      m_is_changed = false;
-      return true;
-    }
+  root root::m_proto(root::proto);
 
-    return false;
+  root::root(root::proto_tag) {
+    setup_sets( //
+        { { .id = sets::root_is_changed, .scale = 1 },
+          { .id = sets::root_is_launched, .scale = 1 },
+          { .id = sets::root_slot_count, .scale = 1 } });
+
+    n_is_changed  = index_of(sets::root_is_changed);
+    n_is_launched = index_of(sets::root_is_launched);
+    n_slot_count  = index_of(sets::root_slot_count);
   }
 
-  auto root::get_slot_count() -> size_t {
-    auto _sl = shared_lock(m_lock);
-    return m_slots.size();
+  root::root() {
+    *this = m_proto;
   }
 
-  auto root::get_slot(size_t index) -> size_t {
-    auto _sl = shared_lock(m_lock);
-    return index < m_slots.size() ? m_slots[index] : id_undefined;
+  void root::slot_create( //
+      entity en,          //
+      size_t id_actor) {
+
+    en.modify(sets::root_slot_create, pack_to_array(id_actor));
   }
 
-  void root::slot_create(entity en, size_t id_actor) {
-    en.modify(sets::slot_create, pack_to_array(id_actor));
+  void root::slot_remove( //
+      entity en,          //
+      size_t id_actor) {
+
+    en.modify(sets::root_slot_remove, pack_to_array(id_actor));
   }
 
-  void root::slot_remove(entity en, size_t id_actor) {
-    en.modify(sets::slot_remove, pack_to_array(id_actor));
+  void root::launch(entity en) {
+    en.modify(sets::root_launch);
   }
 
   void root::status_changed(entity en) {
-    en.modify(sets::status_changed);
+    en.set(n_is_changed, true);
+  }
+
+  auto root::changed(entity en) -> bool {
+    const auto is_changed = en.get(n_is_changed);
+    en.set(n_is_changed, 0);
+    return is_changed > 0;
+  }
+
+  auto root::is_launched(entity en) -> bool {
+    return en.get(n_is_launched) > 0;
   }
 
   auto root::get_slot_count(entity en) -> size_t {
-    const auto data = en.request(sets::slot_count);
-    return rd<size_t>(data, 0);
+    return static_cast<size_t>(en.get(n_slot_count));
   }
 
-  auto root::get_slot(entity en, size_t index) -> size_t {
-    const auto result = en.request(
-        sets::slot_get, pack_to_array(index));
+  auto root::get_slot( //
+      entity en,       //
+      size_t index) -> size_t {
+
+    const auto result = en.request( //
+        sets::root_slot_get,        //
+        pack_to_array(index));
 
     return rd<size_t>(result, 0);
   }
 
-  auto root::do_request(size_t id, cref_vbyte args) const
-      -> vbyte {
-    if (id == sets::slot_count) {
-      return pack_to_bytes(m_slots.size());
-    } else if (id == sets::slot_get) {
+  auto root::do_request( //
+      size_t     id,     //
+      cref_vbyte args) const -> vbyte {
+
+    if (id == sets::root_slot_get) {
       const auto index = rd<size_t>(args, 0);
 
       if (index < m_slots.size()) {
@@ -79,27 +102,52 @@ namespace quadwar_app {
     return {};
   }
 
-  void root::do_modify(size_t id, cref_vbyte args) {
-    if (id == sets::status_changed) {
-      m_is_changed = true;
-    } else if (id == sets::slot_create) {
+  void root::do_modify( //
+      size_t     id,    //
+      cref_vbyte args) {
 
-      const auto id_actor = rd<size_t>(args, 0);
-      const auto it       = lower_bound(
-          m_slots.begin(), m_slots.end(), id_actor);
+    switch (id) {
+      case sets::root_slot_create:
+        do_slot_create(rd<size_t>(args, 0));
+        break;
 
-      m_slots.emplace(it, id_actor);
+      case sets::root_slot_remove:
+        do_slot_remove(rd<size_t>(args, 0));
+        break;
 
-      m_is_changed = true;
-    } else if (id == sets::slot_remove) {
-      const auto id_actor = rd<size_t>(args, 0);
-      const auto it       = lower_bound(
-          m_slots.begin(), m_slots.end(), id_actor);
+      case sets::root_launch: do_launch(); break;
+    }
+  }
 
-      if (it != m_slots.end() && *it == id_actor)
-        m_slots.erase(it);
+  void root::do_slot_create(const size_t id_actor) {
+    const auto it = lower_bound(
+        m_slots.begin(), m_slots.end(), id_actor);
 
-      m_is_changed = true;
+    m_slots.emplace(it, id_actor);
+
+    init(n_slot_count, static_cast<int64_t>(m_slots.size()));
+    init(n_is_changed, 1);
+  }
+
+  void root::do_slot_remove(const size_t id_actor) {
+    const auto it = lower_bound(
+        m_slots.begin(), m_slots.end(), id_actor);
+
+    if (it != m_slots.end() && *it == id_actor)
+      m_slots.erase(it);
+
+    init(n_slot_count, static_cast<int64_t>(m_slots.size()));
+    init(n_is_changed, 1);
+  }
+
+  void root::do_launch() {
+    if (locked_get(n_is_launched) <= 0) {
+      verb("\n ********************\n"
+           " *   !! LAUNCH !!   *\n"
+           " ********************\n");
+
+      init(n_is_launched, 1);
+      init(n_is_changed, 1);
     }
   }
 }

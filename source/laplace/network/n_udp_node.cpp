@@ -29,24 +29,21 @@ namespace laplace::network {
     name.sin_port        = ::htons(port);
     name.sin_addr.s_addr = ::htonl(INADDR_ANY);
 
-    auto status = ::bind(
-        m_socket, reinterpret_cast<const SOCKADDR *>(&name),
-        sizeof name);
+    auto status = ::bind(m_socket,
+                         reinterpret_cast<const SOCKADDR *>(&name),
+                         sizeof name);
 
     if (status == SOCKET_ERROR) {
-      error(__FUNCTION__, "bind failed (code %d).",
-            socket_error());
+      verb("UDP: bind failed (code %d).", socket_error());
       return;
     }
 
     if (port == any_port) {
       int len = sizeof name;
 
-      if (::getsockname(m_socket,
-                        reinterpret_cast<sockaddr *>(&name),
+      if (::getsockname(m_socket, reinterpret_cast<sockaddr *>(&name),
                         &len) == SOCKET_ERROR) {
-        error(__FUNCTION__, "getsockname failed (code %d).",
-              socket_error());
+        verb("UDP: getsockname failed (code %d).", socket_error());
         ::closesocket(m_socket);
         m_socket = INVALID_SOCKET;
         return;
@@ -58,12 +55,11 @@ namespace laplace::network {
     }
   }
 
-  auto udp_node::receive_to(uint8_t *p, size_t count,
-                            io_mode mode) -> size_t {
+  auto udp_node::receive_to(uint8_t *p, size_t count, io_mode mode)
+      -> size_t {
     size_t size = 0;
 
-    if (m_socket != INVALID_SOCKET &&
-        (p != nullptr || count == 0)) {
+    if (m_socket != INVALID_SOCKET && (p != nullptr || count == 0)) {
       int len = sizeof m_remote;
       memset(&m_remote, 0, sizeof m_remote);
 
@@ -74,26 +70,25 @@ namespace laplace::network {
       for (; size < count;) {
         auto part = clamp_chunk(count - size);
 
-        auto n = ::recvfrom(
-            m_socket, buf + size, part, 0, addr, &len);
+        auto n = ::recvfrom(m_socket, buf + size, part, 0, addr, &len);
 
         if (n != SOCKET_ERROR) {
           size += n;
         } else if (socket_error() == socket_msgsize()) {
-          error(
-              __FUNCTION__,
-              "recvfrom failed, buffer too small (EMSGSIZE).");
+          verb("UDP: recvfrom failed, buffer too small (EMSGSIZE).");
+          break;
+        } else if (socket_error() == socket_connreset()) {
+          verb("UDP: recvfrom failed, connection was forcibly closed "
+               "by the remote host (ECONNRESET).");
           break;
         } else if (socket_error() != socket_wouldblock()) {
-          error(__FUNCTION__, "recvfrom failed (code %d).",
-                socket_error());
+          verb("UDP: recvfrom failed (code %d).", socket_error());
           break;
         } else if (mode == sync) {
           is_sync = set_mode(m_socket, sync);
 
           if (!is_sync) {
-            error(__FUNCTION__, "ioctlsocket failed (code %d).",
-                  socket_error());
+            verb("UDP: ioctlsocket failed (code %d).", socket_error());
             break;
           }
         } else
@@ -102,8 +97,7 @@ namespace laplace::network {
 
       if (is_sync) {
         if (!set_mode(m_socket, async)) {
-          error(__FUNCTION__, "ioctlsocket failed (code %d).",
-                socket_error());
+          verb("UDP: ioctlsocket failed (code %d).", socket_error());
         }
       }
     }
@@ -132,10 +126,11 @@ namespace laplace::network {
     name.sin_family = AF_INET;
     name.sin_port   = ::htons(port);
 
-    if (::inet_pton(AF_INET, address.data(),
-                    &name.sin_addr.s_addr) != 1) {
-      error(__FUNCTION__, "inet_pton failed (code %d).",
-            socket_error());
+    const auto status = ::inet_pton(
+        AF_INET, address.data(), &name.sin_addr.s_addr);
+
+    if (status != 1) {
+      verb("UDP: inet_pton failed (code %d).", socket_error());
     } else {
       result = send_internal(name, seq);
     }
@@ -161,19 +156,17 @@ namespace laplace::network {
     m_socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
     if (m_socket == INVALID_SOCKET) {
-      error(__FUNCTION__, "socket failed (code %d).",
-            socket_error());
+      verb("UDP: socket failed (code %d).", socket_error());
       return;
     }
 
     if (!set_mode(m_socket, async)) {
-      error(__FUNCTION__, "ioctlsocket failed (code %d).",
-            socket_error());
+      verb("UDP: ioctlsocket failed (code %d).", socket_error());
     }
   }
 
-  auto udp_node::send_internal(const sockaddr_in &name,
-                               cref_vbyte seq) -> size_t {
+  auto udp_node::send_internal(const sockaddr_in &name, cref_vbyte seq)
+      -> size_t {
     size_t count = 0;
 
     if (m_socket != INVALID_SOCKET) {
@@ -190,15 +183,13 @@ namespace laplace::network {
         if (n != SOCKET_ERROR) {
           count += n;
         } else if (socket_error() != socket_wouldblock()) {
-          error(__FUNCTION__, "sendto failed (code %d).",
-                socket_error());
+          verb("UDP: sendto failed (code %d).", socket_error());
           break;
         } else {
           is_sync = set_mode(m_socket, sync);
 
           if (!is_sync) {
-            error(__FUNCTION__, "ioctlsocket failed (code %d).",
-                  socket_error());
+            verb("UDP: ioctlsocket failed (code %d).", socket_error());
             break;
           }
         }
@@ -206,8 +197,7 @@ namespace laplace::network {
 
       if (is_sync) {
         if (!set_mode(m_socket, async)) {
-          error(__FUNCTION__, "ioctlsocket failed (code %d).",
-                socket_error());
+          verb("UDP: ioctlsocket failed (code %d).", socket_error());
         }
       }
     }

@@ -53,7 +53,7 @@ namespace laplace::engine::protocol {
     }
 
     inline void perform(access::world w) const override {
-      w.reserve(get_actor());
+      w.emplace(std::make_shared<basic_entity>(), get_actor());
     }
 
     constexpr auto is_local() const {

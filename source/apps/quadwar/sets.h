@@ -21,11 +21,17 @@ namespace quadwar_app::sets {
   enum set_id : size_t {
     player_name = _native_count,
 
-    slot_count,
-    slot_get,
-    slot_create,
-    slot_remove,
-    status_changed
+    root_is_changed,
+    root_is_launched,
+    root_slot_count,
+    root_slot_get,
+    root_slot_create,
+    root_slot_remove,
+    root_launch,
+
+    game_clock_time,
+
+    _count
   };
 }
 

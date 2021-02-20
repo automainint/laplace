@@ -31,13 +31,13 @@ namespace laplace::network {
   host::host() {
     setup_world();
 
-    set_max_slot_count(-1);
+    set_max_slot_count(slot_count_unlimited);
     set_distribution_enabled(true);
   }
 
   host::~host() {
     if (m_node) {
-      process_event(slot_host, encode(server_quit()));
+      process_event(slot_host, encode<server_quit>());
 
       send_events();
     }
@@ -49,11 +49,17 @@ namespace laplace::network {
     m_node = make_unique<udp_node>();
     m_node->bind(port);
 
-    process_event(
-        slot_host, encode(server_clock(get_tick_duration())));
+    process_event( //
+        slot_host, //
+        encode<server_clock>(get_tick_duration()));
 
-    process_event(slot_host,
-                  encode(server_seed(solver::generate_seed())));
+    process_event( //
+        slot_host, //
+        encode<server_seed>(solver::generate_seed()));
+
+    process_event( //
+        slot_host, //
+        encode<server_init>());
   }
 
   void host::queue(cref_vbyte seq) {
@@ -64,29 +70,48 @@ namespace laplace::network {
     }
   }
 
-  auto host::perform_control(size_t slot, cref_vbyte seq)
-      -> bool {
+  auto host::perform_control(size_t slot, cref_vbyte seq) -> bool {
 
     if (ping_request::scan(seq)) {
       const auto time = ping_request::get_ping_time(seq);
-      send_event_to(slot, encode(ping_response(time)));
+      send_event_to(slot, encode<ping_response>(time));
       return true;
     }
 
+    if (ping_response::scan(seq)) {
+      const auto ping = get_local_time() -
+                        ping_response::get_ping_time(seq);
+
+      set_ping(ping);
+      return true;
+    }
+
+    if (server_init::scan(seq)) {
+      /*  Send to the clients.
+       */
+      return false;
+    }
+
     if (server_launch::scan(seq)) {
-      /*  Send the event to clients.
+      /*  Send to the clients.
        */
       return false;
     }
 
     if (server_action::scan(seq)) {
       set_state(server_state::action);
-      return true;
+
+      /*  Send to the clients.
+       */
+      return false;
     }
 
     if (server_pause::scan(seq)) {
       set_state(server_state::pause);
-      return true;
+
+      /*  Send to the clients.
+       */
+      return false;
     }
 
     if (server_clock::scan(seq)) {
@@ -110,22 +135,22 @@ namespace laplace::network {
     }
 
     if (server_quit::scan(seq)) {
-      /*  Send the event to clients.
+      /*  Send to the clients.
        */
       return false;
     }
 
     if (public_key::scan(seq)) {
       if (public_key::get_cipher(seq) == ids::cipher_dh_rabbit) {
-        send_event_to(
-            slot, encode(public_key(
-                      ids::cipher_dh_rabbit,
-                      m_slots[slot].cipher.get_public_key())));
+
+        send_event_to(                 //
+            slot,                      //
+            encode<public_key>(        //
+                ids::cipher_dh_rabbit, //
+                m_slots[slot].cipher.get_public_key()));
 
         m_slots[slot].is_encrypted = false;
-
-        m_slots[slot].cipher.set_remote_key(
-            public_key::get_key(seq));
+        m_slots[slot].cipher.set_remote_key(public_key::get_key(seq));
 
         if (is_verbose()) {
           verb("[ host ] mutual key");
@@ -157,12 +182,11 @@ namespace laplace::network {
 
     if (client_enter::scan(seq) && slot != slot_host) {
       if (auto wor = get_world(); wor) {
-        m_slots[slot].id_actor = get_world()->reserve(
-            id_undefined);
+        m_slots[slot].id_actor = get_world()->reserve(id_undefined);
 
-        process_event(slot, encode(slot_create(false)));
+        process_event(slot, encode<slot_create>(false));
       } else {
-        verb("[ host ] no world");
+        error(__FUNCTION__, "No world.");
       }
 
       return true;
@@ -170,11 +194,12 @@ namespace laplace::network {
 
     if (client_leave::scan(seq) && slot != slot_host) {
       if (get_state() == server_state::prepare) {
-        process_event(slot, encode(slot_remove()));
+        process_event(slot, encode<slot_remove>());
 
         m_slots[slot].id_actor = id_undefined;
       }
 
+      m_slots[slot].is_connected = false;
       return true;
     }
 
@@ -187,16 +212,16 @@ namespace laplace::network {
             if (auto wor = get_world(); wor) {
               ev->perform({ *get_world(), access::sync });
             } else {
-              verb("[ host ] no world");
+              error(__FUNCTION__, "No world.");
             }
           } else {
             verb("[ host ] unable to decode command");
           }
         } else {
-          verb("[ host ] no factory");
+          error(__FUNCTION__, "No factory.");
         }
       } else {
-        verb("[ host ] ignore command");
+        verb("[ host ] ignore ready command");
       }
 
       return true;

@@ -52,6 +52,8 @@ namespace quadwar_app {
     void set_visible(bool is_visible);
     void set_start_enabled(bool is_enabled);
 
+    auto is_visible() const -> bool;
+
   private:
     struct slot {
       size_t       id_actor = -1;

@@ -11,21 +11,31 @@
  */
 
 #include "../../laplace/core/utils.h"
+#include "../../laplace/engine/protocol/basic_event.h"
 #include "../../laplace/network/host.h"
 #include "../../laplace/network/remote.h"
 #include "player.h"
 #include "qw_player_name.h"
+#include "root.h"
 #include "session.h"
 
 namespace quadwar_app {
-  using std::find, std::make_shared, std::string,
-      std::string_view, std::u8string_view, network::host,
-      network::remote;
+  using std::find, std::make_shared, std::string, std::string_view,
+      std::u8string_view, network::host, network::remote;
 
   session::session() {
     m_lobby.on_abort([=] {
       if (m_on_done)
         m_on_done();
+    });
+
+    m_lobby.on_start([=] {
+      if (m_server) {
+        m_server->emit<protocol::server_launch>();
+        m_server->emit<protocol::server_action>();
+
+        m_lobby.on_start([] {});
+      }
     });
   }
 
@@ -38,41 +48,12 @@ namespace quadwar_app {
   }
 
   void session::tick(size_t delta_msec) {
-    if (m_server && m_root && m_world) {
+    if (m_server && m_world) {
       m_server->tick(delta_msec);
 
       if (m_server->is_connected()) {
-        if (m_root->changed()) {
-          auto count = m_root->get_slot_count();
+        update_lobby();
 
-          for (size_t i = 0; i < count; i++) {
-            const auto id_actor = m_root->get_slot(i);
-            const auto actor    = m_world->get_entity(id_actor);
-
-            const auto is_local = player::is_local(
-                { actor, access::async });
-
-            if (is_local)
-              m_id_actor = id_actor;
-
-            auto name = player::get_name({ actor, access::async });
-
-            if (name.empty()) {
-              name = u8"[ Reserved ]";
-            }
-
-            if (is_local) {
-              name.append(u8" *");
-            }
-
-            m_lobby.set_slot(i, id_actor, name);
-          }
-
-          for (size_t i = count; i < m_lobby.get_slot_count();
-               i++) {
-            m_lobby.remove_slot(i);
-          }
-        }
       } else {
         if (m_on_done)
           m_on_done();
@@ -99,8 +80,7 @@ namespace quadwar_app {
 
       m_server_ip = string(server_ip.begin(), i);
 
-      m_server_port = static_cast<uint16_t>(
-          to_integer({ p, size }));
+      m_server_port = static_cast<uint16_t>(to_integer({ p, size }));
     }
   }
 
@@ -132,12 +112,10 @@ namespace quadwar_app {
     auto server = make_shared<host>();
 
     m_world = server->get_world();
-    m_root  = make_shared<root>();
 
-    m_world->set_root(m_root);
-
+    //server->set_verbose(true);
     server->set_allowed_commands(allowed_commands);
-    server->set_factory(m_factory);
+    server->make_factory<qw_factory>();
 
     server->listen(m_server_port);
 
@@ -145,12 +123,11 @@ namespace quadwar_app {
      */
     auto id_actor = m_world->reserve(id_undefined);
 
-    server->queue<protocol::slot_create>(id_actor);
+    server->emit<protocol::slot_create>(id_actor);
+    server->emit<qw_player_name>(id_actor, m_player_name);
 
-    server->queue<qw_player_name>(id_actor, m_player_name);
-
-    m_lobby.show_info(to_u8string(
-        u8"Game host (port %hu)", server->get_port()));
+    m_lobby.show_info(
+        to_u8string(u8"Game host (port %hu)", server->get_port()));
 
     m_lobby.set_start_enabled(true);
 
@@ -161,19 +138,62 @@ namespace quadwar_app {
     auto server = make_shared<remote>();
 
     m_world = server->get_world();
-    m_root  = make_shared<root>();
 
-    m_world->set_root(m_root);
-
-    server->set_factory(m_factory);
+    //server->set_verbose(true);
+    server->make_factory<qw_factory>();
 
     server->connect(m_server_ip, m_server_port);
 
-    server->queue<qw_player_name>(m_player_name);
+    server->emit<qw_player_name>(m_player_name);
 
     m_lobby.show_info(u8"Game guest");
     m_lobby.set_start_enabled(false);
 
     m_server = server;
+  }
+
+  void session::update_lobby() {
+    if (!m_lobby.is_visible())
+      return;
+
+    auto r = m_world->get_root();
+
+    /*  Sync access required to reset the change status.
+     */
+    if (!root::changed({ r, access::sync }))
+      return;
+
+    if (root::is_launched({ r, access::async })) {
+      m_lobby.set_visible(false);
+      return;
+    }
+
+    auto count = root::get_slot_count({ r, access::async });
+
+    for (size_t i = 0; i < count; i++) {
+
+      const auto id_actor = root::get_slot({ r, access::async }, i);
+      const auto actor    = m_world->get_entity(id_actor);
+      const auto is_local = player::is_local({ actor, access::async });
+
+      if (is_local)
+        m_id_actor = id_actor;
+
+      auto name = player::get_name({ actor, access::async });
+
+      if (name.empty()) {
+        name = u8"[ Reserved ]";
+      }
+
+      if (is_local) {
+        name.append(u8" *");
+      }
+
+      m_lobby.set_slot(i, id_actor, name);
+    }
+
+    for (size_t i = count; i < m_lobby.get_slot_count(); i++) {
+      m_lobby.remove_slot(i);
+    }
   }
 }

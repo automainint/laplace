@@ -20,8 +20,6 @@ namespace laplace::network {
    */
   class remote final : public udp_server {
   public:
-    using server::queue;
-
     remote();
     ~remote() final;
 

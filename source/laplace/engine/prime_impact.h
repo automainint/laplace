@@ -43,19 +43,18 @@ namespace laplace::engine {
      */
     virtual void encode_to(std::span<uint8_t> bytes) const;
 
-    [[nodiscard]] constexpr auto get_encoded_size() const
-        -> size_t;
+    [[nodiscard]] constexpr auto get_encoded_size() const -> size_t;
 
     static constexpr void set_index(ref_vbyte seq, size_t index);
 
     [[nodiscard]] static constexpr auto get_id_unsafe(cref_vbyte seq)
         -> uint16_t;
-    [[nodiscard]] static constexpr auto get_index_unsafe(
-        cref_vbyte seq) -> size_t;
-    [[nodiscard]] static constexpr auto get_time_unsafe(
-        cref_vbyte seq) -> uint64_t;
-    [[nodiscard]] static constexpr auto get_actor_unsafe(
-        cref_vbyte seq) -> size_t;
+    [[nodiscard]] static constexpr auto get_index_unsafe(cref_vbyte seq)
+        -> size_t;
+    [[nodiscard]] static constexpr auto get_time_unsafe(cref_vbyte seq)
+        -> uint64_t;
+    [[nodiscard]] static constexpr auto get_actor_unsafe(cref_vbyte seq)
+        -> size_t;
 
     [[nodiscard]] static constexpr auto get_id(cref_vbyte seq)
         -> uint16_t;
@@ -67,12 +66,12 @@ namespace laplace::engine {
         -> size_t;
 
     [[nodiscard]] static inline auto get_string(cref_vbyte seq,
-                                                size_t offset)
+                                                size_t     offset)
         -> std::u8string_view;
 
     [[nodiscard]] static inline auto get_string(cref_vbyte seq,
-                                                size_t offset,
-                                                size_t size)
+                                                size_t     offset,
+                                                size_t     size)
         -> std::u8string_view;
 
   protected:
@@ -90,8 +89,8 @@ namespace laplace::engine {
     ~sync_prime_impact() override = default;
   };
 
-  template <typename prime_impact_>
-  static constexpr auto encode(const prime_impact_ &ev) -> vbyte;
+  template <typename prime_impact_, typename... args_>
+  [[nodiscard]] constexpr auto encode(args_... args) -> vbyte;
 
   using ptr_prime_impact = std::shared_ptr<prime_impact>;
 }

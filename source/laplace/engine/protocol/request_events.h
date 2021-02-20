@@ -21,12 +21,10 @@ namespace laplace::engine::protocol {
     enum encoding_offset : size_t { n_events = 2 };
 
     static constexpr uint16_t id         = ids::request_events;
-    static constexpr size_t   event_size = sizeof(uint64_t);
+    static constexpr auto     event_size = sizeof(uint64_t);
 
-    /*  ( Max size value - Header size ) / Event index size
-     */
-    static constexpr auto max_event_count =
-        (max_size - n_events) / event_size;
+    static constexpr auto max_event_count = (max_size - n_events) /
+                                            event_size;
 
     ~request_events() final = default;
 
@@ -44,14 +42,12 @@ namespace laplace::engine::protocol {
       return (seq.size() - n_events) / event_size;
     }
 
-    static constexpr auto get_event(cref_vbyte seq,
-                                    size_t     index) {
+    static constexpr auto get_event(cref_vbyte seq, size_t index) {
       return as_index(
           rd<uint64_t>(seq, n_events + index * event_size));
     }
 
-    inline void
-    encode_to(std::span<uint8_t> bytes) const final {
+    inline void encode_to(std::span<uint8_t> bytes) const final {
       std::vector<uint64_t> events(m_events.size());
       for (size_t i = 0; i < events.size(); i++)
         events[i] = m_events[i];

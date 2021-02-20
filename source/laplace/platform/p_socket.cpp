@@ -56,6 +56,10 @@ namespace laplace {
   auto socket_isconn() -> int {
     return WSAEISCONN;
   }
+
+  auto socket_connreset() -> int {
+    return WSAECONNRESET;
+  }
 #else
   /*  Default platform implementation. Use POSIX sockets.
    */
@@ -77,6 +81,10 @@ namespace laplace {
 
   auto socket_isconn() -> int {
     return EISCONN;
+  }
+
+  auto socket_connreset() -> int {
+    return ECONNRESET;
   }
 #endif
 }

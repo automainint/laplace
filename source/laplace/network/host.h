@@ -20,8 +20,6 @@ namespace laplace::network {
    */
   class host final : public udp_server {
   public:
-    using server::queue;
-
     host();
     ~host() final;
 

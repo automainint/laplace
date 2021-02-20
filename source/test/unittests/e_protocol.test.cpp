@@ -23,7 +23,7 @@ namespace laplace::test {
     constexpr size_t   actor    = 5;
     constexpr bool     is_local = true;
 
-    auto seq = encode(slot_create(index, time, actor, is_local));
+    auto seq = encode<slot_create>(index, time, actor, is_local);
 
     EXPECT_EQ(prime_impact::get_index(seq), index);
     EXPECT_EQ(prime_impact::get_time(seq), time);

@@ -21,32 +21,58 @@ namespace quadwar_app {
 
   class root : public engine::basic_entity {
   public:
-    root()           = default;
+    root();
     ~root() override = default;
 
-    auto changed() -> bool;
+    static void slot_create(       //
+        engine::access::entity en, //
+        size_t                 id_actor);
 
-    auto get_slot_count() -> size_t;
-    auto get_slot(size_t index) -> size_t;
+    static void slot_remove(       //
+        engine::access::entity en, //
+        size_t                 id_actor);
 
-    static void slot_create(engine::access::entity en,
-                            size_t                 id_actor);
-    static void slot_remove(engine::access::entity en,
-                            size_t                 id_actor);
-    static void status_changed(engine::access::entity en);
+    static void launch( //
+        engine::access::entity en);
 
-    static auto get_slot_count(engine::access::entity en)
-        -> size_t;
-    static auto get_slot(engine::access::entity en,
-                         size_t index) -> size_t;
+    static void status_changed( //
+        engine::access::entity en);
+
+    static auto changed( //
+        engine::access::entity en) -> bool;
+
+    static auto is_launched( //
+        engine::access::entity en) -> bool;
+
+    static auto get_slot_count( //
+        engine::access::entity en) -> size_t;
+
+    static auto get_slot(          //
+        engine::access::entity en, //
+        size_t                 index) -> size_t;
 
   protected:
-    auto do_request(size_t id, cref_vbyte args) const
-        -> vbyte override;
-    void do_modify(size_t id, cref_vbyte args) override;
+    root(proto_tag);
+
+    auto do_request(   //
+        size_t     id, //
+        cref_vbyte args) const -> vbyte override;
+
+    void do_modify(    //
+        size_t     id, //
+        cref_vbyte args) override;
+
+    void do_slot_create(const size_t id_actor);
+    void do_slot_remove(const size_t id_actor);
+    void do_launch();
 
   private:
-    bool  m_is_changed = false;
+    static size_t n_is_changed;
+    static size_t n_is_launched;
+    static size_t n_slot_count;
+
+    static root m_proto;
+
     vuint m_slots;
   };
 

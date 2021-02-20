@@ -37,7 +37,11 @@ namespace laplace::engine {
     void schedule(uint64_t delta);
     void join();
 
+    /*  Allow to automatically rewind the timeline when an
+     *  out-of-date impact added.
+     */
     void allow_rewind(bool is_rewind_allowed);
+
     auto is_rewind_allowed() const -> bool;
 
     auto get_time() const -> uint64_t;
@@ -61,7 +65,7 @@ namespace laplace::engine {
     uint64_t  m_time              = 0;
     size_t    m_position          = 0;
     bool      m_is_rewind_allowed = default_is_rewind_allowed;
-    seed_type m_seed              = generate_seed();
+    seed_type m_seed              = 0;
   };
 
   using ptr_solver = std::shared_ptr<solver>;

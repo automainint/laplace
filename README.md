@@ -1,5 +1,5 @@
 #   The Laplace project
-Multimedia framework focused on RTS games developlent. Provides the deterministic engine with concurrency support and lockstep synchronization networking.
+Interactive multimedia framework focused on RTS games developlent. Provides the deterministic engine with concurrency support and lockstep synchronization networking.
 
     Work in progress...
 
@@ -31,9 +31,13 @@ Use `tools/rebuild.sh` to build the repos.
 
     ./rebuild.sh
 
-Use `tools/gen-gl.py` to automatically generate the OpenGL interface files.
+Use `tools/gen-gl.py` to generate the OpenGL interface files.
 
     python ./gen-gl.py
+
+Use `tools/embed.py` to generate the embedded data source files.
+
+    python ./embed.py
     cd ..
 
-Add `source/` to the project and build manually. Required headers will be in `include/` folder, libraries will be in `libs/` folder.
+Add `source` to the project and build manually. Required headers will be in `include` folder, libraries will be in `libs` folder.

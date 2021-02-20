@@ -15,7 +15,7 @@ auto world::reserve(size_t id) -> size_t {
   return spawn(make_shared<basic_entity>(), id);
 }
 
-auto world::spawn(ptr_entity ent, size_t id) -> size_t {
+void world::emplace(ptr_entity ent, size_t id) {
   auto _ul = unique_lock(m_lock);
 
   if (ent) {
@@ -40,8 +40,7 @@ auto world::spawn(ptr_entity ent, size_t id) -> size_t {
     ent->set_id(id);
     ent->set_world(shared_from_this());
 
-    while (m_next_id < m_entities.size() &&
-           m_entities[m_next_id]) {
+    while (m_next_id < m_entities.size() && m_entities[m_next_id]) {
       m_next_id++;
     }
 
@@ -49,10 +48,56 @@ auto world::spawn(ptr_entity ent, size_t id) -> size_t {
       locked_add_dynamic(id);
     }
   } else {
-    id = id_undefined;
+    error(__FUNCTION__, "Unable to spawn null entity.");
+  }
+}
+
+auto world::spawn(ptr_entity ent, size_t id) -> size_t {
+  auto _ul = unique_lock(m_lock);
+
+  if (ent) {
+    if (id == id_undefined) {
+      id = m_next_id;
+    }
+
+    if (id >= m_entities.size()) {
+      m_entities.resize(id + 1);
+    }
+
+    if (m_entities[id]) {
+      if (!m_allow_relaxed_spawn) {
+        error(__FUNCTION__, "Id is not free.");
+        locked_desync();
+
+        return id_undefined;
+      }
+
+      if (m_entities[id]->is_dynamic()) {
+        locked_erase_dynamic(id);
+      }
+
+      m_entities[id]->reset_world();
+    }
+
+    m_entities[id] = ent;
+
+    ent->set_id(id);
+    ent->set_world(shared_from_this());
+
+    while (m_next_id < m_entities.size() && m_entities[m_next_id]) {
+      m_next_id++;
+    }
+
+    if (ent->is_dynamic()) {
+      locked_add_dynamic(id);
+    }
+
+    return id;
+  } else {
+    error(__FUNCTION__, "Unable to spawn null entity.");
   }
 
-  return id;
+  return id_undefined;
 }
 
 void world::remove(size_t id) {
@@ -66,11 +111,19 @@ void world::remove(size_t id) {
 
       m_entities[id]->reset_world();
       m_entities[id].reset();
+    } else {
+      if (m_allow_relaxed_spawn) {
+        error(__FUNCTION__, "No entity.");
+        locked_desync();
+      }
     }
 
     if (m_next_id > id) {
       m_next_id = id;
     }
+  } else {
+    error(__FUNCTION__, "Invalid entity id.");
+    locked_desync();
   }
 }
 
@@ -112,13 +165,12 @@ void world::queue(ptr_impact ev) {
     } else {
       auto _ul = unique_lock(m_lock);
 
-      auto op = [](const ptr_impact &a,
-                    cref_eventorder  b) -> bool {
+      auto op = [](const ptr_impact &a, cref_eventorder b) -> bool {
         return a->get_order() < b;
       };
 
       auto iter = lower_bound(m_sync_queue.begin(),
-          m_sync_queue.end(), ev->get_order(), op);
+                              m_sync_queue.end(), ev->get_order(), op);
 
       m_sync_queue.emplace(iter, ev);
     }
@@ -169,9 +221,7 @@ void world::schedule(uint64_t delta) {
         _ul.lock();
       }
 
-      for (auto &e : m_entities) {
-        e->adjust();
-      }
+      for (auto &e : m_entities) { e->adjust(); }
     }
   } else {
     m_scheduler.schedule(delta);
@@ -207,6 +257,17 @@ auto world::get_root() -> ptr_entity {
   return m_root;
 }
 
+void world::allow_relaxed_spawn(bool is_allowed) {
+  auto _ul = unique_lock(m_lock);
+
+  m_allow_relaxed_spawn = is_allowed;
+}
+
+auto world::is_relaxed_spawn_allowed() -> bool {
+  auto _sl = shared_lock(m_lock);
+  return m_allow_relaxed_spawn;
+}
+
 auto world::get_random() -> ref_rand {
   return m_rand;
 }
@@ -225,7 +286,7 @@ auto world::get_entity(size_t id) -> ptr_entity {
 
 void world::desync() {
   auto _ul = unique_lock(m_lock);
-  m_desync = true;
+  locked_desync();
 }
 
 auto world::is_desync() -> bool {
@@ -265,16 +326,19 @@ auto world::select_dynamic(condition op) -> vptr_entity {
   return result;
 }
 
+void world::locked_desync() {
+  m_desync = true;
+  verb("DESYNC");
+}
+
 void world::locked_add_dynamic(size_t id) {
-  auto it = lower_bound(
-      m_dynamic_ids.begin(), m_dynamic_ids.end(), id);
+  auto it = lower_bound(m_dynamic_ids.begin(), m_dynamic_ids.end(), id);
 
   m_dynamic_ids.emplace(it, id);
 }
 
 void world::locked_erase_dynamic(size_t id) {
-  auto it = lower_bound(
-      m_dynamic_ids.begin(), m_dynamic_ids.end(), id);
+  auto it = lower_bound(m_dynamic_ids.begin(), m_dynamic_ids.end(), id);
 
   if (it != m_dynamic_ids.end() && *it == id) {
     m_dynamic_ids.erase(it);
@@ -322,8 +386,7 @@ auto world::next_sync_impact() -> ptr_impact {
 auto world::next_async_impact() -> ptr_impact {
   auto _ul = unique_lock(m_lock);
 
-  return m_index < m_queue.size() ? m_queue[m_index++]
-                                  : ptr_impact();
+  return m_index < m_queue.size() ? m_queue[m_index++] : ptr_impact();
 }
 
 auto world::next_dynamic_entity() -> ptr_entity {

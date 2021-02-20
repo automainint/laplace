@@ -129,4 +129,8 @@ namespace quadwar_app {
   void lobby::set_start_enabled(bool is_enabled) {
     m_start->set_enabled(is_enabled);
   }
+
+  auto lobby::is_visible() const -> bool {
+    return m_is_visible;
+  }
 }

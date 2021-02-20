@@ -33,6 +33,7 @@ namespace laplace {
   auto socket_wouldblock() -> int;
   auto socket_msgsize() -> int;
   auto socket_isconn() -> int;
+  auto socket_connreset() -> int;
 }
 
 #if !defined(LAPLACE_POSIX_SOCKETS) && \

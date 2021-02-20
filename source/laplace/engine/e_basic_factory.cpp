@@ -16,6 +16,7 @@
 #include "../core/utils.h"
 #include "basic_factory.h"
 #include "protocol/basic_event.h"
+#include "protocol/client_desync.h"
 #include "protocol/debug.h"
 #include "protocol/ids.h"
 #include "protocol/ping.h"
@@ -80,9 +81,10 @@ namespace laplace::engine {
     return cmds;
   }
 
-  auto basic_factory::parse_native(
-      std::span<const std::string_view> table,
-      string_view                       command) -> vbyte {
+  auto basic_factory::parse_native(  //
+      span<const string_view> table, //
+      string_view             command) -> vbyte {
+
     auto in = parser::wrap(command);
 
     u8string u8_id;
@@ -141,9 +143,10 @@ namespace laplace::engine {
     return seq;
   }
 
-  auto basic_factory::print_native(
-      std::span<const std::string_view> table, cref_vbyte seq)
-      -> string {
+  auto basic_factory::print_native(  //
+      span<const string_view> table, //
+      cref_vbyte              seq) -> string {
+
     constexpr size_t max_id_size = 14;
     string           s;
     s.reserve(max_id_size + seq.size() * 3);
@@ -168,10 +171,14 @@ namespace laplace::engine {
 
     if (public_key::scan(seq))
       return make<public_key>(seq);
+    if (client_desync::scan(seq))
+      return make<client_desync>(seq);
     if (request_events::scan(seq))
       return make<request_events>(seq);
     if (server_idle::scan(seq))
       return make<server_idle>(seq);
+    if (server_init::scan(seq))
+      return make<server_init>(seq);
     if (server_launch::scan(seq))
       return make<server_launch>(seq);
     if (server_action::scan(seq))

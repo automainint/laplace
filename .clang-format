@@ -6,7 +6,7 @@ IndentWidth: 2
 Language: Cpp
 Standard: c++20
 
-ColumnLimit: 64
+ColumnLimit: 70
 MaxEmptyLinesToKeep: 1
 SpacesBeforeTrailingComments: 1
 AccessModifierOffset: -2

@@ -39,6 +39,11 @@ namespace laplace::engine::access {
      */
     auto reserve(size_t id) -> size_t;
 
+    /*  Spawn a new entity. Allow to use already taken id.
+     *  Sync.
+     */
+    void emplace(ptr_entity ent, size_t id);
+
     /*  Spawn a new entity.
      *  Sync.
      */

@@ -20,8 +20,10 @@
 #include "eval/shape.h"
 #include "object/sets.h"
 #include "world.predef.h"
+#include <atomic>
 #include <memory>
 #include <shared_mutex>
+#include <chrono>
 
 namespace laplace::engine {
   /*  TODO
@@ -29,14 +31,17 @@ namespace laplace::engine {
    */
   class basic_entity {
   public:
+    static constexpr auto lock_timeout =
+        std::chrono::milliseconds(100);
+
     enum dummy_tag { dummy };
     enum proto_tag { proto };
 
     static constexpr uint64_t default_tick_period = 10;
 
-    basic_entity(cref_entity en);
+    basic_entity(cref_entity en) noexcept;
     basic_entity(basic_entity &&en) noexcept;
-    auto operator=(cref_entity en) -> ref_entity;
+    auto operator=(cref_entity en) noexcept -> ref_entity;
     auto operator=(basic_entity &&en) noexcept -> ref_entity;
 
     /*  Prototype initialization.
@@ -47,11 +52,13 @@ namespace laplace::engine {
      */
     basic_entity(dummy_tag);
 
-    basic_entity(bool is_dynamic, bool is_markable = false,
-                 bool     is_selectable = false,
-                 bool     is_vulnerable = false,
-                 uint64_t tick_period   = default_tick_period,
-                 eval::cref_box bounds  = eval::box {});
+    basic_entity(                                           //
+        bool           is_dynamic,                          //
+        bool           is_markable   = false,               //
+        bool           is_selectable = false,               //
+        bool           is_vulnerable = false,               //
+        uint64_t       tick_period   = default_tick_period, //
+        eval::cref_box bounds        = eval::box {});
 
     virtual ~basic_entity() = default;
 
@@ -134,13 +141,16 @@ namespace laplace::engine {
     /*  Perform an universal request.
      *  Thread-safe.
      */
-    [[nodiscard]] auto request(size_t id, cref_vbyte args = {})
-        -> vbyte;
+    [[nodiscard]] auto request( //
+        size_t     id,          //
+        cref_vbyte args = {}) -> vbyte;
 
     /*  Perform an universal modification.
      *  Thread-safe.
      */
-    void modify(size_t id, cref_vbyte args = {});
+    void modify(       //
+        size_t     id, //
+        cref_vbyte args = {});
 
     /*  Dynamic Entity live loop.
      */
@@ -224,7 +234,7 @@ namespace laplace::engine {
     using vsets_row      = std::vector<sets_row>;
     using cref_vsets_row = const vsets_row &;
 
-    std::shared_mutex m_lock;
+    std::shared_timed_mutex m_lock;
 
     /*  Setup state values.
      */
@@ -246,26 +256,29 @@ namespace laplace::engine {
         -> int64_t;
 
     void self_destruct(access::world w);
+    void desync();
 
     /*  Universal request implementation.
      *
      *  Thread-safe methods not allowed
      *  from here due to the locking.
      */
-    [[nodiscard]] virtual auto do_request(size_t     id,
-                                          cref_vbyte args) const
-        -> vbyte;
+    [[nodiscard]] virtual auto do_request( //
+        size_t     id,                     //
+        cref_vbyte args) const -> vbyte;
 
     /*  Universal modification implementation.
      *
      *  Thread-safe methods not allowed
      *  from here due to the locking.
      */
-    virtual void do_modify(size_t id, cref_vbyte args);
+    virtual void do_modify( //
+        size_t     id,      //
+        cref_vbyte args);
 
   private:
-    void assign(cref_entity en);
-    void assign(basic_entity &&en);
+    void assign(cref_entity en) noexcept;
+    void assign(basic_entity &&en) noexcept;
 
     bool   m_is_changed = false;
     size_t m_id         = id_undefined;

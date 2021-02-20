@@ -24,8 +24,6 @@ namespace quadwar_app {
 
     auto decode(cref_vbyte seq) const
         -> engine::ptr_prime_impact override;
-
-  private:
   };
 }
 

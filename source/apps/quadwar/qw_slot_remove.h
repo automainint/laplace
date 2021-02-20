@@ -24,8 +24,11 @@ namespace quadwar_app {
   public:
     ~qw_slot_remove() override = default;
 
-    constexpr qw_slot_remove(size_t index, uint64_t time,
-                             size_t id_actor) :
+    constexpr qw_slot_remove( //
+        size_t   index,       //
+        uint64_t time,        //
+        size_t   id_actor     //
+        ) :
         slot_remove(index, time, id_actor) { }
 
     inline void perform(engine::access::world w) const override {

@@ -11,6 +11,8 @@
  */
 
 #include "qw_factory.h"
+#include "qw_init.h"
+#include "qw_launch.h"
 #include "qw_player_name.h"
 #include "qw_slot_create.h"
 #include "qw_slot_remove.h"
@@ -25,6 +27,10 @@ namespace quadwar_app {
       return make<qw_slot_remove>(seq);
     if (qw_player_name::scan(seq))
       return make<qw_player_name>(seq);
+    if (qw_init::scan(seq))
+      return make<qw_init>(seq);
+    if (qw_launch::scan(seq))
+      return make<qw_launch>(seq);
 
     return decode_native(seq);
   }

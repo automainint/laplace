@@ -23,13 +23,11 @@ namespace laplace::engine {
   inline void prime_impact::encode_to(std::span<uint8_t> bytes) const {
   }
 
-  constexpr auto prime_impact::get_encoded_size() const
-      -> size_t {
+  constexpr auto prime_impact::get_encoded_size() const -> size_t {
     return this->m_encoded_size;
   }
 
-  constexpr void prime_impact::set_index(ref_vbyte seq,
-                                         size_t    index) {
+  constexpr void prime_impact::set_index(ref_vbyte seq, size_t index) {
     using namespace protocol;
 
     if (get_id(seq) >= ids::_unindexed_count)
@@ -56,16 +54,14 @@ namespace laplace::engine {
     return as_index(rd<uint64_t>(seq, basic_impact::n_actor));
   }
 
-  constexpr auto prime_impact::get_id(cref_vbyte seq)
-      -> uint16_t {
+  constexpr auto prime_impact::get_id(cref_vbyte seq) -> uint16_t {
     using namespace protocol;
 
     return seq.size() >= sizeof(uint16_t) ? get_id_unsafe(seq)
                                           : ids::undefined;
   }
 
-  constexpr auto prime_impact::get_index(cref_vbyte seq)
-      -> size_t {
+  constexpr auto prime_impact::get_index(cref_vbyte seq) -> size_t {
     using namespace protocol;
 
     if (get_id(seq) < ids::_unindexed_count) {
@@ -75,8 +71,7 @@ namespace laplace::engine {
     return get_index_unsafe(seq);
   }
 
-  constexpr auto prime_impact::get_time(cref_vbyte seq)
-      -> uint64_t {
+  constexpr auto prime_impact::get_time(cref_vbyte seq) -> uint64_t {
     using namespace protocol;
 
     if (get_id(seq) < ids::_control_count) {
@@ -86,8 +81,7 @@ namespace laplace::engine {
     return get_time_unsafe(seq);
   }
 
-  constexpr auto prime_impact::get_actor(cref_vbyte seq)
-      -> size_t {
+  constexpr auto prime_impact::get_actor(cref_vbyte seq) -> size_t {
     using namespace protocol;
 
     if (get_id(seq) < ids::_control_count) {
@@ -97,20 +91,18 @@ namespace laplace::engine {
     return get_actor_unsafe(seq);
   }
 
-  inline auto prime_impact::get_string(cref_vbyte seq,
-                                       size_t     offset)
+  inline auto prime_impact::get_string(cref_vbyte seq, size_t offset)
       -> std::u8string_view {
     if (offset >= seq.size())
       return {};
 
-    return std::u8string_view {
-      reinterpret_cast<const char8_t *>(seq.data() + offset),
-      seq.size() - offset
-    };
+    return std::u8string_view { reinterpret_cast<const char8_t *>(
+                                    seq.data() + offset),
+                                seq.size() - offset };
   }
 
-  inline auto prime_impact::get_string(cref_vbyte seq,
-                                       size_t offset, size_t size)
+  inline auto prime_impact::get_string(cref_vbyte seq, size_t offset,
+                                       size_t size)
       -> std::u8string_view {
     if (offset + size > seq.size())
       return {};
@@ -128,8 +120,9 @@ namespace laplace::engine {
     set_async(false);
   }
 
-  template <typename prime_impact_>
-  constexpr auto encode(const prime_impact_ &ev) -> vbyte {
+  template <typename prime_impact_, typename... args_>
+  constexpr auto encode(args_... args) -> vbyte {
+    const auto ev = prime_impact_(args...);
     vbyte seq(ev.get_encoded_size());
     ev.prime_impact_::encode_to(seq);
     return seq;

@@ -35,17 +35,22 @@ namespace quadwar_app {
       m_name = name;
     }
 
-    inline qw_player_name(size_t             id_host_actor,
-                          std::u8string_view name) {
+    inline qw_player_name(                //
+        size_t             id_host_actor, //
+        std::u8string_view name) {
+
       set_actor(id_host_actor);
       set_encoded_size(n_name + name.size());
 
       m_name = name;
     }
 
-    inline qw_player_name(size_t index, uint64_t time,
-                          size_t             id_actor,
-                          std::u8string_view name) {
+    inline qw_player_name(           //
+        size_t             index,    //
+        uint64_t           time,     //
+        size_t             id_actor, //
+        std::u8string_view name) {
+
       set_order({ index });
       set_time(time);
       set_actor(id_actor);
@@ -54,16 +59,15 @@ namespace quadwar_app {
       m_name = name;
     }
 
-    inline void
-    perform(engine::access::world w) const override {
+    inline void perform(engine::access::world w) const override {
       verb(" :: event  Quadwar/player_name");
 
       player::set_name(w.get_entity(get_actor()), m_name);
       root::status_changed(w.get_root());
     }
 
-    inline void
-    encode_to(std::span<uint8_t> bytes) const final {
+    inline void encode_to(std::span<uint8_t> bytes) const final {
+
       write_bytes(bytes, id, get_index64(), get_time64(),
                   get_actor64(), std::u8string_view(m_name));
     }
@@ -77,8 +81,9 @@ namespace quadwar_app {
     }
 
     static inline auto decode(cref_vbyte seq) {
-      return qw_player_name { get_index(seq), get_time(seq),
-                              get_actor(seq), get_name(seq) };
+      return qw_player_name //
+          { get_index(seq), get_time(seq), get_actor(seq),
+            get_name(seq) };
     }
 
   private:

@@ -24,15 +24,15 @@
 #include <shared_mutex>
 
 namespace laplace::engine {
-  /*  TODO
-   *  Atomics, constexpr.
-   */
   class world : public std::enable_shared_from_this<world> {
   public:
+    static constexpr bool default_allow_relaxed_spawn = false;
+
     world();
     ~world() = default;
 
     auto reserve(size_t id) -> size_t;
+    void emplace(ptr_entity ent, size_t id);
     auto spawn(ptr_entity ent, size_t id) -> size_t;
     void remove(size_t id);
     void respawn(size_t id);
@@ -63,6 +63,9 @@ namespace laplace::engine {
     void set_root(ptr_entity root);
     auto get_root() -> ptr_entity;
 
+    void allow_relaxed_spawn(bool is_allowed);
+    auto is_relaxed_spawn_allowed() -> bool;
+
     auto get_random() -> ref_rand;
     auto get_entity(size_t id) -> ptr_entity;
 
@@ -81,20 +84,24 @@ namespace laplace::engine {
     auto next_entity() -> ptr_entity;
 
   private:
+    void locked_desync();
     void locked_add_dynamic(size_t id);
     void locked_erase_dynamic(size_t id);
 
     std::shared_mutex m_lock;
     scheduler         m_scheduler;
-    bool              m_desync  = false;
-    size_t            m_next_id = 0;
-    size_t            m_index   = 0;
-    random_engine     m_rand;
-    vuint             m_dynamic_ids;
-    vptr_entity       m_entities;
-    vptr_impact       m_queue;
-    vptr_impact       m_sync_queue;
-    ptr_entity        m_root;
+
+    bool   m_allow_relaxed_spawn = default_allow_relaxed_spawn;
+    bool   m_desync              = false;
+    size_t m_next_id             = 0;
+    size_t m_index               = 0;
+
+    random_engine m_rand;
+    vuint         m_dynamic_ids;
+    vptr_entity   m_entities;
+    vptr_impact   m_queue;
+    vptr_impact   m_sync_queue;
+    ptr_entity    m_root;
   };
 }
 

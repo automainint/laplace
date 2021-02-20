@@ -19,7 +19,7 @@
 #include <thread>
 
 namespace laplace::test {
-  using std::make_shared, engine::encode, network::host,
+  using std::make_shared, network::host,
       network::remote, network::localhost,
       engine::basic_factory, engine::protocol::debug;
 
@@ -55,7 +55,7 @@ namespace laplace::test {
       my_host->tick(0);
       this_thread::yield();
 
-      client->queue(encode(debug(test_value)));
+      client->emit<debug>(test_value);
       client->tick(0);
 
       this_thread::yield();
@@ -114,7 +114,7 @@ namespace laplace::test {
       my_host->tick(0);
       this_thread::yield();
 
-      client->queue(encode(debug(test_value)));
+      client->emit<debug>(test_value);
       client->tick(0);
 
       this_thread::yield();

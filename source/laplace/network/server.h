@@ -21,8 +21,11 @@ namespace laplace::network {
 
   class server {
   public:
-    static constexpr bool     default_verbose            = true;
-    static constexpr uint64_t default_tick_duration_msec = 10;
+    static constexpr bool     default_verbose                 = false;
+    static constexpr uint64_t default_tick_duration_msec      = 10;
+    static constexpr uint64_t default_connection_timeout_msec = 2000;
+    static constexpr uint64_t default_update_timeout_msec     = 200;
+    static constexpr uint64_t default_ping_timeout_msec       = 200;
 
     server()          = default;
     virtual ~server() = default;
@@ -46,8 +49,13 @@ namespace laplace::network {
     [[nodiscard]] auto is_connected() const -> bool;
 
     template <typename prime_impact_, typename... args_>
-    inline void queue(args_... args) {
-      this->queue(engine::encode(prime_impact_(args...)));
+    inline void emit(args_... args) {
+      this->queue(engine::encode<prime_impact_>(args...));
+    }
+
+    template <typename factory_, typename... args_>
+    inline void make_factory(args_... args) {
+      this->set_factory(std::make_shared<factory_>(args...));
     }
 
   protected:
@@ -63,8 +71,11 @@ namespace laplace::network {
     /*  Update tick timer. Returns time
      *  delta in ticks.
      */
-    [[nodiscard]] auto adjust_delta(size_t delta_msec)
-        -> uint64_t;
+    [[nodiscard]] auto adjust_delta(size_t delta_msec) -> uint64_t;
+
+    [[nodiscard]] auto get_connection_timeout() const -> uint64_t;
+    [[nodiscard]] auto get_update_timeout() const -> uint64_t;
+    [[nodiscard]] auto get_ping_timeout() const -> uint64_t;
 
     void dump(cref_vbyte bytes);
 
@@ -76,10 +87,14 @@ namespace laplace::network {
     engine::ptr_solver  m_solver;
     engine::ptr_world   m_world;
 
-    uint64_t m_ping_msec          = 0;
-    uint64_t m_tick_clock_msec    = 0;
-    uint64_t m_tick_duration_msec = default_tick_duration_msec;
-    server_state m_state          = server_state::prepare;
+    uint64_t m_ping_msec               = 0;
+    uint64_t m_tick_clock_msec         = 0;
+    uint64_t m_tick_duration_msec      = default_tick_duration_msec;
+    uint64_t m_connection_timeout_msec = default_connection_timeout_msec;
+    uint64_t m_update_timeout_msec     = default_update_timeout_msec;
+    uint64_t m_ping_timeout_msec       = default_ping_timeout_msec;
+
+    server_state m_state = server_state::prepare;
   };
 
   using ptr_server = std::shared_ptr<server>;

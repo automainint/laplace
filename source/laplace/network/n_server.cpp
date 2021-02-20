@@ -15,10 +15,9 @@
 #include <iomanip>
 
 namespace laplace::network {
-  using std::ostringstream, std::hex, std::setw,
-      std::make_shared, engine::ptr_factory, engine::ptr_world,
-      engine::ptr_solver, engine::solver, engine::world,
-      engine::seed_type;
+  using std::ostringstream, std::hex, std::setw, std::make_shared,
+      engine::ptr_factory, engine::ptr_world, engine::ptr_solver,
+      engine::solver, engine::world, engine::seed_type;
 
   void server::set_factory(ptr_factory fac) {
     m_factory = fac;
@@ -119,12 +118,23 @@ namespace laplace::network {
     uint64_t delta = 0;
 
     if (m_tick_duration_msec > 0) {
-      delta = (m_tick_clock_msec + delta_msec) /
-              m_tick_duration_msec;
+      delta = (m_tick_clock_msec + delta_msec) / m_tick_duration_msec;
       m_tick_clock_msec = delta_msec % m_tick_duration_msec;
     }
 
     return delta;
+  }
+
+  auto server::get_connection_timeout() const -> uint64_t {
+    return m_connection_timeout_msec;
+  }
+
+  auto server::get_update_timeout() const -> uint64_t {
+    return m_update_timeout_msec;
+  }
+
+  auto server::get_ping_timeout() const -> uint64_t {
+    return m_ping_timeout_msec;
   }
 
   void server::dump(cref_vbyte bytes) {
@@ -132,8 +142,7 @@ namespace laplace::network {
       ostringstream ss;
       ss << " ";
       for (size_t i = 0; i < bytes.size(); i++) {
-        ss << " " << setw(2) << hex
-           << static_cast<unsigned>(bytes[i]);
+        ss << " " << setw(2) << hex << static_cast<unsigned>(bytes[i]);
         if ((i % 16) == 15)
           ss << "\n ";
       }

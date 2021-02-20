@@ -19,23 +19,25 @@
 namespace laplace::engine::protocol::ids {
   constexpr std::string_view table[] = { //
     "",
-    "publickey",
-    "requestevents",
-    "pingrequest",
-    "pingresponse",
-    "serveridle",
-    "serverlaunch",
-    "serveraction",
-    "serverpause",
-    "serverclock",
-    "serverseed",
-    "serverquit",
-    "cliententer",
-    "clientleave",
-    "clientready",
+    "public-key",
+    "request-events",
+    "ping-request",
+    "ping-response",
+    "server-idle",
+    "client-desync",
+    "server-init",
+    "server-launch",
+    "server-action",
+    "server-pause",
+    "server-clock",
+    "server-seed",
+    "server-quit",
+    "client-enter",
+    "client-leave",
+    "client-ready",
     "debug",
-    "slotcreate",
-    "slotremove"
+    "slot-create",
+    "slot-remove"
   };
 
   enum cipher_id : uint16_t { //
@@ -76,6 +78,10 @@ namespace laplace::engine::protocol::ids {
      */
     server_idle,
 
+    /*  uint16_t    id
+     */
+    client_desync,
+
     /*  Unindexed command count.
      */
     _unindexed_count,
@@ -86,7 +92,12 @@ namespace laplace::engine::protocol::ids {
     /*  uint16_t    id
      *  uint64_t    index
      */
-    server_launch = _unindexed_count,
+    server_init = _unindexed_count,
+
+    /*  uint16_t    id
+     *  uint64_t    index
+     */
+    server_launch,
 
     /*  uint16_t    id
      *  uint64_t    index

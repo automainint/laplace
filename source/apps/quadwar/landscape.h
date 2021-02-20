@@ -23,7 +23,7 @@ namespace quadwar_app {
     landscape();
 
   private:
-    landscape(int);
+    landscape(proto_tag);
 
     static landscape m_proto;
   };

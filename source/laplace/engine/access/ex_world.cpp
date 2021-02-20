@@ -45,6 +45,12 @@ namespace laplace::engine::access {
     return result;
   }
 
+  void world::emplace(ptr_entity ent, size_t id) {
+    if (m_mode == sync) {
+      m_world.get().emplace(ent, id);
+    }
+  }
+
   auto world::spawn(ptr_entity ent, size_t id) -> size_t {
     size_t result = id_undefined;
 
