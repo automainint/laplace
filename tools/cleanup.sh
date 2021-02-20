@@ -22,5 +22,5 @@ rm -rf ../source/generated/gl/*.h
 rm -rf ../source/generated/*.cpp
 rm -rf ../thirdparty/*
 rm -f ../data/lcd.h
-rm -f ../tools/update.sh
-rm -f ../tools/rebuild.sh
+rm -f ../tools/update-deps.sh
+rm -f ../tools/rebuild-deps.sh

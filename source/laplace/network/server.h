@@ -23,7 +23,7 @@ namespace laplace::network {
   public:
     static constexpr bool     default_verbose                 = false;
     static constexpr uint64_t default_tick_duration_msec      = 10;
-    static constexpr uint64_t default_connection_timeout_msec = 2000;
+    static constexpr uint64_t default_connection_timeout_msec = 1000;
     static constexpr uint64_t default_update_timeout_msec     = 200;
     static constexpr uint64_t default_ping_timeout_msec       = 200;
 
@@ -44,6 +44,9 @@ namespace laplace::network {
 
     [[nodiscard]] auto get_state() const -> server_state;
     [[nodiscard]] auto get_tick_duration() -> size_t;
+
+    [[nodiscard]] auto get_bytes_sent() const -> size_t;
+    [[nodiscard]] auto get_bytes_received() const -> size_t;
 
     [[nodiscard]] auto is_verbose() const -> bool;
     [[nodiscard]] auto is_connected() const -> bool;
@@ -67,6 +70,10 @@ namespace laplace::network {
     void set_random_seed(engine::seed_type seed);
     void set_ping(uint64_t ping_msec);
     void set_state(server_state state);
+
+    void reset_tick();
+    void add_bytes_sent(size_t count);
+    void add_bytes_received(size_t count);
 
     /*  Update tick timer. Returns time
      *  delta in ticks.
@@ -93,6 +100,9 @@ namespace laplace::network {
     uint64_t m_connection_timeout_msec = default_connection_timeout_msec;
     uint64_t m_update_timeout_msec     = default_update_timeout_msec;
     uint64_t m_ping_timeout_msec       = default_ping_timeout_msec;
+
+    size_t m_bytes_sent     = 0;
+    size_t m_bytes_received = 0;
 
     server_state m_state = server_state::prepare;
   };

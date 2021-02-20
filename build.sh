@@ -22,9 +22,17 @@ elif [ $# -eq 2 ]; then
   config=$2
 fi
 
+if [ ! -d ./lib ]; then
+  mkdir lib
+fi
+
+if [ ! -d ./include ]; then
+  mkdir include
+fi
+
 cd ./tools
 
-if [ `ls ./lib | wc -l` -eq 0 ] || [ `ls ./include | wc -l` -eq 0 ]; then
+if [ `ls ../lib | wc -l` -eq 0 ] || [ `ls ../include | wc -l` -eq 0 ]; then
   ./buildall.sh "$generator" $config
 else
   gen_folder='../source/generated'

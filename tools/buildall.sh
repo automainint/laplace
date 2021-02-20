@@ -25,18 +25,18 @@ fi
 
 ./cleanup.sh
 
-if [ ! -f './update.sh' ] || [ ! -f './rebuild.sh' ]
+if [ ! -f './update-deps.sh' ] || [ ! -f './rebuild-deps.sh' ]
   then
     echo "[ Generate build scripts ]"
     python ./gen-deps.py
 
-    chmod a+x ./update.sh
-    chmod a+x ./rebuild.sh
+    chmod a+x ./update-deps.sh
+    chmod a+x ./rebuild-deps.sh
   fi
 
-./update.sh
+./update-deps.sh
 ./update-gl.sh
-./rebuild.sh "$generator" $config
+./rebuild-deps.sh "$generator" $config
 
 echo "[ Generate OpenGL interface ]"
 python ./gen-gl.py

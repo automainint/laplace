@@ -27,17 +27,8 @@ namespace laplace::network {
     m_verbose = verbose;
   }
 
-  void server::queue(cref_vbyte seq) {
-    if (m_factory && m_solver) {
-      m_solver->apply(m_factory->decode(seq));
-    }
-  }
-
-  void server::tick(size_t delta_msec) {
-    if (m_state == server_state::action && m_solver) {
-      m_solver->schedule(adjust_delta(delta_msec));
-    }
-  }
+  void server::queue(cref_vbyte seq) { }
+  void server::tick(size_t delta_msec) { }
 
   auto server::get_factory() const -> ptr_factory {
     return m_factory;
@@ -63,7 +54,16 @@ namespace laplace::network {
     return m_tick_duration_msec;
   }
 
+  auto server::get_bytes_sent() const -> size_t {
+    return m_bytes_sent;
+  }
+
+  auto server::get_bytes_received() const -> size_t {
+    return m_bytes_received;
+  }
+
   auto server::is_verbose() const -> bool {
+
     return m_verbose;
   }
 
@@ -112,6 +112,19 @@ namespace laplace::network {
 
   void server::set_state(server_state state) {
     m_state = state;
+  }
+
+  void server::reset_tick() {
+    m_bytes_sent     = 0;
+    m_bytes_received = 0;
+  }
+
+  void server::add_bytes_sent(size_t count) {
+    m_bytes_sent += count;
+  }
+
+  void server::add_bytes_received(size_t count) {
+    m_bytes_received += count;
   }
 
   auto server::adjust_delta(size_t delta_msec) -> uint64_t {

@@ -26,15 +26,13 @@ namespace laplace::network {
     m_socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (m_socket == INVALID_SOCKET) {
-      error(__FUNCTION__, "socket failed (code %d).",
-            socket_error());
+      verb("TCP: socket failed (code %d).", socket_error());
       done();
       return;
     }
 
     if (!set_mode(m_socket, async)) {
-      error(__FUNCTION__, "ioctlsocket failed (code %d).",
-            socket_error());
+      verb("TCP: ioctlsocket failed (code %d).", socket_error());
       done();
     }
   }
@@ -60,15 +58,13 @@ namespace laplace::network {
         name.sin_family = AF_INET;
         name.sin_port   = ::htons(m_port);
 
-        if (::inet_pton(AF_INET, m_address,
-                        &name.sin_addr.s_addr) != 1) {
-          error(__FUNCTION__, "inet_pton failed (code %d).",
-                socket_error());
+        if (::inet_pton(AF_INET, m_address, &name.sin_addr.s_addr) !=
+            1) {
+          verb("TCP: inet_pton failed (code %d).", socket_error());
           done();
-        } else if (::connect(
-                       m_socket,
-                       reinterpret_cast<const sockaddr *>(&name),
-                       sizeof name) != SOCKET_ERROR ||
+        } else if (::connect(m_socket,
+                             reinterpret_cast<const sockaddr *>(&name),
+                             sizeof name) != SOCKET_ERROR ||
                    socket_error() == socket_isconn()) {
           m_is_ready = true;
 
@@ -76,8 +72,7 @@ namespace laplace::network {
             m_on_connect(*this);
           }
         } else if (socket_error() != socket_wouldblock()) {
-          error(__FUNCTION__, "connect failed (code %d).",
-                socket_error());
+          verb("TCP: connect failed (code %d).", socket_error());
           done();
         }
       }

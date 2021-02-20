@@ -1,5 +1,5 @@
-#   The Laplace project
-Interactive multimedia framework focused on RTS games developlent. Provides the deterministic engine with concurrency support and lockstep synchronization networking.
+#   The Laplace engine
+Laplace is an interactive multimedia framework focused on RTS games developlent. It provides the deterministic engine with concurrency support and lockstep synchronization networking.
 
     Work in progress...
 

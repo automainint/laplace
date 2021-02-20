@@ -291,5 +291,5 @@ cd ../tools
 ''')
 
 deps = parse_deps('deps.txt')
-write_update(deps, 'update.sh')
-write_rebuild(deps, 'rebuild.sh')
+write_update(deps, 'update-deps.sh')
+write_rebuild(deps, 'rebuild-deps.sh')

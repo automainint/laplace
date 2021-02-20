@@ -21,19 +21,15 @@ namespace laplace::network {
   class remote final : public udp_server {
   public:
     remote();
-    ~remote() final;
+    ~remote() final = default;
 
-    void connect(std::string_view host_address,
-                 uint16_t         host_port,
-                 uint16_t         client_port = any_port);
-
-    void queue(cref_vbyte seq) final;
+    void connect(                      //
+        std::string_view host_address, //
+        uint16_t         host_port,    //
+        uint16_t         client_port = any_port);
 
   private:
-    void cleanup();
-
-    auto perform_control(size_t slot, cref_vbyte seq)
-        -> bool override;
+    auto perform_control(size_t slot, cref_vbyte seq) -> bool override;
   };
 }
 

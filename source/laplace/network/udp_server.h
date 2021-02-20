@@ -32,13 +32,14 @@ namespace laplace::network {
     static constexpr size_t default_chunk_size     = 4096;
     static constexpr size_t default_chunk_overhead = 1024;
 
-    ~udp_server() override = default;
+    ~udp_server() override;
 
     void set_allowed_commands(cref_vuint16 commands);
 
     void set_chunk_size(size_t size,
                         size_t overhead = default_chunk_overhead);
 
+    void queue(cref_vbyte seq) override;
     void tick(size_t delta_msec) override;
 
     [[nodiscard]] auto get_port() const -> uint16_t;
@@ -67,8 +68,14 @@ namespace laplace::network {
       crypto::dh_rabbit cipher;
     };
 
-    [[nodiscard]] virtual auto perform_control(size_t     slot,
-                                               cref_vbyte seq) -> bool;
+    /*  Returns false if the event should be
+     *  added to the main queue.
+     */
+    [[nodiscard]] virtual auto perform_control( //
+        size_t     slot,                        //
+        cref_vbyte seq) -> bool;
+
+    void cleanup();
 
     [[nodiscard]] auto get_local_time() const -> uint64_t;
     [[nodiscard]] auto get_chunk_size() const -> size_t;
@@ -85,12 +92,11 @@ namespace laplace::network {
     void append_event(size_t slot, cref_vbyte seq);
 
     void set_max_slot_count(size_t count);
-    void set_distribution_enabled(bool is_enabled);
-    void set_performing_enabled(bool is_enabled);
+    void set_master(bool is_master);
 
     [[nodiscard]] auto is_allowed(size_t command_id) const -> bool;
 
-    [[nodiscard]] auto is_join_enabled() const -> bool;
+    [[nodiscard]] auto is_master() const -> bool;
 
     auto add_slot(std::string_view address, uint16_t port) -> size_t;
 
@@ -132,11 +138,8 @@ namespace laplace::network {
   private:
     [[nodiscard]] auto has_free_slots() const -> bool;
 
-    vuint16 m_allowed_commands;
-
-    bool m_is_distribution_enabled = false;
-    bool m_is_performing_enabled   = false;
-
+    vuint16  m_allowed_commands;
+    bool     m_is_master      = false;
     size_t   m_max_slot_count = 0;
     uint64_t m_local_time     = 0;
     uint64_t m_time_limit     = 0;
