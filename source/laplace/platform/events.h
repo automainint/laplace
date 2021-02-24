@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__platform_events__
-#define __laplace__platform_events__
+#ifndef laplace_platform_events_h
+#define laplace_platform_events_h
 
 #include <cstdint>
 #include <functional>

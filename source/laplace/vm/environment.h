@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__vm_environment__
-#define __laplace__vm_environment__
+#ifndef laplace_vm_environment_h
+#define laplace_vm_environment_h
 
 #include "../core/defs.h"
 #include "agent.predef.h"

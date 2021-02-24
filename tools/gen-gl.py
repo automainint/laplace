@@ -1,20 +1,22 @@
-#!  /usr/bin/python
-#   tools/gen-gl.py
-#
-#       Generate OpenGL interface files
-#       from XML registry.
-#
-#   Copyright (c) 2021 Mitya Selivanov
-#
-#   This file is part of the Laplace project.
-#
-#   Laplace is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty
-#   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
-#   the MIT License for more details.
+#!/usr/bin/python
 
 import xml.etree.ElementTree
-import os, sys
+import os, sys, shutil
+
+def update_repo():
+  os.chdir(os.path.join('..', 'thirdparty'))
+
+  folder = 'OpenGL-Registry'
+
+  if os.path.exists(folder):
+    os.chdir(folder)
+    os.system('git pull')
+    os.chdir('..')
+  else:
+    url = 'https://github.com/KhronosGroup/OpenGL-Registry'
+    os.system('git clone ' + url + ' ' + folder)
+
+  os.chdir(os.path.join('..', 'tools'))
 
 def adjust_typedef(text):
   if text != None:
@@ -84,7 +86,10 @@ def args_str(args):
     s += adjust_arg(arg[0]) + arg[1]
   return '(' + s + ')'
 
-gl_xml = xml.etree.ElementTree.parse('../thirdparty/gl.xml')
+update_repo()
+
+gl_xml_path = os.path.join('..', 'thirdparty', 'OpenGL-Registry', 'xml', 'gl.xml')
+gl_xml = xml.etree.ElementTree.parse(gl_xml_path)
 root = gl_xml.getroot()
 
 types = list()
@@ -185,12 +190,12 @@ for i, en in enumerate(enums_buf):
     else:
       enums.append(last_en)
 
-folder = '../source/generated/gl/'
+folder = os.path.join('..', 'source', 'generated', 'gl')
 os.makedirs(folder, exist_ok=True)
 
 previous_stdout = sys.stdout
 
-sys.stdout = open(folder + 'types.h', 'w')
+sys.stdout = open(os.path.join(folder, 'types.h'), 'w')
 
 print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
 print('#include <cstdint>\n')
@@ -200,7 +205,7 @@ for type in types:
   print('  ' + type)
 print('}')
 
-sys.stdout = open(folder + 'enums.h', 'w')
+sys.stdout = open(os.path.join(folder, 'enums.h'), 'w')
 
 print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
 print('#include "types.h"\n')
@@ -232,7 +237,7 @@ print('  };')
 
 print('}')
 
-sys.stdout = open(folder + 'decls.h', 'w')
+sys.stdout = open(os.path.join(folder, 'decls.h'), 'w')
 
 print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
 print('#include "types.h"\n')
@@ -248,7 +253,7 @@ for f in funcs:
 
 print('}')
 
-sys.stdout = open(folder + 'funcs.impl.h', 'w')
+sys.stdout = open(os.path.join(folder, 'funcs.impl.h'), 'w')
 
 print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
 print('#include "decls.h"\n')
@@ -259,7 +264,7 @@ for f in funcs:
 
 print('}')
 
-sys.stdout = open(folder + 'loads.impl.h', 'w')
+sys.stdout = open(os.path.join(folder, 'loads.impl.h'), 'w')
 
 print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
 print('#ifndef LAPLACE_GL_HAS\n#  define LAPLACE_GL_HAS(x) false\n#endif\n')

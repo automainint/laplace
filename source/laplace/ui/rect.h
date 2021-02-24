@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__ui_rect__
-#define __laplace__ui_rect__
+#ifndef laplace_ui_rect_h
+#define laplace_ui_rect_h
 
 #include <cstdint>
 

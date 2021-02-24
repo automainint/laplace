@@ -13,7 +13,7 @@
  */
 
 #define WIN32_LEAN_AND_MEAN
-#define __laplace__windows_header__
+#define laplace_windows_header
 #include <windows.h>
 
 #include "../../core/defs.h"

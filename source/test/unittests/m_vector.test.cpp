@@ -1,4 +1,4 @@
-/*  laplace/unittests/m_vector.test.cpp
+/*  test/unittests/m_vector.test.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

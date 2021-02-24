@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__math_defs__
-#define __laplace__math_defs__
+#ifndef laplace_math_defs_h
+#define laplace_math_defs_h
 
 #include <cstdint>
 

@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__windows_header__
-#define __laplace__windows_header__
+#ifndef laplace_windows_header
+#define laplace_windows_header
 
 #include <cstdint>
 

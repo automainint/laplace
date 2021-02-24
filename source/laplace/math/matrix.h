@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__math_matrix__
-#define __laplace__math_matrix__
+#ifndef laplace_math_matrix_h
+#define laplace_math_matrix_h
 
 #include "vector.h"
 

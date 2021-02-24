@@ -38,17 +38,15 @@ namespace quadwar_app {
   void quadwar::init() {
     app_flat::init();
 
-    m_mainmenu = make_shared<mainmenu>();
+    m_mainmenu = make_shared<ui::mainmenu>();
     m_mainmenu->attach_to(m_ui);
 
     m_mainmenu->set_server_address(
         m_config[k_server_address].get_string());
     m_mainmenu->set_game_name(m_config[k_game_name].get_string());
-    m_mainmenu->set_player_name(
-        m_config[k_player_name].get_string());
+    m_mainmenu->set_player_name(m_config[k_player_name].get_string());
     m_mainmenu->set_map_size(m_config[k_map_size].get_uint());
-    m_mainmenu->set_player_count(
-        m_config[k_player_count].get_uint());
+    m_mainmenu->set_player_count(m_config[k_player_count].get_uint());
     m_mainmenu->set_unit_count(m_config[k_unit_count].get_uint());
 
     auto return_to_mainmenu = [=] {
@@ -75,7 +73,7 @@ namespace quadwar_app {
       m_session->on_quit(quit);
     };
 
-    m_mainmenu->on_create([=](mainmenu::create_info info) {
+    m_mainmenu->on_create([=](ui::mainmenu::create_info info) {
       init_session();
 
       m_session->set_game_name(info.game_name);
@@ -87,7 +85,7 @@ namespace quadwar_app {
       m_session->create();
     });
 
-    m_mainmenu->on_join([=](mainmenu::join_info info) {
+    m_mainmenu->on_join([=](ui::mainmenu::join_info info) {
       init_session();
 
       m_session->set_server_ip(info.server_ip);

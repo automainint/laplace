@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__platform_win32_audio__
-#define __laplace__platform_win32_audio__
+#ifndef laplace_platform_win32_audio_h
+#define laplace_platform_win32_audio_h
 
 #include "../../core/defs.h"
 #include "../thread.h"
@@ -42,8 +42,7 @@ namespace laplace::win32 {
       size_t sample_bits;
     };
 
-    static constexpr format default_format_request = { 2, 44100,
-                                                       32 };
+    static constexpr format default_format_request = { 2, 44100, 32 };
     static constexpr int    default_thread_priority =
         platform::priority::critical;
 

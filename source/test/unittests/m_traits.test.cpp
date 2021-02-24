@@ -1,4 +1,4 @@
-/*  laplace/unittests/m_traits.test.cpp
+/*  test/unittests/m_traits.test.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

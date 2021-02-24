@@ -1,22 +1,21 @@
 build-folder: build-cmake
-include: include/*
 
 repo {
   url: https://github.com/google/googletest.git
   folder: googletest
-  include: googletest/include/*
 }
 
 repo {
   url: https://github.com/google/benchmark.git
   folder: benchmark
-  flags: -D BENCHMARK_ENABLE_TESTING=OFF
+  flags {
+    -D BENCHMARK_ENABLE_TESTING=OFF
+  }
 }
 
 repo {
   url: https://github.com/wolfSSL/wolfssl.git
   folder: wolfssl
-  include: wolfssl/
   flags {
     -D WOLFSSL_RABBIT=ON
     -D WOLFSSL_ECC=ON
@@ -26,15 +25,16 @@ repo {
 repo {
   url: https://gitlab.com/federicomenaquintero/bzip2.git
   folder: bzip2
-  include: bzlib.h
-  flags: -D ENABLE_SHARED_LIB=ON
+  flags {
+    -D ENABLE_SHARED_LIB=OFF
+    -D ENABLE_STATIC_LIB=ON
+  }
 }
 
 repo {
   url: https://gitlab.freedesktop.org/freetype/freetype.git
   folder: freetype
   flags {
-    -D SKIP_INSTALL_ALL=ON
     -D CMAKE_DISABLE_FIND_PACKAGE_ZLIB=ON
     -D CMAKE_DISABLE_FIND_PACKAGE_BZip2=ON
     -D CMAKE_DISABLE_FIND_PACKAGE_PNG=ON

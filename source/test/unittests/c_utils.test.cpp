@@ -1,4 +1,4 @@
-/*  laplace/unittests/c_utils.test.cpp
+/*  test/unittests/c_utils.test.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

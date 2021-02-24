@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__network_utils__
-#define __laplace__network_utils__
+#ifndef laplace_network_utils_h
+#define laplace_network_utils_h
 
 #include "defs.h"
 

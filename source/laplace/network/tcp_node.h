@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__network_tcp_node__
-#define __laplace__network_tcp_node__
+#ifndef laplace_network_tcp_node_h
+#define laplace_network_tcp_node_h
 
 #include "tcp_base.h"
 #include <functional>
@@ -36,17 +36,17 @@ namespace laplace::network {
      */
     void close_node();
 
-    auto is_connected() const -> bool;
+    [[nodiscard]] auto is_connected() const -> bool;
 
-    auto get_port() const -> uint16_t;
+    [[nodiscard]] auto get_port() const -> uint16_t;
 
     /*  Current session remote address.
      */
-    auto get_remote_address() const -> std::string;
+    [[nodiscard]] auto get_remote_address() const -> std::string;
 
     /*  Current session remote port.
      */
-    auto get_remote_port() const -> uint16_t;
+    [[nodiscard]] auto get_remote_port() const -> uint16_t;
 
   private:
     event_accept m_on_accept;

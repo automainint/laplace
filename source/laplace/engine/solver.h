@@ -1,5 +1,17 @@
-#ifndef __laplace__engine_solver__
-#define __laplace__engine_solver__
+/*  laplace/engine/solver.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#ifndef laplace_engine_solver_h
+#define laplace_engine_solver_h
 
 #include "basic_impact.h"
 #include "world.h"
@@ -42,19 +54,20 @@ namespace laplace::engine {
      */
     void allow_rewind(bool is_rewind_allowed);
 
-    auto is_rewind_allowed() const -> bool;
+    [[nodiscard]] auto is_rewind_allowed() const -> bool;
 
-    auto get_time() const -> uint64_t;
-    auto get_position() const -> size_t;
+    [[nodiscard]] auto get_time() const -> uint64_t;
+    [[nodiscard]] auto get_position() const -> size_t;
 
-    void set_seed(seed_type seed);
-    auto get_seed() const -> seed_type;
+    void               set_seed(seed_type seed);
+    [[nodiscard]] auto get_seed() const -> seed_type;
 
     void clear_history();
-    auto get_history_count() const -> size_t;
-    auto get_history(size_t index) const -> ptr_impact;
 
-    static auto generate_seed() -> seed_type;
+    [[nodiscard]] auto get_history_count() const -> size_t;
+    [[nodiscard]] auto get_history(size_t index) const -> ptr_impact;
+
+    [[nodiscard]] static auto generate_seed() -> seed_type;
 
   private:
     void adjust(uint64_t time);

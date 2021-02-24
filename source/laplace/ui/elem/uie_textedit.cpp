@@ -117,7 +117,8 @@ namespace laplace::ui::elem {
             if (!f || f(c)) {
               if (textedit_state.length_limit == 0 ||
                   text.size() < textedit_state.length_limit)
-                utf8_encode(c, text, cursor);
+                if (!utf8_encode(c, text, cursor))
+                  error(__FUNCTION__, "Unable to encode UTF-8 string.");
             }
           }
         }

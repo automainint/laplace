@@ -1,4 +1,4 @@
-/*  laplace/unittests/e_entity.test.cpp
+/*  test/unittests/e_entity.test.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

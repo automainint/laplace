@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__platform_thread__
-#define __laplace__platform_thread__
+#ifndef laplace_platform_thread_h
+#define laplace_platform_thread_h
 
 #include <thread>
 

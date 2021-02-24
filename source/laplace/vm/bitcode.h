@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__vm_bitcode__
-#define __laplace__vm_bitcode__
+#ifndef laplace_vm_bitcode_h
+#define laplace_vm_bitcode_h
 
 #include <cstdint>
 

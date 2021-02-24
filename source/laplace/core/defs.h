@@ -13,8 +13,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__core_defs__
-#define __laplace__core_defs__
+#ifndef laplace_core_defs_h
+#define laplace_core_defs_h
 
 #include <array>
 #include <cstdint>
@@ -60,10 +60,8 @@ namespace laplace {
   void log(std::string_view s) noexcept;
   void log(const char *c_format, ...);
 
-  void error(std::string_view sender,
-             std::string_view message) noexcept;
-  void error(
-      std::string_view sender, const char *c_format, ...);
+  void error(std::string_view sender, std::string_view message) noexcept;
+  void error(std::string_view sender, const char *c_format, ...);
 
   void verb(std::string_view s) noexcept;
   void verb(const char *c_format, ...);

@@ -1,4 +1,4 @@
-/*  laplace/unittests/ui_rect.test.cpp
+/*  test/unittests/ui_rect.test.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

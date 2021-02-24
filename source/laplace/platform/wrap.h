@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__platform_wrap__
-#define __laplace__platform_wrap__
+#ifndef laplace_platform_wrap_h
+#define laplace_platform_wrap_h
 
 #if !defined(LAPLACE_POSIX_SOCKETS) && \
     (defined(_WIN32) || defined(_WINDOWS))

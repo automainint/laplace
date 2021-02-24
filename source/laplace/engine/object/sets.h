@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_object_sets__
-#define __laplace__engine_object_sets__
+#ifndef laplace_engine_object_sets_h
+#define laplace_engine_object_sets_h
 
 #include <cstdint>
 

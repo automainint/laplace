@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__core_object_manager__
-#define __laplace__core_object_manager__
+#ifndef laplace_core_object_manager_h
+#define laplace_core_object_manager_h
 
 namespace laplace::core {
   template <typename type>

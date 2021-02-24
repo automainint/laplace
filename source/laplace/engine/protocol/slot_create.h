@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_protocol_slot_create__
-#define __laplace__engine_protocol_slot_create__
+#ifndef laplace_engine_protocol_slot_create_h
+#define laplace_engine_protocol_slot_create_h
 
 #include "../prime_impact.h"
 

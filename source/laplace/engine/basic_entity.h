@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_basic_entity__
-#define __laplace__engine_basic_entity__
+#ifndef laplace_engine_basic_entity_h
+#define laplace_engine_basic_entity_h
 
 #include "access/world.predef.h"
 #include "basic_entity.predef.h"

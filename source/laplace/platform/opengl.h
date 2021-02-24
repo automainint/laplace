@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__platform_opengl__
-#define __laplace__platform_opengl__
+#ifndef laplace_platform_opengl_h
+#define laplace_platform_opengl_h
 
 #include <string>
 #include <vector>

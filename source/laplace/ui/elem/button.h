@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__ui_elem_button__
-#define __laplace__ui_elem_button__
+#ifndef laplace_ui_elem_button_h
+#define laplace_ui_elem_button_h
 
 #include "panel.h"
 

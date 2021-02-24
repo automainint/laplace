@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_eval_shape__
-#define __laplace__engine_eval_shape__
+#ifndef laplace_engine_eval_shape_h
+#define laplace_engine_eval_shape_h
 
 #include "geometry.h"
 

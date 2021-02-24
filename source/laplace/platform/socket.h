@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__platform_socket__
-#define __laplace__platform_socket__
+#ifndef laplace_platform_socket_h
+#define laplace_platform_socket_h
 
 namespace laplace {
   class socket_library {

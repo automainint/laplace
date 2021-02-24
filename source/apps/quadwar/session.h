@@ -10,29 +10,27 @@
  *  the MIT License for more details.
  */
 
-#ifndef __quadwar__session__
-#define __quadwar__session__
+#ifndef quadwar_session_h
+#define quadwar_session_h
 
 #include "../../laplace/network/defs.h"
 #include "../../laplace/network/server.h"
-#include "ids.h"
-#include "lobby.h"
+#include "protocol/ids.h"
 #include "qw_factory.h"
+#include "ui/lobby.h"
 
 namespace quadwar_app {
-  using namespace laplace;
-  using namespace engine;
-
   class session {
   public:
     using event_done = std::function<void()>;
     using event_quit = std::function<void()>;
 
     static constexpr uint16_t allowed_commands[] = {
-      ids::public_key,   ids::request_events, ids::ping_request,
-      ids::client_enter, ids::client_leave,   ids::client_ready,
-      ids::slot_create,  ids::slot_remove,    ids::player_name,
-      ids::server_launch
+      protocol::ids::public_key,   protocol::ids::request_events,
+      protocol::ids::ping_request, protocol::ids::client_enter,
+      protocol::ids::client_leave, protocol::ids::client_ready,
+      protocol::ids::slot_create,  protocol::ids::slot_remove,
+      protocol::ids::player_name,  protocol::ids::server_launch
     };
 
     static constexpr auto     default_server_ip = "127.0.0.1";
@@ -68,9 +66,9 @@ namespace quadwar_app {
 
     /*  Local actor id.
      */
-    size_t m_id_actor = id_undefined;
+    size_t m_id_actor = engine::id_undefined;
 
-    ptr_world m_world;
+    engine::ptr_world m_world;
 
     std::string   m_server_ip   = default_server_ip;
     uint16_t      m_server_port = default_port;
@@ -82,7 +80,7 @@ namespace quadwar_app {
 
     network::ptr_server m_server;
 
-    lobby m_lobby;
+    ui::lobby m_lobby;
   };
 
   using ptr_session = std::shared_ptr<session>;

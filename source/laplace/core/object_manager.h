@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__object_manager__
-#define __laplace__object_manager__
+#ifndef laplace_object_manager_h
+#define laplace_object_manager_h
 
 #include "pool.h"
 #include <functional>

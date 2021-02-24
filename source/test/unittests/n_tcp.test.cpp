@@ -1,4 +1,4 @@
-/*  laplace/unittests/n_tcp.test.cpp
+/*  test/unittests/n_tcp.test.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -27,7 +27,7 @@ namespace laplace::test {
     vbyte seq;
 
     server.on_accept([&msg](ref_tcp_node n) {
-      n.send(msg);
+      static_cast<void>(n.send(msg));
       n.close_node();
     });
 
@@ -61,7 +61,7 @@ namespace laplace::test {
     });
 
     client.on_connect([&msg](ref_tcp_joint j) {
-      j.send(msg);
+      static_cast<void>(j.send(msg));
       j.close();
     });
 

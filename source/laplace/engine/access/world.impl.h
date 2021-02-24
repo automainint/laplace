@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_access_world_impl__
-#define __laplace__engine_access_world_impl__
+#ifndef laplace_engine_access_world_impl_h
+#define laplace_engine_access_world_impl_h
 
 namespace laplace::engine::access {
   template <typename distribution>

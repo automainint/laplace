@@ -10,14 +10,16 @@
  *  the MIT License for more details.
  */
 
+#include "protocol/qw_init.h"
+#include "protocol/qw_launch.h"
+#include "protocol/qw_player_name.h"
+#include "protocol/qw_slot_create.h"
+#include "protocol/qw_slot_remove.h"
 #include "qw_factory.h"
-#include "qw_init.h"
-#include "qw_launch.h"
-#include "qw_player_name.h"
-#include "qw_slot_create.h"
-#include "qw_slot_remove.h"
 
 namespace quadwar_app {
+  using namespace protocol;
+
   auto qw_factory::decode(cref_vbyte seq) const
       -> engine::ptr_prime_impact {
 

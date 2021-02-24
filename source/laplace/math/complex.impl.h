@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__math_complex_impl__
-#define __laplace__math_complex_impl__
+#ifndef laplace_math_complex_impl_h
+#define laplace_math_complex_impl_h
 
 namespace laplace::math {
 

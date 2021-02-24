@@ -12,16 +12,21 @@
 
 #include "../../laplace/core/utils.h"
 #include "../../laplace/engine/protocol/basic_event.h"
+#include "../../laplace/engine/protocol/slot_create.h"
 #include "../../laplace/network/host.h"
 #include "../../laplace/network/remote.h"
-#include "player.h"
-#include "qw_player_name.h"
-#include "root.h"
+#include "object/player.h"
+#include "object/root.h"
+#include "protocol/qw_player_name.h"
 #include "session.h"
 
 namespace quadwar_app {
+  namespace access = engine::access;
+
   using std::find, std::make_shared, std::string, std::string_view,
-      std::u8string_view, network::host, network::remote;
+      std::u8string_view, network::host, network::remote,
+      protocol::qw_player_name, object::root, object::player,
+      engine::id_undefined;
 
   session::session() {
     m_lobby.on_abort([=] {
@@ -113,7 +118,7 @@ namespace quadwar_app {
 
     m_world = server->get_world();
 
-    //server->set_verbose(true);
+    // server->set_verbose(true);
     server->set_allowed_commands(allowed_commands);
     server->make_factory<qw_factory>();
 
@@ -139,7 +144,7 @@ namespace quadwar_app {
 
     m_world = server->get_world();
 
-    //server->set_verbose(true);
+    // server->set_verbose(true);
     server->make_factory<qw_factory>();
 
     server->connect(m_server_ip, m_server_port);

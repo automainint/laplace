@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__math_quaternion_impl__
-#define __laplace__math_quaternion_impl__
+#ifndef laplace_math_quaternion_impl_h
+#define laplace_math_quaternion_impl_h
 
 namespace laplace::math {
 

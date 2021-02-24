@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__network_tcp_base__
-#define __laplace__network_tcp_base__
+#ifndef laplace_network_tcp_base_h
+#define laplace_network_tcp_base_h
 
 #include "../core/defs.h"
 #include "../platform/socket.h"
@@ -25,13 +25,13 @@ namespace laplace::network {
     tcp_base();
     virtual ~tcp_base();
 
-    auto receive_to(uint8_t *p, size_t count, io_mode mode)
-        -> size_t;
+    [[nodiscard]] auto receive_to(uint8_t *p, size_t count,
+                                  io_mode mode) -> size_t;
 
-    auto receive(size_t count, io_mode mode) -> vbyte;
-    auto send(cref_vbyte seq) -> size_t;
+    [[nodiscard]] auto receive(size_t count, io_mode mode) -> vbyte;
+    [[nodiscard]] auto send(cref_vbyte seq) -> size_t;
 
-    auto is_done() const -> bool;
+    [[nodiscard]] auto is_done() const -> bool;
 
     void close();
 

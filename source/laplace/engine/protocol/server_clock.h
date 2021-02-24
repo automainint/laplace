@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_protocol_server_clock__
-#define __laplace__engine_protocol_server_clock__
+#ifndef laplace_engine_protocol_server_clock_h
+#define laplace_engine_protocol_server_clock_h
 
 #include "../prime_impact.h"
 

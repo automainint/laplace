@@ -1,4 +1,4 @@
-/*  laplace/unittests/n_udp.test.cpp
+/*  test/unittests/n_udp.test.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

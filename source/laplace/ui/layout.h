@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__ui_layout__
-#define __laplace__ui_layout__
+#ifndef laplace_ui_layout_h
+#define laplace_ui_layout_h
 
 #include "rect.h"
 #include <functional>

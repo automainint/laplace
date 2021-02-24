@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_basic_entity_impl__
-#define __laplace__engine_basic_entity_impl__
+#ifndef laplace_engine_basic_entity_impl_h
+#define laplace_engine_basic_entity_impl_h
 
 namespace laplace::engine {
   inline auto basic_entity::get_by_id(size_t id) -> int64_t {

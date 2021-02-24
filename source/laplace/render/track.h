@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__render_track__
-#define __laplace__render_track__
+#ifndef laplace_render_track_h
+#define laplace_render_track_h
 
 #include "../math/basic.h"
 #include "../math/spline.h"

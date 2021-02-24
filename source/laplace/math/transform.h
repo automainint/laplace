@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__math_transform__
-#define __laplace__math_transform__
+#ifndef laplace_math_transform_h
+#define laplace_math_transform_h
 
 #include "complex.h"
 #include "matrix.h"

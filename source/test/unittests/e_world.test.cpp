@@ -1,4 +1,4 @@
-/*  laplace/unittests/e_world.test.cpp
+/*  test/unittests/e_world.test.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

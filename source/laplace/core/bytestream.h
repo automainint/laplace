@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__core_bytestream__
-#define __laplace__core_bytestream__
+#ifndef laplace_core_bytestream_h
+#define laplace_core_bytestream_h
 
 #include "defs.h"
 #include <sstream>
@@ -23,7 +23,7 @@ namespace laplace {
   public:
     bytestreambuf(cref_vbyte bytes) {
       _Init(reinterpret_cast<const char *>(bytes.data()),
-          bytes.size(), 2 /* _Constant from basic_stringbuf. */
+            bytes.size(), 2 /* _Constant from basic_stringbuf. */
       );
     }
 

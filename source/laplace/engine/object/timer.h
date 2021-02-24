@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_object_timer__
-#define __laplace__engine_object_timer__
+#ifndef laplace_engine_object_timer_h
+#define laplace_engine_object_timer_h
 
 #include "../basic_entity.h"
 #include "../basic_impact.h"

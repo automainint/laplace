@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_protocol_client_ping__
-#define __laplace__engine_protocol_client_ping__
+#ifndef laplace_engine_protocol_client_ping_h
+#define laplace_engine_protocol_client_ping_h
 
 #include "../prime_impact.h"
 

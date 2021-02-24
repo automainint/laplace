@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_access_ventity__
-#define __laplace__engine_access_ventity__
+#ifndef laplace_engine_access_ventity_h
+#define laplace_engine_access_ventity_h
 
 #include "entity.h"
 

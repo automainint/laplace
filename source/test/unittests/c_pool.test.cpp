@@ -1,4 +1,4 @@
-/*  laplace/unittests/c_pool.test.cpp
+/*  test/unittests/c_pool.test.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

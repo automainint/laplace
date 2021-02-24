@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__ui_widget__
-#define __laplace__ui_widget__
+#ifndef laplace_ui_widget_h
+#define laplace_ui_widget_h
 
 #include "../platform/wrap.h"
 #include "layout.h"

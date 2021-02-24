@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_host__
-#define __laplace__engine_host__
+#ifndef laplace_engine_host_h
+#define laplace_engine_host_h
 
 #include "udp_server.h"
 
@@ -26,7 +26,8 @@ namespace laplace::network {
     void listen(uint16_t port = any_port);
 
   private:
-    auto perform_control(size_t slot, cref_vbyte seq) -> bool override;
+    [[nodiscard]] auto perform_control(size_t slot, cref_vbyte seq)
+        -> bool override;
   };
 }
 

@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_object_actor__
-#define __laplace__engine_object_actor__
+#ifndef laplace_engine_object_actor_h
+#define laplace_engine_object_actor_h
 
 #include "../access/entity.h"
 #include "../basic_entity.h"

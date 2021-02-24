@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__platform_win32_window__
-#define __laplace__platform_win32_window__
+#ifndef laplace_platform_win32_window_h
+#define laplace_platform_win32_window_h
 
 #include "../events.h"
 #include "input.h"

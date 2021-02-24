@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__network_remote__
-#define __laplace__network_remote__
+#ifndef laplace_network_remote_h
+#define laplace_network_remote_h
 
 #include "udp_server.h"
 

@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__stem_native_api__
-#define __laplace__stem_native_api__
+#ifndef laplace_stem_native_api_h
+#define laplace_stem_native_api_h
 
 #include "../vm/agent.h"
 

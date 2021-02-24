@@ -1,4 +1,4 @@
-/*  laplace/unittests/nc_dh_rabbit.test.cpp
+/*  test/unittests/nc_dh_rabbit.test.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -149,7 +149,7 @@ namespace laplace::test {
   }
 
   TEST(network, rabbit_packet_loss) {
-    constexpr size_t test_count = 4;
+    constexpr size_t test_count = 1;
 
     for (size_t i = 0; i < test_count; i++) {
       dh_rabbit alice, bob;
@@ -157,37 +157,20 @@ namespace laplace::test {
       alice.set_remote_key(bob.get_public_key());
       bob.set_remote_key(alice.get_public_key());
 
-      vbyte msg0(53);
-      vbyte msg1(54);
-      vbyte msg2(53);
-      vbyte msg3(120);
-      vbyte msg4(55);
-      vbyte msg5(55);
-      vbyte msg6(55);
+      vbyte msg0(50);
+      vbyte msg1(50);
+      vbyte msg2(50);
 
-      vbyte baaad(90);
+      vbyte baaad(128);
       wr<uint64_t>(baaad, 0, 7000);
-      wr<uint64_t>(baaad, 8, 70);
-      uint16_t sum = 0;
-      for (size_t i = 0; i < 86; i += 2) {
-        sum ^= rd<uint16_t>(baaad, i);
-      }
-      wr<uint16_t>(baaad, 86, sum);
-      wr<uint16_t>(baaad, 88, 0u);
 
       auto enc0 = alice.encrypt(msg0);
-      auto enc1 = alice.encrypt(msg1);
+      static_cast<void>(alice.encrypt(msg1));
       auto enc2 = alice.encrypt(msg2);
-      auto enc3 = alice.encrypt(msg3);
-      auto enc4 = alice.encrypt(msg4);
-      auto enc5 = alice.encrypt(msg5);
-      auto enc6 = alice.encrypt(msg6);
 
       EXPECT_TRUE(msg0 == bob.decrypt(enc0));
-      EXPECT_TRUE(msg2 == bob.decrypt(enc2));
       static_cast<void>(bob.decrypt(baaad));
-      EXPECT_TRUE(msg4 == bob.decrypt(enc4));
-      EXPECT_TRUE(msg6 == bob.decrypt(enc6));
+      EXPECT_TRUE(msg2 == bob.decrypt(enc2));
     }
   }
 }

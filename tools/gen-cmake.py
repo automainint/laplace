@@ -1,19 +1,6 @@
-#!  /usr/bin/python
-#   tools/gen-cmake.py
-#
-#       Generate CMakeLists.txt files.
-#
-#   Copyright (c) 2021 Mitya Selivanov
-#
-#   This file is part of the Laplace project.
-#
-#   Laplace is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty
-#   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
-#   the MIT License for more details.
+#!/usr/bin/python
 
-import os
-import glob
+import os, glob
 
 def get_subdirs(folder):
   dirs = list()
@@ -92,12 +79,10 @@ def clean_subdirs(folder):
       if file == 'CMakeLists.txt':
         os.remove(os.path.join(r, file))
 
-out = open('../CMakeLists.txt', 'w')
+out = open(os.path.join('..', 'CMakeLists.txt'), 'w')
 
 out.write('cmake_minimum_required(VERSION 3.18)\n\n')
 
-out.write('set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../bin)\n')
-out.write('set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ../bin)\n\n')
 out.write('set(PROJECT_NAME laplace-project)\n')
 out.write('set(EXE_NAME laplace)\n\n')
 
@@ -112,7 +97,6 @@ out.write('add_library(Sockets INTERFACE)\n\n')
 out.write('set_property(\n')
 out.write('  TARGET ${EXE_NAME} PROPERTY CXX_STANDARD 20\n')
 out.write(')\n\n')
-
 
 out.write('if(MSVC)\n')
 out.write('  set_property(\n')
@@ -132,8 +116,8 @@ out.write('endif()\n\n')
 
 out.write('add_subdirectory(source)\n\n')
 
-clean_subdirs('../source')
-write_subdirs('../source')
+clean_subdirs(os.path.join('..', 'source'))
+write_subdirs(os.path.join('..', 'source'))
 
 out.write('target_link_libraries(\n  ${EXE_NAME}\n')
 
@@ -147,9 +131,9 @@ out.write(print_list(deps, 4))
 out.write('\n)\n\n')
 
 out.write('target_link_directories(\n  ${EXE_NAME}\n')
-out.write('    PUBLIC lib\n')
+out.write('  PUBLIC lib\n')
 out.write(')\n\n')
 
 out.write('target_include_directories(\n  ${EXE_NAME}\n')
-out.write('    PUBLIC include\n')
+out.write('  PUBLIC include\n')
 out.write(')\n')

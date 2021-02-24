@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__network_udp_node__
-#define __laplace__network_udp_node__
+#ifndef laplace_network_udp_node_h
+#define laplace_network_udp_node_h
 
 #include "defs.h"
 

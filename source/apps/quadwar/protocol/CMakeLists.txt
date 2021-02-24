@@ -1,0 +1,6 @@
+target_sources(
+  ${EXE_NAME}
+    PUBLIC
+      defs.h ids.h qw_init.h qw_launch.h qw_player_name.h
+      qw_slot_create.h qw_slot_remove.h
+)

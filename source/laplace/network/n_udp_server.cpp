@@ -22,6 +22,7 @@
 #include "../engine/protocol/server_seed.h"
 #include "../engine/protocol/slot_create.h"
 #include "../engine/protocol/slot_remove.h"
+#include "crypto/dh_rabbit.h"
 #include "udp_server.h"
 #include <algorithm>
 
@@ -30,8 +31,8 @@ namespace laplace::network {
   namespace protocol = engine::protocol;
   namespace ids      = protocol::ids;
 
-  using std::min, std::any_of, std::find_if, std::span,
-      std::numeric_limits, std::string, std::string_view,
+  using std::min, std::any_of, std::find_if, std::make_unique,
+      std::span, std::numeric_limits, std::string, std::string_view,
       engine::prime_impact, protocol::slot_create,
       protocol::slot_remove, protocol::request_events,
       protocol::server_idle, protocol::ping_request,
@@ -39,7 +40,8 @@ namespace laplace::network {
       protocol::server_action, protocol::server_pause,
       protocol::server_clock, protocol::server_seed,
       protocol::server_quit, protocol::client_leave,
-      engine::time_undefined, engine::id_undefined, engine::encode;
+      engine::time_undefined, engine::id_undefined, engine::encode,
+      crypto::dh_rabbit;
 
   udp_server ::~udp_server() {
     cleanup();
@@ -157,22 +159,24 @@ namespace laplace::network {
       if (public_key::get_cipher(seq) == ids::cipher_dh_rabbit) {
 
         if (slot < m_slots.size()) {
+          m_slots[slot].cipher = make_unique<dh_rabbit>();
+
           if (is_master()) {
             send_event_to(                 //
                 slot,                      //
                 encode<public_key>(        //
                     ids::cipher_dh_rabbit, //
-                    m_slots[slot].cipher.get_public_key()));
+                    m_slots[slot].cipher->get_public_key()));
           }
 
           m_slots[slot].is_encrypted = !is_master();
-          m_slots[slot].cipher.set_remote_key(public_key::get_key(seq));
+          m_slots[slot].cipher->set_remote_key(public_key::get_key(seq));
 
           if (is_verbose()) {
             verb("Network: Mutual key");
           }
 
-          dump(m_slots[slot].cipher.get_mutual_key());
+          dump(m_slots[slot].cipher->get_mutual_key());
         } else {
           error(__FUNCTION__, "Invalid slot.");
         }
@@ -538,29 +542,40 @@ namespace laplace::network {
           continue;
         }
 
-        if (m_slots[slot].cipher.is_ready()) {
+        if (m_slots[slot].cipher && m_slots[slot].cipher->is_ready()) {
           dump({ m_buffer.data(), n });
+
+          auto plain = m_slots[slot].cipher->decrypt(
+              { m_buffer.data(), n });
+
+          if (plain.empty()) {
+            verb("Network: Unable to decrypt chunk.");
+            continue;
+          }
+
+          dump(plain);
+
+          if (is_verbose()) {
+            verb("Network: RECV %zu bytes on slot %zu.", plain.size(),
+                 slot);
+          }
+
+          m_slots[slot].buffer.insert(    //
+              m_slots[slot].buffer.end(), //
+              plain.begin(),              //
+              plain.end());
+        } else {
+          dump({ m_buffer.data(), n });
+
+          if (is_verbose()) {
+            verb("Network: RECV %zu bytes on slot %zu.", n, slot);
+          }
+
+          m_slots[slot].buffer.insert(    //
+              m_slots[slot].buffer.end(), //
+              m_buffer.begin(),           //
+              m_buffer.begin() + n);
         }
-
-        auto plain = m_slots[slot].cipher.decrypt(
-            { m_buffer.data(), n });
-
-        if (plain.empty()) {
-          verb("Network: Unable to decrypt chunk.");
-          continue;
-        }
-
-        dump(plain);
-
-        if (is_verbose()) {
-          verb("Network: RECV %zu bytes on slot %zu.", plain.size(),
-               slot);
-        }
-
-        m_slots[slot].buffer.insert(    //
-            m_slots[slot].buffer.end(), //
-            plain.begin(),              //
-            plain.end());
 
         m_slots[slot].is_connected = true;
         m_slots[slot].request_flag = false;
@@ -664,8 +679,8 @@ namespace laplace::network {
 
       dump({ buf.data(), chunk_size });
 
-      if (s.is_encrypted) {
-        auto chunk = s.cipher.encrypt({ buf.data(), chunk_size });
+      if (s.cipher && s.is_encrypted) {
+        auto chunk = s.cipher->encrypt({ buf.data(), chunk_size });
 
         if (chunk.size() == 0) {
           verb("Network: Unable to encrypt chunk.");
@@ -684,7 +699,7 @@ namespace laplace::network {
         add_bytes_sent(m_node->send_to(s.address, s.port, chunk));
 
       } else {
-        s.is_encrypted = s.cipher.is_ready();
+        s.is_encrypted = s.cipher && s.cipher->is_ready();
 
         if (is_verbose()) {
           verb("Network: SEND %zu bytes to %s:%hu.", chunk_size,

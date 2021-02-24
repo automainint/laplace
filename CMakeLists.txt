@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ../bin)
-
 set(PROJECT_NAME laplace-project)
 set(EXE_NAME laplace)
 
@@ -45,10 +42,10 @@ target_link_libraries(
 
 target_link_directories(
   ${EXE_NAME}
-    PUBLIC lib
+  PUBLIC lib
 )
 
 target_include_directories(
   ${EXE_NAME}
-    PUBLIC include
+  PUBLIC include
 )

@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__network_defs__
-#define __laplace__network_defs__
+#ifndef laplace_network_defs_h
+#define laplace_network_defs_h
 
 #include "../core/defs.h"
 #include "../platform/socket.h"

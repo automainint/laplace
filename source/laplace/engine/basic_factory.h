@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_basic_factory__
-#define __laplace__engine_basic_factory__
+#ifndef laplace_engine_basic_factory_h
+#define laplace_engine_basic_factory_h
 
 #include "prime_impact.h"
 

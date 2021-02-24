@@ -8,36 +8,28 @@ Laplace is an interactive multimedia framework focused on RTS games developlent.
 **Dependencies:** C++20 [MSVC](https://visualstudio.microsoft.com/ru/vs/features/cplusplus/)/[Clang](https://clang.llvm.org/)/[GCC](https://gcc.gnu.org/) for the compilation; [Python3](https://www.python.org/), [Cmake](https://cmake.org/), [Git](https://git-scm.com/) for the building and tools; [OpenGL](https://www.khronos.org/registry/OpenGL/index_gl.php) for all the graphics; [wolfSSL](https://github.com/wolfSSL/wolfssl) for encryption algorithms (ECC/Rabbit); [FreeType2](https://gitlab.freedesktop.org/freetype/freetype) for the font rendering; [googletest](https://github.com/google/googletest) for the test suite; [google/benchmark](https://github.com/google/benchmark) for the benchmarks; [Blender](https://www.blender.org/) for the content creating.
 
 ##  How to build
-To build the project CMake, Shell and Python 3 are required. In Windows I use MinGW shell.
+To build the project CMake and Python 3 are required. In Windows I use MinGW shell.
 
 ### With CMake
-Execute `build.sh`.
+Execute `build.py`.
 
-    ./build.sh
+    python build.py
 
 Done!
 
 ### By hand
-Use `tools/update.sh` to download the repos.
+Use `tools/build-deps.py` to build the dependencies.
 
-    cd ./tools
-    ./update.sh
-
-Use `tools/update-gl.sh` to download the `gl.xml` file.
-
-    ./update-gl.sh
-
-Use `tools/rebuild.sh` to build the repos.
-
-    ./rebuild.sh
+    cd tools
+    python build-deps.py
 
 Use `tools/gen-gl.py` to generate the OpenGL interface files.
 
-    python ./gen-gl.py
+    python gen-gl.py
 
 Use `tools/embed.py` to generate the embedded data source files.
 
-    python ./embed.py
+    python embed.py
     cd ..
 
-Add `source` to the project and build manually. Required headers will be in `include` folder, libraries will be in `libs` folder.
+Add `source` to the project and build manually. Required headers will be in `include` folder, libraries will be in `lib` folder.

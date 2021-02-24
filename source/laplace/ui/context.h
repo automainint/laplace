@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__ui_context__
-#define __laplace__ui_context__
+#ifndef laplace_ui_context_h
+#define laplace_ui_context_h
 
 #include "../graphics/flat/solid_buffer.h"
 #include "../graphics/flat/solid_shader.h"

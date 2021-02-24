@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_access_entity__
-#define __laplace__engine_access_entity__
+#ifndef laplace_engine_access_entity_h
+#define laplace_engine_access_entity_h
 
 #include "../basic_entity.h"
 #include "mode.h"

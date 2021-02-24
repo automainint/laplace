@@ -15,8 +15,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__network_crypto_prime__
-#define __laplace__network_crypto_prime__
+#ifndef laplace_network_crypto_prime_h
+#define laplace_network_crypto_prime_h
 
 #include <cstdint>
 

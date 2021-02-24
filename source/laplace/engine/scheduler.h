@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_scheduler__
-#define __laplace__engine_scheduler__
+#ifndef laplace_engine_scheduler_h
+#define laplace_engine_scheduler_h
 
 #include "world.predef.h"
 #include <condition_variable>
@@ -34,8 +34,8 @@ namespace laplace::engine {
     void schedule(size_t delta);
     void join();
 
-    void set_thread_count(size_t thread_count);
-    auto get_thread_count() -> size_t;
+    void               set_thread_count(size_t thread_count);
+    [[nodiscard]] auto get_thread_count() -> size_t;
 
   private:
     void set_done();

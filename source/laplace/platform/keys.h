@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__platform_keys__
-#define __laplace__platform_keys__
+#ifndef laplace_platform_keys_h
+#define laplace_platform_keys_h
 
 #include <cstdint>
 

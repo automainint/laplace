@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_protocol_client_desync__
-#define __laplace__engine_protocol_client_desync__
+#ifndef laplace_engine_protocol_client_desync_h
+#define laplace_engine_protocol_client_desync_h
 
 #include "../prime_impact.h"
 

@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__stem_application__
-#define __laplace__stem_application__
+#ifndef laplace_stem_application_h
+#define laplace_stem_application_h
 
 #include "../core/family.h"
 #include "../graphics/defs.h"

@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__math_quaternion__
-#define __laplace__math_quaternion__
+#ifndef laplace_math_quaternion_h
+#define laplace_math_quaternion_h
 
 #include "vector.h"
 

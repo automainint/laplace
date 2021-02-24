@@ -1,4 +1,4 @@
-/*  laplace/unittests/e_protocol.test.cpp
+/*  test/unittests/e_protocol.test.cpp
 
  *  Copyright (c) 2021 Mitya Selivanov
  *

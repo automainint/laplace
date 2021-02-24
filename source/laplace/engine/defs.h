@@ -13,17 +13,13 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_defs__
-#define __laplace__engine_defs__
+#ifndef laplace_engine_defs_h
+#define laplace_engine_defs_h
 
 #include "../math/vector.h"
 #include <array>
 #include <variant>
 #include <vector>
-
-#ifdef max
-#  undef max
-#endif
 
 namespace laplace::engine {
   using vecval = int64_t;

@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_basic_impact__
-#define __laplace__engine_basic_impact__
+#ifndef laplace_engine_basic_impact_h
+#define laplace_engine_basic_impact_h
 
 #include "../core/utils.h"
 #include "access/world.h"

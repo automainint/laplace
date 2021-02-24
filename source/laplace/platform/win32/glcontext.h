@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__platform_win32_glcontext__
-#define __laplace__platform_win32_glcontext__
+#ifndef laplace_platform_win32_glcontext_h
+#define laplace_platform_win32_glcontext_h
 
 #include "../events.h"
 #include "wgl.h"

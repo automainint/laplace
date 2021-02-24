@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__core_parser__
-#define __laplace__core_parser__
+#ifndef laplace_core_parser_h
+#define laplace_core_parser_h
 
 #include <cstdint>
 #include <functional>
@@ -64,11 +64,30 @@ namespace laplace::core {
      */
     void pop_offset(bool apply);
 
-    static auto wrap(std::string_view s, size_t i = 0) -> parser;
-    static auto wrap(std::u8string_view s, size_t i = 0)
-        -> parser;
+    static auto wrap(std::string_view s) -> parser;
+    static auto wrap(std::u8string_view s) -> parser;
 
   private:
+    enum control_chars : char {
+      c_whitespace  = ' ',
+      c_line_end    = 'n',
+      c_bin_integer = 'b',
+      c_oct_integer = 'o',
+      c_dec_integer = 'd',
+      c_hex_integer = 'x',
+      c_bin_uint    = 'B',
+      c_oct_uint    = 'O',
+      c_dec_uint    = 'D',
+      c_hex_uint    = 'X',
+      c_float       = 'f',
+      c_char        = 'c',
+      c_string      = 's',
+      c_id_str      = 'a',
+      c_word_str    = 'A',
+      c_file_path   = 'p',
+      c_url         = 'u'
+    };
+
     void apply(bool is_ok);
     auto get_char() -> char32_t;
     void unget_char();
@@ -77,6 +96,8 @@ namespace laplace::core {
     static auto is_url(char32_t c) -> bool;
     static auto is_hex(char32_t c) -> bool;
 
+    static auto string_end(char32_t c, const char *p) -> bool;
+
     struct position {
       size_t line   = 0;
       size_t column = 0;
@@ -84,8 +105,7 @@ namespace laplace::core {
     };
 
     std::vector<char32_t> m_buffer;
-    std::vector<position> m_buffer_offset = std::vector<position>(
-        1);
+    std::vector<position> m_buffer_offset = std::vector<position>(1);
 
     size_t       m_line   = 0;
     size_t       m_column = 0;

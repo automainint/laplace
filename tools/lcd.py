@@ -1,23 +1,11 @@
-#!  /usr/bin/python3
-#   tools/lcd.py
-#
-#       Generate the LCD font bits from image file.
-#
-#   Copyright (c) 2021 Mitya Selivanov
-#
-#   This file is part of the Laplace project.
-#
-#   Laplace is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty
-#   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
-#   the MIT License for more details.
+#!/usr/bin/python
 
 import os, sys
 from PIL import Image
 
-folder = '../data/'
+folder = os.path.join('..', 'data')
 
-file = folder + 'lcd.png'
+file = os.path.join(folder, 'lcd.png')
 img = Image.open(file)
 
 width, height = img.size
@@ -47,7 +35,7 @@ if n > 0:
   s += format(b, '#0x')
   
 previous_stdout = sys.stdout
-sys.stdout = open(folder + 'lcd.h', 'w')
+sys.stdout = open(os.path.join(folder, 'lcd.h'), 'w')
 
 print('size_t width = ' + str(width) + ';')
 print('size_t height = ' + str(height) + ';')

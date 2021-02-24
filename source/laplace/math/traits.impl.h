@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__math_traits_impl__
-#define __laplace__math_traits_impl__
+#ifndef laplace_math_traits_impl_h
+#define laplace_math_traits_impl_h
 
 namespace laplace::math {
   template <typename type_>

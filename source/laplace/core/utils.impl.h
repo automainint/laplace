@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__core_utils_impl__
-#define __laplace__core_utils_impl__
+#ifndef laplace_core_utils_impl_h
+#define laplace_core_utils_impl_h
 
 namespace laplace {
   constexpr auto hex_to_int(char x) -> int {

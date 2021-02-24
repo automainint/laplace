@@ -12,7 +12,7 @@
  *  the MIT License for more details.
  */
 
-#define __laplace__windows_header__
+#define laplace_windows_header_h
 #include <windows.h>
 
 #include "../../core/defs.h"

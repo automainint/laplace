@@ -1,4 +1,4 @@
-/*  laplace/unittests/n_server.test.cpp
+/*  test/unittests/n_server.test.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

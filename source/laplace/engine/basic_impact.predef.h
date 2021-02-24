@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_basic_impact_predef__
-#define __laplace__engine_basic_impact_predef__
+#ifndef laplace_engine_basic_impact_predef_h
+#define laplace_engine_basic_impact_predef_h
 
 #include <memory>
 #include <vector>

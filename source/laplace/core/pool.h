@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__core_pool__
-#define __laplace__core_pool__
+#ifndef laplace_core_pool_h
+#define laplace_core_pool_h
 
 #include "element.h"
 #include <shared_mutex>

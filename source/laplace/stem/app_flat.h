@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__stem_app_flat__
-#define __laplace__stem_app_flat__
+#ifndef laplace_stem_app_flat_h
+#define laplace_stem_app_flat_h
 
 #include "../ui/frame.h"
 #include "application.h"

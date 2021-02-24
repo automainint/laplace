@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__platform_gldef__
-#define __laplace__platform_gldef__
+#ifndef laplace_platform_gldef_h
+#define laplace_platform_gldef_h
 
 #include "../../generated/gl/decls.h"
 #include "../../generated/gl/enums.h"

@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__vm_execute__
-#define __laplace__vm_execute__
+#ifndef laplace_vm_execute_h
+#define laplace_vm_execute_h
 
 #include "heap.h"
 #include <functional>

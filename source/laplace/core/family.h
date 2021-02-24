@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__core_family__
-#define __laplace__core_family__
+#ifndef laplace_core_family_h
+#define laplace_core_family_h
 
 #include "defs.h"
 #include <memory>

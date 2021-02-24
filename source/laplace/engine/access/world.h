@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_access_world__
-#define __laplace__engine_access_world__
+#ifndef laplace_engine_access_world_h
+#define laplace_engine_access_world_h
 
 #include "../basic_impact.predef.h"
 #include "../world.predef.h"
@@ -72,38 +72,38 @@ namespace laplace::engine::access {
     /*  Set the root entity.
      *  Sync.
      */
-    void set_root(ptr_entity root);
+    [[nodiscard]] void set_root(ptr_entity root);
 
     /*  Get the root entity.
      *  Async.
      */
-    auto get_root() -> access::entity;
+    [[nodiscard]] auto get_root() -> access::entity;
 
     /*  If the world has an entity.
      *  Async.
      */
-    auto has_entity(size_t id) -> bool;
+    [[nodiscard]] auto has_entity(size_t id) -> bool;
 
     /*  Get an entity.
      *  Async.
      */
-    auto get_entity(size_t id) -> access::entity;
+    [[nodiscard]] auto get_entity(size_t id) -> access::entity;
 
     /*  Select entities.
      *  Async.
      */
-    auto select(condition op) -> access::ventity;
+    [[nodiscard]] auto select(condition op) -> access::ventity;
 
     /*  Select dynamic entities.
      *  Async.
      */
-    auto select_dynamic(condition op) -> access::ventity;
+    [[nodiscard]] auto select_dynamic(condition op) -> access::ventity;
 
     /*  Generate a random number.
      *  Sync.
      */
     template <typename distribution>
-    auto random(distribution &dist) ->
+    [[nodiscard]] auto random(distribution &dist) ->
         typename distribution::result_type;
 
   private:

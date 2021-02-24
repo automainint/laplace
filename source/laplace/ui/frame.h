@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__ui_frame__
-#define __laplace__ui_frame__
+#ifndef laplace_ui_frame_h
+#define laplace_ui_frame_h
 
 #include "../graphics/flat/framebuffer.h"
 #include "context.h"

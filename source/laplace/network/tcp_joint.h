@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__network_tcp_tcp_joint__
-#define __laplace__network_tcp_tcp_joint__
+#ifndef laplace_network_tcp_tcp_joint_h
+#define laplace_network_tcp_tcp_joint_h
 
 #include "tcp_base.h"
 #include <functional>

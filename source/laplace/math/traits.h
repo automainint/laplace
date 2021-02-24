@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__math_traits__
-#define __laplace__math_traits__
+#ifndef laplace_math_traits_h
+#define laplace_math_traits_h
 
 #include "defs.h"
 #include <concepts>

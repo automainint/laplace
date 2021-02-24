@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__vm_environment_predef__
-#define __laplace__vm_environment_predef__
+#ifndef laplace_vm_environment_predef_h
+#define laplace_vm_environment_predef_h
 
 #include <memory>
 

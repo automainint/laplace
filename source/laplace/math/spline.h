@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__math_spline__
-#define __laplace__math_spline__
+#ifndef laplace_math_spline_h
+#define laplace_math_spline_h
 
 #include "quaternion.h"
 #include <array>

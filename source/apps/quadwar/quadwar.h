@@ -10,16 +10,14 @@
  *  the MIT License for more details.
  */
 
-#ifndef __quadwar__quadwar__
-#define __quadwar__quadwar__
+#ifndef quadwar_quadwar_h
+#define quadwar_quadwar_h
 
 #include "../../laplace/stem/app_flat.h"
-#include "mainmenu.h"
 #include "session.h"
+#include "ui/mainmenu.h"
 
 namespace quadwar_app {
-  using namespace laplace;
-
   static constexpr auto log_file_name = "quadwar.log";
 
   static constexpr auto k_server_address = "server_address";
@@ -53,8 +51,8 @@ namespace quadwar_app {
   private:
     static auto get_config() -> core::family;
 
-    ptr_mainmenu m_mainmenu;
-    ptr_session  m_session;
+    ui::ptr_mainmenu m_mainmenu;
+    ptr_session      m_session;
   };
 }
 

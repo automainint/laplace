@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_prime_impact_impl__
-#define __laplace__engine_prime_impact_impl__
+#ifndef laplace_engine_prime_impact_impl_h
+#define laplace_engine_prime_impact_impl_h
 
 namespace laplace::engine {
   inline auto prime_impact::encode() const -> vbyte {
@@ -123,7 +123,7 @@ namespace laplace::engine {
   template <typename prime_impact_, typename... args_>
   constexpr auto encode(args_... args) -> vbyte {
     const auto ev = prime_impact_(args...);
-    vbyte seq(ev.get_encoded_size());
+    vbyte      seq(ev.get_encoded_size());
     ev.prime_impact_::encode_to(seq);
     return seq;
   }

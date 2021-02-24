@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__core_element__
-#define __laplace__core_element__
+#ifndef laplace_core_element_h
+#define laplace_core_element_h
 
 #include "defs.h"
 #include <atomic>

@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_access_ventity_impl__
-#define __laplace__engine_access_ventity_impl__
+#ifndef laplace_engine_access_ventity_impl_h
+#define laplace_engine_access_ventity_impl_h
 
 namespace laplace::engine::access {
   inline ventity::ventity(ventity &&ents) noexcept :

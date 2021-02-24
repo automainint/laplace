@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__math_vector_impl__
-#define __laplace__math_vector_impl__
+#ifndef laplace_math_vector_impl_h
+#define laplace_math_vector_impl_h
 
 namespace laplace::math {
   template <size_t size_, typename type_>

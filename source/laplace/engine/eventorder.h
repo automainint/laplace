@@ -13,8 +13,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_eventorder__
-#define __laplace__engine_eventorder__
+#ifndef laplace_engine_eventorder_h
+#define laplace_engine_eventorder_h
 
 #include "../core/defs.h"
 
@@ -31,26 +31,24 @@ namespace laplace::engine {
 
     constexpr eventorder(const eventorder &) = default;
     constexpr eventorder(eventorder &&)      = default;
-    constexpr eventorder &operator           =(
-        const eventorder &) = default;
+    constexpr eventorder &operator=(const eventorder &) = default;
     constexpr eventorder &operator=(eventorder &&) = default;
 
     /*  Spawn a child event.
      */
-    constexpr auto spawn(ref_uint child_count) const
+    [[nodiscard]] constexpr auto spawn(ref_uint child_count) const
         -> eventorder;
 
-    constexpr auto operator<(const eventorder &order) const
+    [[nodiscard]] constexpr auto operator<(const eventorder &order) const
         -> bool;
 
-    constexpr auto get_index() const -> size_t;
+    [[nodiscard]] constexpr auto get_index() const -> size_t;
 
   private:
-    constexpr eventorder(
-        const eventorder &parent, size_t index);
+    constexpr eventorder(const eventorder &parent, size_t index);
 
     std::array<size_t, max_depth> m_indices = { 0 };
-    uint8_t m_size                          = 0;
+    uint8_t                       m_size    = 0;
   };
 
   using cref_eventorder = const eventorder &;

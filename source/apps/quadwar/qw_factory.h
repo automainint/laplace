@@ -10,14 +10,13 @@
  *  the MIT License for more details.
  */
 
-#ifndef __quadwar__qw_factory__
-#define __quadwar__qw_factory__
+#ifndef quadwar_qw_factory_h
+#define quadwar_qw_factory_h
 
 #include "../../laplace/engine/basic_factory.h"
+#include "defs.h"
 
 namespace quadwar_app {
-  using namespace laplace;
-
   class qw_factory : public engine::basic_factory {
   public:
     ~qw_factory() override = default;

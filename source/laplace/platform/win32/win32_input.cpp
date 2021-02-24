@@ -13,7 +13,7 @@
  */
 
 #define WIN32_LEAN_AND_MEAN
-#define __laplace__windows_header__
+#define laplace_windows_header
 #include <windows.h>
 
 #include <hidusage.h>
@@ -266,7 +266,8 @@ namespace laplace::win32 {
     if (m_is_char_pressed) {
       if (m_char_period_msec <= delta_msec) {
         size_t offset = m_text.length();
-        utf8_encode(m_last_char, m_text, offset);
+        if (!utf8_encode(m_last_char, m_text, offset))
+          error(__FUNCTION__, "Unable to encode UTF-8 string.");
         m_char_period_msec += char_period_msec > delta_msec
                                   ? char_period_msec - delta_msec
                                   : char_period_msec;
@@ -514,7 +515,8 @@ namespace laplace::win32 {
 
       if (is_down) {
         size_t offset = m_text.length();
-        utf8_encode(c, m_text, offset);
+        if (!utf8_encode(c, m_text, offset))
+          error(__FUNCTION__, "Unable to encode UTF-8 string.");
 
         m_is_char_pressed = true;
         m_last_char_key   = key;

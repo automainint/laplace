@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_prime_impact__
-#define __laplace__engine_prime_impact__
+#ifndef laplace_engine_prime_impact_h
+#define laplace_engine_prime_impact_h
 
 #include "basic_impact.h"
 

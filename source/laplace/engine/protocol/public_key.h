@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_protocol_public_key__
-#define __laplace__engine_protocol_public_key__
+#ifndef laplace_engine_protocol_public_key_h
+#define laplace_engine_protocol_public_key_h
 
 #include "../prime_impact.h"
 

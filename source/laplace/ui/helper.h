@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__ui_helper__
-#define __laplace__ui_helper__
+#ifndef laplace_ui_helper_h
+#define laplace_ui_helper_h
 
 #include "elem/textarea.h"
 #include "elem/textbutton.h"

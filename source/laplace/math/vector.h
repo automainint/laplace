@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__math_vector__
-#define __laplace__math_vector__
+#ifndef laplace_math_vector_h
+#define laplace_math_vector_h
 
 #include "basic.h"
 #include <functional>

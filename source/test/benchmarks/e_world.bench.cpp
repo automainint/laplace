@@ -1,4 +1,4 @@
-/*  laplace/benchmarks/e_world.bench.cpp
+/*  test/benchmarks/e_world.bench.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

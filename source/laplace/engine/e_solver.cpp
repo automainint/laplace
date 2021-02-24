@@ -1,3 +1,15 @@
+/*  laplace/engine/e_solver.cpp
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
 #include "solver.h"
 #include <algorithm>
 
@@ -33,8 +45,8 @@ namespace laplace::engine {
 
           rewind_to(time);
         } else {
-          error(__FUNCTION__,
-                "Rewind is not allowed. Impact ignored.");
+          error(
+              __FUNCTION__, "Rewind is not allowed. Impact ignored.");
         }
       } else {
         auto op = [](const ptr_impact &a, uint64_t b) -> bool {
@@ -42,8 +54,7 @@ namespace laplace::engine {
         };
 
         auto it = lower_bound(m_history.begin() + m_position,
-                              m_history.end(), imp->get_time(),
-                              op);
+                              m_history.end(), imp->get_time(), op);
 
         m_history.emplace(it, imp);
       }
@@ -110,8 +121,7 @@ namespace laplace::engine {
   }
 
   auto solver::get_history(size_t index) const -> ptr_impact {
-    return index < m_history.size() ? m_history[index]
-                                    : ptr_impact();
+    return index < m_history.size() ? m_history[index] : ptr_impact();
   }
 
   auto solver::generate_seed() -> seed_type {
@@ -135,13 +145,12 @@ namespace laplace::engine {
         return a->get_time() < b;
       };
 
-      auto i_end = lower_bound(m_history.begin() + m_position,
-                               m_history.end(), time, op);
+      auto i_end = lower_bound(
+          m_history.begin() + m_position, m_history.end(), time, op);
 
       auto t0 = m_time;
 
-      for (auto i = m_history.begin() + m_position; i != i_end;
-           i++) {
+      for (auto i = m_history.begin() + m_position; i != i_end; i++) {
         auto t1 = (*i)->get_time();
 
         if (t0 < t1) {

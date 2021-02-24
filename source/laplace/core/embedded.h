@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__core_embedded_
-#define __laplace__core_embedded_
+#ifndef laplace_core_embedded_
+#define laplace_core_embedded_
 
 #include "defs.h"
 

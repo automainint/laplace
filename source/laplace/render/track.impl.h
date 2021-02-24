@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__render_track_impl__
-#define __laplace__render_track_impl__
+#ifndef laplace_render_track_impl_h
+#define laplace_render_track_impl_h
 
 namespace laplace::render {
   template <typename vecval>

@@ -10,11 +10,11 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__network_udp_server__
-#define __laplace__network_udp_server__
+#ifndef laplace_network_udp_server_h
+#define laplace_network_udp_server_h
 
 #include "../engine/defs.h"
-#include "crypto/dh_rabbit.h"
+#include "crypto/basic_cipher.h"
 #include "server.h"
 #include "udp_node.h"
 
@@ -65,7 +65,7 @@ namespace laplace::network {
       vbyte       chunks;
       event_queue queue;
 
-      crypto::dh_rabbit cipher;
+      std::unique_ptr<crypto::basic_cipher> cipher;
     };
 
     /*  Returns false if the event should be

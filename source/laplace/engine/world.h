@@ -12,8 +12,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__engine_world__
-#define __laplace__engine_world__
+#ifndef laplace_engine_world_h
+#define laplace_engine_world_h
 
 #include "../platform/thread.h"
 #include "basic_entity.h"

@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__math_complex__
-#define __laplace__math_complex__
+#ifndef laplace_math_complex_h
+#define laplace_math_complex_h
 
 #include "vector.h"
 

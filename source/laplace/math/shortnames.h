@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__math_shortnames__
-#define __laplace__math_shortnames__
+#ifndef laplace_math_shortnames_h
+#define laplace_math_shortnames_h
 
 #include <cstdint>
 

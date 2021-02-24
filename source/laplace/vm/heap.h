@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__vm_heap__
-#define __laplace__vm_heap__
+#ifndef laplace_vm_heap_h
+#define laplace_vm_heap_h
 
 #include "../core/defs.h"
 #include <shared_mutex>

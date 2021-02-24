@@ -6,8 +6,9 @@ target_sources(
     PUBLIC
       basic_entity.h basic_entity.impl.h basic_entity.predef.h
       basic_factory.h basic_factory.impl.h basic_impact.h basic_impact.impl.h
-      basic_impact.predef.h defs.h eventorder.h eventorder.impl.h prime_impact.h
-      prime_impact.impl.h scheduler.h solver.h world.h world.predef.h
+      basic_impact.predef.h defs.h eventorder.h eventorder.impl.h helper.h
+      prime_impact.h prime_impact.impl.h scheduler.h solver.h world.h
+      world.predef.h
 )
 add_subdirectory(access)
 add_subdirectory(action)

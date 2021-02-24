@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef __laplace__network_server__
-#define __laplace__network_server__
+#ifndef laplace_network_server_h
+#define laplace_network_server_h
 
 #include "../engine/basic_factory.h"
 #include "../engine/solver.h"

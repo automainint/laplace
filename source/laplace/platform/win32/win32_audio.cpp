@@ -12,7 +12,7 @@
  *  the MIT License for more details.
  */
 
-#define __laplace__windows_header__
+#define laplace_windows_header
 #include <audioclient.h>
 #include <mmdeviceapi.h>
 
@@ -23,17 +23,14 @@
 namespace laplace::win32 {
   using std::make_unique, std::unique_lock, std::shared_lock,
       std::vector, std::string, std::memory_order_release,
-      std::memory_order_acquire, std::thread,
-      std::chrono::duration;
+      std::memory_order_acquire, std::thread, std::chrono::duration;
 
   namespace this_thread = std::this_thread;
 
-  const CLSID CLSID_MMDeviceEnumerator = __uuidof(
-      MMDeviceEnumerator);
-  const IID IID_IMMDeviceEnumerator = __uuidof(
-      IMMDeviceEnumerator);
-  const IID IID_IAudioClient       = __uuidof(IAudioClient);
-  const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
+  const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
+  const IID   IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
+  const IID   IID_IAudioClient        = __uuidof(IAudioClient);
+  const IID   IID_IAudioRenderClient  = __uuidof(IAudioRenderClient);
 
   audio::audio(audio::format request) {
     m_channel_count  = request.channel_count;
@@ -55,8 +52,7 @@ namespace laplace::win32 {
       render_thread(*this);
     });
 
-    win32::set_thread_priority(
-        *m_thread, default_thread_priority);
+    win32::set_thread_priority(*m_thread, default_thread_priority);
   }
 
   audio::~audio() {
@@ -115,9 +111,8 @@ namespace laplace::win32 {
   auto audio::adjust_offset() -> size_t {
     auto _sl = shared_lock(m_lock);
 
-    return m_read <= m_write
-               ? m_write - m_read
-               : m_buffer.size() - m_read + m_write;
+    return m_read <= m_write ? m_write - m_read
+                             : m_buffer.size() - m_read + m_write;
   }
 
   auto audio::adjust_bytes(size_t size) -> size_t {
@@ -177,8 +172,7 @@ namespace laplace::win32 {
     }
   }
 
-  void audio::set_format(size_t channel_count,
-                         size_t sample_rate_hz,
+  void audio::set_format(size_t channel_count, size_t sample_rate_hz,
                          size_t sample_bits) {
     auto _ul = unique_lock(m_lock);
 
@@ -230,8 +224,7 @@ namespace laplace::win32 {
     auto to_hns = [](double time_sec) -> REFERENCE_TIME {
       /*  Convert seconds to 100-nanoseconds.
        */
-      return static_cast<REFERENCE_TIME>(time_sec * 10000000 +
-                                         0.5);
+      return static_cast<REFERENCE_TIME>(time_sec * 10000000 + 0.5);
     };
 
     HRESULT status;
@@ -249,8 +242,7 @@ namespace laplace::win32 {
     uint8_t *buffer_data = nullptr;
 
     status = CoInitializeEx(
-        nullptr,
-        COINIT_APARTMENTTHREADED | COINIT_SPEED_OVER_MEMORY);
+        nullptr, COINIT_APARTMENTTHREADED | COINIT_SPEED_OVER_MEMORY);
 
     if (FAILED(status)) {
       auto _sl = shared_lock(a.m_lock);
@@ -258,10 +250,9 @@ namespace laplace::win32 {
       a.m_errors.back().append(": CoInitializeEx failed.");
     }
 
-    status = CoCreateInstance(
-        CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL,
-        IID_IMMDeviceEnumerator,
-        reinterpret_cast<void **>(&enumerator));
+    status = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr,
+                              CLSCTX_ALL, IID_IMMDeviceEnumerator,
+                              reinterpret_cast<void **>(&enumerator));
 
     if (FAILED(status)) {
       auto _sl = shared_lock(a.m_lock);
@@ -276,14 +267,12 @@ namespace laplace::win32 {
     if (FAILED(status)) {
       auto _sl = shared_lock(a.m_lock);
       a.m_errors.emplace_back(__FUNCTION__);
-      a.m_errors.back().append(
-          ": GetDefaultAudioEndpoint failed.");
+      a.m_errors.back().append(": GetDefaultAudioEndpoint failed.");
       a.m_done.store(true, memory_order_release);
     }
 
-    status = device->Activate(
-        IID_IAudioClient, CLSCTX_ALL, nullptr,
-        reinterpret_cast<void **>(&audio_client));
+    status = device->Activate(IID_IAudioClient, CLSCTX_ALL, nullptr,
+                              reinterpret_cast<void **>(&audio_client));
 
     if (FAILED(status)) {
       auto _sl = shared_lock(a.m_lock);
@@ -302,15 +291,13 @@ namespace laplace::win32 {
     format->nSamplesPerSec = a.get_sample_rate();
     format->wBitsPerSample = a.get_sample_bits();
 
-    format->nBlockAlign = (format->nChannels *
-                           format->wBitsPerSample) /
+    format->nBlockAlign = (format->nChannels * format->wBitsPerSample) /
                           8;
     format->nAvgBytesPerSec = format->nSamplesPerSec *
                               format->nBlockAlign;
 
-    status = audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED,
-                                      0, to_hns(0.1), 0, format,
-                                      nullptr);
+    status = audio_client->Initialize(
+        AUDCLNT_SHAREMODE_SHARED, 0, to_hns(0.1), 0, format, nullptr);
 
     if (FAILED(status)) {
       auto _sl = shared_lock(a.m_lock);
@@ -366,8 +353,7 @@ namespace laplace::win32 {
         if (!is_started) {
           time = clock::now();
 
-          status = render_client->GetBuffer(
-              buffer_size, &buffer_data);
+          status = render_client->GetBuffer(buffer_size, &buffer_data);
 
           if (FAILED(status)) {
             auto _sl = shared_lock(a.m_lock);
@@ -400,30 +386,26 @@ namespace laplace::win32 {
 
           is_started = true;
         } else {
-          auto new_time = clock::now();
-          auto elapsed_sec =
-              duration<double>(new_time - time).count();
+          auto new_time    = clock::now();
+          auto elapsed_sec = duration<double>(new_time - time).count();
           auto remaining_sec = half_duration_sec - elapsed_sec;
 
           if (remaining_sec > 0) {
             /*  TODO:
              *  Replace with std::condition_variable.
              */
-            this_thread::sleep_for(
-                duration<double>(remaining_sec));
+            this_thread::sleep_for(duration<double>(remaining_sec));
           }
 
           time = new_time;
         }
 
-        status = audio_client->GetCurrentPadding(
-            &num_frames_padding);
+        status = audio_client->GetCurrentPadding(&num_frames_padding);
 
         if (FAILED(status)) {
           auto _sl = shared_lock(a.m_lock);
           a.m_errors.emplace_back(__FUNCTION__);
-          a.m_errors.back().append(
-              ": GetCurrentPadding failed.");
+          a.m_errors.back().append(": GetCurrentPadding failed.");
           a.m_done.store(true, memory_order_release);
         }
 

@@ -16,10 +16,9 @@
 #include <iostream>
 
 #ifdef _MSC_VER
-/*  False va_arg and overflow warnings.
+/*  False va_arg warnings.
  */
 #  pragma warning(disable : 6285)
-#  pragma warning(disable : 26451)
 #endif
 
 namespace laplace::core {
@@ -53,14 +52,14 @@ namespace laplace::core {
     }
   }
 
-  auto parser::wrap(std::string_view s, size_t i)->parser {
-    return parser([s, &i]() -> char32_t {
+  auto parser::wrap(std::string_view s) -> parser {
+    return parser([s, i = size_t {}]() mutable -> char32_t {
       return i < s.size() ? s[i++] : 0;
     });
   }
 
-  auto parser::wrap(std::u8string_view s, size_t i)->parser {
-    return parser([s, &i]() -> char32_t {
+  auto parser::wrap(std::u8string_view s) -> parser {
+    return parser([s, i = size_t {}]() mutable -> char32_t {
       return i < s.size() ? s[i++] : 0;
     });
   }
@@ -80,7 +79,7 @@ namespace laplace::core {
     }
   }
 
-  auto parser::get_char()->char32_t {
+  auto parser::get_char() -> char32_t {
     char32_t result = 0;
 
     if (!m_buffer_offset.empty()) {
@@ -112,49 +111,56 @@ namespace laplace::core {
   }
 
   void parser::unget_char() {
-    if (!m_buffer_offset.empty() &&
-        m_buffer_offset.back().offset != 0) {
+    if (!m_buffer_offset.empty() && m_buffer_offset.back().offset != 0) {
       m_buffer_offset.back().offset--;
     } else {
       error(__FUNCTION__, "No buffered data.");
     }
   }
 
-  auto parser::is_path(char32_t c)->bool {
-    bool result = true;
-
+  auto parser::is_path(char32_t c) -> bool {
     if (c < 32) {
-      result = false;
-    } else if (c == '*' || c == '?' || c == '"' || c == '<' ||
-               c == '>' || c == '|' || c == '+') {
-      result = false;
-    } else if (c == '%' || c == '!' || c == '@') {
-      result = false;
+      return false;
     }
 
-    return result;
+    if (c == '*' || c == '?' || c == '"' || c == '<' || c == '>' ||
+        c == '|' || c == '+') {
+      return false;
+    }
+
+    if (c == '%' || c == '!' || c == '@') {
+      return false;
+    }
+
+    return true;
   }
 
-  auto parser::is_url(char32_t c)->bool {
-    bool result = false;
-
+  auto parser::is_url(char32_t c) -> bool {
     if (c >= '0' && c <= '9') {
-      result = true;
-    } else if (c >= 'a' && c <= 'z') {
-      result = true;
-    } else if (c >= 'A' && c <= 'Z') {
-      result = true;
-    } else if (c == '-' || c == '_' || c == '.' || c == '~') {
-      result = true;
-    } else if (c == ':' || c == '@' || c == '/' || c == '?' ||
-               c == '&' || c == '=' || c == '+' || c == '%') {
-      result = true;
+      return true;
     }
 
-    return result;
+    if (c >= 'a' && c <= 'z') {
+      return true;
+    }
+
+    if (c >= 'A' && c <= 'Z') {
+      return true;
+    }
+
+    if (c == '-' || c == '_' || c == '.' || c == '~') {
+      return true;
+    }
+
+    if (c == ':' || c == '@' || c == '/' || c == '?' || c == '&' ||
+        c == '=' || c == '+' || c == '%') {
+      return true;
+    }
+
+    return false;
   }
 
-  auto parser::is_hex(char32_t c)->bool {
+  auto parser::is_hex(char32_t c) -> bool {
     bool result = false;
 
     if (c >= '0' && c <= '9') {
@@ -168,7 +174,36 @@ namespace laplace::core {
     return result;
   }
 
-  auto parser::parse(const char *format, ...)->bool {
+  auto parser::string_end(char32_t c, const char *p) -> bool {
+    if (p[1] == '%') {
+      switch (p[2]) {
+        case c_line_end: return c == '\r' || c == '\n';
+        case c_bin_integer: return c == '-' || c == '0' || c == '1';
+        case c_oct_integer: return c == '-' || (c >= '0' && c <= '7');
+        case c_float:
+        case c_dec_integer: return c == '-' || (c >= '0' && c <= '9');
+        case c_hex_integer: return c == '-' || is_hex(c);
+        case c_bin_uint: return c == '0' || c == '1';
+        case c_oct_uint: return c >= '0' && c <= '7';
+        case c_dec_uint: return c >= '0' && c <= '9';
+        case c_hex_uint: return is_hex(c);
+        case c_char:
+        case c_string:
+        case c_id_str:
+        case c_word_str:
+        case c_file_path:
+        case c_url: //
+          verb("Parser: Invalid sequence.");
+          return true;
+      }
+
+      return c == p[2];
+    }
+
+    return c == p[1];
+  }
+
+  auto parser::parse(const char *format, ...) -> bool {
     va_list ap;
     va_start(ap, format);
 
@@ -182,7 +217,12 @@ namespace laplace::core {
       if (*p == '\0') {
         is_done = true;
       } else if (m_is_eof) {
-        result  = false;
+        for (; *p; p++) {
+          if (*p != ' ') {
+            result = false;
+            break;
+          }
+        }
         is_done = true;
       } else if (*p == '%') {
         is_silent = false;
@@ -201,7 +241,7 @@ namespace laplace::core {
             result  = false;
             is_done = true;
           }
-        } else if (*p == ' ') {
+        } else if (*p == c_whitespace) {
           /*  One whitespace.
            */
 
@@ -209,7 +249,7 @@ namespace laplace::core {
             result  = false;
             is_done = true;
           }
-        } else if (*p == 'n') {
+        } else if (*p == c_line_end) {
           /*  One line end.
            */
 
@@ -224,7 +264,7 @@ namespace laplace::core {
             result  = false;
             is_done = true;
           }
-        } else if (*p == 'b') {
+        } else if (*p == c_bin_integer) {
           /*  Binary integer.
            */
 
@@ -247,7 +287,7 @@ namespace laplace::core {
               i_value <<= 1;
             }
 
-            i_value |= c - '0';
+            i_value |= static_cast<int64_t>(c) - '0';
 
             c = get_char();
           }
@@ -264,7 +304,7 @@ namespace laplace::core {
 
             *va_arg(ap, int64_t *) = i_value;
           }
-        } else if (*p == 'o') {
+        } else if (*p == c_oct_integer) {
           /*  Oct integer.
            */
 
@@ -287,7 +327,7 @@ namespace laplace::core {
               i_value <<= 3;
             }
 
-            i_value |= c - '0';
+            i_value |= static_cast<int64_t>(c) - '0';
 
             c = get_char();
           }
@@ -304,7 +344,7 @@ namespace laplace::core {
 
             *va_arg(ap, int64_t *) = i_value;
           }
-        } else if (*p == 'd') {
+        } else if (*p == c_dec_integer) {
           /*  Decimal integer.
            */
 
@@ -327,7 +367,7 @@ namespace laplace::core {
               i_value *= 10;
             }
 
-            i_value += c - '0';
+            i_value += static_cast<int64_t>(c) - '0';
 
             c = get_char();
           }
@@ -344,7 +384,7 @@ namespace laplace::core {
 
             *va_arg(ap, int64_t *) = i_value;
           }
-        } else if (*p == 'x') {
+        } else if (*p == c_hex_integer) {
           /*  Hex integer.
            */
 
@@ -401,7 +441,7 @@ namespace laplace::core {
               i_value <<= 1;
             }
 
-            i_value |= c - '0';
+            i_value |= static_cast<int64_t>(c) - '0';
 
             c = get_char();
           }
@@ -431,7 +471,7 @@ namespace laplace::core {
               i_value <<= 3;
             }
 
-            i_value |= c - '0';
+            i_value |= static_cast<int64_t>(c) - '0';
 
             c = get_char();
           }
@@ -444,7 +484,7 @@ namespace laplace::core {
           } else if (!is_silent) {
             *va_arg(ap, uint64_t *) = i_value;
           }
-        } else if (*p == 'D') {
+        } else if (*p == c_dec_uint) {
           /*  Decimal uint.
            */
 
@@ -461,7 +501,7 @@ namespace laplace::core {
               i_value *= 10;
             }
 
-            i_value += c - '0';
+            i_value += static_cast<int64_t>(c) - '0';
 
             c = get_char();
           }
@@ -474,7 +514,7 @@ namespace laplace::core {
           } else if (!is_silent) {
             *va_arg(ap, uint64_t *) = i_value;
           }
-        } else if (*p == 'X') {
+        } else if (*p == c_hex_uint) {
           /*  Hex uint.
            */
 
@@ -504,7 +544,7 @@ namespace laplace::core {
           } else if (!is_silent) {
             *va_arg(ap, uint64_t *) = i_value;
           }
-        } else if (*p == 'f') {
+        } else if (*p == c_float) {
           /*  Floating-point number.
            */
 
@@ -595,8 +635,7 @@ namespace laplace::core {
               }
 
               if (f_frac_value != -1) {
-                f_value +=
-                    f_frac_value * pow(10, -f_frac_power);
+                f_value += f_frac_value * pow(10, -f_frac_power);
               }
 
               if (f_exp_value != -1) {
@@ -614,7 +653,7 @@ namespace laplace::core {
               *va_arg(ap, double *) = f_value;
             }
           }
-        } else if (*p == 'c') {
+        } else if (*p == c_char) {
           /*  One char.
            */
 
@@ -626,47 +665,45 @@ namespace laplace::core {
           } else if (!is_silent) {
             *va_arg(ap, char32_t *) = c;
           }
-        } else if (*p == 's') {
+        } else if (*p == c_string) {
           /*  String.
            */
 
           u8string s_value;
 
-          char32_t c = get_char();
+          bool     is_empty = true;
+          char32_t c        = get_char();
 
-          if (c != *p) {
-            result  = false;
-            is_done = true;
-          }
+          while (!string_end(c, p)) {
+            is_empty = false;
 
-          c = get_char();
+            if (c == '\\') {
+              if (!is_silent) {
+                s_value.append(1, c);
+              }
 
-          while (!is_done && c != *p) {
+              c = get_char();
+            }
+
+            if (!is_silent) {
+              s_value.append(1, c);
+            }
+
             if (c == '\0') {
               result  = false;
               is_done = true;
-            } else {
-              if (is_silent) {
-                if (c == '\\') {
-                  c = get_char();
-                }
-              } else {
-                if (c == '\\') {
-                  s_value.append(1, c);
-                  c = get_char();
-                }
-
-                s_value.append(1, c);
-              }
             }
 
             c = get_char();
           }
 
-          if (!is_done && !is_silent) {
+          if (is_empty) {
+            result  = false;
+            is_done = true;
+          } else if (!is_done && !is_silent) {
             *va_arg(ap, u8string *) = s_value;
           }
-        } else if (*p == 'a') {
+        } else if (*p == c_id_str) {
           /*  Id string.
            */
 
@@ -701,7 +738,7 @@ namespace laplace::core {
             result  = false;
             is_done = true;
           }
-        } else if (*p == 'A') {
+        } else if (*p == c_word_str) {
           /*  Word string.
            */
 
@@ -729,7 +766,7 @@ namespace laplace::core {
           } else if (!is_silent) {
             *va_arg(ap, u8string *) = s_value;
           }
-        } else if (*p == 'p') {
+        } else if (*p == c_file_path) {
           /*  File path string.
            */
 
@@ -756,7 +793,7 @@ namespace laplace::core {
           } else if (!is_silent) {
             *va_arg(ap, u8string *) = s_value;
           }
-        } else if (*p == 'u') {
+        } else if (*p == c_url) {
           /*  URL string.
            */
 
@@ -790,8 +827,7 @@ namespace laplace::core {
 
         char32_t c = get_char();
 
-        while (
-            c == ' ' || c == '\t' || c == '\r' || c == '\n') {
+        while (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
           c = get_char();
         }
 
@@ -802,9 +838,7 @@ namespace laplace::core {
 
         char32_t c = get_char();
 
-        while (c == ' ' || c == '\t' || c == '\r') {
-          c = get_char();
-        }
+        while (c == ' ' || c == '\t' || c == '\r') { c = get_char(); }
 
         if (c != '\n') {
           result  = false;
@@ -828,19 +862,19 @@ namespace laplace::core {
     this->m_stream = stream;
   }
 
-  auto parser::get_stream() const->parser::input_stream {
+  auto parser::get_stream() const -> parser::input_stream {
     return this->m_stream;
   }
 
-  auto parser::is_eof() const->bool {
+  auto parser::is_eof() const -> bool {
     return m_is_eof;
   }
 
-  auto parser::get_line() const->size_t {
+  auto parser::get_line() const -> size_t {
     return m_line;
   }
 
-  auto parser::get_column() const->size_t {
+  auto parser::get_column() const -> size_t {
     return m_column;
   }
 }
