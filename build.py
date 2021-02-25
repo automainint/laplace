@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os.sys
+import os, sys
 
 def parse_argv():
   args = dict()
