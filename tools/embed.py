@@ -2,21 +2,102 @@
 
 import os, sys
 
-data_folder = '../data/'
-folder = '../source/generated/'
+def rejoin_alias(alias):
+  result = ''
+  for s in alias.split('/'):
+    if len(result) > 0:
+      result = os.path.join(result, s)
+    else:
+      result = s
+  return result
+
+def is_code(file_name):
+  s = os.path.basename(file_name).split('.')
+  n = len(s)
+  ext = ''
+  if n > 0:
+    ext = s[n-1]
+  if ext == 'geom':
+    return True
+  if ext == 'vert':
+    return True
+  if ext == 'frag':
+    return True
+  if ext == 'comp':
+    return True
+  if ext == 'glsl':
+    return True
+  return False
+
+def get_include_file(line):
+  n = 0
+  while n < len(line) and line[n] == ' ':
+    n += 1
+  if line[n] != '#':
+    return ''
+  n += 1
+  while n < len(line) and line[n] == ' ':
+    n += 1
+  if line[n:n+7] != 'include':
+    return ''
+  n += 7
+  while n < len(line) and line[n] == ' ':
+    n += 1
+  if line[n] != '"':
+    return ''
+  n += 1
+  n0 = n
+  while n < len(line) and line[n] != '"':
+    n += 1
+  if line[n] != '"':
+    return ''
+  n1 = n
+  n += 1
+  while n < len(line) and line[n] == ' ':
+    n += 1
+  if n != len(line) and line[n] != '\n':
+    print(line + ' // 5 n=' + str(n) + ' s=' + line[n:])
+    return ''
+  return line[n0:n1]
+
+def process_file(file_name, incs = list()):
+  if file_name in incs:
+    print('Error: Recursive include in \'' + incs[len(incs)-1] + '\'.')
+    return ''
+  f = open(file_name, 'r')
+  if is_code(file_name):
+    chars = ''
+    for line in f:
+      inc_file = get_include_file(line)
+      if len(inc_file) > 0:
+        inc_path = os.path.normpath(
+          os.path.join(os.path.dirname(file_name),
+          inc_file))
+        incs.append(inc_path)
+        chars += process_file(inc_path, incs)
+        chars += '\n'
+      else:
+        chars += line
+        chars += '\n'
+    return chars
+  else:
+    return f.read()
+
+data_folder = os.path.join('..', 'data')
+folder = os.path.join('..', 'source', 'generated')
+
 os.makedirs(folder, exist_ok=True)
 
-list_file = open(data_folder + 'embed.txt', 'r')
+list_file = open(os.path.join(data_folder, 'embed.txt'), 'r')
 
-previous_stdout = sys.stdout
-sys.stdout = open(folder + 'laplace_embedded.cpp', 'w')
+out = open(os.path.join(folder, 'laplace_embedded.cpp'), 'w')
 
-print('/*  Generated with the Laplace embed files tool.\n */\n')
-print('#include <cstdint>')
-print('#include <string>')
-print('#include <vector>\n')
-print('namespace laplace::embedded {')
-print('  using std::vector, std::wstring;\n')
+out.write('/*  Generated with the Laplace embed files tool.\n */\n\n')
+out.write('#include <cstdint>\n')
+out.write('#include <string>\n')
+out.write('#include <vector>\n\n')
+out.write('namespace laplace::embedded {\n')
+out.write('  using std::vector, std::wstring;\n\n')
 
 lines = list_file.readlines()
 aliases = list()
@@ -26,7 +107,7 @@ for line in lines:
   if len(s) > 0:
     aliases.append(s)
 
-print('  std::vector<std::wstring> aliases = {')
+out.write('  std::vector<std::wstring> aliases = {\n')
 
 k = 0
 for alias in aliases:
@@ -34,33 +115,32 @@ for alias in aliases:
   k += 1
   if k < len(aliases):
     s += ','
-  print(s)
+  out.write(s + '\n')
 
-print('  };\n')
-print('  std::vector<std::vector<uint8_t>> bytes = {')
+out.write('  };\n\n')
+out.write('  std::vector<std::vector<uint8_t>> bytes = {\n')
 
 k = 0
 for alias in aliases:
   s = ''
-  with open(data_folder + alias, 'r') as f:
-    buf = bytes(f.read(), 'ascii')
-    n = 0
-    for x in buf:
-      s += format(x, '#04x')
-      n += 1
-      if n < len(buf):
-        s += ','
-        if (n % 16) == 0:
-          s += '\n            '
-        else:
-          s += ' '
+  file_name = os.path.join(data_folder, rejoin_alias(alias))
+  chars = process_file(file_name)
+  buf = bytes(chars, 'ascii')
+  n = 0
+  for x in buf:
+    s += format(x, '#04x')
+    n += 1
+    if n < len(buf):
+      s += ','
+      if (n % 16) == 0:
+        s += '\n        '
+      else:
+        s += ' '
   k += 1
   s = '    {   ' + s + ' }'
   if k < len(aliases):
     s += ','
-  print(s)
+  out.write(s + '\n')
 
-print('  };')
-print('}')
-
-sys.stdout = previous_stdout
+out.write('  };\n')
+out.write('}\n')

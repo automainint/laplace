@@ -131,9 +131,9 @@ out.write(print_list(deps, 4))
 out.write('\n)\n\n')
 
 out.write('target_link_directories(\n  ${EXE_NAME}\n')
-out.write('  PUBLIC lib\n')
+out.write('    PUBLIC lib\n')
 out.write(')\n\n')
 
 out.write('target_include_directories(\n  ${EXE_NAME}\n')
-out.write('  PUBLIC include\n')
+out.write('    PUBLIC include\n')
 out.write(')\n')
