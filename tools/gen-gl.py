@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import xml.etree.ElementTree
 import os, sys, shutil
