@@ -46,7 +46,7 @@ print('', flush=True)
 if not os.path.exists('build'):
   os.mkdir('build')
 
-os.system('cmake -B build -S .')
+os.system('cmake' + gen + ' -B build -S .')
 os.system('cmake --build build --config ' + cfg)
 
 print('')
