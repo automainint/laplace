@@ -164,7 +164,8 @@ def build_repo(build_to, generator, config, flags):
     ' --install ' + build_to +
     ' --config ' + config)
 
-  shutil.rmtree('../../tmp')
+  if os.path.exists('../../tmp'):
+    shutil.rmtree('../../tmp')
 
 args = parse_argv()
 deps = parse_deps('deps.txt')
