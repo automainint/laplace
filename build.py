@@ -8,6 +8,9 @@ def parse_argv():
   args['generator'] = ''
   args['config'] = 'Release'
 
+  if sys.platform == 'win32':
+    args['py'] = 'python'
+
   argv = sys.argv
 
   for i, arg in enumerate(argv):
