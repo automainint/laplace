@@ -26,7 +26,7 @@ if(MSVC)
 endif()
 
 if(WIN32)
-  add_compile_definitions(_CONSOLE)
+  add_compile_definitions(_CONSOLE UNICODE _UNICODE)
 
   target_link_libraries(
     Sockets INTERFACE ws2_32
@@ -37,15 +37,15 @@ add_subdirectory(source)
 
 target_link_libraries(
   ${EXE_NAME}
-    Threads::Threads Sockets gtest freetype wolfssl
+    Threads::Threads Sockets gtest benchmark freetype wolfssl
 )
 
 target_link_directories(
   ${EXE_NAME}
-  PUBLIC lib
+    PUBLIC lib
 )
 
 target_include_directories(
   ${EXE_NAME}
-  PUBLIC include
+    PUBLIC include
 )

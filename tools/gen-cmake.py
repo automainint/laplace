@@ -108,7 +108,7 @@ out.write('  )\n')
 out.write('endif()\n\n')
 
 out.write('if(WIN32)\n')
-out.write('  add_compile_definitions(_CONSOLE)\n\n')
+out.write('  add_compile_definitions(_CONSOLE UNICODE _UNICODE)\n\n')
 out.write('  target_link_libraries(\n')
 out.write('    Sockets INTERFACE ws2_32\n')
 out.write('  )\n')
