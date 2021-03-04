@@ -62,8 +62,7 @@ namespace laplace::win32 {
     void set_size(size_t frame_width, size_t frame_height);
 
     void set_fullscreen_windowed();
-    void set_fullscreen_mode(size_t frame_width,
-                             size_t frame_height,
+    void set_fullscreen_mode(size_t frame_width, size_t frame_height,
                              size_t frame_frequency);
 
     void set_input(std::shared_ptr<input> in);
@@ -113,18 +112,19 @@ namespace laplace::win32 {
     void update_display();
     void destroy_window();
     void accept_files(void *drop_data);
-    auto process(UINT message, WPARAM wparam, LPARAM lparam)
-        -> LRESULT;
+    auto process(UINT message, WPARAM wparam, LPARAM lparam) -> LRESULT;
 
-    static auto CALLBACK window_proc(HWND window_handle,
-                                     UINT message, WPARAM wparam,
-                                     LPARAM lparam) -> LRESULT;
+    static auto CALLBACK window_proc( //
+        HWND   window_handle,         //
+        UINT   message,               //
+        WPARAM wparam,                //
+        LPARAM lparam                 //
+        ) -> LRESULT;
 
     static constexpr uint32_t default_style_ex = WS_EX_ACCEPTFILES;
 
     static constexpr uint32_t default_style = WS_OVERLAPPED |
-                                              WS_SYSMENU |
-                                              WS_CAPTION |
+                                              WS_SYSMENU | WS_CAPTION |
                                               WS_MINIMIZEBOX;
 
     static constexpr uint32_t mask_fullscreen_style = ~(
@@ -134,11 +134,11 @@ namespace laplace::win32 {
     std::shared_ptr<input> m_input;
 
     std::wstring m_exe_file_name;
-    std::wstring m_class_name;
-    std::wstring m_window_name;
+    std::wstring m_class_name  = class_name;
+    std::wstring m_window_name = default_window_name;
 
-    size_t m_style_ex;
-    size_t m_style;
+    size_t m_style_ex = default_style_ex;
+    size_t m_style    = default_style;
 
     event_init      m_on_init;
     event_cleanup   m_on_cleanup;
@@ -147,33 +147,29 @@ namespace laplace::win32 {
     event_focus     m_on_focus;
     event_drop_file m_on_drop_file;
 
-    size_t m_screen_x;
-    size_t m_screen_y;
-    size_t m_screen_width;
-    size_t m_screen_height;
-    size_t m_fullscreen_width;
-    size_t m_fullscreen_height;
-    size_t m_x;
-    size_t m_y;
-    size_t m_width;
-    size_t m_height;
-    size_t m_frame_width;
-    size_t m_frame_height;
-    size_t m_frame_rate;
+    size_t m_screen_x          = 0;
+    size_t m_screen_y          = 0;
+    size_t m_screen_width      = 0;
+    size_t m_screen_height     = 0;
+    size_t m_fullscreen_width  = default_frame_width;
+    size_t m_fullscreen_height = default_frame_height;
+    size_t m_x                 = 0;
+    size_t m_y                 = 0;
+    size_t m_width             = 0;
+    size_t m_height            = 0;
+    size_t m_frame_width       = 0;
+    size_t m_frame_height      = 0;
+    size_t m_frame_rate        = default_frame_rate;
 
-    bool m_is_inited;
-    bool m_is_visible;
-    bool m_is_fullscreen;
-    bool m_has_focus;
-    bool m_has_cursor;
+    bool m_is_inited     = false;
+    bool m_is_visible    = default_is_visible;
+    bool m_is_fullscreen = default_is_fullscreen;
+    bool m_has_focus     = false;
+    bool m_has_cursor    = false;
 
-    std::mutex              m_handle_mutex;
-    std::condition_variable m_window_created;
-    std::thread             m_icon_loading;
-
-    HINSTANCE     m_module_handle;
-    native_handle m_handle;
-    native_handle m_parent;
+    HINSTANCE     m_module_handle = nullptr;
+    native_handle m_handle        = nullptr;
+    native_handle m_parent        = nullptr;
   };
 }
 

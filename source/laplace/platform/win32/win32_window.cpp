@@ -35,33 +35,13 @@ namespace laplace::win32 {
     m_handle = nullptr;
     m_parent = parent;
 
-    m_class_name = class_name;
-
     get_exe_file_name();
-    set_name(default_window_name);
-
-    m_style_ex = default_style_ex;
-    m_style    = default_style;
-
-    m_screen_x = 0;
-    m_screen_y = 0;
 
     m_screen_width  = GetSystemMetrics(SM_CXSCREEN);
     m_screen_height = GetSystemMetrics(SM_CYSCREEN);
 
-    m_fullscreen_width  = default_frame_width;
-    m_fullscreen_height = default_frame_height;
-    m_frame_rate        = default_frame_rate;
-
     set_size(default_frame_width, default_frame_height);
     set_centered();
-
-    m_is_inited     = false;
-    m_is_visible    = default_is_visible;
-    m_is_fullscreen = default_is_fullscreen;
-
-    m_has_cursor = false;
-    m_has_focus  = false;
 
     create_window();
   }
@@ -76,9 +56,6 @@ namespace laplace::win32 {
 
   window::~window() {
     destroy_window();
-
-    if (m_icon_loading.joinable())
-      m_icon_loading.join();
   }
 
   void window::on_init(event_init ev) {
@@ -340,8 +317,6 @@ namespace laplace::win32 {
       auto class_name  = m_class_name.c_str();
       auto window_name = m_window_name.c_str();
 
-      auto _ul = unique_lock(m_handle_mutex);
-
       m_handle = CreateWindowExW(
           static_cast<DWORD>(get_style_ex()), class_name,
           window_name, static_cast<DWORD>(get_style()),
@@ -357,8 +332,6 @@ namespace laplace::win32 {
         error(__FUNCTION__, "CreateWindowEx failed.");
       }
     }
-
-    m_window_created.notify_all();
   }
 
   void window::adjust_window() {

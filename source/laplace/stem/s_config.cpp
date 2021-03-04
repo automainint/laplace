@@ -20,9 +20,9 @@
 namespace laplace::stem::config {
   namespace text = format::text;
 
-  using std::string_view, std::string, std::ifstream, std::ofstream,
-      core::family, core::ref_family, core::cref_family,
-      platform::window, format::wrap;
+  using std::string_view, std::string, std::pair, std::ifstream,
+      std::ofstream, core::family, core::ref_family,
+      core::cref_family, platform::window, format::wrap;
 
   auto scan_flag(int argc, char **argv, char c) -> bool {
     for (size_t i = 0; i < argc; i++) {
@@ -51,6 +51,54 @@ namespace laplace::stem::config {
   auto scan_flag(int argc, char **argv, char c, string_view name)
       -> bool {
     return scan_flag(argc, argv, c) || scan_flag(argc, argv, name);
+  }
+
+  static constexpr size_t argv_size        = 64;
+  static constexpr size_t argv_string_size = 256;
+
+  static int   g_argc                                   = 0;
+  static char *g_argv[argv_size]                        = { 0 };
+  static char  g_argv_data[argv_size][argv_string_size] = { 0 };
+
+  auto parse_cmdline(const char *args) -> pair<int, char **> {
+    if (args) {
+      for (size_t i = 0; args[i]; i++) {
+        if (args[i] != ' ') {
+          size_t j     = i + 1;
+          bool   quote = false;
+
+          for (; args[j] && args[j] != ' ' && !quote; j++) {
+            if (args[j] == '\\' && args[j + 1]) {
+              j++;
+            } else if (args[j] == '"') {
+              quote = !quote;
+            }
+          }
+
+          if (i < j) {
+            if (g_argc >= argv_size) {
+              error(__FUNCTION__, "Too many command line arguments.");
+              break;
+            }
+
+            const auto size = j - i;
+
+            if (size >= argv_string_size) {
+              error(__FUNCTION__, "Too long command line argument.");
+              break;
+            }
+
+            memcpy(g_argv_data[g_argc], args + i, size);
+            g_argv[g_argc] = g_argv_data[g_argc];
+            g_argc++;
+          }
+
+          i += j;
+        }
+      }
+    }
+
+    return { g_argc, g_argv };
   }
 
   auto get_default() -> family {
@@ -117,6 +165,9 @@ namespace laplace::stem::config {
           } else if (strcmp(name, a_benchmarks) == 0) {
             /*  Run benchmarks. Handles by the user.
              */
+          } else if (strcmp(name, a_run) == 0) {
+            /*  Run the app. Handles by the user.
+             */
           } else if (strcmp(name, a_config) == 0) {
             arg += read_config(arg + 1, end, cfg);
           } else if (strcmp(name, a_frame) == 0) {
@@ -131,6 +182,9 @@ namespace laplace::stem::config {
                */
             } else if (tag[i] == f_benchmarks) {
               /*  Run benchmarks. Handles by the user.
+               */
+            } else if (tag[i] == f_run) {
+              /*  Run the app. Handles by the user.
                */
             } else if (tag[i] == f_config) {
               arg += read_config(arg + 1, end, cfg);
@@ -159,8 +213,7 @@ namespace laplace::stem::config {
     auto arg = argv + 1;
     auto end = argv + argc;
 
-    while (arg = process_tag(arg, end, cfg))
-      ;
+    while (arg = process_tag(arg, end, cfg)) { }
 
     return cfg;
   }

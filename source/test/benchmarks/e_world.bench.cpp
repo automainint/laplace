@@ -58,7 +58,9 @@ namespace laplace::bench {
     for (auto _ : state) {
       a->tick(100);
 
-      volatile auto value = e->get(e->index_of(sets::debug_value));
+      auto value = e->get(e->index_of(sets::debug_value));
+
+      benchmark::DoNotOptimize(value);
     }
   }
 
@@ -74,7 +76,9 @@ namespace laplace::bench {
     for (auto _ : state) {
       a->tick(100);
 
-      volatile auto value = e->get(e->index_of(sets::debug_value));
+      auto value = e->get(e->index_of(sets::debug_value));
+
+      benchmark::DoNotOptimize(value);
     }
   }
 
