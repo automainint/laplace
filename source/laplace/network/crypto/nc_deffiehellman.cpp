@@ -14,6 +14,8 @@
 #include "prime.h"
 
 namespace laplace::network::crypto {
+  using std::max;
+
   deffiehellman::deffiehellman(size_t key_size) {
     auto status = wc_InitRng(&m_random);
 
@@ -63,10 +65,10 @@ namespace laplace::network::crypto {
 
   auto deffiehellman::setup_remote_key(cref_vbyte key) -> bool {
     if (m_is_ok) {
-      vbyte    mutual_key(max_key_size);
-      uint32_t mutual_size = max_key_size;
-
       const auto priv_key = get_private_key();
+
+      uint32_t mutual_size = max(key.size(), priv_key.size());
+      vbyte    mutual_key(mutual_size);
 
       auto status = wc_DhAgree(             //
           &m_key,                           //

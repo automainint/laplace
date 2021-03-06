@@ -74,6 +74,7 @@ namespace laplace::engine::protocol::ids {
     ping_response,
 
     /*  uint16_t    id
+     *  uint64_t    last index
      *  uint64_t    time msec
      */
     server_idle,

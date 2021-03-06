@@ -24,32 +24,37 @@ namespace laplace::network {
     static constexpr bool     default_verbose                 = false;
     static constexpr uint64_t default_tick_duration_msec      = 10;
     static constexpr uint64_t default_connection_timeout_msec = 1000;
-    static constexpr uint64_t default_update_timeout_msec     = 200;
-    static constexpr uint64_t default_ping_timeout_msec       = 200;
+    static constexpr uint64_t default_update_timeout_msec     = 10;
+    static constexpr uint64_t default_ping_timeout_msec       = 100;
 
-    server()          = default;
-    virtual ~server() = default;
+    server() = default;
+    virtual ~server();
 
     void set_factory(engine::ptr_factory fac);
-    void set_verbose(bool verbose);
+    void set_verbose(bool verbose) noexcept;
 
     virtual void queue(cref_vbyte seq);
     virtual void tick(size_t delta_msec);
+
+    virtual void reconnect();
 
     [[nodiscard]] auto get_factory() const -> engine::ptr_factory;
     [[nodiscard]] auto get_solver() const -> engine::ptr_solver;
     [[nodiscard]] auto get_world() const -> engine::ptr_world;
 
-    [[nodiscard]] auto get_ping() const -> uint64_t;
+    [[nodiscard]] auto get_ping() const noexcept -> uint64_t;
 
-    [[nodiscard]] auto get_state() const -> server_state;
-    [[nodiscard]] auto get_tick_duration() -> size_t;
+    [[nodiscard]] auto get_state() const noexcept -> server_state;
+    [[nodiscard]] auto get_tick_duration() noexcept -> size_t;
 
-    [[nodiscard]] auto get_bytes_sent() const -> size_t;
-    [[nodiscard]] auto get_bytes_received() const -> size_t;
+    [[nodiscard]] auto get_bytes_sent() const noexcept -> size_t;
+    [[nodiscard]] auto get_bytes_received() const noexcept -> size_t;
+    [[nodiscard]] auto get_bytes_loss() const noexcept -> size_t;
 
-    [[nodiscard]] auto is_verbose() const -> bool;
-    [[nodiscard]] auto is_connected() const -> bool;
+    [[nodiscard]] auto is_connected() const noexcept -> bool;
+    [[nodiscard]] auto is_quit() const noexcept -> bool;
+
+    [[nodiscard]] auto is_verbose() const noexcept -> bool;
 
     template <typename prime_impact_, typename... args_>
     inline void emit(args_... args) {
@@ -65,30 +70,37 @@ namespace laplace::network {
     void setup_solver();
     void setup_world();
 
-    void set_connected(bool is_connected);
-    void set_tick_duration(uint64_t tick_duration_msec);
-    void set_random_seed(engine::seed_type seed);
-    void set_ping(uint64_t ping_msec);
-    void set_state(server_state state);
+    void set_connected(bool is_connected) noexcept;
+    void set_quit(bool is_quit) noexcept;
 
-    void reset_tick();
-    void add_bytes_sent(size_t count);
-    void add_bytes_received(size_t count);
+    void set_tick_duration(uint64_t tick_duration_msec) noexcept;
+    void set_random_seed(engine::seed_type seed);
+    void set_ping(uint64_t ping_msec) noexcept;
+    void set_state(server_state state) noexcept;
+
+    void reset_tick() noexcept;
+    void add_bytes_sent(size_t count) noexcept;
+    void add_bytes_received(size_t count) noexcept;
+    void add_bytes_loss(size_t count) noexcept;
 
     /*  Update tick timer. Returns time
      *  delta in ticks.
      */
-    [[nodiscard]] auto adjust_delta(size_t delta_msec) -> uint64_t;
+    [[nodiscard]] auto adjust_delta(size_t delta_msec) noexcept
+        -> uint64_t;
 
-    [[nodiscard]] auto get_connection_timeout() const -> uint64_t;
-    [[nodiscard]] auto get_update_timeout() const -> uint64_t;
-    [[nodiscard]] auto get_ping_timeout() const -> uint64_t;
+    [[nodiscard]] auto get_connection_timeout() const noexcept
+        -> uint64_t;
+
+    [[nodiscard]] auto get_update_timeout() const noexcept -> uint64_t;
+    [[nodiscard]] auto get_ping_timeout() const noexcept -> uint64_t;
 
     void dump(cref_vbyte bytes);
 
   private:
     bool m_verbose      = default_verbose;
     bool m_is_connected = false;
+    bool m_is_quit      = false;
 
     engine::ptr_factory m_factory;
     engine::ptr_solver  m_solver;
@@ -103,6 +115,11 @@ namespace laplace::network {
 
     size_t m_bytes_sent     = 0;
     size_t m_bytes_received = 0;
+    size_t m_bytes_loss     = 0;
+
+    size_t m_total_sent     = 0;
+    size_t m_total_received = 0;
+    size_t m_total_loss     = 0;
 
     server_state m_state = server_state::prepare;
   };

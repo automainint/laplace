@@ -59,6 +59,8 @@ namespace laplace::network {
       -> size_t {
     size_t size = 0;
 
+    m_is_connreset = false;
+
     if (m_socket != INVALID_SOCKET && (p != nullptr || count == 0)) {
       int len = sizeof m_remote;
       memset(&m_remote, 0, sizeof m_remote);
@@ -78,8 +80,7 @@ namespace laplace::network {
           verb("UDP: recvfrom failed, buffer too small (EMSGSIZE).");
           break;
         } else if (socket_error() == socket_connreset()) {
-          verb("UDP: recvfrom failed, connection was forcibly closed "
-               "by the remote host (ECONNRESET).");
+          m_is_connreset = true;
           break;
         } else if (socket_error() != socket_wouldblock()) {
           verb("UDP: recvfrom failed (code %d).", socket_error());
@@ -150,6 +151,10 @@ namespace laplace::network {
     return ::ntohs(m_remote.sin_port);
   }
 
+  auto udp_node::is_connreset() const noexcept -> bool {
+    return m_is_connreset;
+  }
+
   void udp_node::init() {
     memset(&m_remote, 0, sizeof m_remote);
 
@@ -181,11 +186,18 @@ namespace laplace::network {
             m_socket, buf + count, part, 0, addr, sizeof name);
 
         if (n != SOCKET_ERROR) {
+          if (n <= 0) {
+            verb("UDP: 0 bytes sent.");
+            break;
+          }
+
           count += n;
         } else if (socket_error() != socket_wouldblock()) {
           verb("UDP: sendto failed (code %d).", socket_error());
           break;
         } else {
+          verb("UDP: sendto blocking.");
+
           is_sync = set_mode(m_socket, sync);
 
           if (!is_sync) {

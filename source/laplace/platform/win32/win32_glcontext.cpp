@@ -85,7 +85,7 @@ namespace laplace::win32 {
       return;
     }
 
-    m_hRC = gl::wglCreateContext(m_hDC);
+    m_hRC = wglCreateContext(m_hDC);
 
     if (!m_hRC) {
       error(__FUNCTION__, "wglCreateContext failed.");
@@ -93,13 +93,13 @@ namespace laplace::win32 {
       return;
     }
 
-    if (!gl::wglMakeCurrent(m_hDC, m_hRC)) {
+    if (!wglMakeCurrent(m_hDC, m_hRC)) {
       error(__FUNCTION__, "wglMakeCurrent failed.");
       cleanup();
       return;
     }
 
-    if (gl::preload() && gl::has("WGL_ARB_create_context")) {
+    if (gl_preload() && gl::has("WGL_ARB_create_context")) {
       /*  Specify the OpenGL version.
        */
 
@@ -108,19 +108,19 @@ namespace laplace::win32 {
       gl::glGetIntegerv(gl::GL_MAJOR_VERSION, &major);
       gl::glGetIntegerv(gl::GL_MINOR_VERSION, &minor);
 
-      int32_t attrs[] = { gl::WGL_CONTEXT_MAJOR_VERSION_ARB,
+      int32_t attrs[] = { WGL_CONTEXT_MAJOR_VERSION_ARB,
                           major,
-                          gl::WGL_CONTEXT_MINOR_VERSION_ARB,
+                          WGL_CONTEXT_MINOR_VERSION_ARB,
                           minor,
-                          gl::WGL_CONTEXT_FLAGS_ARB,
+                          WGL_CONTEXT_FLAGS_ARB,
                           0,
                           0 };
 
       if (m_is_forward_compatible) {
-        attrs[5] = gl::WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+        attrs[5] = WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
       }
 
-      HGLRC hRC = gl::wglCreateContextAttribsARB(
+      HGLRC hRC = wglCreateContextAttribsARB(
           m_hDC, nullptr, attrs);
 
       if (!hRC) {
@@ -130,12 +130,12 @@ namespace laplace::win32 {
         return;
       }
 
-      gl::wglMakeCurrent(nullptr, nullptr);
-      gl::wglDeleteContext(m_hRC);
+      wglMakeCurrent(nullptr, nullptr);
+      wglDeleteContext(m_hRC);
 
       m_hRC = hRC;
 
-      if (!gl::wglMakeCurrent(m_hDC, m_hRC)) {
+      if (!wglMakeCurrent(m_hDC, m_hRC)) {
         error(__FUNCTION__, "wglMakeCurrent failed.");
         cleanup();
         return;
@@ -164,8 +164,8 @@ namespace laplace::win32 {
   void glcontext::cleanup() {
     if (m_hDC) {
       if (m_hRC) {
-        gl::wglMakeCurrent(m_hDC, nullptr);
-        gl::wglDeleteContext(m_hRC);
+        wglMakeCurrent(m_hDC, nullptr);
+        wglDeleteContext(m_hRC);
       }
 
       if (m_window && m_window->get_native_handle()) {

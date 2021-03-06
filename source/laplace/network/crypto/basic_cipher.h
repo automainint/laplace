@@ -18,8 +18,7 @@
 namespace laplace::network::crypto {
   class basic_cipher {
   public:
-    static constexpr bool   default_verbose = false;
-    static constexpr size_t max_key_size    = 1024;
+    static constexpr bool default_verbose = false;
 
     basic_cipher(const basic_cipher &) = delete;
     basic_cipher(basic_cipher &&)      = delete;
@@ -30,6 +29,7 @@ namespace laplace::network::crypto {
     virtual ~basic_cipher() = default;
 
     void set_remote_key(cref_vbyte key);
+    void set_verbose(bool is_verbose) noexcept;
 
     [[nodiscard]] virtual auto encrypt(cref_vbyte bytes) -> vbyte;
     [[nodiscard]] virtual auto decrypt(cref_vbyte bytes) -> vbyte;
@@ -54,18 +54,12 @@ namespace laplace::network::crypto {
     [[nodiscard]] auto get_private_key() const noexcept -> cref_vbyte;
 
   private:
-    using key_bytes = std::array<uint8_t, max_key_size>;
-
     bool m_is_ready   = false;
     bool m_is_verbose = default_verbose;
 
-    size_t m_private_key_size = 0;
-    size_t m_public_key_size  = 0;
-    size_t m_mutual_key_size  = 0;
-
-    key_bytes m_private_key;
-    key_bytes m_public_key;
-    key_bytes m_mutual_key;
+    vbyte m_private_key;
+    vbyte m_public_key;
+    vbyte m_mutual_key;
   };
 }
 

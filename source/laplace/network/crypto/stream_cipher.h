@@ -53,11 +53,6 @@ namespace laplace::network::crypto {
       n_pack_data      = 16
     };
 
-    using sum_type = uint64_t;
-
-    [[nodiscard]] auto check_sum( //
-        cref_vbyte bytes) -> sum_type;
-
     [[nodiscard]] auto data_pack( //
         cref_vbyte bytes) -> vbyte;
 

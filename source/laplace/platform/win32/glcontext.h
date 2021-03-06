@@ -17,7 +17,7 @@
 
 #include "../events.h"
 #include "wgl.h"
-#include "windef.h"
+#include "win.predef.h"
 #include <memory>
 
 namespace laplace::win32 {

@@ -18,10 +18,13 @@
 namespace laplace::engine::protocol {
   class server_idle final : public prime_impact {
   public:
-    enum encoding_offset : size_t { n_idle_time = 2 };
+    enum encoding_offset : size_t {
+      n_idle_index = 2,
+      n_idle_time  = 10
+    };
 
     static constexpr uint16_t id   = ids::server_idle;
-    static constexpr size_t   size = 10;
+    static constexpr size_t   size = 18;
 
     ~server_idle() final = default;
 
@@ -29,9 +32,14 @@ namespace laplace::engine::protocol {
       set_encoded_size(size);
     }
 
-    constexpr server_idle(uint64_t time_msec) {
+    constexpr server_idle(uint64_t index, uint64_t time_msec) {
+      set_order({ index });
       set_time(time_msec);
       set_encoded_size(size);
+    }
+
+    static constexpr auto get_idle_index(cref_vbyte seq) {
+      return rd<uint64_t>(seq, n_idle_index);
     }
 
     static constexpr auto get_idle_time(cref_vbyte seq) {
@@ -39,7 +47,7 @@ namespace laplace::engine::protocol {
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
-      write_bytes(bytes, id, get_time64());
+      write_bytes(bytes, id, get_index64(), get_time64());
     }
 
     static constexpr auto scan(cref_vbyte seq) -> bool {
@@ -47,7 +55,7 @@ namespace laplace::engine::protocol {
     }
 
     static inline auto decode(cref_vbyte seq) {
-      return server_idle { get_idle_time(seq) };
+      return server_idle { get_idle_index(seq), get_idle_time(seq) };
     }
   };
 }

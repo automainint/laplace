@@ -28,7 +28,6 @@ namespace laplace::stem::config {
    *      --bench
    *
    *  Run the app:
-   *
    *      -R
    *      --run
    *

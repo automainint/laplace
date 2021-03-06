@@ -10,6 +10,7 @@
  *  the MIT License for more details.
  */
 
+#include "../transfer.h"
 #include "stream_cipher.h"
 
 namespace laplace::network::crypto {
@@ -72,26 +73,9 @@ namespace laplace::network::crypto {
     return true;
   }
 
-  auto stream_cipher::check_sum(cref_vbyte bytes) -> sum_type {
-    sum_type sum = 0;
-
-    for (size_t i = 0; i < bytes.size(); i += sizeof sum) {
-      sum_type z = 0;
-
-      memcpy(               //
-          &z,               //
-          bytes.data() + i, //
-          min(sizeof z, bytes.size() - i));
-
-      sum ^= z;
-    }
-
-    return sum;
-  }
-
   auto stream_cipher::data_pack(cref_vbyte bytes) -> vbyte {
     const uint64_t size = bytes.size();
-    const auto     sum  = check_sum(bytes);
+    const auto     sum  = transfer::check_sum(bytes);
 
     vbyte result(n_pack_data + bytes.size());
     memcpy(result.data() + n_pack_size, &size, sizeof size);
@@ -108,7 +92,7 @@ namespace laplace::network::crypto {
     }
 
     uint64_t size = 0;
-    sum_type sum  = 0;
+    uint64_t sum  = 0;
 
     memcpy(&size, bytes.data() + n_pack_size, sizeof size);
     memcpy(&sum, bytes.data() + n_pack_check_sum, sizeof sum);
@@ -118,7 +102,9 @@ namespace laplace::network::crypto {
       return {};
     }
 
-    if (check_sum({ bytes.data() + n_pack_data, size }) != sum) {
+    if (transfer::check_sum({ bytes.data() + n_pack_data, size }) !=
+        sum) {
+
       verb("Stream cipher: WRONG CHECK SUM");
       return {};
     }
@@ -137,11 +123,16 @@ namespace laplace::network::crypto {
       return false;
     }
 
-    sum_type sum = 0;
+    uint64_t sum = 0;
     memcpy(&sum, bytes.data() + n_chunk_check_sum, sizeof sum);
 
-    return check_sum({ bytes.data() + n_chunk_data,
-                       bytes.size() - n_chunk_data }) == sum;
+    if (transfer::check_sum({ bytes.data() + n_chunk_data,
+                              bytes.size() - n_chunk_data }) != sum) {
+      // verb_error(__FUNCTION__, "Wrong check sum.");
+      return false;
+    }
+
+    return true;
   }
 
   auto stream_cipher::chunk_pack( //
@@ -151,7 +142,7 @@ namespace laplace::network::crypto {
 
     const uint64_t offset64 = offset;
     const uint64_t size     = bytes.size();
-    const uint64_t sum      = check_sum(bytes);
+    const uint64_t sum      = transfer::check_sum(bytes);
 
     memcpy(chunk.data() + n_chunk_offset, &offset64, sizeof offset64);
     memcpy(chunk.data() + n_chunk_check_sum, &sum, sizeof sum);

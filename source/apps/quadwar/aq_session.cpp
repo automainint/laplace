@@ -19,14 +19,18 @@
 #include "object/root.h"
 #include "protocol/qw_player_name.h"
 #include "session.h"
+#include <filesystem>
+#include <fstream>
+#include <thread>
 
 namespace quadwar_app {
-  namespace access = engine::access;
+  namespace access      = engine::access;
+  namespace this_thread = std::this_thread;
 
   using std::find, std::make_shared, std::string, std::string_view,
-      std::u8string_view, network::host, network::remote,
-      protocol::qw_player_name, object::root, object::player,
-      engine::id_undefined;
+      std::u8string_view, std::ofstream, std::ifstream, network::host,
+      network::remote, protocol::qw_player_name, object::root,
+      object::player, engine::id_undefined;
 
   session::session() {
     m_lobby.on_abort([=] {
@@ -44,6 +48,12 @@ namespace quadwar_app {
     });
   }
 
+  session::~session() {
+    if (m_host_info_saved) {
+      std::filesystem::remove(host_info_file);
+    }
+  }
+
   void session::on_done(session::event_done ev) {
     m_on_done = ev;
   }
@@ -59,9 +69,18 @@ namespace quadwar_app {
       if (m_server->is_connected()) {
         update_lobby();
 
-      } else {
-        if (m_on_done)
+      } else if (m_server->is_quit()) {
+        if (m_on_done) {
           m_on_done();
+        }
+      } else {
+        this_thread::yield();
+
+        verb("Session: Trying to reconnect...");
+
+        m_server->reconnect();
+
+        m_server->emit<qw_player_name>(m_player_name);
       }
     }
   }
@@ -118,7 +137,7 @@ namespace quadwar_app {
 
     m_world = server->get_world();
 
-    // server->set_verbose(true);
+    server->set_verbose(true);
     server->set_allowed_commands(allowed_commands);
     server->make_factory<qw_factory>();
 
@@ -130,6 +149,8 @@ namespace quadwar_app {
 
     server->emit<protocol::slot_create>(id_actor);
     server->emit<qw_player_name>(id_actor, m_player_name);
+
+    save_host_info(server->get_port());
 
     m_lobby.show_info(
         to_u8string(u8"Game host (port %hu)", server->get_port()));
@@ -144,7 +165,7 @@ namespace quadwar_app {
 
     m_world = server->get_world();
 
-    // server->set_verbose(true);
+    server->set_verbose(true);
     server->make_factory<qw_factory>();
 
     server->connect(m_server_ip, m_server_port);
@@ -155,6 +176,24 @@ namespace quadwar_app {
     m_lobby.set_start_enabled(false);
 
     m_server = server;
+  }
+
+  auto session::get_host_address(string_view default_address)
+      -> string {
+
+    auto f = ifstream(session::host_info_file);
+
+    if (f) {
+      auto port = network::any_port;
+      f >> port;
+
+      if (f) {
+        verb("Host address found: %s:%hu", network::localhost, port);
+        return to_string("%s:%hu", network::localhost, port);
+      }
+    }
+
+    return string(default_address);
   }
 
   void session::update_lobby() {
@@ -199,6 +238,15 @@ namespace quadwar_app {
 
     for (size_t i = count; i < m_lobby.get_slot_count(); i++) {
       m_lobby.remove_slot(i);
+    }
+  }
+
+  void session::save_host_info(uint16_t port) {
+    auto f = ofstream(host_info_file);
+
+    if (f) {
+      f << port;
+      m_host_info_saved = true;
     }
   }
 }

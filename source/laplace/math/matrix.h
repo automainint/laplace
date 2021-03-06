@@ -19,10 +19,14 @@ namespace laplace::math {
   template <size_t rows_, size_t cols_, typename type_>
   class matrix : public basic_vector<rows_ * cols_, type_> {
   public:
-    using basic_vector<rows_ * cols_, type_>::basic_vector;
-
     static constexpr auto row_count    = rows_;
     static constexpr auto column_count = cols_;
+
+    constexpr matrix(std::initializer_list<type_> values) noexcept;
+
+    constexpr explicit matrix(const type_ value) noexcept;
+
+    using basic_vector<rows_ * cols_, type_>::basic_vector;
   };
 }
 

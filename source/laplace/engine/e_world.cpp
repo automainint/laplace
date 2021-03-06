@@ -162,6 +162,7 @@ namespace laplace::engine {
     m_entities.clear();
     m_dynamic_ids.clear();
 
+    m_next_id = 0;
     m_desync = false;
   }
 
@@ -231,8 +232,12 @@ namespace laplace::engine {
           _ul.lock();
         }
 
-        for (auto &e : m_entities) { e->adjust(); }
+        for (auto &e : m_entities) {
+          if (e)
+            e->adjust();
+        }
       }
+
     } else {
       m_scheduler.schedule(delta);
     }
@@ -338,7 +343,7 @@ namespace laplace::engine {
 
   void world::locked_desync() {
     m_desync = true;
-    verb("DESYNC");
+    verb(" :: DESYNC");
   }
 
   void world::locked_add_dynamic(size_t id) {
@@ -412,7 +417,13 @@ namespace laplace::engine {
   auto world::next_entity() -> ptr_entity {
     auto _ul = unique_lock(m_lock);
 
-    return m_index < m_entities.size() ? m_entities[m_index++]
-                                       : ptr_entity();
+    while (m_index < m_entities.size()) {
+      auto &en = m_entities[m_index++];
+
+      if (en)
+        return en;
+    }
+
+    return {};
   }
 }

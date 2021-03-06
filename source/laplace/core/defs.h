@@ -25,13 +25,22 @@
 #include <vector>
 
 namespace laplace {
+  template <typename type_>
+  using static_vector = std::vector<type_>;
+
+  /*  TODO
+   *  Small vector implementation.
+   */
+  template <typename type_, typename alloc_ = std::allocator<type_>>
+  using small_vector = std::vector<type_, alloc_>;
+
   using ref_uint   = size_t &;
   using ref_char32 = char32_t &;
 
   using ref_string  = std::string &;
   using ref_wstring = std::wstring &;
 
-  using vbyte   = std::vector<uint8_t>;
+  using vbyte   = small_vector<uint8_t>;
   using vuint   = std::vector<size_t>;
   using vuint16 = std::vector<uint16_t>;
   using vuint32 = std::vector<uint32_t>;
@@ -49,7 +58,7 @@ namespace laplace {
   using ref_istream = std::istream &;
   using ref_ostream = std::ostream &;
 
-  inline void _unreachable() {
+  [[noreturn]] inline void _unreachable() {
 #if defined(_MSC_VER)
     __assume(0);
 #elif defined(__GNUC__) || defined(__clang__)

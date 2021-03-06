@@ -114,8 +114,14 @@ namespace laplace::test {
     for (size_t i = 0; i < test_count; i++) {
       dh_rabbit alice, bob;
 
+      EXPECT_NE(alice.get_public_key().size(), 0);
+      EXPECT_NE(bob.get_public_key().size(), 0);
+
       alice.set_remote_key(bob.get_public_key());
       bob.set_remote_key(alice.get_public_key());
+
+      EXPECT_NE(alice.get_mutual_key().size(), 0);
+      EXPECT_NE(bob.get_mutual_key().size(), 0);
 
       const auto akey = alice.get_mutual_key();
       const auto bkey = bob.get_mutual_key();
@@ -141,6 +147,10 @@ namespace laplace::test {
       vbyte enc0 = alice.encrypt(msg0);
       vbyte enc1 = alice.encrypt(msg1);
       vbyte enc2 = alice.encrypt(msg2);
+
+      EXPECT_FALSE(msg0 == enc0);
+      EXPECT_FALSE(msg1 == enc1);
+      EXPECT_FALSE(msg2 == enc2);
 
       EXPECT_TRUE(msg0 == bob.decrypt(enc0));
       EXPECT_TRUE(msg1 == bob.decrypt(enc1));

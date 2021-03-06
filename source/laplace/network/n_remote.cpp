@@ -33,36 +33,68 @@ namespace laplace::network {
     set_master(false);
   }
 
-  void remote::connect(string_view host_address, uint16_t host_port,
-                       uint16_t client_port) {
+  void remote::reconnect() {
     cleanup();
+
+    if (auto wor = get_world(); wor) {
+      wor->clear();
+    }
+
+    if (auto sol = get_solver(); sol) {
+      sol->clear_history();
+    }
+
+    set_state(server_state::prepare);
     set_connected(true);
 
     m_node = make_unique<udp_node>();
-    m_node->bind(client_port);
+    m_node->bind(m_client_port);
 
-    add_slot(host_address, host_port);
+    auto slot = add_slot(m_host_address, m_host_port);
 
-    m_slots[0].cipher = make_unique<dh_rabbit>();
+    m_slots[slot].tran.setup_cipher<dh_rabbit>();
 
-    if (m_slots[0].cipher && m_slots[0].cipher->is_ready()) {
-      send_event(encode<public_key>( //
-          ids::cipher_dh_rabbit,     //
-          m_slots[0].cipher->get_public_key()));
-    }
+    const auto key = m_slots[slot].tran.get_public_key();
+
+    send_event(encode<public_key>(ids::cipher_dh_rabbit, key));
 
     emit<client_enter>();
+  }
+
+  void remote::connect(string_view host_address, uint16_t host_port,
+                       uint16_t client_port) {
+
+    m_host_address = host_address;
+    m_host_port    = host_port;
+    m_client_port  = client_port;
+
+    reconnect();
   }
 
   auto remote::perform_control(size_t slot, cref_vbyte seq) -> bool {
 
     if (server_idle::scan(seq)) {
+      const auto &qu          = m_slots[slot].queue;
+      const auto  index       = server_idle::get_idle_index(seq);
+      const auto  event_count = qu.index + qu.events.size();
+
+      if (index > event_count) {
+        vuint events;
+
+        for (size_t n = event_count; n < index; n++) {
+          events.emplace_back(n);
+        }
+
+        send_event_to(slot, encode<request_events>(events));
+      }
+
       update_time_limit(server_idle::get_idle_time(seq));
       return true;
     }
 
     if (server_quit::scan(seq)) {
       set_connected(false);
+      set_quit(true);
       m_node.reset();
       return true;
     }

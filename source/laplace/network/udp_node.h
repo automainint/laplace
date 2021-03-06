@@ -43,6 +43,8 @@ namespace laplace::network {
     [[nodiscard]] auto get_remote_address() const -> std::string;
     [[nodiscard]] auto get_remote_port() const -> uint16_t;
 
+    [[nodiscard]] auto is_connreset() const noexcept -> bool;
+
   private:
     void init();
 
@@ -53,6 +55,7 @@ namespace laplace::network {
     SOCKET      m_socket;
     uint16_t    m_port = 0;
     sockaddr_in m_remote;
+    bool        m_is_connreset = false;
   };
 
   using ptr_udp_node = std::shared_ptr<udp_node>;

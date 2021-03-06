@@ -42,9 +42,10 @@ namespace laplace {
   [[nodiscard]] constexpr auto hex_to_int(char32_t x) -> int;
 
   [[nodiscard]] auto as_ascii_string(std::u8string_view s)
-      -> std::string;
+      -> std::string_view;
 
-  [[nodiscard]] auto as_u8string(std::string_view s) -> std::u8string;
+  [[nodiscard]] auto as_u8string(std::string_view s)
+      -> std::u8string_view;
 
   [[nodiscard]] auto to_string(std::wstring_view s) -> std::string;
 

@@ -1,81 +1,83 @@
-#pragma once
+/*  laplace/render/context.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
 
-#include "projection.h"
-#include "scene.h"
+#ifndef laplace_render_context_h
+#define laplace_render_context_h
+
 #include "../graphics/tridi/mesh_shader.h"
-#include "../graphics/tridi/uvmap_shader.h"
-#include "../graphics/tridi/shadow_shader.h"
 #include "../graphics/tridi/reflect_shader.h"
 #include "../graphics/tridi/refract_shader.h"
-#include <memory>
+#include "../graphics/tridi/shadow_shader.h"
+#include "../graphics/tridi/uvmap_shader.h"
+#include "projection.h"
+#include "scene.h"
 #include <array>
+#include <memory>
 #include <string>
 
-namespace laplace::render
-{
-    enum class mode : uint8_t
-    {
-        disabled,
-        low,
-        high,
-        ultra
+namespace laplace::render {
+  enum class mode : uint8_t { disabled, low, high, ultra };
+
+  struct settings {
+    mode blending;
+    mode lighting;
+    mode shadows;
+    mode volumes;
+    mode reflection;
+    mode refraction;
+  };
+
+  using cref_settings = const settings &;
+
+  class context {
+  public:
+    using ptr_context = std::shared_ptr<context>;
+
+    static constexpr settings default_settings = {
+      mode::disabled, mode::disabled, mode::disabled,
+      mode::disabled, mode::disabled, mode::disabled
     };
 
-    struct settings
-    {
-        mode blending;
-        mode lighting;
-        mode shadows;
-        mode volumes;
-        mode reflection;
-        mode refraction;
-    };
+    void setup(graphics::tridi::ptr_mesh_shader shader);
+    void setup(graphics::tridi::ptr_uvmap_shader shader);
+    void setup(graphics::tridi::ptr_shadow_shader shader);
+    void setup(graphics::tridi::ptr_reflect_shader shader);
+    void setup(graphics::tridi::ptr_refract_shader shader);
 
-    using cref_settings = const settings &;
+    void set_settings(cref_settings sets);
+    void set_projection(cref_projection proj);
+    void set_scene(ptr_scene sce);
 
-    class context
-    {
-    public:
-        using ptr_context = std::shared_ptr<context>;
+    void render();
 
-        static constexpr settings default_settings = {
-            mode::disabled,
-            mode::disabled,
-            mode::disabled,
-            mode::disabled,
-            mode::disabled,
-            mode::disabled
-        };
+    static auto get_default() -> ptr_context;
 
-        void setup(graphics::tridi::ptr_mesh_shader shader);
-        void setup(graphics::tridi::ptr_uvmap_shader shader);
-        void setup(graphics::tridi::ptr_shadow_shader shader);
-        void setup(graphics::tridi::ptr_reflect_shader shader);
-        void setup(graphics::tridi::ptr_refract_shader shader);
+  private:
+    static std::weak_ptr<context> m_default;
 
-        void set_settings(cref_settings sets);
-        void set_projection(cref_projection proj);
-        void set_scene(ptr_scene sce);
+    settings   m_settings = default_settings;
+    projection m_projection;
+    ptr_scene  m_scene;
 
-        void render();
+    graphics::tridi::ptr_mesh_shader    m_mesh_shader;
+    graphics::tridi::ptr_uvmap_shader   m_uvmap_shader;
+    graphics::tridi::ptr_shadow_shader  m_shadow_shader;
+    graphics::tridi::ptr_reflect_shader m_reflect_shader;
+    graphics::tridi::ptr_refract_shader m_refract_shader;
+  };
 
-        static auto get_default() -> ptr_context;
-
-    private:
-        static std::weak_ptr<context> m_default;
-
-        settings    m_settings = default_settings;
-        projection  m_projection;
-        ptr_scene   m_scene;
-
-        graphics::tridi::ptr_mesh_shader    m_mesh_shader;
-        graphics::tridi::ptr_uvmap_shader   m_uvmap_shader;
-        graphics::tridi::ptr_shadow_shader  m_shadow_shader;
-        graphics::tridi::ptr_reflect_shader m_reflect_shader;
-        graphics::tridi::ptr_refract_shader m_refract_shader;
-    };
-
-    using ref_context = context &;
-    using cref_context = const context &;
-    using ptr_context = context::ptr_context;
+  using ref_context  = context &;
+  using cref_context = const context &;
+  using ptr_context  = context::ptr_context;
 }
+
+#endif

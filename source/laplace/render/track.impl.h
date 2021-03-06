@@ -46,8 +46,8 @@ namespace laplace::render {
     };
 
     auto solve_direct = [this](timeval t) -> vecval {
-      auto i = std::lower_bound(this->m_pieces.begin() + 1,
-                                this->m_pieces.end(), t, op);
+      auto i = std::lower_bound(
+          this->m_pieces.begin() + 1, this->m_pieces.end(), t, op);
 
       auto index = (i - this->m_pieces.begin()) - 1;
 
@@ -56,8 +56,7 @@ namespace laplace::render {
 
     t = clamp_time(t);
 
-    return this->m_is_uniform ? solve_uniform(t)
-                              : solve_direct(t);
+    return this->m_is_uniform ? solve_uniform(t) : solve_direct(t);
   }
 
   template <typename vecval>
@@ -111,8 +110,7 @@ namespace laplace::render {
 
         if (p[0] + numeric_limits<realmax_t>::epsilon() < t) {
           param += delta;
-        } else if (p[0] - numeric_limits<realmax_t>::epsilon() >
-                   t) {
+        } else if (p[0] - numeric_limits<realmax_t>::epsilon() > t) {
           param -= delta;
         } else {
           break;
@@ -158,7 +156,7 @@ namespace laplace::render {
             t1 = curve.spline.solve(t + dt)[1];
 
             auto p = piece {
-              .time  = math::round<timeval>(curve.time + duration * t0),
+              .time = math::round<timeval>(curve.time + duration * t0),
               .begin = v0,
               .end   = math::lerp(curve.begin, curve.end, t1)
             };
@@ -170,9 +168,9 @@ namespace laplace::render {
         }
       }
 
-      v.emplace_back(piece {
-          splineval::flat(), m_pieces.back().time,
-          m_pieces.back().begin, m_pieces.back().begin });
+      v.emplace_back(piece { splineval::flat(), m_pieces.back().time,
+                             m_pieces.back().begin,
+                             m_pieces.back().begin });
 
       for (size_t i = 1; i < v.size();) {
         if (v[i - 1].time == v[i].time) {
@@ -188,13 +186,12 @@ namespace laplace::render {
         auto begin = v[0].begin;
         auto end   = begin;
 
-        for (timeval time = delta; time < v.back().time;
-             time += delta) {
+        for (timeval time = delta; time < v.back().time; time += delta) {
           while (i != v.end() && i->time < time) { i++; }
 
           if (i != v.begin() && i != v.end()) {
             auto      i0 = i - 1;
-            realmax_t t = static_cast<realmax_t>(time - i0->time) /
+            realmax_t t  = static_cast<realmax_t>(time - i0->time) /
                           (i->time - i0->time);
 
             end = math::lerp(
@@ -205,8 +202,8 @@ namespace laplace::render {
             begin = i->begin;
           }
 
-          result.m_pieces.emplace_back(piece {
-              splineval::flat(), time - delta, begin, end });
+          result.m_pieces.emplace_back(
+              piece { splineval::flat(), time - delta, begin, end });
 
           begin = end;
           j0    = i;
@@ -228,8 +225,8 @@ namespace laplace::render {
   }
 
   template <typename vecval>
-  inline void track<vecval>::set_piece(
-      size_t index, track<vecval>::cref_piece p) {
+  inline void track<vecval>::set_piece(size_t index,
+                                       track<vecval>::cref_piece p) {
     this->m_pieces[index] = p;
   }
 
@@ -246,8 +243,7 @@ namespace laplace::render {
   }
 
   template <typename vecval>
-  inline auto track<vecval>::operator()(timeval t) const
-      -> vecval {
+  inline auto track<vecval>::operator()(timeval t) const -> vecval {
     return this->solve(t);
   }
 

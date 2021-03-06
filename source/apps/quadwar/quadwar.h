@@ -27,9 +27,12 @@ namespace quadwar_app {
   static constexpr auto k_player_count   = "player_count";
   static constexpr auto k_unit_count     = "unit_count";
 
+  static constexpr auto default_player_names = //
+      { u8"Newbye",   u8"Alice",    u8"Bob",    u8"Gosu",
+        u8"Decartes", u8"Socrates", u8"Spinosa" };
+
   static constexpr auto default_server_address = "127.0.0.1";
   static constexpr auto default_game_name      = "Unknown";
-  static constexpr auto default_player_name    = "Newbye";
   static constexpr auto default_player_count   = 4u;
   static constexpr auto default_unit_count     = 8u;
   static constexpr auto default_map_size       = 16;
@@ -49,6 +52,7 @@ namespace quadwar_app {
     void adjust_layout(int width, int height) override;
 
   private:
+    static auto get_player_name() -> std::u8string_view;
     static auto get_config() -> core::family;
 
     ui::ptr_mainmenu m_mainmenu;

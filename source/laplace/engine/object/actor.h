@@ -22,7 +22,8 @@ namespace laplace::engine::object {
     ~actor() override = default;
 
     static void set_local(access::entity en, bool is_local);
-    static auto is_local(access::entity en) -> bool;
+
+    [[nodiscard]] static auto is_local(access::entity en) -> bool;
 
   protected:
     actor(dummy_tag);

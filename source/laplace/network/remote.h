@@ -23,6 +23,8 @@ namespace laplace::network {
     remote();
     ~remote() final = default;
 
+    void reconnect() override;
+
     void connect(                      //
         std::string_view host_address, //
         uint16_t         host_port,    //
@@ -30,6 +32,10 @@ namespace laplace::network {
 
   private:
     auto perform_control(size_t slot, cref_vbyte seq) -> bool override;
+
+    std::string m_host_address = localhost;
+    uint16_t    m_host_port    = any_port;
+    uint16_t    m_client_port  = any_port;
   };
 }
 

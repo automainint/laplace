@@ -15,7 +15,6 @@
 
 #include "basic_impact.h"
 #include "world.h"
-#include <chrono>
 
 namespace laplace::engine {
   /*  World live execution solver.

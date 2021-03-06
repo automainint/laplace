@@ -55,20 +55,23 @@ namespace laplace {
     std::u8string result;
     size_t        offset = 0;
 
-    for (auto &c : s) { utf8_encode(c, result, offset); }
+    for (auto &c : s) {
+      if (!utf8_encode(c, result, offset)) {
+        error(__FUNCTION__, "Unable to encode UTF-8 string.");
+        break;
+      }
+    }
 
     return result;
   }
 
   template <>
-  inline auto to_u8string<>(std::string_view s)
-      -> std::u8string {
+  inline auto to_u8string<>(std::string_view s) -> std::u8string {
     return std::u8string(s.begin(), s.end());
   }
 
   template <>
-  inline auto to_u8string<>(std::u8string_view s)
-      -> std::u8string {
+  inline auto to_u8string<>(std::u8string_view s) -> std::u8string {
     return std::u8string(s.begin(), s.end());
   }
 
@@ -87,8 +90,7 @@ namespace laplace {
   }
 
   template <typename type>
-  constexpr void wr(std::span<uint8_t> seq, size_t offset,
-                    type value) {
+  constexpr void wr(std::span<uint8_t> seq, size_t offset, type value) {
     if (offset + sizeof value <= seq.size()) {
       auto dst = seq.data() + offset;
       auto src = &value;
@@ -126,31 +128,26 @@ namespace laplace {
   }
 
   template <typename char_type, typename... args_>
-  constexpr auto
-  byte_count(std::basic_string_view<char_type> arg0,
-             args_... args) -> size_t {
-    return sizeof(char_type) * arg0.size() +
-           byte_count(args...);
+  constexpr auto byte_count(std::basic_string_view<char_type> arg0,
+                            args_... args) -> size_t {
+    return sizeof(char_type) * arg0.size() + byte_count(args...);
   }
 
   template <typename elem_type, typename... args_>
   constexpr auto byte_count(std::span<const elem_type> arg0,
                             args_... args) -> size_t {
-    return sizeof(elem_type) * arg0.size() +
-           byte_count(args...);
+    return sizeof(elem_type) * arg0.size() + byte_count(args...);
   }
 
   template <trivial char_type_>
-  constexpr void
-  write_bytes(std::span<uint8_t>                 data,
-              std::basic_string_view<char_type_> arg0) {
+  constexpr void write_bytes(std::span<uint8_t>                 data,
+                             std::basic_string_view<char_type_> arg0) {
     const auto size = sizeof(char_type_) * arg0.size();
 
     if (data.size() >= size) {
       std::memcpy(data.data(), arg0.data(), size);
     } else {
-      error(__FUNCTION__,
-            "Invalid size %zd. %zd bytes required.",
+      error(__FUNCTION__, "Invalid size %zd. %zd bytes required.",
             data.size(), size);
     }
   }
@@ -163,8 +160,7 @@ namespace laplace {
     if (data.size() >= size) {
       std::memcpy(data.data(), arg0.data(), size);
     } else {
-      error(__FUNCTION__,
-            "Invalid size %zd. %zd bytes required.",
+      error(__FUNCTION__, "Invalid size %zd. %zd bytes required.",
             data.size(), size);
     }
   }
@@ -177,22 +173,20 @@ namespace laplace {
     if (data.size() >= size) {
       std::memcpy(data.data(), &arg0, size);
     } else {
-      error(__FUNCTION__,
-            "Invalid size %zd. %zd bytes required.",
+      error(__FUNCTION__, "Invalid size %zd. %zd bytes required.",
             data.size(), size);
     }
   }
 
   template <typename arg0_, typename... args_>
-  constexpr void write_bytes(std::span<uint8_t> data,
-                             arg0_ arg0, args_... args) {
+  constexpr void write_bytes(std::span<uint8_t> data, arg0_ arg0,
+                             args_... args) {
     const auto size = byte_count(arg0);
 
     write_bytes(data, arg0);
 
     if (data.size() >= size) {
-      write_bytes(std::span<uint8_t> { data.begin() + size,
-                                       data.end() },
+      write_bytes(std::span<uint8_t> { data.begin() + size, data.end() },
                   args...);
     } else {
       error(__FUNCTION__, "Invalid size %zd.", data.size());

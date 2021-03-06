@@ -10,11 +10,24 @@
  *  the MIT License for more details.
  */
 
+#include "../../laplace/core/utils.h"
 #include "../../laplace/stem/config.h"
 #include "quadwar.h"
+#include <fstream>
+#include <random>
 
 namespace quadwar_app {
-  using std::make_shared, core::family;
+  using std::make_shared, core::family, std::string,
+      std::u8string_view;
+
+  auto quadwar::get_player_name() -> u8string_view {
+    auto dev  = std::random_device {};
+    auto rng  = std::default_random_engine(dev());
+    auto dist = std::uniform_int_distribution<size_t>(
+        0u, default_player_names.size() - 1);
+
+    return default_player_names.begin()[dist(rng)];
+  }
 
   auto quadwar::get_config() -> family {
     using namespace stem::config;
@@ -24,7 +37,7 @@ namespace quadwar_app {
     cfg[k_caption]        = caption;
     cfg[k_server_address] = default_server_address;
     cfg[k_game_name]      = default_game_name;
-    cfg[k_player_name]    = default_player_name;
+    cfg[k_player_name]    = get_player_name();
     cfg[k_map_size]       = default_map_size;
     cfg[k_player_count]   = default_player_count;
     cfg[k_unit_count]     = default_unit_count;

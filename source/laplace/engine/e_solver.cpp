@@ -14,8 +14,6 @@
 #include <algorithm>
 
 namespace laplace::engine {
-  using clock = std::chrono::system_clock;
-
   void solver::set_world(ptr_world w) {
     if (m_world != w) {
       m_world = w;
@@ -125,8 +123,10 @@ namespace laplace::engine {
   }
 
   auto solver::generate_seed() -> seed_type {
-    return static_cast<seed_type>(
-        clock::now().time_since_epoch().count());
+    std::random_device                       dev;
+    std::uniform_int_distribution<seed_type> dist;
+
+    return dist(dev);
   }
 
   void solver::adjust(uint64_t time) {

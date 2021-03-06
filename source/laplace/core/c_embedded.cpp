@@ -16,8 +16,8 @@
 
 namespace laplace::embedded {
   using std::lower_bound, std::sort, std::shared_lock,
-      std::unique_lock, std::shared_mutex, std::vector,
-      std::wstring, std::wstring_view;
+      std::unique_lock, std::shared_mutex, std::vector, std::wstring,
+      std::wstring_view;
 
   shared_mutex g_lock;
 
@@ -68,8 +68,7 @@ namespace laplace::embedded {
 
     init();
 
-    auto i = lower_bound(
-        aliases.begin(), aliases.end(), file_name);
+    auto i = lower_bound(aliases.begin(), aliases.end(), file_name);
     return i != aliases.end() && *i == file_name;
   }
 
@@ -78,8 +77,7 @@ namespace laplace::embedded {
 
     init();
 
-    auto i = lower_bound(
-        aliases.begin(), aliases.end(), file_name);
+    auto i = lower_bound(aliases.begin(), aliases.end(), file_name);
 
     if (i != aliases.end() && *i == file_name) {
       return bytes[i - aliases.begin()];

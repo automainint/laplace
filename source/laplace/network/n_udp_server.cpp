@@ -25,23 +25,26 @@
 #include "crypto/dh_rabbit.h"
 #include "udp_server.h"
 #include <algorithm>
+#include <chrono>
+#include <thread>
 
 namespace laplace::network {
-  namespace access   = engine::access;
-  namespace protocol = engine::protocol;
-  namespace ids      = protocol::ids;
+  namespace access      = engine::access;
+  namespace protocol    = engine::protocol;
+  namespace ids         = protocol::ids;
+  namespace this_thread = std::this_thread;
 
   using std::min, std::any_of, std::find_if, std::make_unique,
       std::span, std::numeric_limits, std::string, std::string_view,
-      engine::prime_impact, protocol::slot_create,
-      protocol::slot_remove, protocol::request_events,
-      protocol::server_idle, protocol::ping_request,
-      protocol::ping_response, protocol::public_key,
-      protocol::server_action, protocol::server_pause,
-      protocol::server_clock, protocol::server_seed,
-      protocol::server_quit, protocol::client_leave,
-      engine::time_undefined, engine::id_undefined, engine::encode,
-      crypto::dh_rabbit;
+      std::chrono::milliseconds, engine::prime_impact,
+      protocol::slot_create, protocol::slot_remove,
+      protocol::request_events, protocol::server_idle,
+      protocol::ping_request, protocol::ping_response,
+      protocol::public_key, protocol::server_action,
+      protocol::server_pause, protocol::server_clock,
+      protocol::server_seed, protocol::server_quit,
+      protocol::client_leave, engine::time_undefined,
+      engine::id_undefined, engine::encode, crypto::dh_rabbit;
 
   udp_server ::~udp_server() {
     cleanup();
@@ -66,6 +69,18 @@ namespace laplace::network {
       process_event(slot_host, seq);
 
     } else {
+      if (is_verbose()) {
+        const auto id    = prime_impact::get_id(seq);
+        const auto index = m_queue.events.size();
+
+        if (id < ids::_native_count) {
+          verb(" :: queue %4zu '%s (%hu)'", index,
+               ids::table[id].data(), id);
+        } else {
+          verb(" :: queue %4zu '%hu'", index, id);
+        }
+      }
+
       auto &qu = m_queue.events;
       qu.emplace_back(vbyte { seq.begin(), seq.end() });
       prime_impact::set_index(qu.back(), qu.size() - 1);
@@ -78,6 +93,7 @@ namespace laplace::network {
     receive_events();
     process_slots();
     update_slots(delta_msec);
+
     send_events();
 
     update_world(delta_msec);
@@ -115,7 +131,7 @@ namespace laplace::network {
         /*  It makes no sense to change the seed
          *  after preparation.
          */
-        verb("[ host ] ignore seed command");
+        verb("Network: Ignore seed command.");
       }
 
       return true;
@@ -159,24 +175,25 @@ namespace laplace::network {
       if (public_key::get_cipher(seq) == ids::cipher_dh_rabbit) {
 
         if (slot < m_slots.size()) {
-          m_slots[slot].cipher = make_unique<dh_rabbit>();
-
           if (is_master()) {
+            m_slots[slot].tran.setup_cipher<dh_rabbit>();
+
             send_event_to(                 //
                 slot,                      //
                 encode<public_key>(        //
                     ids::cipher_dh_rabbit, //
-                    m_slots[slot].cipher->get_public_key()));
+                    m_slots[slot].tran.get_public_key()));
           }
 
           m_slots[slot].is_encrypted = !is_master();
-          m_slots[slot].cipher->set_remote_key(public_key::get_key(seq));
+          m_slots[slot].tran.set_remote_key(public_key::get_key(seq));
 
           if (is_verbose()) {
             verb("Network: Mutual key");
           }
 
-          dump(m_slots[slot].cipher->get_mutual_key());
+          dump(m_slots[slot].tran.get_mutual_key());
+
         } else {
           error(__FUNCTION__, "Invalid slot.");
         }
@@ -199,11 +216,15 @@ namespace laplace::network {
       }
 
       send_events();
+
+      this_thread::sleep_for(milliseconds(cleanup_timeout_msec));
     }
 
     m_queue.index = 0;
     m_queue.events.clear();
     m_slots.clear();
+
+    m_time_limit = 0;
 
     set_connected(false);
   }
@@ -405,9 +426,8 @@ namespace laplace::network {
     if (is_master() && m_slots[slot].outdate >= get_update_timeout()) {
 
       if (auto sol = get_solver(); sol) {
-        send_event_to( //
-            slot,      //
-            encode<server_idle>(sol->get_time()));
+        send_event_to(slot, encode<server_idle>(m_queue.events.size(),
+                                                sol->get_time()));
       }
 
       m_slots[slot].outdate = 0;
@@ -464,6 +484,18 @@ namespace laplace::network {
       /*  Set the event index.
        */
       ev->set_order({ m_queue.events.size() });
+
+      if (is_verbose()) {
+        const auto id    = prime_impact::get_id(seq);
+        const auto index = m_queue.events.size();
+
+        if (id < ids::_native_count) {
+          verb(" :: queue %4zu '%s (%hu)'", index,
+               ids::table[id].data(), id);
+        } else {
+          verb(" :: queue %4zu '%hu'", index, id);
+        }
+      }
 
       /*  Add the event to the main queue.
        */
@@ -528,8 +560,17 @@ namespace laplace::network {
         const auto n = m_node->receive_to(
             m_buffer.data(), get_chunk_size(), async);
 
-        if (n == 0)
+        if (n == 0) {
+          if (m_node->is_connreset()) {
+            disconnect(find_slot(             //
+                m_node->get_remote_address(), //
+                m_node->get_remote_port()));
+
+            continue;
+          }
+
           break;
+        }
 
         add_bytes_received(n);
 
@@ -542,40 +583,17 @@ namespace laplace::network {
           continue;
         }
 
-        if (m_slots[slot].cipher && m_slots[slot].cipher->is_ready()) {
-          dump({ m_buffer.data(), n });
+        auto plain = m_slots[slot].tran.decode({ m_buffer.data(), n });
 
-          auto plain = m_slots[slot].cipher->decrypt(
-              { m_buffer.data(), n });
-
-          if (plain.empty()) {
-            verb("Network: Unable to decrypt chunk.");
-            continue;
-          }
-
-          dump(plain);
-
-          if (is_verbose()) {
-            verb("Network: RECV %zu bytes on slot %zu.", plain.size(),
-                 slot);
-          }
-
-          m_slots[slot].buffer.insert(    //
-              m_slots[slot].buffer.end(), //
-              plain.begin(),              //
-              plain.end());
-        } else {
-          dump({ m_buffer.data(), n });
-
-          if (is_verbose()) {
-            verb("Network: RECV %zu bytes on slot %zu.", n, slot);
-          }
-
-          m_slots[slot].buffer.insert(    //
-              m_slots[slot].buffer.end(), //
-              m_buffer.begin(),           //
-              m_buffer.begin() + n);
+        if (plain.empty()) {
+          add_bytes_loss(n);
+          continue;
         }
+
+        m_slots[slot].buffer.insert(    //
+            m_slots[slot].buffer.end(), //
+            plain.begin(),              //
+            plain.end());
 
         m_slots[slot].is_connected = true;
         m_slots[slot].request_flag = false;
@@ -590,13 +608,24 @@ namespace laplace::network {
     auto &qu    = m_slots[slot].queue;
 
     if (index == -1) {
-      /*  For public_key, request_events and client_ping.
+      /*  For public_key, request_events and ping.
        */
       if (!perform_control(slot, seq)) {
         verb("Network: Ignore unindexed command on slot %zu.", slot);
       }
 
     } else if (index >= qu.index) {
+      if (is_verbose()) {
+        const auto id = prime_impact::get_id(seq);
+
+        if (id < ids::_native_count) {
+          verb(" :: (slot %2zu) %4zu '%s (%hu)'", slot, index,
+               ids::table[id].data(), id);
+        } else {
+          verb(" :: (slot %2zu) %4zu '%hu'", slot, index, id);
+        }
+      }
+
       auto n = index - qu.index;
 
       if (n >= qu.events.size()) {
@@ -607,12 +636,11 @@ namespace laplace::network {
         qu.events[n].assign(seq.begin(), seq.end());
         m_slots[slot].outdate = 0;
       } else {
-        verb("Network: Event %zu already written on slot %zu.", index,
-             slot);
+        // verb("Network: Event %zu already written on slot %zu.", index, slot);
       }
 
     } else {
-      verb("Network: Event %zu duplicate on slot %zu.", index, slot);
+      // verb("Network: Event %zu duplicate on slot %zu.", index, slot);
     }
   }
 
@@ -630,7 +658,9 @@ namespace laplace::network {
         const size_t size = rd<uint16_t>(buf, index);
 
         if (buf.size() - index < n_command + size) {
-          verb("Network: Ignore corrupted data.");
+          /*  Should not happen.
+           */
+          verb("Network: CORRUPTED DATA");
 
           buf.clear();
           break;
@@ -671,68 +701,62 @@ namespace laplace::network {
       auto chunk_size = adjust_chunk_size(buf);
 
       if (chunk_size == 0) {
-        verb("Network: Unable to adjust chunk size.");
-
         buf.clear();
         continue;
       }
 
-      dump({ buf.data(), chunk_size });
+      const auto plain = cref_vbyte { buf.data(), chunk_size };
 
-      if (s.cipher && s.is_encrypted) {
-        auto chunk = s.cipher->encrypt({ buf.data(), chunk_size });
+      const auto chunk = s.is_encrypted ? s.tran.encode(plain)
+                                        : s.tran.pack(plain);
 
-        if (chunk.size() == 0) {
-          verb("Network: Unable to encrypt chunk.");
-
-          buf.clear();
-          continue;
-        }
-
-        dump(chunk);
-
-        if (is_verbose()) {
-          verb("Network: SEND %zu bytes to %s:%hu (encrypted).",
-               chunk.size(), s.address.c_str(), s.port);
-        }
-
-        add_bytes_sent(m_node->send_to(s.address, s.port, chunk));
-
-      } else {
-        s.is_encrypted = s.cipher && s.cipher->is_ready();
-
-        if (is_verbose()) {
-          verb("Network: SEND %zu bytes to %s:%hu.", chunk_size,
-               s.address.c_str(), s.port);
-        }
-
-        add_bytes_sent(m_node->send_to(
-            s.address, s.port, { buf.data(), chunk_size }));
+      if (chunk.size() == 0) {
+        buf.clear();
+        continue;
       }
+
+      s.is_encrypted = s.tran.is_encrypted();
+
+      add_bytes_sent(m_node->send_to(s.address, s.port, chunk));
 
       buf.erase(buf.begin(), buf.begin() + chunk_size);
     }
   }
 
-  void udp_server::update_slots(uint64_t delta_msec) {
-    for (size_t i = 0; i < m_slots.size(); i++) {
-      if (get_state() == server_state::action) {
-        m_slots[i].outdate += delta_msec;
+  void udp_server::disconnect(size_t slot) {
+    if (slot < m_slots.size()) {
+      m_slots[slot].is_connected = false;
+
+      if (is_master()) {
+        if (get_state() == server_state::prepare) {
+          process_event(slot, encode<slot_remove>());
+          m_slots[slot].id_actor = id_undefined;
+        }
+      } else {
+        set_connected(false);
       }
 
+      if (is_verbose()) {
+        verb("Network: Disconnect on slot %zu.", slot);
+      }
+
+    } else {
+      error(__FUNCTION__, "Invalid slot.");
+    }
+  }
+
+  void udp_server::update_slots(uint64_t delta_msec) {
+    for (size_t i = 0; i < m_slots.size(); i++) {
+      m_slots[i].outdate += delta_msec;
       m_slots[i].wait += delta_msec;
 
-      if (m_slots[i].wait >= get_connection_timeout()) {
-        m_slots[i].is_connected = false;
+      if (m_slots[i].wait >= get_connection_timeout() / 2) {
+        // verb("Network: No connection on slot %zu for %zu msec.", i, m_slots[i].wait);
+      }
 
-        if (is_master()) {
-          if (get_state() == server_state::prepare) {
-            process_event(i, encode<slot_remove>());
-            m_slots[i].id_actor = id_undefined;
-          }
-        } else {
-          error(__FUNCTION__, "Disconnect.");
-          set_connected(false);
+      if (m_slots[i].is_connected) {
+        if (m_slots[i].wait >= get_connection_timeout()) {
+          disconnect(i);
         }
       }
     }
@@ -769,10 +793,12 @@ namespace laplace::network {
     if (auto sol = get_solver(); sol) {
       const auto time = sol->get_time();
 
-      const auto delta = adjust_delta(delta_msec) +
-                         adjust_overtake(time);
+      if (time < m_time_limit) {
+        const auto delta = adjust_delta(delta_msec) +
+                           adjust_overtake(time);
 
-      return min(delta, m_time_limit - time);
+        return min(delta, m_time_limit - time);
+      }
     }
 
     return 0;

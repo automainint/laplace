@@ -226,7 +226,7 @@ namespace laplace::stem::config {
         ofstream out(file_name);
 
         if (!text::encode(wrap(out), cfg)) {
-          error(__FUNCTION__, "Unable to save config file %s.",
+          error(__FUNCTION__, "Unable to save config file '%s'.",
                 to_string(file_name).c_str());
         }
       }

@@ -14,8 +14,8 @@
 #define laplace_network_udp_server_h
 
 #include "../engine/defs.h"
-#include "crypto/basic_cipher.h"
 #include "server.h"
+#include "transfer.h"
 #include "udp_node.h"
 
 namespace laplace::network {
@@ -26,8 +26,9 @@ namespace laplace::network {
   public:
     enum encoding_offset { n_command = 2 };
 
-    static constexpr size_t slot_host            = -1;
-    static constexpr size_t slot_count_unlimited = -1;
+    static constexpr size_t   slot_host            = -1;
+    static constexpr size_t   slot_count_unlimited = -1;
+    static constexpr uint64_t cleanup_timeout_msec = 10;
 
     static constexpr size_t default_chunk_size     = 4096;
     static constexpr size_t default_chunk_overhead = 1024;
@@ -65,7 +66,7 @@ namespace laplace::network {
       vbyte       chunks;
       event_queue queue;
 
-      std::unique_ptr<crypto::basic_cipher> cipher;
+      transfer tran;
     };
 
     /*  Returns false if the event should be
@@ -118,13 +119,13 @@ namespace laplace::network {
 
     void add_event(size_t slot, cref_vbyte seq);
     void send_chunks();
+    void disconnect(size_t slot);
 
     void update_slots(uint64_t delta_msec);
     void update_local_time(uint64_t delta_msec);
     void update_time_limit(uint64_t time);
 
     [[nodiscard]] auto convert_delta(size_t delta_msec) -> uint64_t;
-
     [[nodiscard]] auto adjust_overtake(uint64_t time) -> uint64_t;
 
     std::vector<slot_info> m_slots;

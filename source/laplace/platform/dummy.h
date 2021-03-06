@@ -18,6 +18,12 @@
 #include <string>
 
 namespace laplace::platform::dummy {
+  auto gl_init() -> bool {
+    return false;
+  }
+
+  void gl_cleanup() { }
+
   class input {
   public:
     input() { }

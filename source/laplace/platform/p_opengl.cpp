@@ -14,28 +14,27 @@
 
 #include "../core/defs.h"
 #include "opengl.h"
+#include "wrap.h"
 #include <algorithm>
 #include <iostream>
 #include <string>
 
 #include "../../generated/gl/funcs.impl.h"
 
-#define LAPLACE_GL_LOAD(a)                                   \
-  if (!a) {                                                  \
-    if (a = reinterpret_cast<pfn_##a>(get_proc_address(#a)); \
-        !a) {                                                \
-      error(__FUNCTION__, "Unable to get %s function." #a);  \
-      ok = false;                                            \
-    }                                                        \
+#define LAPLACE_GL_LOAD(a)                                         \
+  if (!a) {                                                        \
+    if (a = reinterpret_cast<pfn_##a>(get_proc_address(#a)); !a) { \
+      error(__FUNCTION__, "Unable to get %s function." #a);        \
+      ok = false;                                                  \
+    }                                                              \
   }
 
-#define LAPLACE_GL_LOAD_EX(a)                                \
-  if (!a) {                                                  \
-    if (a = reinterpret_cast<pfn_##a>(get_proc_address(#a)); \
-        !a) {                                                \
-      error(__FUNCTION__, "Unable to get %s function.", #a); \
-      status = false;                                        \
-    }                                                        \
+#define LAPLACE_GL_LOAD_EX(a)                                      \
+  if (!a) {                                                        \
+    if (a = reinterpret_cast<pfn_##a>(get_proc_address(#a)); !a) { \
+      error(__FUNCTION__, "Unable to get %s function.", #a);       \
+      status = false;                                              \
+    }                                                              \
   }
 
 #define LAPLACE_GL_HAS(a) has(#a)
@@ -67,10 +66,13 @@ namespace laplace::gl {
     return ok;
   }
 
+  auto get_proc_address(const char *name) -> ptr_function {
+    return platform::get_proc_address(name);
+  }
+
   void require_extensions(vector<string_view> extensions) {
     has_extensions_required = true;
-    extensions_required.assign(
-        extensions.begin(), extensions.end());
+    extensions_required.assign(extensions.begin(), extensions.end());
   }
 
   auto init() -> bool {
@@ -97,5 +99,13 @@ namespace laplace::gl {
         extensions.begin(), extensions.end(), extension);
 
     return i != extensions.end() && *i == extension;
+  }
+
+  auto platform_init() -> bool {
+    return platform::gl_init();
+  }
+
+  void platform_cleanup() {
+    platform::gl_cleanup();
   }
 }

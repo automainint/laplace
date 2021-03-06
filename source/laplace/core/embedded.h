@@ -16,13 +16,9 @@
 #include "defs.h"
 
 namespace laplace::embedded {
-  [[nodiscard]] auto scan(std::wstring_view file_name) noexcept
-      -> bool;
-
+  [[nodiscard]] auto scan(std::wstring_view file_name) noexcept -> bool;
   [[nodiscard]] auto exists(std::wstring_view file_name) -> bool;
-
-  [[nodiscard]] auto open(std::wstring_view file_name)
-      -> cref_vbyte;
+  [[nodiscard]] auto open(std::wstring_view file_name) -> cref_vbyte;
 }
 
 #endif

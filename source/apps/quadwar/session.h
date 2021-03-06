@@ -25,19 +25,22 @@ namespace quadwar_app {
     using event_done = std::function<void()>;
     using event_quit = std::function<void()>;
 
+    static constexpr auto host_info_file = ".host";
+
     static constexpr uint16_t allowed_commands[] = {
       protocol::ids::public_key,   protocol::ids::request_events,
-      protocol::ids::ping_request, protocol::ids::client_enter,
-      protocol::ids::client_leave, protocol::ids::client_ready,
-      protocol::ids::slot_create,  protocol::ids::slot_remove,
-      protocol::ids::player_name,  protocol::ids::server_launch
+      protocol::ids::ping_request, protocol::ids::ping_response,
+      protocol::ids::client_enter, protocol::ids::client_leave,
+      protocol::ids::client_ready, protocol::ids::slot_create,
+      protocol::ids::slot_remove,  protocol::ids::player_name,
+      protocol::ids::server_launch
     };
 
     static constexpr auto     default_server_ip = "127.0.0.1";
     static constexpr uint16_t default_port      = network::any_port;
 
     session();
-    ~session() = default;
+    ~session();
 
     void on_done(event_done ev);
     void on_quit(event_quit ev);
@@ -58,8 +61,12 @@ namespace quadwar_app {
     void create();
     void join();
 
+    [[nodiscard]] static auto get_host_address(
+        std::string_view default_address) -> std::string;
+
   private:
     void update_lobby();
+    void save_host_info(uint16_t port);
 
     event_done m_on_done;
     event_quit m_on_quit;
@@ -74,9 +81,10 @@ namespace quadwar_app {
     uint16_t      m_server_port = default_port;
     std::u8string m_game_name;
     std::u8string m_player_name;
-    size_t        m_map_size     = 0;
-    size_t        m_player_count = 0;
-    size_t        m_unit_count   = 0;
+    size_t        m_map_size        = 0;
+    size_t        m_player_count    = 0;
+    size_t        m_unit_count      = 0;
+    bool          m_host_info_saved = false;
 
     network::ptr_server m_server;
 
