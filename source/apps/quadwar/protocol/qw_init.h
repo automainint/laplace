@@ -14,6 +14,7 @@
 #define quadwar_protocol_qw_init_h
 
 #include "../object/game_clock.h"
+#include "../object/landscape.h"
 #include "../object/root.h"
 #include "defs.h"
 
@@ -23,9 +24,17 @@ namespace quadwar_app::protocol {
       decltype([](world w) {
         verb(" :: event  Quadwar/server_init");
 
-        w.set_root(std::make_shared<object::root>());
+        auto root = std::make_shared<object::root>();
+
+        w.set_root(w.spawn(root, engine::id_undefined));
+
         w.spawn(std::make_shared<object::game_clock>(),
                 engine::id_undefined);
+
+        object::root::set_landscape(
+            { root, engine::access::sync },
+            w.spawn(std::make_shared<object::landscape>(),
+                    engine::id_undefined));
       })>;
 }
 

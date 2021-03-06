@@ -29,22 +29,22 @@
 #include <thread>
 
 namespace laplace::network {
-  namespace access      = engine::access;
-  namespace protocol    = engine::protocol;
-  namespace ids         = protocol::ids;
-  namespace this_thread = std::this_thread;
+  namespace access   = engine::access;
+  namespace protocol = engine::protocol;
+  namespace ids      = protocol::ids;
 
-  using std::min, std::any_of, std::find_if, std::make_unique,
-      std::span, std::numeric_limits, std::string, std::string_view,
-      std::chrono::milliseconds, engine::prime_impact,
-      protocol::slot_create, protocol::slot_remove,
-      protocol::request_events, protocol::server_idle,
-      protocol::ping_request, protocol::ping_response,
-      protocol::public_key, protocol::server_action,
-      protocol::server_pause, protocol::server_clock,
-      protocol::server_seed, protocol::server_quit,
-      protocol::client_leave, engine::time_undefined,
-      engine::id_undefined, engine::encode, crypto::dh_rabbit;
+  using std::this_thread::sleep_for, std::min, std::any_of,
+      std::find_if, std::make_unique, std::span, std::numeric_limits,
+      std::string, std::string_view, std::chrono::milliseconds,
+      engine::prime_impact, protocol::slot_create,
+      protocol::slot_remove, protocol::request_events,
+      protocol::server_idle, protocol::ping_request,
+      protocol::ping_response, protocol::public_key,
+      protocol::server_action, protocol::server_pause,
+      protocol::server_clock, protocol::server_seed,
+      protocol::server_quit, protocol::client_leave,
+      engine::time_undefined, engine::id_undefined, engine::encode,
+      crypto::dh_rabbit;
 
   udp_server ::~udp_server() {
     cleanup();
@@ -216,8 +216,6 @@ namespace laplace::network {
       }
 
       send_events();
-
-      this_thread::sleep_for(milliseconds(cleanup_timeout_msec));
     }
 
     m_queue.index = 0;
@@ -410,9 +408,7 @@ namespace laplace::network {
         }
       }
 
-      send_event_to( //
-          slot,      //
-          encode<request_events>(events));
+      send_event_to(slot, encode<request_events>(events));
 
       m_slots[slot].request_flag = true;
     }
@@ -566,7 +562,12 @@ namespace laplace::network {
                 m_node->get_remote_address(), //
                 m_node->get_remote_port()));
 
-            continue;
+            if (is_master()) {
+              continue;
+            } else {
+              set_quit(true);
+              m_node.reset();
+            }
           }
 
           break;
@@ -635,12 +636,7 @@ namespace laplace::network {
       if (qu.events[n].empty()) {
         qu.events[n].assign(seq.begin(), seq.end());
         m_slots[slot].outdate = 0;
-      } else {
-        // verb("Network: Event %zu already written on slot %zu.", index, slot);
       }
-
-    } else {
-      // verb("Network: Event %zu duplicate on slot %zu.", index, slot);
     }
   }
 
@@ -692,34 +688,36 @@ namespace laplace::network {
   }
 
   void udp_server::send_chunks() {
-    for (auto &s : m_slots) {
-      auto &buf = s.chunks;
+    if (m_node) {
+      for (auto &s : m_slots) {
+        auto &buf = s.chunks;
 
-      if (buf.empty())
-        continue;
+        if (buf.empty())
+          continue;
 
-      auto chunk_size = adjust_chunk_size(buf);
+        auto chunk_size = adjust_chunk_size(buf);
 
-      if (chunk_size == 0) {
-        buf.clear();
-        continue;
+        if (chunk_size == 0) {
+          buf.clear();
+          continue;
+        }
+
+        const auto plain = cref_vbyte { buf.data(), chunk_size };
+
+        const auto chunk = s.is_encrypted ? s.tran.encode(plain)
+                                          : s.tran.pack(plain);
+
+        if (chunk.size() == 0) {
+          buf.clear();
+          continue;
+        }
+
+        s.is_encrypted = s.tran.is_encrypted();
+
+        add_bytes_sent(m_node->send_to(s.address, s.port, chunk));
+
+        buf.erase(buf.begin(), buf.begin() + chunk_size);
       }
-
-      const auto plain = cref_vbyte { buf.data(), chunk_size };
-
-      const auto chunk = s.is_encrypted ? s.tran.encode(plain)
-                                        : s.tran.pack(plain);
-
-      if (chunk.size() == 0) {
-        buf.clear();
-        continue;
-      }
-
-      s.is_encrypted = s.tran.is_encrypted();
-
-      add_bytes_sent(m_node->send_to(s.address, s.port, chunk));
-
-      buf.erase(buf.begin(), buf.begin() + chunk_size);
     }
   }
 
@@ -728,7 +726,9 @@ namespace laplace::network {
       m_slots[slot].is_connected = false;
 
       if (is_master()) {
-        if (get_state() == server_state::prepare) {
+        if (get_state() == server_state::prepare &&
+            m_slots[slot].id_actor != id_undefined) {
+
           process_event(slot, encode<slot_remove>());
           m_slots[slot].id_actor = id_undefined;
         }
@@ -749,10 +749,6 @@ namespace laplace::network {
     for (size_t i = 0; i < m_slots.size(); i++) {
       m_slots[i].outdate += delta_msec;
       m_slots[i].wait += delta_msec;
-
-      if (m_slots[i].wait >= get_connection_timeout() / 2) {
-        // verb("Network: No connection on slot %zu for %zu msec.", i, m_slots[i].wait);
-      }
 
       if (m_slots[i].is_connected) {
         if (m_slots[i].wait >= get_connection_timeout()) {

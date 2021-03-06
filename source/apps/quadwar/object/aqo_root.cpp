@@ -21,6 +21,7 @@ namespace quadwar_app::object {
   size_t root::n_is_changed  = 0;
   size_t root::n_is_launched = 0;
   size_t root::n_slot_count  = 0;
+  size_t root::n_landscape   = 0;
 
   root root::m_proto(root::proto);
 
@@ -28,11 +29,13 @@ namespace quadwar_app::object {
     setup_sets( //
         { { .id = sets::root_is_changed, .scale = 1 },
           { .id = sets::root_is_launched, .scale = 1 },
-          { .id = sets::root_slot_count, .scale = 1 } });
+          { .id = sets::root_slot_count, .scale = 1 },
+          { .id = sets::root_landscape } });
 
     n_is_changed  = index_of(sets::root_is_changed);
     n_is_launched = index_of(sets::root_is_launched);
     n_slot_count  = index_of(sets::root_slot_count);
+    n_landscape   = index_of(sets::root_landscape);
   }
 
   root::root() : basic_entity(dummy) {
@@ -80,6 +83,14 @@ namespace quadwar_app::object {
         pack_to_array(index));
 
     return rd<size_t>(result, 0);
+  }
+
+  void root::set_landscape(entity en, size_t id_landscape) {
+    en.set(n_landscape, static_cast<int64_t>(id_landscape));
+  }
+
+  auto root::get_landscape(entity en) -> size_t {
+    return static_cast<size_t>(en.get(n_landscape));
   }
 
   auto root::do_request(size_t id, cref_vbyte args) const -> vbyte {

@@ -26,10 +26,15 @@ namespace quadwar_app::object {
     static void slot_remove(entity en, size_t id_actor);
     static void launch(entity en);
     static void status_changed(entity en);
-    static auto changed(entity en) -> bool;
-    static auto is_launched(entity en) -> bool;
-    static auto get_slot_count(entity en) -> size_t;
-    static auto get_slot(entity en, size_t index) -> size_t;
+
+    [[nodiscard]] static auto changed(entity en) -> bool;
+    [[nodiscard]] static auto is_launched(entity en) -> bool;
+    [[nodiscard]] static auto get_slot_count(entity en) -> size_t;
+    [[nodiscard]] static auto get_slot(entity en, size_t index)
+        -> size_t;
+
+    static void set_landscape(entity en, size_t id_landscape);
+    [[nodiscard]] static auto get_landscape(entity en) -> size_t;
 
   protected:
     root(proto_tag);
@@ -45,6 +50,7 @@ namespace quadwar_app::object {
     static size_t n_is_changed;
     static size_t n_is_launched;
     static size_t n_slot_count;
+    static size_t n_landscape;
 
     static root m_proto;
 

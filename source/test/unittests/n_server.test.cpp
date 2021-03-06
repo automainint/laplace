@@ -19,13 +19,12 @@
 #include <thread>
 
 namespace laplace::test {
-  using std::make_shared, network::host,
-      network::remote, network::localhost,
-      engine::basic_factory, engine::protocol::debug;
+  using std::this_thread::yield, std::make_shared, network::host,
+      network::remote, network::localhost, engine::basic_factory,
+      engine::protocol::debug;
 
-  namespace sets        = engine::object::sets;
-  namespace ids         = engine::protocol::ids;
-  namespace this_thread = std::this_thread;
+  namespace sets = engine::object::sets;
+  namespace ids  = engine::protocol::ids;
 
   TEST(network, server_echo) {
     constexpr size_t test_count     = 3;
@@ -40,8 +39,7 @@ namespace laplace::test {
       my_host->set_factory(make_shared<basic_factory>());
       client->set_factory(make_shared<basic_factory>());
 
-      uint16_t allowed_commands[] = { ids::debug,
-                                      ids::client_enter };
+      uint16_t allowed_commands[] = { ids::debug, ids::client_enter };
 
       my_host->set_allowed_commands(allowed_commands);
       my_host->listen();
@@ -51,30 +49,29 @@ namespace laplace::test {
       int64_t test_value = 12367;
 
       client->tick(0);
-      this_thread::yield();
+      yield();
       my_host->tick(0);
-      this_thread::yield();
+      yield();
 
       client->emit<debug>(test_value);
       client->tick(0);
 
-      this_thread::yield();
+      yield();
       my_host->tick(0);
-      this_thread::yield();
+      yield();
       client->tick(0);
-      this_thread::yield();
+      yield();
       my_host->tick(0);
-      this_thread::yield();
+      yield();
       client->tick(0);
 
       int64_t echo_value = 0;
 
       if (auto w = client->get_world(); w) {
-        if (auto root = w->get_root(); root) {
+        if (auto root = w->get_entity(w->get_root()); root) {
           root->adjust();
 
-          echo_value = root->get(
-              root->index_of(sets::debug_value));
+          echo_value = root->get(root->index_of(sets::debug_value));
         }
       }
 
@@ -98,8 +95,7 @@ namespace laplace::test {
       my_host->set_factory(make_shared<basic_factory>());
       client->set_factory(make_shared<basic_factory>());
 
-      uint16_t allowed_commands[] = { ids::debug,
-                                      ids::client_enter,
+      uint16_t allowed_commands[] = { ids::debug, ids::client_enter,
                                       ids::public_key };
 
       my_host->set_allowed_commands(allowed_commands);
@@ -107,33 +103,32 @@ namespace laplace::test {
 
       client->connect(localhost, my_host->get_port());
 
-      int64_t test_value = 12367;
+      constexpr int64_t test_value = 12367;
 
       client->tick(0);
-      this_thread::yield();
+      yield();
       my_host->tick(0);
-      this_thread::yield();
+      yield();
 
       client->emit<debug>(test_value);
       client->tick(0);
 
-      this_thread::yield();
+      yield();
       my_host->tick(0);
-      this_thread::yield();
+      yield();
       client->tick(0);
-      this_thread::yield();
+      yield();
       my_host->tick(0);
-      this_thread::yield();
+      yield();
       client->tick(0);
 
       int64_t echo_value = 0;
 
       if (auto w = client->get_world(); w) {
-        if (auto root = w->get_root(); root) {
+        if (auto root = w->get_entity(w->get_root()); root) {
           root->adjust();
 
-          echo_value = root->get(
-              root->index_of(sets::debug_value));
+          echo_value = root->get(root->index_of(sets::debug_value));
         }
       }
 

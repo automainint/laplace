@@ -28,6 +28,7 @@ namespace quadwar_app::object::sets {
     root_slot_create,
     root_slot_remove,
     root_launch,
+    root_landscape,
 
     game_clock_time,
 

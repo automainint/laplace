@@ -60,8 +60,8 @@ namespace laplace::engine {
     void set_thread_count(size_t thread_count);
     auto get_thread_count() -> size_t;
 
-    void set_root(ptr_entity root);
-    auto get_root() -> ptr_entity;
+    void set_root(size_t id_root);
+    auto get_root() -> size_t;
 
     void allow_relaxed_spawn(bool is_allowed);
     auto is_relaxed_spawn_allowed() -> bool;
@@ -93,6 +93,7 @@ namespace laplace::engine {
 
     bool   m_allow_relaxed_spawn = default_allow_relaxed_spawn;
     bool   m_desync              = false;
+    size_t m_root                = id_undefined;
     size_t m_next_id             = 0;
     size_t m_index               = 0;
 
@@ -101,7 +102,6 @@ namespace laplace::engine {
     vptr_entity   m_entities;
     vptr_impact   m_queue;
     vptr_impact   m_sync_queue;
-    ptr_entity    m_root;
   };
 }
 

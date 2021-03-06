@@ -18,7 +18,7 @@ namespace laplace::engine::protocol {
   using std::make_shared, object::sets::debug_value;
 
   void debug::perform(access::world w) const {
-    auto root = w.get_root();
+    auto root = w.get_entity(w.get_root());
 
     if (root.exist()) {
       root.set(root.index_of(debug_value), m_value);
@@ -27,7 +27,7 @@ namespace laplace::engine::protocol {
 
       e->set(e->index_of(debug_value), m_value);
 
-      w.set_root(e);
+      w.set_root(w.spawn(e, engine::id_undefined));
     }
   }
 

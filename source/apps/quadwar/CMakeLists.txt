@@ -9,3 +9,4 @@ target_sources(
 add_subdirectory(object)
 add_subdirectory(protocol)
 add_subdirectory(ui)
+add_subdirectory(view)

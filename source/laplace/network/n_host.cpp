@@ -38,6 +38,15 @@ namespace laplace::network {
     set_master(true);
   }
 
+  void host::set_seed(engine::seed_type seed) {
+    if (is_connected()) {
+      error(__FUNCTION__, "Unable to set seed.");
+      return;
+    }
+
+    m_seed = seed;
+  }
+
   void host::listen(uint16_t port) {
     cleanup();
     set_connected(true);
@@ -45,26 +54,19 @@ namespace laplace::network {
     m_node = make_unique<udp_node>();
     m_node->bind(port);
 
-    process_event( //
-        slot_host, //
-        encode<server_clock>(get_tick_duration()));
-
-    process_event( //
-        slot_host, //
-        encode<server_seed>(solver::generate_seed()));
-
-    process_event( //
-        slot_host, //
-        encode<server_init>());
+    process_event(slot_host, encode<server_clock>(get_tick_duration()));
+    process_event(slot_host, encode<server_seed>(m_seed));
+    process_event(slot_host, encode<server_init>());
   }
 
   auto host::perform_control(size_t slot, cref_vbyte seq) -> bool {
 
     if (client_enter::scan(seq) && slot != slot_host) {
       if (auto wor = get_world(); wor) {
-        m_slots[slot].id_actor = get_world()->reserve(id_undefined);
-
-        process_event(slot, encode<slot_create>(false));
+        if (m_slots[slot].id_actor == id_undefined) {
+          m_slots[slot].id_actor = get_world()->reserve(id_undefined);
+          process_event(slot, encode<slot_create>(false));
+        }
       } else {
         error(__FUNCTION__, "No world.");
       }

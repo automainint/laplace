@@ -69,15 +69,15 @@ namespace laplace::engine::access {
      */
     void queue(ptr_impact ev);
 
-    /*  Set the root entity.
+    /*  Set the root entity id.
      *  Sync.
      */
-    [[nodiscard]] void set_root(ptr_entity root);
+    void set_root(size_t id_root);
 
-    /*  Get the root entity.
+    /*  Get the root entity id.
      *  Async.
      */
-    [[nodiscard]] auto get_root() -> access::entity;
+    [[nodiscard]] auto get_root() -> size_t;
 
     /*  If the world has an entity.
      *  Async.

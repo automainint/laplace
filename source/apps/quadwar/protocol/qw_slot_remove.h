@@ -33,7 +33,8 @@ namespace quadwar_app::protocol {
     inline void perform(world w) const override {
       verb(" :: event  Quadwar/slot_remove: %zu", get_actor());
 
-      object::root::slot_remove(w.get_root(), get_actor());
+      object::root::slot_remove(
+          w.get_entity(w.get_root()), get_actor());
 
       w.remove(get_actor());
     }

@@ -22,7 +22,7 @@ namespace quadwar_app::protocol {
       decltype([](world w) {
         verb(" :: event  Quadwar/server_launch");
 
-        object::root::launch(w.get_root());
+        object::root::launch(w.get_entity(w.get_root()));
       })>;
 }
 

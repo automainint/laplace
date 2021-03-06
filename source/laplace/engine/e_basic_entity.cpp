@@ -22,8 +22,7 @@
 namespace laplace::engine {
   namespace sets = object::sets;
 
-  using std::unique_lock, std::shared_lock, std::move,
-      std::make_shared;
+  using std::unique_lock, std::shared_lock, std::move, std::make_shared;
 
   basic_entity::basic_entity(cref_entity en) noexcept {
     assign(en);
@@ -33,8 +32,7 @@ namespace laplace::engine {
     assign(en);
   }
 
-  auto basic_entity::operator=(cref_entity en) noexcept
-      -> ref_entity {
+  auto basic_entity::operator=(cref_entity en) noexcept -> ref_entity {
 
     assign(en);
     return *this;
@@ -54,8 +52,7 @@ namespace laplace::engine {
           { sets::is_selectable, 1, 0 },
           { sets::is_vulnerable, 1, 0 },
 
-          { sets::tick_period, sets::scale_time,
-            default_tick_period },
+          { sets::tick_period, sets::scale_time, default_tick_period },
 
           { sets::bounds_min_x, sets::scale_real, +safe_delta },
           { sets::bounds_min_y, sets::scale_real, +safe_delta },
@@ -89,8 +86,7 @@ namespace laplace::engine {
           { sets::bounds_min_z, sets::scale_real, bounds.min.z() },
           { sets::bounds_max_x, sets::scale_real, bounds.max.x() },
           { sets::bounds_max_y, sets::scale_real, bounds.max.y() },
-          { sets::bounds_max_z, sets::scale_real,
-            bounds.max.z() } });
+          { sets::bounds_max_z, sets::scale_real, bounds.max.z() } });
   }
 
   void basic_entity::setup_sets(basic_entity::cref_vsets_row sets) {
@@ -259,8 +255,7 @@ namespace laplace::engine {
   }
 
   auto basic_entity::id_of(size_t index) const -> size_t {
-    return index < m_sets.size() ? m_sets[index].id
-                                 : id_undefined;
+    return index < m_sets.size() ? m_sets[index].id : id_undefined;
   }
 
   auto basic_entity::scale_of(size_t index) const -> size_t {
@@ -304,8 +299,7 @@ namespace laplace::engine {
   void basic_entity::adjust() {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       if (m_is_changed) {
-        const auto is_dynamic_old = m_sets[n_is_dynamic].value >
-                                    0;
+        const auto is_dynamic_old = m_sets[n_is_dynamic].value > 0;
 
         for (auto &s : m_sets) {
           s.value += s.delta;
@@ -456,11 +450,9 @@ namespace laplace::engine {
 
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       return eval::box //
-          { { m_sets[n_bounds_min_x].value,
-              m_sets[n_bounds_min_y].value,
+          { { m_sets[n_bounds_min_x].value, m_sets[n_bounds_min_y].value,
               m_sets[n_bounds_min_z].value },
-            { m_sets[n_bounds_max_x].value,
-              m_sets[n_bounds_max_y].value,
+            { m_sets[n_bounds_max_x].value, m_sets[n_bounds_max_y].value,
               m_sets[n_bounds_max_z].value } };
     } else {
       error(__FUNCTION__, "Lock timeout.");

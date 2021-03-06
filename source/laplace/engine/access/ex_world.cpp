@@ -85,14 +85,14 @@ namespace laplace::engine::access {
     }
   }
 
-  void world::set_root(ptr_entity root) {
+  void world::set_root(size_t id_root) {
     if (m_mode == sync) {
-      m_world.get().set_root(root);
+      m_world.get().set_root(id_root);
     }
   }
 
-  auto world::get_root() -> access::entity {
-    return { m_world.get().get_root(), m_mode };
+  auto world::get_root() -> size_t {
+    return m_world.get().get_root();
   }
 
   auto world::has_entity(size_t id) -> bool {

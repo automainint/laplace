@@ -28,7 +28,6 @@ namespace laplace::network {
 
     static constexpr size_t   slot_host            = -1;
     static constexpr size_t   slot_count_unlimited = -1;
-    static constexpr uint64_t cleanup_timeout_msec = 10;
 
     static constexpr size_t default_chunk_size     = 4096;
     static constexpr size_t default_chunk_overhead = 1024;

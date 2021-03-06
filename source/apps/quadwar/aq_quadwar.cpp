@@ -11,14 +11,14 @@
  */
 
 #include "../../laplace/core/utils.h"
+#include "../../laplace/graphics/utils.h"
 #include "../../laplace/stem/config.h"
 #include "quadwar.h"
 #include <fstream>
 #include <random>
 
 namespace quadwar_app {
-  using std::make_shared, core::family, std::string,
-      std::u8string_view;
+  using std::make_shared, core::family, std::string, std::u8string_view;
 
   auto quadwar::get_player_name() -> u8string_view {
     auto dev  = std::random_device {};
@@ -127,7 +127,15 @@ namespace quadwar_app {
   }
 
   void quadwar::render() {
-    app_flat::render();
+    graphics::clear(clear_color);
+
+    if (m_session) {
+      m_session->render();
+    }
+
+    m_ui->render();
+
+    get_gl().swap_buffers();
   }
 
   void quadwar::adjust_layout(int width, int height) {

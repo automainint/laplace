@@ -85,7 +85,7 @@ namespace laplace::engine::protocol {
     /*  Alter the local status.
      *
      *  The actor is local if receiver slot
-     *  actor is equal to the basic_impact actor.
+     *  actor is equal to the impact actor.
      */
     static constexpr void alter(std::span<uint8_t> seq,
                                 size_t id_slot_actor) {

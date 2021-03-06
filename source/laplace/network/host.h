@@ -14,6 +14,7 @@
 #define laplace_engine_host_h
 
 #include "udp_server.h"
+#include "../engine/solver.h"
 
 namespace laplace::network {
   /*  Host server.
@@ -23,11 +24,15 @@ namespace laplace::network {
     host();
     ~host() final = default;
 
+    void set_seed(engine::seed_type seed);
+
     void listen(uint16_t port = any_port);
 
   private:
     [[nodiscard]] auto perform_control(size_t slot, cref_vbyte seq)
         -> bool override;
+
+    engine::seed_type m_seed = engine::solver::generate_seed();
   };
 }
 

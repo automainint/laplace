@@ -38,7 +38,8 @@ namespace quadwar_app::protocol {
       w.emplace(
           std::make_shared<object::player>(is_local()), get_actor());
 
-      object::root::slot_create(w.get_root(), get_actor());
+      object::root::slot_create(
+          w.get_entity(w.get_root()), get_actor());
     }
 
     static inline auto decode(cref_vbyte seq) {

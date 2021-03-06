@@ -162,8 +162,9 @@ namespace laplace::engine {
     m_entities.clear();
     m_dynamic_ids.clear();
 
+    m_root    = id_undefined;
     m_next_id = 0;
-    m_desync = false;
+    m_desync  = false;
   }
 
   void world::queue(ptr_impact ev) {
@@ -257,17 +258,12 @@ namespace laplace::engine {
     return 0;
   }
 
-  void world::set_root(ptr_entity root) {
+  void world::set_root(size_t id_root) {
     auto _ul = unique_lock(m_lock);
-
-    if (m_root)
-      m_root->reset_world();
-
-    m_root = root;
-    m_root->set_world(shared_from_this());
+    m_root   = id_root;
   }
 
-  auto world::get_root() -> ptr_entity {
+  auto world::get_root() -> size_t {
     auto _sl = shared_lock(m_lock);
     return m_root;
   }

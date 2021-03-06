@@ -85,6 +85,12 @@ namespace quadwar_app {
     }
   }
 
+  void session::render() {
+    if (m_world) {
+      m_landscape.render({ *m_world, access::async });
+    }
+  }
+
   void session::attach_to(ui::ptr_widget w) {
     m_lobby.attach_to(w);
   }
@@ -135,7 +141,8 @@ namespace quadwar_app {
   void session::create() {
     auto server = make_shared<host>();
 
-    m_world = server->get_world();
+    m_server = server;
+    m_world  = server->get_world();
 
     server->set_verbose(true);
     server->set_allowed_commands(allowed_commands);
@@ -156,14 +163,13 @@ namespace quadwar_app {
         to_u8string(u8"Game host (port %hu)", server->get_port()));
 
     m_lobby.set_start_enabled(true);
-
-    m_server = server;
   }
 
   void session::join() {
     auto server = make_shared<remote>();
 
-    m_world = server->get_world();
+    m_server = server;
+    m_world  = server->get_world();
 
     server->set_verbose(true);
     server->make_factory<qw_factory>();
@@ -174,8 +180,6 @@ namespace quadwar_app {
 
     m_lobby.show_info(u8"Game guest");
     m_lobby.set_start_enabled(false);
-
-    m_server = server;
   }
 
   auto session::get_host_address(string_view default_address)
@@ -200,7 +204,7 @@ namespace quadwar_app {
     if (!m_lobby.is_visible())
       return;
 
-    auto r = m_world->get_root();
+    auto r = m_world->get_entity(m_world->get_root());
 
     /*  Sync access required to reset the change status.
      */

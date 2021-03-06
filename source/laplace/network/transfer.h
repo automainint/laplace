@@ -40,6 +40,15 @@ namespace laplace::network {
     }
 
   private:
+    [[nodiscard]] auto pack_marked(cref_vbyte data) -> vbyte;
+    [[nodiscard]] auto unpack_marked(cref_vbyte data) -> vbyte;
+
+    [[nodiscard]] auto mark(cref_vbyte data, uint8_t value) -> vbyte;
+    [[nodiscard]] auto unmark(cref_vbyte data, uint8_t value) -> vbyte;
+
+    static constexpr uint8_t mark_plain     = 0;
+    static constexpr uint8_t mark_encrypted = 1;
+
     enum encodng_offset : size_t {
       n_size      = 0,
       n_check_sum = 8,

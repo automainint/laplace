@@ -15,6 +15,7 @@
 
 #include "../../laplace/network/defs.h"
 #include "../../laplace/network/server.h"
+#include "view/landscape.h"
 #include "protocol/ids.h"
 #include "qw_factory.h"
 #include "ui/lobby.h"
@@ -46,6 +47,7 @@ namespace quadwar_app {
     void on_quit(event_quit ev);
 
     void tick(size_t delta_msec);
+    void render();
 
     void attach_to(ui::ptr_widget w);
     void adjust_layout(int width, int height);
@@ -87,6 +89,8 @@ namespace quadwar_app {
     bool          m_host_info_saved = false;
 
     network::ptr_server m_server;
+
+    view::landscape m_landscape;
 
     ui::lobby m_lobby;
   };

@@ -16,7 +16,19 @@
 #include <cstdint>
 
 namespace laplace::engine::access {
-  enum mode : uint8_t { forbidden, sync, async };
+  enum mode : uint8_t {
+    /*  No access.
+     */
+    forbidden,
+
+    /*  Read & write.
+     */
+    sync,
+
+    /*  Read only.
+     */
+    async
+  };
 }
 
 #endif
