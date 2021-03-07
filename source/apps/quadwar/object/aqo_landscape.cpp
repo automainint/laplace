@@ -34,6 +34,18 @@ namespace quadwar_app::object {
     *this = m_proto;
   }
 
+  void landscape::generate(entity en, size_t width, size_t height) {
+    set_size(en, width, height);
+  }
+
+  auto landscape::get_width(entity en) -> size_t {
+    return static_cast<size_t>(en.get(n_width));
+  }
+
+  auto landscape::get_height(entity en) -> size_t {
+    return static_cast<size_t>(en.get(n_height));
+  }
+
   auto landscape::get_tile( //
       entity en,            //
       size_t x,             //
@@ -101,10 +113,13 @@ namespace quadwar_app::object {
   }
 
   auto landscape::get_tile(size_t x, size_t y) const -> int64_t {
-    if (x >= m_width || y >= m_height)
+    const auto width  = static_cast<size_t>(locked_get(n_width));
+    const auto height = static_cast<size_t>(locked_get(n_height));
+
+    if (x >= width || y >= height)
       return 0;
 
-    size_t index = y * m_width + x;
+    size_t index = y * width + x;
 
     if (index >= m_tiles.size())
       return 0;
@@ -113,10 +128,13 @@ namespace quadwar_app::object {
   }
 
   void landscape::set_tile(size_t x, size_t y, int64_t value) {
-    if (x >= m_width || y >= m_height)
+    const auto width  = static_cast<size_t>(locked_get(n_width));
+    const auto height = static_cast<size_t>(locked_get(n_height));
+
+    if (x >= width || y >= height)
       return;
 
-    size_t index = y * m_width + x;
+    size_t index = y * width + x;
 
     if (index >= m_tiles.size())
       return;
@@ -127,7 +145,7 @@ namespace quadwar_app::object {
   void landscape::set_size(size_t width, size_t height) {
     m_tiles.resize(width * height);
 
-    m_width  = width;
-    m_height = height;
+    init(n_width, width);
+    init(n_height, height);
   }
 }

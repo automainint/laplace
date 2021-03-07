@@ -25,7 +25,7 @@ namespace quadwar_app::object {
     game_clock();
     ~game_clock() override = default;
 
-    void tick(world w) override;
+    void tick(access_world) override;
 
   private:
     game_clock(proto_tag);

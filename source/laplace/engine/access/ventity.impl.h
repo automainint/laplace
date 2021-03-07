@@ -23,8 +23,7 @@ namespace laplace::engine::access {
   inline ventity::ventity(vptr_entity ents, mode access_mode) :
       m_entities(ents), m_mode(access_mode) { }
 
-  inline auto ventity::operator=(ventity &&ents) noexcept
-      -> ventity & {
+  inline auto ventity::operator=(ventity &&ents) noexcept -> ventity & {
     m_entities  = std::move(ents.m_entities);
     m_mode      = std::move(ents.m_mode);
     ents.m_mode = forbidden;
@@ -32,7 +31,11 @@ namespace laplace::engine::access {
   }
 
   inline auto ventity::size() const -> size_t {
-    return m_entities.size();
+    if (m_mode > forbidden) {
+      return m_entities.size();
+    }
+
+    return 0;
   }
 
   inline auto ventity::operator[](size_t i) const -> entity {

@@ -22,7 +22,7 @@
 namespace laplace::render {
   /*  Animation track.
    */
-  template <typename vecval>
+  template <typename type_>
   class track {
   public:
     using point       = math::vector<2, double>;
@@ -32,8 +32,8 @@ namespace laplace::render {
     struct piece {
       splineval spline = {};
       timeval   time   = 0;
-      vecval    begin  = 0;
-      vecval    end    = 0;
+      type_     begin  = 0;
+      type_     end    = 0;
     };
 
     using vpiece     = std::vector<piece>;
@@ -46,13 +46,12 @@ namespace laplace::render {
     ~track();
 
     void clear();
-    void add(cref_spline spline, timeval time, vecval begin,
-             vecval end);
+    void add(cref_spline spline, timeval time, type_ begin, type_ end);
     void adjust();
 
-    auto solve(timeval t) const -> vecval;
+    auto solve(timeval t) const -> type_;
 
-    auto approximate(timeval delta) const -> track<vecval>;
+    auto approximate(timeval delta) const -> track<type_>;
 
     void set_count(size_t count);
     auto get_count() const -> size_t;
@@ -60,14 +59,14 @@ namespace laplace::render {
     auto get_piece(size_t index) -> ref_piece;
     auto get_piece(size_t index) const -> cref_piece;
 
-    auto operator()(timeval t) const -> vecval;
+    auto operator()(timeval t) const -> type_;
 
     auto operator[](size_t index) -> ref_piece;
     auto operator[](size_t index) const -> cref_piece;
 
   private:
     auto op(cref_piece p, timeval t) -> bool;
-    auto solve(size_t i, timeval time) const -> vecval;
+    auto solve(size_t i, timeval time) const -> type_;
 
     bool    m_is_uniform;
     timeval m_delta;

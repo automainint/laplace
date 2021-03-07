@@ -1,47 +1,56 @@
-#include "solid_buffer.h"
+/*  laplace/graphics/flat/g2_solid_buffer.cpp
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
 #include "../../platform/gldef.h"
+#include "solid_buffer.h"
 
-using namespace laplace;
-using namespace graphics;
-using namespace flat;
-using namespace gl;
+namespace laplace::graphics::flat {
+  using namespace gl;
+  using std::span;
 
-solid_buffer::solid_buffer()
-{
+  solid_buffer::solid_buffer() {
     glGenBuffers(1, &m_id);
-}
+  }
 
-solid_buffer::~solid_buffer()
-{
+  solid_buffer::~solid_buffer() {
     glDeleteBuffers(1, &m_id);
-}
+  }
 
-void solid_buffer::render(float x, float y, float width, float height, cref_vec4 color)
-{
-    vertex v[4];
+  void solid_buffer::render(span<const vertex> vertices) {
+    render_internal(vertices, GL_TRIANGLES);
+  }
 
-    v[0].position.x() = x;
-    v[0].position.y() = y;
-    v[1].position.x() = x;
-    v[1].position.y() = y + height;
-    v[2].position.x() = x + width;
-    v[2].position.y() = y;
-    v[3].position.x() = x + width;
-    v[3].position.y() = y + height;
+  void solid_buffer::render_strip(span<const vertex> vertices) {
+    render_internal(vertices, GL_TRIANGLE_STRIP);
+  }
 
-    v[0].color = color;
-    v[1].color = color;
-    v[2].color = color;
-    v[3].color = color;
+  void solid_buffer::render_internal(span<const vertex> vertices,
+                                     uint32_t           mode) {
 
     glBindBuffer(GL_ARRAY_BUFFER, m_id);
-    glBufferData(GL_ARRAY_BUFFER, sizeof v, v, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertex),
+                 vertices.data(), GL_DYNAMIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), reinterpret_cast<const void *>(offsetof(vertex, position)));
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), reinterpret_cast<const void *>(offsetof(vertex, color)));
+    glVertexAttribPointer(
+        0, 2, GL_FLOAT, GL_FALSE, sizeof(vertex),
+        reinterpret_cast<const void *>(offsetof(vertex, position)));
 
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glVertexAttribPointer(
+        1, 4, GL_FLOAT, GL_FALSE, sizeof(vertex),
+        reinterpret_cast<const void *>(offsetof(vertex, color)));
+
+    glDrawArrays(mode, 0, vertices.size());
+  }
 }

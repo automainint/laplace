@@ -37,26 +37,24 @@ namespace laplace::engine::protocol {
 
       set_encoded_size(n_key + m_key_size);
 
-      std::copy(key.begin(), key.begin() + m_key_size,
-                m_key.begin());
+      std::copy(key.begin(), key.begin() + m_key_size, m_key.begin());
     }
 
     static constexpr auto get_cipher(cref_vbyte seq) {
       return rd<uint16_t>(seq, n_cipher);
     }
 
-    static constexpr auto get_key(cref_vbyte seq) {
-      return seq.size() > n_key
-                 ? std::span<const uint8_t>(seq.begin() + n_key,
-                                            seq.end())
-                 : std::span<const uint8_t> {};
+    static constexpr auto get_key(cref_vbyte seq) -> cref_vbyte {
+      if (seq.size() > n_key) {
+        return { seq.begin() + n_key, seq.end() };
+      }
+
+      return {};
     }
 
-    inline void
-    encode_to(std::span<uint8_t> bytes) const final {
-      write_bytes(
-          bytes, id, m_cipher_id,
-          std::span<const uint8_t>(m_key.data(), m_key_size));
+    inline void encode_to(std::span<uint8_t> bytes) const final {
+      write_bytes(bytes, id, m_cipher_id,
+                  std::span<const uint8_t>(m_key.data(), m_key_size));
     }
 
     static constexpr auto scan(cref_vbyte seq) -> bool {

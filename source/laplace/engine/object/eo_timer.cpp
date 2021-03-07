@@ -36,7 +36,7 @@ namespace laplace::engine::object {
     }
 
     if (m_count > 0 && --m_count == 0) {
-      self_destruct(std::move(w));
+      self_destruct(w);
     }
   }
 }

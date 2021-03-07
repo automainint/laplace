@@ -23,13 +23,13 @@ namespace laplace::engine::eval {
 
   struct cylinder {
     vec3i  base   = { 0, 0, 0 };
-    vecval radius = -safe_delta;
-    vecval height = 0;
+    intval radius = -safe_delta;
+    intval height = 0;
   };
 
   struct sphere {
     vec3i  center = { 0, 0, 0 };
-    vecval radius = -safe_delta;
+    intval radius = -safe_delta;
   };
 
   using triangle = std::array<vec3i, 3>;
@@ -87,7 +87,7 @@ namespace laplace::engine::eval {
   using cref_vpolygon  = const vpolygon &;
   using cref_voctree   = const voctree &;
 
-  auto length(cref_vec3i v) -> vecval;
+  auto length(cref_vec3i v) -> intval;
 
   void append(ref_box a, cref_vec3i point);
   void append(ref_box a, cref_triangle b);
@@ -102,14 +102,14 @@ namespace laplace::engine::eval {
   auto vertex_of(cref_box a, size_t index) -> vec3i;
   auto center_of(cref_box a) -> vec3i;
   auto center_of(cref_triangle a) -> vec3i;
-  auto point_of(cref_ray a, vecval t) -> vec3i;
+  auto point_of(cref_ray a, intval t) -> vec3i;
   auto plane_of(cref_triangle a) -> plane;
   auto plane_of(cref_quad a) -> plane;
   auto plane_of(cref_polygon a) -> plane;
   auto plane_of(cref_box a, size_t index) -> plane;
 
-  auto flat_center_of(cref_box a, size_t index) -> vecval;
-  auto flat_center_of(cref_triangle a, size_t index) -> vecval;
+  auto flat_center_of(cref_box a, size_t index) -> intval;
+  auto flat_center_of(cref_triangle a, size_t index) -> intval;
 
   auto bounds_of(cref_cylinder a) -> box;
   auto bounds_of(cref_sphere a) -> box;
@@ -122,13 +122,13 @@ namespace laplace::engine::eval {
   auto raw_normal(cref_vec3i p0, cref_vec3i p1, cref_vec3i p2)
       -> vec3i;
   auto orientation(cref_triangle plane, cref_vec3i point)
-      -> vecval;
+      -> intval;
   auto square_distance(cref_triangle plane, cref_vec3i point)
-      -> vecval;
-  auto square_distance(cref_ray a, cref_vec3i point) -> vecval;
-  auto square_distance(cref_ray a, cref_ray b) -> vecval;
+      -> intval;
+  auto square_distance(cref_ray a, cref_vec3i point) -> intval;
+  auto square_distance(cref_ray a, cref_ray b) -> intval;
   auto abs_square_distance(cref_triangle plane, cref_vec3i point)
-      -> vecval;
+      -> intval;
   auto contains_flat(cref_triangle a, cref_vec3i point) -> bool;
   auto contains_flat(cref_quad a, cref_vec3i point) -> bool;
   auto contains_flat(cref_polygon a, cref_vec3i point) -> bool;
@@ -167,15 +167,15 @@ namespace laplace::engine::eval {
   auto intersects(cref_ray a, cref_sphere b) -> bool;
   auto intersects(cref_ray a, cref_octree b) -> bool;
 
-  auto intersection(cref_ray a, cref_plane b) -> vecval;
-  auto intersection(cref_ray a, cref_triangle b) -> vecval;
-  auto intersection(cref_ray a, cref_quad b) -> vecval;
-  auto intersection(cref_ray a, cref_polygon b) -> vecval;
+  auto intersection(cref_ray a, cref_plane b) -> intval;
+  auto intersection(cref_ray a, cref_triangle b) -> intval;
+  auto intersection(cref_ray a, cref_quad b) -> intval;
+  auto intersection(cref_ray a, cref_polygon b) -> intval;
 
-  auto intersection(cref_ray a, cref_box b) -> vecval;
-  auto intersection(cref_ray a, cref_cylinder b) -> vecval;
-  auto intersection(cref_ray a, cref_sphere b) -> vecval;
-  auto intersection(cref_ray a, cref_octree b) -> vecval;
+  auto intersection(cref_ray a, cref_box b) -> intval;
+  auto intersection(cref_ray a, cref_cylinder b) -> intval;
+  auto intersection(cref_ray a, cref_sphere b) -> intval;
+  auto intersection(cref_ray a, cref_octree b) -> intval;
 }
 
 #endif

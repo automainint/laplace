@@ -29,93 +29,97 @@ namespace laplace::engine::access {
     return *this;
   }
 
-  void world::desync() {
-    if (m_mode != forbidden) {
+  void world::desync() const {
+    if (m_mode > read_only) {
       m_world.get().desync();
     }
   }
 
-  auto world::reserve(size_t id) -> size_t {
+  auto world::reserve(size_t id) const -> size_t {
     size_t result = id_undefined;
 
-    if (m_mode == sync) {
+    if (m_mode > async) {
       result = m_world.get().reserve(id);
     }
 
     return result;
   }
 
-  void world::emplace(ptr_entity ent, size_t id) {
-    if (m_mode == sync) {
+  void world::emplace(ptr_entity ent, size_t id) const {
+    if (m_mode > async) {
       m_world.get().emplace(ent, id);
     }
   }
 
-  auto world::spawn(ptr_entity ent, size_t id) -> size_t {
+  auto world::spawn(ptr_entity ent, size_t id) const -> size_t {
     size_t result = id_undefined;
 
-    if (m_mode == sync) {
+    if (m_mode > async) {
       result = m_world.get().spawn(ent, id);
     }
 
     return result;
   }
 
-  void world::remove(size_t id) {
-    if (m_mode == sync) {
+  void world::remove(size_t id) const {
+    if (m_mode > async) {
       m_world.get().remove(id);
     }
   }
 
-  void world::respawn(size_t id) {
-    if (m_mode == sync) {
+  void world::respawn(size_t id) const {
+    if (m_mode > async) {
       m_world.get().respawn(id);
     }
   }
 
-  void world::clear() {
-    if (m_mode == sync) {
+  void world::clear() const {
+    if (m_mode > async) {
       m_world.get().clear();
     }
   }
 
-  void world::queue(ptr_impact ev) {
-    if (m_mode != forbidden) {
+  void world::queue(ptr_impact ev) const {
+    if (m_mode > read_only) {
       m_world.get().queue(ev);
     }
   }
 
-  void world::set_root(size_t id_root) {
-    if (m_mode == sync) {
+  void world::set_root(size_t id_root) const {
+    if (m_mode > async) {
       m_world.get().set_root(id_root);
     }
   }
 
-  auto world::get_root() -> size_t {
-    return m_world.get().get_root();
+  auto world::get_root() const -> size_t {
+    if (m_mode > forbidden) {
+      return m_world.get().get_root();
+    }
+
+    return id_undefined;
   }
 
-  auto world::has_entity(size_t id) -> bool {
-    if (m_mode != forbidden) {
+  auto world::has_entity(size_t id) const -> bool {
+    if (m_mode > forbidden) {
       return m_world.get().get_entity(id) ? true : false;
     }
 
     return false;
   }
 
-  auto world::get_entity(size_t id) -> access::entity {
+  auto world::get_entity(size_t id) const -> access::entity {
     return { m_world.get().get_entity(id), m_mode };
   }
 
-  auto world::select(condition op) -> access::ventity {
+  auto world::select(condition op) const -> access::ventity {
     return { m_world.get().select(op), m_mode };
   }
 
-  auto world::select_dynamic(condition op) -> access::ventity {
+  auto world::select_dynamic(condition op) const -> access::ventity {
     return { m_world.get().select_dynamic(op), m_mode };
   }
 
-  auto world::get_random_engine() -> ref_rand {
+  auto world::get_random_engine() const -> ref_rand {
     return m_world.get().get_random();
   }
 }

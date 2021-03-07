@@ -21,7 +21,7 @@ namespace laplace::engine::eval {
       std::exp2l, std::logl, std::log2l, std::log10l,
       math::round, math::realmax_t;
 
-  inline auto _scale(vecval x, vecval scale) -> math::realmax_t {
+  inline auto _scale(intval x, intval scale) -> math::realmax_t {
 
     if (scale == 0) {
       error(__FUNCTION__, "Invalid scale.");
@@ -32,19 +32,19 @@ namespace laplace::engine::eval {
   }
 
   template <typename func_, typename... args_>
-  inline auto _fixed(func_ op, vecval scale, args_... args) -> vecval {
-    return round<vecval>(op(_scale(args, scale)...) * scale);
+  inline auto _fixed(func_ op, intval scale, args_... args) -> intval {
+    return round<intval>(op(_scale(args, scale)...) * scale);
   }
 
-  auto pi(vecval scale) -> vecval {
-    return round<vecval>(std::numbers::pi_v<realmax_t> * scale);
+  auto pi(intval scale) -> intval {
+    return round<intval>(std::numbers::pi_v<realmax_t> * scale);
   }
 
-  auto e(vecval scale) -> vecval {
-    return round<vecval>(std::numbers::e_v<realmax_t> * scale);
+  auto e(intval scale) -> intval {
+    return round<intval>(std::numbers::e_v<realmax_t> * scale);
   }
 
-  auto sqrt(vecval x) -> vecval {
+  auto sqrt(intval x) -> intval {
     if (x < 0) {
       error(__FUNCTION__, "Invalid argument.");
       return 0;
@@ -53,7 +53,7 @@ namespace laplace::engine::eval {
     return _fixed(sqrtl, 1, x);
   }
 
-  auto sqrt(vecval x, vecval scale) -> vecval {
+  auto sqrt(intval x, intval scale) -> intval {
     if (x < 0) {
       error(__FUNCTION__, "Invalid argument.");
       return 0;
@@ -62,7 +62,7 @@ namespace laplace::engine::eval {
     return _fixed(sqrtl, scale, x);
   }
 
-  auto pow(vecval x, vecval y) -> vecval {
+  auto pow(intval x, intval y) -> intval {
     if (x < 0) {
       error(__FUNCTION__, "Invalid argument.");
       return 0;
@@ -71,7 +71,7 @@ namespace laplace::engine::eval {
     return _fixed(powl, 1, x, y);
   }
 
-  auto pow(vecval x, vecval y, vecval scale) -> vecval {
+  auto pow(intval x, intval y, intval scale) -> intval {
     if (x < 0) {
       error(__FUNCTION__, "Invalid argument.");
       return 0;
@@ -80,15 +80,15 @@ namespace laplace::engine::eval {
     return _fixed(powl, scale, x, y);
   }
 
-  auto exp(vecval x, vecval scale) -> vecval {
+  auto exp(intval x, intval scale) -> intval {
     return _fixed(expl, scale, x);
   }
 
-  auto exp2(vecval x, vecval scale) -> vecval {
+  auto exp2(intval x, intval scale) -> intval {
     return _fixed(exp2l, scale, x);
   }
 
-  auto log(vecval x, vecval scale) -> vecval {
+  auto log(intval x, intval scale) -> intval {
     if (x <= 0) {
       error(__FUNCTION__, "Invalid argument.");
       return 0;
@@ -97,7 +97,7 @@ namespace laplace::engine::eval {
     return _fixed(logl, scale, x);
   }
 
-  auto log2(vecval x, vecval scale) -> vecval {
+  auto log2(intval x, intval scale) -> intval {
     if (x <= 0) {
       error(__FUNCTION__, "Invalid argument.");
       return 0;
@@ -106,7 +106,7 @@ namespace laplace::engine::eval {
     return _fixed(log2l, scale, x);
   }
 
-  auto log10(vecval x, vecval scale) -> vecval {
+  auto log10(intval x, intval scale) -> intval {
     if (x <= 0) {
       error(__FUNCTION__, "Invalid argument.");
       return 0;
@@ -115,31 +115,31 @@ namespace laplace::engine::eval {
     return _fixed(log10l, scale, x);
   }
 
-  auto sin(vecval x, vecval scale) -> vecval {
+  auto sin(intval x, intval scale) -> intval {
     return _fixed(sinl, scale, x);
   }
 
-  auto cos(vecval x, vecval scale) -> vecval {
+  auto cos(intval x, intval scale) -> intval {
     return _fixed(cosl, scale, x);
   }
 
-  auto tan(vecval x, vecval scale) -> vecval {
+  auto tan(intval x, intval scale) -> intval {
     return _fixed(tanl, scale, x);
   }
 
-  auto asin(vecval x, vecval scale) -> vecval {
+  auto asin(intval x, intval scale) -> intval {
     return _fixed(asinl, scale, x);
   }
 
-  auto acos(vecval x, vecval scale) -> vecval {
+  auto acos(intval x, intval scale) -> intval {
     return _fixed(acosl, scale, x);
   }
 
-  auto atan(vecval x, vecval scale) -> vecval {
+  auto atan(intval x, intval scale) -> intval {
     return _fixed(atanl, scale, x);
   }
 
-  auto atan2(vecval y, vecval x, vecval scale) -> vecval {
+  auto atan2(intval y, intval x, intval scale) -> intval {
     return _fixed(atan2l, scale, y, x);
   }
 }

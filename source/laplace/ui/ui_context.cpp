@@ -13,11 +13,9 @@
 #include "context.h"
 
 namespace laplace::ui {
-  using std::make_shared, std::weak_ptr, std::u8string_view,
-      graphics::ref_texture, graphics::flat::ptr_solid_shader,
-      graphics::flat::ptr_sprite_shader, graphics::vec4,
-      text::ptr_renderer, elem::panel, elem::button,
-      elem::textedit;
+  using std::make_shared, std::span, std::weak_ptr,
+      std::u8string_view, graphics::ref_texture, graphics::vec4,
+      text::ptr_renderer, elem::panel, elem::button, elem::textedit;
 
   weak_ptr<context> context::m_default;
 
@@ -46,61 +44,49 @@ namespace laplace::ui {
     m_font = font;
   }
 
-  void context::setup(ptr_solid_shader shader) {
-    m_solid_shader = shader;
-  }
-
-  void context::setup(ptr_sprite_shader shader) {
-    m_sprite_shader = shader;
-  }
-
   void context::render(cref_rect r, ref_texture tex) {
-    if (m_sprite_shader) {
-      m_sprite_shader->use();
-      m_sprite_shader->set_texture(0);
+    if (m_render) {
+      const auto f = to_rectf(r);
+
+      const auto v = {
+        sprite_vertex { .position = { f.x, f.y },
+                        .texcoord = { 0.f, 1.f } },
+        sprite_vertex { .position = { f.x + f.width, f.y },
+                        .texcoord = { 1.f, 1.f } },
+        sprite_vertex { .position = { f.x, f.y + f.height },
+                        .texcoord = { 0.f, 0.f } },
+        sprite_vertex { .position = { f.x + f.width, f.y + f.height },
+                        .texcoord = { 1.f, 0.f } }
+      };
+
+      m_render->render_strip(v, tex);
     }
-
-    auto f = to_rectf(r);
-
-    tex.bind_2d(0);
-
-    m_sprite_buffer.render(f.x, f.y, f.width, f.height);
   }
 
   void context::render(panel::state panel_state) {
-    if (m_solid_shader) {
-      m_solid_shader->use();
+    if (m_render) {
+      render_solid(to_rectf(panel_state.rect), m_colors[0]);
     }
-
-    auto f = to_rectf(panel_state.rect);
-
-    m_solid_buffer.render(
-        f.x, f.y, f.width, f.height, m_colors[0]);
   }
 
   void context::render(button::state button_state) {
-    if (m_solid_shader) {
-      m_solid_shader->use();
-    }
+    if (m_render) {
+      size_t n0      = button_state.is_enabled ? 0 : 4;
+      size_t n_color = 0;
 
-    auto f = to_rectf(button_state.rect);
+      if (button_state.is_pressed) {
+        n_color = n0 + 2;
+      } else if (button_state.has_cursor) {
+        n_color = n0 + 1;
+      } else {
+        n_color = n0;
+      }
 
-    size_t n0 = button_state.is_enabled ? 0 : 4;
-
-    if (button_state.is_pressed) {
-      m_solid_buffer.render(
-          f.x, f.y, f.width, f.height, m_colors[n0 + 2]);
-    } else if (button_state.has_cursor) {
-      m_solid_buffer.render(
-          f.x, f.y, f.width, f.height, m_colors[n0 + 1]);
-    } else {
-      m_solid_buffer.render(
-          f.x, f.y, f.width, f.height, m_colors[n0 + 0]);
+      render_solid(to_rectf(button_state.rect), m_colors[n_color]);
     }
   }
 
-  void context::render(button::state button_state,
-                       u8string_view text) {
+  void context::render(button::state button_state, u8string_view text) {
     this->render(button_state);
 
     auto a = m_font->adjust(text);
@@ -115,18 +101,12 @@ namespace laplace::ui {
   }
 
   void context::render(textedit::state textedit_state) {
-    if (m_solid_shader) {
-      m_solid_shader->use();
-    }
-
     auto f = to_rectf(textedit_state.rect);
 
     if (textedit_state.has_focus) {
-      m_solid_buffer.render(
-          f.x, f.y, f.width, f.height, m_colors[1]);
+      render_solid(f, m_colors[1]);
     } else {
-      m_solid_buffer.render(
-          f.x, f.y, f.width, f.height, m_colors[0]);
+      render_solid(f, m_colors[0]);
     }
 
     auto a = m_font->adjust(textedit_state.text);
@@ -148,13 +128,29 @@ namespace laplace::ui {
   }
 
   auto context::get_default() -> ptr_context {
-    auto p = m_default.lock();
+    auto cont = m_default.lock();
 
-    if (!p) {
-      p         = make_shared<context>();
-      m_default = p;
+    if (!cont) {
+      cont      = make_shared<context>();
+      m_default = cont;
     }
 
-    return p;
+    return cont;
+  }
+
+  void context::render_solid(cref_rectf r, const vec4 color) {
+    if (m_render) {
+      const auto v = {
+        solid_vertex { .position = { r.x, r.y }, .color = color },
+        solid_vertex { .position = { r.x + r.width, r.y },
+                       .color    = color },
+        solid_vertex { .position = { r.x, r.y + r.height },
+                       .color    = color },
+        solid_vertex { .position = { r.x + r.width, r.y + r.height },
+                       .color    = color }
+      };
+
+      m_render->render_strip(v);
+    }
   }
 }

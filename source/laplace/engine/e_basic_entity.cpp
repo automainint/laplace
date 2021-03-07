@@ -470,7 +470,7 @@ namespace laplace::engine {
     return index < m_sets.size() ? m_sets[index].value : 0;
   }
 
-  void basic_entity::self_destruct(access::world w) {
+  void basic_entity::self_destruct(const access::world &w) {
     w.queue(make_shared<action::remove>(this->get_id()));
   }
 

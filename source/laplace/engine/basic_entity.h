@@ -255,7 +255,7 @@ namespace laplace::engine {
     [[nodiscard]] auto locked_get_by_id(size_t id) const
         -> int64_t;
 
-    void self_destruct(access::world w);
+    void self_destruct(const access::world &w);
     void desync();
 
     /*  Universal request implementation.

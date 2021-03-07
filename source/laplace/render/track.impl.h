@@ -14,22 +14,22 @@
 #define laplace_render_track_impl_h
 
 namespace laplace::render {
-  template <typename vecval>
-  inline track<vecval>::track() {
+  template <typename type_>
+  inline track<type_>::track() {
     this->m_is_uniform = false;
     this->m_delta      = timeval(1);
   }
 
-  template <typename vecval>
-  inline track<vecval>::~track() { }
+  template <typename type_>
+  inline track<type_>::~track() { }
 
-  template <typename vecval>
-  inline auto track<vecval>::op(cref_piece p, timeval t) -> bool {
+  template <typename type_>
+  inline auto track<type_>::op(cref_piece p, timeval t) -> bool {
     return p.time < t;
   }
 
-  template <typename vecval>
-  inline auto track<vecval>::solve(timeval t) const -> vecval {
+  template <typename type_>
+  inline auto track<type_>::solve(timeval t) const -> type_ {
     auto clamp_time = [this](timeval t) -> timeval {
       return m_pieces.empty()           ? timeval(0)
              : t < m_pieces[0].time     ? m_pieces[0].time
@@ -37,7 +37,7 @@ namespace laplace::render {
                                         : t;
     };
 
-    auto solve_uniform = [this](timeval t) -> vecval {
+    auto solve_uniform = [this](timeval t) -> type_ {
       assert(this->m_delta != 0);
 
       auto index = static_cast<size_t>(floor(t / this->m_delta));
@@ -45,7 +45,7 @@ namespace laplace::render {
       return this->solve(index, t);
     };
 
-    auto solve_direct = [this](timeval t) -> vecval {
+    auto solve_direct = [this](timeval t) -> type_ {
       auto i = std::lower_bound(
           this->m_pieces.begin() + 1, this->m_pieces.end(), t, op);
 
@@ -59,20 +59,19 @@ namespace laplace::render {
     return this->m_is_uniform ? solve_uniform(t) : solve_direct(t);
   }
 
-  template <typename vecval>
-  inline void track<vecval>::clear() {
+  template <typename type_>
+  inline void track<type_>::clear() {
     this->m_pieces.clear();
   }
 
-  template <typename vecval>
-  inline void track<vecval>::add(track<vecval>::cref_spline spline,
-                                 timeval time, vecval begin,
-                                 vecval end) {
+  template <typename type_>
+  inline void track<type_>::add(track<type_>::cref_spline spline,
+                                timeval time, type_ begin, type_ end) {
     this->m_pieces.push_back({ spline, time, begin, end });
   }
 
-  template <typename vecval>
-  inline void track<vecval>::adjust() {
+  template <typename type_>
+  inline void track<type_>::adjust() {
     auto comp = [](cref_piece a, cref_piece b) -> bool {
       return a.time < b.time;
     };
@@ -83,9 +82,9 @@ namespace laplace::render {
     std::sort(this->m_pieces.begin(), this->m_pieces.end(), comp);
   }
 
-  template <typename vecval>
-  inline auto track<vecval>::solve(size_t i, timeval time) const
-      -> vecval {
+  template <typename type_>
+  inline auto track<type_>::solve(size_t i, timeval time) const
+      -> type_ {
     realmax_t t = 0;
 
     if (i < this->m_pieces.size() - 1) {
@@ -124,11 +123,11 @@ namespace laplace::render {
                 this->m_pieces[i].spline.solve(curve_t)[1]);
   }
 
-  template <typename vecval>
-  inline auto track<vecval>::approximate(timeval delta) const
-      -> track<vecval> {
+  template <typename type_>
+  inline auto track<type_>::approximate(timeval delta) const
+      -> track<type_> {
 
-    track<vecval> result;
+    track<type_> result;
     result.m_is_uniform = true;
     result.m_delta      = delta;
 
@@ -214,48 +213,48 @@ namespace laplace::render {
     return result;
   }
 
-  template <typename vecval>
-  inline void track<vecval>::set_count(size_t count) {
+  template <typename type_>
+  inline void track<type_>::set_count(size_t count) {
     this->m_pieces.resize(count);
   }
 
-  template <typename vecval>
-  inline auto track<vecval>::get_count() const -> size_t {
+  template <typename type_>
+  inline auto track<type_>::get_count() const -> size_t {
     return this->m_pieces.size();
   }
 
-  template <typename vecval>
-  inline void track<vecval>::set_piece(size_t index,
-                                       track<vecval>::cref_piece p) {
+  template <typename type_>
+  inline void track<type_>::set_piece(size_t                   index,
+                                      track<type_>::cref_piece p) {
     this->m_pieces[index] = p;
   }
 
-  template <typename vecval>
-  inline auto track<vecval>::get_piece(size_t index)
-      -> track<vecval>::ref_piece {
+  template <typename type_>
+  inline auto track<type_>::get_piece(size_t index)
+      -> track<type_>::ref_piece {
     return this->m_pieces[index];
   }
 
-  template <typename vecval>
-  inline auto track<vecval>::get_piece(size_t index) const
-      -> track<vecval>::cref_piece {
+  template <typename type_>
+  inline auto track<type_>::get_piece(size_t index) const
+      -> track<type_>::cref_piece {
     return this->m_pieces[index];
   }
 
-  template <typename vecval>
-  inline auto track<vecval>::operator()(timeval t) const -> vecval {
+  template <typename type_>
+  inline auto track<type_>::operator()(timeval t) const -> type_ {
     return this->solve(t);
   }
 
-  template <typename vecval>
-  inline auto track<vecval>::operator[](size_t index)
-      -> track<vecval>::ref_piece {
+  template <typename type_>
+  inline auto track<type_>::operator[](size_t index)
+      -> track<type_>::ref_piece {
     return this->get_piece(index);
   }
 
-  template <typename vecval>
-  inline auto track<vecval>::operator[](size_t index) const
-      -> track<vecval>::cref_piece {
+  template <typename type_>
+  inline auto track<type_>::operator[](size_t index) const
+      -> track<type_>::cref_piece {
     return this->get_piece(index);
   }
 }

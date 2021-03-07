@@ -20,7 +20,8 @@
 namespace laplace::ui {
   using std::vector, graphics::prepare_ui, platform::ref_input;
 
-  auto widget::tick(size_t delta_msec, ref_input in, bool is_handled) -> bool {
+  auto widget::tick(uint64_t delta_msec, ref_input in, bool is_handled)
+      -> bool {
     return widget_tick(delta_msec, in, is_handled);
   }
 
@@ -143,8 +144,8 @@ namespace laplace::ui {
     m_is_changed = false;
   }
 
-  auto widget::widget_tick(size_t delta_msec, ref_input in, bool is_handled)
-      -> bool {
+  auto widget::widget_tick(uint64_t delta_msec, ref_input in,
+                           bool is_handled) -> bool {
     if (!m_is_attached) {
       m_absolute_x = m_rect.x;
       m_absolute_y = m_rect.y;
@@ -389,9 +390,8 @@ namespace laplace::ui {
         if (c.is_visible()) {
           childs.emplace_back(i);
 
-          context.emplace_back(
-              layout_context { .level = c.get_level(), //
-                               .box   = c.get_rect() });
+          context.emplace_back(layout_context { .level = c.get_level(), //
+                                                .box = c.get_rect() });
         }
       }
 

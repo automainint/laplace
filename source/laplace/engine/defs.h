@@ -22,21 +22,20 @@
 #include <vector>
 
 namespace laplace::engine {
-  using vecval = int64_t;
+  using intval = int64_t;
 
-  constexpr vecval epsilon    = 1;
-  constexpr vecval safe_delta = 2;
-  constexpr vecval infinity = std::numeric_limits<vecval>::max() >>
-                              8;
-  constexpr vecval safe_limit =
-      std::numeric_limits<vecval>::max() >> 4;
+  constexpr intval epsilon    = 1;
+  constexpr intval safe_delta = 2;
+  constexpr intval intval_max = std::numeric_limits<intval>::max();
+  constexpr intval infinity   = intval_max >> 4;
+  constexpr intval safe_limit = intval_max >> 2;
 
   constexpr uint64_t time_undefined = -1;
   constexpr size_t   id_undefined   = -1;
 
-  using vec2i = math::vector<2, vecval>;
-  using vec3i = math::vector<3, vecval>;
-  using vec4i = math::vector<4, vecval>;
+  using vec2i = math::vector<2, intval>;
+  using vec3i = math::vector<3, intval>;
+  using vec4i = math::vector<4, intval>;
 
   using ref_vec2i = vec2i &;
   using ref_vec3i = vec3i &;

@@ -15,16 +15,20 @@
 
 #include "../../laplace/network/defs.h"
 #include "../../laplace/network/server.h"
-#include "view/landscape.h"
+#include "../../laplace/platform/wrap.h"
 #include "protocol/ids.h"
 #include "qw_factory.h"
 #include "ui/lobby.h"
+#include "view/game.h"
 
 namespace quadwar_app {
   class session {
   public:
     using event_done = std::function<void()>;
     using event_quit = std::function<void()>;
+
+    static constexpr auto sense_move  = 1.5f;
+    static constexpr auto sense_scale = .0003f;
 
     static constexpr auto host_info_file = ".host";
 
@@ -46,7 +50,7 @@ namespace quadwar_app {
     void on_done(event_done ev);
     void on_quit(event_quit ev);
 
-    void tick(size_t delta_msec);
+    void tick(uint64_t delta_msec, platform::ref_input in);
     void render();
 
     void attach_to(ui::ptr_widget w);
@@ -67,6 +71,7 @@ namespace quadwar_app {
         std::string_view default_address) -> std::string;
 
   private:
+    void update_control(uint64_t delta_msec, platform::ref_input in);
     void update_lobby();
     void save_host_info(uint16_t port);
 
@@ -90,7 +95,7 @@ namespace quadwar_app {
 
     network::ptr_server m_server;
 
-    view::landscape m_landscape;
+    view::game m_view;
 
     ui::lobby m_lobby;
   };

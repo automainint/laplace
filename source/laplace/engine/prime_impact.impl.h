@@ -31,27 +31,27 @@ namespace laplace::engine {
     using namespace protocol;
 
     if (get_id(seq) >= ids::_unindexed_count)
-      wr<uint64_t>(seq, basic_impact::n_index, index);
+      wr<uint64_t>(seq, n_index, index);
   }
 
   constexpr auto prime_impact::get_id_unsafe(cref_vbyte seq)
       -> uint16_t {
-    return rd<uint16_t>(seq, basic_impact::n_id);
+    return rd<uint16_t>(seq, n_id);
   }
 
   constexpr auto prime_impact::get_index_unsafe(cref_vbyte seq)
       -> size_t {
-    return as_index(rd<uint64_t>(seq, basic_impact::n_index));
+    return as_index(rd<uint64_t>(seq, n_index));
   }
 
   constexpr auto prime_impact::get_time_unsafe(cref_vbyte seq)
       -> uint64_t {
-    return rd<uint64_t>(seq, basic_impact::n_time);
+    return rd<uint64_t>(seq, n_time);
   }
 
   constexpr auto prime_impact::get_actor_unsafe(cref_vbyte seq)
       -> size_t {
-    return as_index(rd<uint64_t>(seq, basic_impact::n_actor));
+    return as_index(rd<uint64_t>(seq, n_actor));
   }
 
   constexpr auto prime_impact::get_id(cref_vbyte seq) -> uint16_t {
@@ -93,23 +93,23 @@ namespace laplace::engine {
 
   inline auto prime_impact::get_string(cref_vbyte seq, size_t offset)
       -> std::u8string_view {
+
     if (offset >= seq.size())
       return {};
 
-    return std::u8string_view { reinterpret_cast<const char8_t *>(
-                                    seq.data() + offset),
-                                seq.size() - offset };
+    return { reinterpret_cast<const char8_t *>(seq.data() + offset),
+             seq.size() - offset };
   }
 
   inline auto prime_impact::get_string(cref_vbyte seq, size_t offset,
                                        size_t size)
       -> std::u8string_view {
+
     if (offset + size > seq.size())
       return {};
 
-    return std::u8string_view {
-      reinterpret_cast<const char8_t *>(seq.data() + offset), size
-    };
+    return { reinterpret_cast<const char8_t *>(seq.data() + offset),
+             size };
   }
 
   constexpr void prime_impact::set_encoded_size(size_t size) {

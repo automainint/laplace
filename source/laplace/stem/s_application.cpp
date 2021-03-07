@@ -22,17 +22,15 @@
 namespace laplace::stem {
   using std::make_shared, std::make_unique, config::load,
       config::k_frame, config::k_caption, config::k_shaders,
-      config::k_flat_solid, config::k_flat_sprite,
-      config::k_vertex, config::k_fragment, config::k_folder,
-      platform::window, platform::input, platform::glcontext,
-      platform::ref_window, platform::ref_input,
-      platform::ref_glcontext, graphics::flat::solid_shader,
-      graphics::flat::sprite_shader, core::cref_family,
-      std::wstring, std::wstring_view, std::unique_ptr,
-      std::istream, std::ifstream;
+      config::k_flat_solid, config::k_flat_sprite, config::k_vertex,
+      config::k_fragment, config::k_folder, platform::window,
+      platform::input, platform::glcontext, platform::ref_window,
+      platform::ref_input, platform::ref_glcontext,
+      graphics::flat::solid_shader, graphics::flat::sprite_shader,
+      core::cref_family, std::wstring, std::wstring_view,
+      std::unique_ptr, std::istream, std::ifstream;
 
-  application::application(int argc, char **argv,
-                           cref_family def_cfg) {
+  application::application(int argc, char **argv, cref_family def_cfg) {
     m_config = load(argc, argv, def_cfg);
   }
 
@@ -58,8 +56,7 @@ namespace laplace::stem {
     m_input = make_shared<input>();
 
     m_window->set_input(m_input);
-    m_window->set_name(
-        to_wstring(m_config[k_caption].get_string()));
+    m_window->set_name(to_wstring(m_config[k_caption].get_string()));
     m_window->set_size(frame_width, frame_height);
     m_window->set_fullscreen_mode(
         frame_width, frame_height, frame_rate);
@@ -78,7 +75,7 @@ namespace laplace::stem {
       }
     });
 
-    m_window->on_frame([this](size_t delta_msec) {
+    m_window->on_frame([this](uint64_t delta_msec) {
       update(delta_msec);
       render();
     });
@@ -102,15 +99,14 @@ namespace laplace::stem {
     m_render.reset();
   }
 
-  void application::update(size_t delta_msec) { }
+  void application::update(uint64_t delta_msec) { }
 
   void application::render() {
     m_gl->swap_buffers();
   }
 
   void application::set_frame_size(size_t width, size_t height) {
-    adjust_layout(
-        static_cast<int>(width), static_cast<int>(height));
+    adjust_layout(static_cast<int>(width), static_cast<int>(height));
 
     graphics::viewport(0, 0, width, height);
 
@@ -137,35 +133,27 @@ namespace laplace::stem {
 
   void application::load_shaders() {
     if (m_config.has(k_shaders)) {
-      auto &s_cfg       = m_config[k_shaders];
-      bool  setup_flat  = false;
-      bool  setup_tridi = false;
+      auto &s_cfg = m_config[k_shaders];
 
       if (s_cfg.has(k_flat_solid)) {
-        setup_flat     = true;
-        auto vert_path = shader_path(k_flat_solid, k_vertex);
-        auto frag_path = shader_path(k_flat_solid, k_fragment);
-        auto vert      = open(vert_path);
-        auto frag      = open(frag_path);
+        const auto vert_path = shader_path(k_flat_solid, k_vertex);
+        const auto frag_path = shader_path(k_flat_solid, k_fragment);
+        const auto vert      = open(vert_path);
+        const auto frag      = open(frag_path);
+
         m_flat_solid = make_shared<solid_shader>(*vert, *frag);
       }
 
       if (s_cfg.has(k_flat_sprite)) {
-        setup_flat     = true;
-        auto vert_path = shader_path(k_flat_sprite, k_vertex);
-        auto frag_path = shader_path(k_flat_sprite, k_fragment);
-        auto vert      = open(vert_path);
-        auto frag      = open(frag_path);
+        const auto vert_path = shader_path(k_flat_sprite, k_vertex);
+        const auto frag_path = shader_path(k_flat_sprite, k_fragment);
+        const auto vert      = open(vert_path);
+        const auto frag      = open(frag_path);
+
         m_flat_sprite = make_shared<sprite_shader>(*vert, *frag);
       }
 
-      if (setup_flat) {
-        setup_to(m_ui);
-      }
-
-      if (setup_tridi) {
-        setup_to(m_render);
-      }
+      setup_to(m_render);
     }
   }
 
@@ -190,21 +178,17 @@ namespace laplace::stem {
     }
   }
 
-  void application::setup_to(ui::ptr_context cont) {
+  void application::setup_to(render::ptr_context cont) {
     if (cont) {
       cont->setup(m_flat_solid);
       cont->setup(m_flat_sprite);
     }
   }
 
-  void application::setup_to(render::ptr_context cont) { }
-
   auto application::shader_path(const char *name,
-                                const char *type) const
-      -> wstring {
+                                const char *type) const -> wstring {
     return to_wstring(m_config[k_shaders][k_folder].get_string()) +
-           to_wstring(
-               m_config[k_shaders][name][type].get_string());
+           to_wstring(m_config[k_shaders][name][type].get_string());
   }
 
   auto application::open(wstring_view file_name)

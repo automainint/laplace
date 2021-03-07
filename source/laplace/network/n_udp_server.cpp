@@ -87,7 +87,7 @@ namespace laplace::network {
     }
   }
 
-  void udp_server::tick(size_t delta_msec) {
+  void udp_server::tick(uint64_t delta_msec) {
     reset_tick();
 
     receive_events();
@@ -250,7 +250,7 @@ namespace laplace::network {
     return chunk_size;
   }
 
-  void udp_server::update_world(size_t delta_msec) {
+  void udp_server::update_world(uint64_t delta_msec) {
     if (is_master()) {
       if (get_state() == server_state::action) {
         if (auto sol = get_solver(); sol) {
@@ -781,11 +781,11 @@ namespace laplace::network {
   }
 
   void udp_server::update_time_limit(uint64_t time) {
-    if (m_time_limit < time)
+    if (time != -1 && m_time_limit < time)
       m_time_limit = time;
   }
 
-  auto udp_server::convert_delta(size_t delta_msec) -> uint64_t {
+  auto udp_server::convert_delta(uint64_t delta_msec) -> uint64_t {
     if (auto sol = get_solver(); sol) {
       const auto time = sol->get_time();
 

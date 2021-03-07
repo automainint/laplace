@@ -27,17 +27,17 @@ namespace quadwar_app {
   static constexpr auto k_player_count   = "player_count";
   static constexpr auto k_unit_count     = "unit_count";
 
-  static constexpr auto default_player_names = //
-      { u8"Newbye",   u8"Alice",    u8"Bob",       u8"Gosu",
-        u8"Decartes", u8"Socrates", u8"Spinosa",   u8"Pluto",
-        u8"Monke",    u8"Deleuze",  u8"Sorceress", u8"Daemon",
-        u8"Warlock" };
+  static constexpr auto default_player_names = {
+    u8"Newbye",    u8"Alice",   u8"Bob",     u8"Gosu",   u8"Decartes",
+    u8"Socrates",  u8"Spinosa", u8"Pluto",   u8"Monke",  u8"Deleuze",
+    u8"Sorceress", u8"Daemon",  u8"Warlock", u8"Ranger", u8"Priest"
+  };
 
   static constexpr auto default_server_address = "127.0.0.1";
   static constexpr auto default_game_name      = "Unknown";
   static constexpr auto default_player_count   = 4u;
   static constexpr auto default_unit_count     = 8u;
-  static constexpr auto default_map_size       = 16;
+  static constexpr auto default_map_size       = 16u;
 
   class quadwar : public stem::app_flat {
   public:
@@ -49,7 +49,7 @@ namespace quadwar_app {
   protected:
     void init() override;
     void cleanup() override;
-    void update(size_t delta_msec) override;
+    void update(uint64_t delta_msec) override;
     void render() override;
     void adjust_layout(int width, int height) override;
 

@@ -23,9 +23,9 @@ namespace laplace::network {
   public:
     static constexpr bool     default_verbose                 = false;
     static constexpr uint64_t default_tick_duration_msec      = 10;
-    static constexpr uint64_t default_connection_timeout_msec = 1000;
     static constexpr uint64_t default_update_timeout_msec     = 10;
     static constexpr uint64_t default_ping_timeout_msec       = 100;
+    static constexpr uint64_t default_connection_timeout_msec = 1000;
 
     server() = default;
     virtual ~server();
@@ -34,7 +34,7 @@ namespace laplace::network {
     void set_verbose(bool verbose) noexcept;
 
     virtual void queue(cref_vbyte seq);
-    virtual void tick(size_t delta_msec);
+    virtual void tick(uint64_t delta_msec);
 
     virtual void reconnect();
 
@@ -86,7 +86,7 @@ namespace laplace::network {
     /*  Update tick timer. Returns time
      *  delta in ticks.
      */
-    [[nodiscard]] auto adjust_delta(size_t delta_msec) noexcept
+    [[nodiscard]] auto adjust_delta(uint64_t delta_msec) noexcept
         -> uint64_t;
 
     [[nodiscard]] auto get_connection_timeout() const noexcept

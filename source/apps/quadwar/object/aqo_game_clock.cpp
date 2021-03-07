@@ -35,7 +35,7 @@ namespace quadwar_app::object {
     *this = m_proto;
   }
 
-  void game_clock::tick(world w) {
+  void game_clock::tick(access_world) {
     const auto time    = get(n_clock_time) * server_tick_duration;
     const auto seconds = time / sets::scale_time;
 

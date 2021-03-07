@@ -19,9 +19,9 @@
 namespace laplace::engine::eval {
   using std::min, std::max, std::midpoint;
 
-  using _unary = vecval (*)(vecval);
+  using _unary = intval (*)(intval);
 
-  auto length(cref_vec3i v) -> vecval {
+  auto length(cref_vec3i v) -> intval {
     return math::length<vec3i, _unary>(v, eval::sqrt);
   }
 
@@ -117,7 +117,7 @@ namespace laplace::engine::eval {
              flat_center_of(a, 2) };
   }
 
-  auto point_of(cref_ray a, vecval t) -> vec3i {
+  auto point_of(cref_ray a, intval t) -> vec3i {
 
     const auto len = length(a.direction);
 
@@ -160,11 +160,11 @@ namespace laplace::engine::eval {
     return plane { a.max, { 1, 0, 0 } };
   }
 
-  auto flat_center_of(cref_box a, size_t index) -> vecval {
+  auto flat_center_of(cref_box a, size_t index) -> intval {
     return index < 3 ? midpoint(a.min[index], a.max[index]) : 0ll;
   }
 
-  auto flat_center_of(cref_triangle a, size_t index) -> vecval {
+  auto flat_center_of(cref_triangle a, size_t index) -> intval {
     if (index < 3) {
       auto p0 = min(min(a[0][index], a[1][index]), a[2][index]);
       auto p1 = max(max(a[0][index], a[1][index]), a[2][index]);
@@ -234,14 +234,14 @@ namespace laplace::engine::eval {
   }
 
   auto orientation(cref_triangle plane, cref_vec3i point)
-      -> vecval {
+      -> intval {
     const auto n = raw_normal(plane);
     const auto r = point - plane[0];
     return math::dot(n, r);
   }
 
   auto square_distance(cref_triangle plane, cref_vec3i point)
-      -> vecval {
+      -> intval {
     const auto n = raw_normal(plane);
     const auto l = math::square_length(n);
 
@@ -255,7 +255,7 @@ namespace laplace::engine::eval {
     return safe_limit;
   }
 
-  auto square_distance(cref_ray a, cref_vec3i point) -> vecval {
+  auto square_distance(cref_ray a, cref_vec3i point) -> intval {
     auto r = point - a.base;
 
     if (abs(r.x()) + abs(r.y()) + abs(r.z()) <= epsilon) {
@@ -268,7 +268,7 @@ namespace laplace::engine::eval {
     return square_distance(a, b);
   }
 
-  auto square_distance(cref_ray a, cref_ray b) -> vecval {
+  auto square_distance(cref_ray a, cref_ray b) -> intval {
     const auto l0 = length(a.direction);
     const auto l1 = length(b.direction);
 
@@ -285,7 +285,7 @@ namespace laplace::engine::eval {
   }
 
   auto abs_square_distance(cref_triangle plane, cref_vec3i point)
-      -> vecval {
+      -> intval {
     const auto n = raw_normal(plane);
     const auto l = math::square_length(n);
 
@@ -453,7 +453,7 @@ namespace laplace::engine::eval {
   }
 
   auto intersects(cref_box a, cref_cylinder b) -> bool {
-    auto contains_flat = [](vecval x, vecval y,
+    auto contains_flat = [](intval x, intval y,
                             const cylinder &b) -> bool {
       if (auto dx = abs(b.base.x() - x); dx - epsilon <= b.radius)
         if (auto dy = abs(b.base.y() - y);
@@ -555,7 +555,7 @@ namespace laplace::engine::eval {
     if (a.base.z() + a.height + epsilon <= b.center.z() - b.radius)
       return false;
 
-    vecval dx, dy;
+    intval dx, dy;
     auto   d = a.radius + b.radius;
     if (dx = abs(a.base.x() - b.center.x()); dx - epsilon >= d)
       return false;
@@ -565,7 +565,7 @@ namespace laplace::engine::eval {
     if (r - epsilon >= d)
       return false;
 
-    auto l = eval::sqrt(r) - math::round<vecval>(a.radius);
+    auto l = eval::sqrt(r) - math::round<intval>(a.radius);
     auto h = a.radius * a.radius - l * l;
     if (a.base.z() - epsilon >= b.center.z() + h)
       return false;
@@ -751,7 +751,7 @@ namespace laplace::engine::eval {
   }
 
   auto intersects(cref_ray a, cref_triangle b) -> bool {
-    vecval t = intersection(a, plane_of(b));
+    intval t = intersection(a, plane_of(b));
     return t + epsilon >= 0 && contains_flat(b, point_of(a, t));
   }
 
@@ -839,7 +839,7 @@ namespace laplace::engine::eval {
     return false;
   }
 
-  auto intersection(cref_ray a, cref_plane b) -> vecval {
+  auto intersection(cref_ray a, cref_plane b) -> intval {
     const auto r     = b.base - a.base;
     const auto r_cos = math::dot(r, b.normal);
     const auto n     = r_cos < 0 ? b.normal : -b.normal;
@@ -855,7 +855,7 @@ namespace laplace::engine::eval {
     return -safe_limit;
   }
 
-  auto intersection(cref_ray a, cref_triangle b) -> vecval {
+  auto intersection(cref_ray a, cref_triangle b) -> intval {
     auto t = intersection(a, plane_of(b));
 
     if (t > -infinity && !contains_flat(b, point_of(a, t))) {
@@ -865,7 +865,7 @@ namespace laplace::engine::eval {
     return t;
   }
 
-  auto intersection(cref_ray a, cref_quad b) -> vecval {
+  auto intersection(cref_ray a, cref_quad b) -> intval {
     auto t = intersection(a, plane_of(b));
 
     if (t > -infinity && !contains_flat(b, point_of(a, t))) {
@@ -875,7 +875,7 @@ namespace laplace::engine::eval {
     return t;
   }
 
-  auto intersection(cref_ray a, cref_polygon b) -> vecval {
+  auto intersection(cref_ray a, cref_polygon b) -> intval {
     auto t = intersection(a, plane_of(b));
 
     if (t > -infinity && !contains_flat(b, point_of(a, t))) {
@@ -885,7 +885,7 @@ namespace laplace::engine::eval {
     return t;
   }
 
-  auto intersection(cref_ray a, cref_box b) -> vecval {
+  auto intersection(cref_ray a, cref_box b) -> intval {
     if (contains(b, a.base)) {
       auto t0 = max(intersection(a, plane_of(b, 0)),
                     intersection(a, plane_of(b, 1)));
@@ -916,8 +916,8 @@ namespace laplace::engine::eval {
    *  The equation:
    *      a x^2 + b x + c = 0
    */
-  static auto quadratic_solution(vecval a, vecval b, vecval c)
-      -> vecval {
+  static auto quadratic_solution(intval a, intval b, intval c)
+      -> intval {
     if (a == 0) {
       /*  Linear solution.
        */
@@ -947,7 +947,7 @@ namespace laplace::engine::eval {
            (2 * a);
   }
 
-  auto intersection(cref_ray ra, cref_cylinder cyl) -> vecval {
+  auto intersection(cref_ray ra, cref_cylinder cyl) -> intval {
     auto rr = cyl.radius * cyl.radius;
 
     if (square_distance(ra, ray { cyl.base, vec3i { 0, 0, 1 } }) +
@@ -1040,7 +1040,7 @@ namespace laplace::engine::eval {
     return -safe_limit;
   }
 
-  auto intersection(cref_ray ra, cref_sphere sph) -> vecval {
+  auto intersection(cref_ray ra, cref_sphere sph) -> intval {
     auto rr = sph.radius * sph.radius;
 
     if (square_distance(ra, sph.center) + epsilon >= rr) {
@@ -1097,7 +1097,7 @@ namespace laplace::engine::eval {
                               dx * dx + dy * dy + dz * dz - rr);
   }
 
-  auto intersection(cref_ray a, cref_octree b) -> vecval {
+  auto intersection(cref_ray a, cref_octree b) -> intval {
     if (!intersects(a, b.bounds)) {
       return -safe_limit;
     }

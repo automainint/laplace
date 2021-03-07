@@ -53,13 +53,6 @@ namespace laplace::engine {
    */
   class basic_impact {
   public:
-    enum encoding_offset : size_t {
-      n_id    = 0,
-      n_index = 2,
-      n_time  = 10,
-      n_actor = 18
-    };
-
     constexpr basic_impact()                     = default;
     constexpr basic_impact(const basic_impact &) = default;
     constexpr basic_impact(basic_impact &&)      = default;

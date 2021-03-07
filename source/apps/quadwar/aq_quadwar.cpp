@@ -118,11 +118,11 @@ namespace quadwar_app {
     app_flat::cleanup();
   }
 
-  void quadwar::update(size_t delta_msec) {
+  void quadwar::update(uint64_t delta_msec) {
     app_flat::update(delta_msec);
 
     if (m_session) {
-      m_session->tick(delta_msec);
+      m_session->tick(delta_msec, get_input());
     }
   }
 

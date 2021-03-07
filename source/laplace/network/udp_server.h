@@ -26,8 +26,8 @@ namespace laplace::network {
   public:
     enum encoding_offset { n_command = 2 };
 
-    static constexpr size_t   slot_host            = -1;
-    static constexpr size_t   slot_count_unlimited = -1;
+    static constexpr size_t slot_host            = -1;
+    static constexpr size_t slot_count_unlimited = -1;
 
     static constexpr size_t default_chunk_size     = 4096;
     static constexpr size_t default_chunk_overhead = 1024;
@@ -40,7 +40,7 @@ namespace laplace::network {
                         size_t overhead = default_chunk_overhead);
 
     void queue(cref_vbyte seq) override;
-    void tick(size_t delta_msec) override;
+    void tick(uint64_t delta_msec) override;
 
     [[nodiscard]] auto get_port() const -> uint16_t;
 
@@ -82,7 +82,7 @@ namespace laplace::network {
     [[nodiscard]] auto adjust_chunk_size(cref_vbyte chunk) const
         -> size_t;
 
-    void update_world(size_t delta_msec);
+    void update_world(uint64_t delta_msec);
 
     void send_events();
 
@@ -124,7 +124,7 @@ namespace laplace::network {
     void update_local_time(uint64_t delta_msec);
     void update_time_limit(uint64_t time);
 
-    [[nodiscard]] auto convert_delta(size_t delta_msec) -> uint64_t;
+    [[nodiscard]] auto convert_delta(uint64_t delta_msec) -> uint64_t;
     [[nodiscard]] auto adjust_overtake(uint64_t time) -> uint64_t;
 
     std::vector<slot_info> m_slots;

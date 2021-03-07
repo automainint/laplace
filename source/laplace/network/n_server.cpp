@@ -40,7 +40,7 @@ namespace laplace::network {
   }
 
   void server::queue(cref_vbyte seq) { }
-  void server::tick(size_t delta_msec) { }
+  void server::tick(uint64_t delta_msec) { }
   void server::reconnect() { }
 
   auto server::get_factory() const -> ptr_factory {
@@ -160,7 +160,7 @@ namespace laplace::network {
     m_bytes_loss += count;
   }
 
-  auto server::adjust_delta(size_t delta_msec) noexcept -> uint64_t {
+  auto server::adjust_delta(uint64_t delta_msec) noexcept -> uint64_t {
     uint64_t delta = 0;
 
     if (m_tick_duration_msec > 0) {

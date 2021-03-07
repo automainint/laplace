@@ -14,14 +14,15 @@
 #define laplace_engine_access_world_impl_h
 
 namespace laplace::engine::access {
-  template <typename distribution>
-  inline auto world::random(distribution &dist) ->
-      typename distribution::result_type {
-    if (this->m_mode == sync) {
+  template <typename dist_>
+  inline auto world::random(dist_ &dist) const ->
+      typename dist_::result_type {
+
+    if (this->m_mode > async) {
       return dist(get_random_engine());
     }
 
-    return distribution::result_type(0);
+    return {};
   }
 }
 

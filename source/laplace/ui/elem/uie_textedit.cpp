@@ -17,7 +17,7 @@ namespace laplace::ui::elem {
     m_filter = f;
   }
 
-  auto textedit::tick(size_t delta_msec, ref_input in,
+  auto textedit::tick(uint64_t delta_msec, ref_input in,
                       bool is_handled) -> bool {
     return is_handled || textedit_tick(in);
   }
@@ -72,9 +72,8 @@ namespace laplace::ui::elem {
   }
 
   auto textedit::get_state() const -> textedit::state {
-    return { panel::get_state(),   has_focus(),
-             u8string(get_text()), m_length_limit,
-             get_cursor(),         get_selection() };
+    return { panel::get_state(), has_focus(),  u8string(get_text()),
+             m_length_limit,     get_cursor(), get_selection() };
   }
 
   auto textedit::update(ptr_widget       object,
@@ -118,7 +117,8 @@ namespace laplace::ui::elem {
               if (textedit_state.length_limit == 0 ||
                   text.size() < textedit_state.length_limit)
                 if (!utf8_encode(c, text, cursor))
-                  error(__FUNCTION__, "Unable to encode UTF-8 string.");
+                  error(
+                      __FUNCTION__, "Unable to encode UTF-8 string.");
             }
           }
         }
@@ -139,8 +139,7 @@ namespace laplace::ui::elem {
         return true;
       }
     } else {
-      auto s = update(
-          shared_from_this(), get_state(), m_filter, in);
+      auto s = update(shared_from_this(), get_state(), m_filter, in);
 
       set_focus(s.has_focus);
       set_text(s.text);

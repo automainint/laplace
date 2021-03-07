@@ -24,11 +24,11 @@ namespace laplace::engine::object {
     n_is_local = index_of(sets::is_local);
   }
 
-  void actor::set_local(access::entity en, bool is_local) {
+  void actor::set_local(const access::entity &en, bool is_local) {
     en.set(n_is_local, is_local);
   }
 
-  auto actor::is_local(access::entity en) -> bool {
+  auto actor::is_local(const access::entity &en) -> bool {
     return en.get(n_is_local) > 0 ? true : false;
   }
 }

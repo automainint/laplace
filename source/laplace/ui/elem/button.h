@@ -35,8 +35,8 @@ namespace laplace::ui::elem {
 
     void on_click(event_button_click ev);
 
-    auto tick(size_t delta_msec, platform::ref_input in, bool is_handled)
-        -> bool final;
+    auto tick(uint64_t delta_msec, platform::ref_input in,
+              bool is_handled) -> bool final;
     void render() override;
 
     void set_pressed(bool is_pressed);

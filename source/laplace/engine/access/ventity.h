@@ -22,7 +22,9 @@ namespace laplace::engine::access {
     auto operator=(const ventity &) -> ventity & = delete;
 
     [[nodiscard]] ventity(ventity &&ents) noexcept;
-    [[nodiscard]] ventity(vptr_entity ents, mode access_mode);
+
+    [[nodiscard]] ventity(vptr_entity ents,
+                          mode        access_mode = read_only);
 
     auto operator=(ventity &&ents) noexcept -> ventity &;
 

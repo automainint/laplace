@@ -74,21 +74,29 @@ namespace laplace::network {
   auto remote::perform_control(size_t slot, cref_vbyte seq) -> bool {
 
     if (server_idle::scan(seq)) {
-      const auto &qu          = m_slots[slot].queue;
-      const auto  index       = server_idle::get_idle_index(seq);
-      const auto  event_count = qu.index + qu.events.size();
+      const auto index = server_idle::get_idle_index(seq);
 
-      if (index > event_count) {
-        vuint events;
+      if (index != -1) {
+        const auto &qu          = m_slots[slot].queue;
+        const auto  event_count = qu.index + qu.events.size();
 
-        for (size_t n = event_count; n < index; n++) {
-          events.emplace_back(n);
+        if (index > event_count) {
+          vuint events;
+
+          for (size_t n = event_count; n < index; n++) {
+            events.emplace_back(n);
+
+            if (events.size() >= request_events::max_event_count) {
+              break;
+            }
+          }
+
+          send_event_to(slot, encode<request_events>(events));
         }
 
-        send_event_to(slot, encode<request_events>(events));
+        update_time_limit(server_idle::get_idle_time(seq));
       }
 
-      update_time_limit(server_idle::get_idle_time(seq));
       return true;
     }
 

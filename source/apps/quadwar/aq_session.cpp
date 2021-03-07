@@ -15,6 +15,7 @@
 #include "../../laplace/engine/protocol/slot_create.h"
 #include "../../laplace/network/host.h"
 #include "../../laplace/network/remote.h"
+#include "../../laplace/platform/keys.h"
 #include "object/player.h"
 #include "object/root.h"
 #include "protocol/qw_player_name.h"
@@ -30,7 +31,8 @@ namespace quadwar_app {
   using std::find, std::make_shared, std::string, std::string_view,
       std::u8string_view, std::ofstream, std::ifstream, network::host,
       network::remote, protocol::qw_player_name, object::root,
-      object::player, engine::id_undefined;
+      object::player, engine::id_undefined, platform::ref_input,
+      view::vec2;
 
   session::session() {
     m_lobby.on_abort([=] {
@@ -62,11 +64,13 @@ namespace quadwar_app {
     m_on_quit = ev;
   }
 
-  void session::tick(size_t delta_msec) {
+  void session::tick(uint64_t delta_msec, ref_input in) {
     if (m_server && m_world) {
       m_server->tick(delta_msec);
 
       if (m_server->is_connected()) {
+        update_control(delta_msec, in);
+
         update_lobby();
 
       } else if (m_server->is_quit()) {
@@ -87,7 +91,7 @@ namespace quadwar_app {
 
   void session::render() {
     if (m_world) {
-      m_landscape.render({ *m_world, access::async });
+      m_view.render(*m_world);
     }
   }
 
@@ -97,6 +101,7 @@ namespace quadwar_app {
 
   void session::adjust_layout(int width, int height) {
     m_lobby.adjust_layout(width, height);
+    m_view.adjust_layout(width, height);
   }
 
   void session::set_server_ip(string_view server_ip) {
@@ -198,6 +203,39 @@ namespace quadwar_app {
     }
 
     return string(default_address);
+  }
+
+  void session::update_control(uint64_t delta_msec, ref_input in) {
+    bool is_moved = false;
+    vec2 delta;
+
+    if (in.is_key_down(platform::key_left)) {
+      is_moved = true;
+      delta.x() -= sense_move * delta_msec;
+    }
+
+    if (in.is_key_down(platform::key_right)) {
+      is_moved = true;
+      delta.x() += sense_move * delta_msec;
+    }
+
+    if (in.is_key_down(platform::key_up)) {
+      is_moved = true;
+      delta.y() -= sense_move * delta_msec;
+    }
+
+    if (in.is_key_down(platform::key_down)) {
+      is_moved = true;
+      delta.y() += sense_move * delta_msec;
+    }
+
+    if (in.get_wheel_delta() != 0) {
+      m_view.scale(sense_scale * in.get_wheel_delta());
+    }
+
+    if (is_moved) {
+      m_view.move(delta);
+    }
   }
 
   void session::update_lobby() {

@@ -35,7 +35,7 @@ namespace laplace::stem {
     application::cleanup();
   }
 
-  void app_flat::update(size_t delta_msec) {
+  void app_flat::update(uint64_t delta_msec) {
     m_ui->tick(delta_msec, get_input(), false);
   }
 
@@ -50,8 +50,8 @@ namespace laplace::stem {
   void app_flat::adjust_layout(int width, int height) {
     application::adjust_layout(width, height);
 
-    m_ui->set_rect({ .x      = 0,     //
-                     .y      = 0,     //
+    m_ui->set_rect({ .x      = 0,          //
+                     .y      = 0,          //
                      .width  = abs(width), //
                      .height = abs(height) });
 

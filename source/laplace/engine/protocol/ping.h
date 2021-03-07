@@ -1,4 +1,4 @@
-/*  laplace/engine/protocol/client_ping.h
+/*  laplace/engine/protocol/ping.h
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_protocol_client_ping_h
-#define laplace_engine_protocol_client_ping_h
+#ifndef laplace_engine_protocol_ping_h
+#define laplace_engine_protocol_ping_h
 
 #include "../prime_impact.h"
 

@@ -20,6 +20,13 @@ namespace laplace::engine {
    */
   class prime_impact : public basic_impact {
   public:
+    enum encoding_offset : size_t {
+      n_id    = 0,
+      n_index = 2,
+      n_time  = 10,
+      n_actor = 18
+    };
+
     using basic_impact::get_actor;
     using basic_impact::get_index;
     using basic_impact::get_time;

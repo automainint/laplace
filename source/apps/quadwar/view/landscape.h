@@ -13,12 +13,16 @@
 #ifndef quadwar_view_landscape_h
 #define quadwar_view_landscape_h
 
+#include "camera.h"
 #include "defs.h"
 
 namespace quadwar_app::view {
   class landscape : engine::helper {
   public:
-    void render(world w);
+    static constexpr auto tail_size   = 50.f;
+    static constexpr auto tail_border = 5.f;
+
+    void render(const camera &cam, world w);
   };
 }
 

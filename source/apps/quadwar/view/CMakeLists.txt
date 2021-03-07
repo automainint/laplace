@@ -1,7 +1,7 @@
 target_sources(
   ${EXE_NAME}
     PRIVATE
-      aqv_landscape.cpp
+      aqv_camera.cpp aqv_game.cpp aqv_landscape.cpp
     PUBLIC
-      defs.h landscape.h
+      camera.h defs.h game.h landscape.h
 )

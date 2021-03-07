@@ -21,6 +21,11 @@ namespace quadwar_app::object {
   public:
     landscape();
 
+    static void generate(entity en, size_t width, size_t height);
+
+    [[nodiscard]] static auto get_width(entity en) -> size_t;
+    [[nodiscard]] static auto get_height(entity en) -> size_t;
+
     [[nodiscard]] static auto get_tile( //
         entity en,                      //
         size_t x,                       //
@@ -62,8 +67,6 @@ namespace quadwar_app::object {
 
     static landscape m_proto;
 
-    size_t               m_width  = 0;
-    size_t               m_height = 0;
     std::vector<int64_t> m_tiles;
   };
 }

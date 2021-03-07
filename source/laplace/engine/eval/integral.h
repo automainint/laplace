@@ -18,29 +18,29 @@
 #include "../defs.h"
 
 namespace laplace::engine::eval {
-  auto pi(vecval scale) -> vecval;
-  auto e(vecval scale) -> vecval;
+  auto pi(intval scale) -> intval;
+  auto e(intval scale) -> intval;
 
-  auto sqrt(vecval x) -> vecval;
-  auto sqrt(vecval x, vecval scale) -> vecval;
+  auto sqrt(intval x) -> intval;
+  auto sqrt(intval x, intval scale) -> intval;
 
-  auto pow(vecval x, vecval y) -> vecval;
-  auto pow(vecval x, vecval y, vecval scale) -> vecval;
+  auto pow(intval x, intval y) -> intval;
+  auto pow(intval x, intval y, intval scale) -> intval;
 
-  auto exp(vecval x, vecval scale) -> vecval;
-  auto exp2(vecval x, vecval scale) -> vecval;
-  auto log(vecval x, vecval scale) -> vecval;
-  auto log2(vecval x, vecval scale) -> vecval;
-  auto log10(vecval x, vecval scale) -> vecval;
+  auto exp(intval x, intval scale) -> intval;
+  auto exp2(intval x, intval scale) -> intval;
+  auto log(intval x, intval scale) -> intval;
+  auto log2(intval x, intval scale) -> intval;
+  auto log10(intval x, intval scale) -> intval;
 
-  auto sin(vecval x, vecval scale) -> vecval;
-  auto cos(vecval x, vecval scale) -> vecval;
-  auto tan(vecval x, vecval scale) -> vecval;
+  auto sin(intval x, intval scale) -> intval;
+  auto cos(intval x, intval scale) -> intval;
+  auto tan(intval x, intval scale) -> intval;
 
-  auto asin(vecval x, vecval scale) -> vecval;
-  auto acos(vecval x, vecval scale) -> vecval;
-  auto atan(vecval x, vecval scale) -> vecval;
-  auto atan2(vecval y, vecval x, vecval scale) -> vecval;
+  auto asin(intval x, intval scale) -> intval;
+  auto acos(intval x, intval scale) -> intval;
+  auto atan(intval x, intval scale) -> intval;
+  auto atan2(intval y, intval x, intval scale) -> intval;
 }
 
 #endif

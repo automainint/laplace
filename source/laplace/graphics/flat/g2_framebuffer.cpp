@@ -1,15 +1,24 @@
-#include "framebuffer.h"
+/*  laplace/graphics/flat/g2_framebuffer.cpp
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
 #include "../../platform/gldef.h"
+#include "framebuffer.h"
 
-using namespace laplace;
-using namespace graphics;
-using namespace flat;
-using namespace gl;
-using namespace std;
+namespace laplace::graphics::flat {
+  using namespace gl;
+  using std::function;
 
-framebuffer::framebuffer()
-{
-    m_width = 0;
+  framebuffer::framebuffer() {
+    m_width  = 0;
     m_height = 0;
 
     glGenFramebuffers(1, &m_id);
@@ -18,43 +27,44 @@ framebuffer::framebuffer()
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-}
+  }
 
-framebuffer::~framebuffer()
-{
+  framebuffer::~framebuffer() {
     glDeleteFramebuffers(1, &m_id);
-}
+  }
 
-void framebuffer::set_size(size_t width, size_t height)
-{
-    if (m_width != static_cast<uint32_t>(width) || m_height != static_cast<uint32_t>(height))
-    {
-        m_width = static_cast<uint32_t>(width);
-        m_height = static_cast<uint32_t>(height);
+  void framebuffer::set_size(size_t width, size_t height) {
+    if (m_width != static_cast<uint32_t>(width) ||
+        m_height != static_cast<uint32_t>(height)) {
 
-        glBindFramebuffer(GL_FRAMEBUFFER, m_id);
+      m_width  = static_cast<uint32_t>(width);
+      m_height = static_cast<uint32_t>(height);
 
-        glBindTexture(GL_TEXTURE_2D, color_texture.get_id());
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+      glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_texture.get_id(), 0);
+      glBindTexture(GL_TEXTURE_2D, color_texture.get_id());
 
-        uint32_t draw[ ] = { GL_COLOR_ATTACHMENT0 };
-        glDrawBuffers(1, draw);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0,
+                   GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                             GL_TEXTURE_2D, color_texture.get_id(), 0);
+
+      uint32_t draw[] = { GL_COLOR_ATTACHMENT0 };
+      glDrawBuffers(1, draw);
+
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-}
+  }
 
-void framebuffer::render(function<void()> op)
-{
-    if (op)
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, m_id);
-        glViewport(0, 0, m_width, m_height);
+  void framebuffer::render(function<void()> op) {
+    if (op) {
+      glBindFramebuffer(GL_FRAMEBUFFER, m_id);
+      glViewport(0, 0, m_width, m_height);
 
-        op();
+      op();
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+  }
 }

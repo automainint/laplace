@@ -35,15 +35,17 @@ namespace laplace::ui {
     /*  Widget live loop. Returns true if
      *  any event was handled.
      */
-    virtual auto tick(size_t delta_msec, platform::ref_input in, bool is_handled)
-        -> bool;
+    virtual auto tick(                  //
+        uint64_t            delta_msec, //
+        platform::ref_input in,         //
+        bool                is_handled) -> bool;
 
     virtual void render();
 
     /*  Check if the widget allowed to handle
      *  an event in specified location.
      */
-    virtual auto event_allowed(int x, int y) -> bool;
+    [[nodiscard]] virtual auto event_allowed(int x, int y) -> bool;
 
     void set_layout(layout fn);
     void set_level(size_t level);
@@ -58,12 +60,12 @@ namespace laplace::ui {
     void detach(ptr_widget child);
     void detach(size_t child_index);
 
-    auto get_level() const -> size_t;
-    auto get_rect() const -> cref_rect;
+    [[nodiscard]] auto get_level() const -> size_t;
+    [[nodiscard]] auto get_rect() const -> cref_rect;
 
-    auto get_absolute_x() const -> int;
-    auto get_absolute_y() const -> int;
-    auto get_absolute_rect() const -> rect;
+    [[nodiscard]] auto get_absolute_x() const -> int;
+    [[nodiscard]] auto get_absolute_y() const -> int;
+    [[nodiscard]] auto get_absolute_rect() const -> rect;
 
     /*  Set focus to next enabled
      *  widget for childs.
@@ -81,25 +83,26 @@ namespace laplace::ui {
      */
     void set_expired(bool is_expired);
 
-    auto is_expired() const -> bool;
-    auto has_childs_expired() const -> bool;
+    [[nodiscard]] auto is_expired() const -> bool;
+    [[nodiscard]] auto has_childs_expired() const -> bool;
 
-    auto is_visible() const -> bool;
-    auto is_enabled() const -> bool;
-    auto is_attached() const -> bool;
-    auto has_focus() const -> bool;
-    auto get_child_count() const -> size_t;
+    [[nodiscard]] auto is_visible() const -> bool;
+    [[nodiscard]] auto is_enabled() const -> bool;
+    [[nodiscard]] auto is_attached() const -> bool;
+    [[nodiscard]] auto has_focus() const -> bool;
+    [[nodiscard]] auto get_child_count() const -> size_t;
 
     /*  Get parent widget.
      */
-    auto get_parent() const -> ptr_widget;
+    [[nodiscard]] auto get_parent() const -> ptr_widget;
 
     /*  Get child widget by index.
      */
-    auto get_child(size_t index) const -> ptr_widget;
+    [[nodiscard]] auto get_child(size_t index) const -> ptr_widget;
 
     static void prepare();
-    static auto get_default_context() -> ptr_context;
+
+    [[nodiscard]] static auto get_default_context() -> ptr_context;
 
   protected:
     /*  Set if the widget can handle focus.
@@ -109,11 +112,14 @@ namespace laplace::ui {
     void draw_childs();
     void up_to_date();
 
-    auto widget_tick(size_t delta_msec, platform::ref_input in, bool is_handled)
-        -> bool;
+    auto widget_tick(                   //
+        uint64_t            delta_msec, //
+        platform::ref_input in,         //
+        bool                is_handled) -> bool;
+
     void widget_render();
 
-    auto is_widget_changed() -> bool;
+    [[nodiscard]] auto is_widget_changed() -> bool;
 
   private:
     void update_indices(size_t begin);

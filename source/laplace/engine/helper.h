@@ -19,9 +19,13 @@
 
 namespace laplace::engine {
   struct helper {
-    using entity  = access::entity;
-    using ventity = access::ventity;
-    using world   = access::world;
+    using access_entity  = access::entity;
+    using access_ventity = access::ventity;
+    using access_world   = access::world;
+
+    using entity  = const access::entity &;
+    using ventity = const access::ventity &;
+    using world   = const access::world &;
   };
 }
 

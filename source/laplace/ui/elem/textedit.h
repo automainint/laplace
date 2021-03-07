@@ -43,7 +43,7 @@ namespace laplace::ui::elem {
 
     void setup_filter(filter f);
 
-    auto tick(size_t delta_msec, platform::ref_input in,
+    auto tick(uint64_t delta_msec, platform::ref_input in,
               bool is_handled) -> bool final;
 
     void render() final;

@@ -24,7 +24,7 @@ namespace laplace::engine::access {
     auto operator=(const world &) -> world & = delete;
 
     [[nodiscard]] world(world &&w) noexcept;
-    [[nodiscard]] world(ref_world w, mode access_mode);
+    [[nodiscard]] world(ref_world w, mode access_mode = read_only);
 
     auto operator=(world &&w) noexcept -> world &;
 
@@ -32,82 +32,83 @@ namespace laplace::engine::access {
 
     /*  Set the desync flag.
      */
-    void desync();
+    void desync() const;
 
     /*  Reserve an entity id.
      *  Sync.
      */
-    auto reserve(size_t id) -> size_t;
+    auto reserve(size_t id) const -> size_t;
 
     /*  Spawn a new entity. Allow to use already taken id.
      *  Sync.
      */
-    void emplace(ptr_entity ent, size_t id);
+    void emplace(ptr_entity ent, size_t id) const;
 
     /*  Spawn a new entity.
      *  Sync.
      */
-    auto spawn(ptr_entity ent, size_t id) -> size_t;
+    auto spawn(ptr_entity ent, size_t id) const -> size_t;
 
     /*  Remove an existing entity.
      *  Sync.
      */
-    void remove(size_t id);
+    void remove(size_t id) const;
 
     /*  Respawn an entity.
      *  Sync.
      */
-    void respawn(size_t id);
+    void respawn(size_t id) const;
 
     /*  Remove all entities.
      *  Sync.
      */
-    void clear();
+    void clear() const;
 
     /*  Queue an event.
      *  Async.
      */
-    void queue(ptr_impact ev);
+    void queue(ptr_impact ev) const;
 
     /*  Set the root entity id.
      *  Sync.
      */
-    void set_root(size_t id_root);
+    void set_root(size_t id_root) const;
 
     /*  Get the root entity id.
      *  Async.
      */
-    [[nodiscard]] auto get_root() -> size_t;
+    [[nodiscard]] auto get_root() const -> size_t;
 
     /*  If the world has an entity.
      *  Async.
      */
-    [[nodiscard]] auto has_entity(size_t id) -> bool;
+    [[nodiscard]] auto has_entity(size_t id) const -> bool;
 
     /*  Get an entity.
      *  Async.
      */
-    [[nodiscard]] auto get_entity(size_t id) -> access::entity;
+    [[nodiscard]] auto get_entity(size_t id) const -> access::entity;
 
     /*  Select entities.
      *  Async.
      */
-    [[nodiscard]] auto select(condition op) -> access::ventity;
+    [[nodiscard]] auto select(condition op) const -> access::ventity;
 
     /*  Select dynamic entities.
      *  Async.
      */
-    [[nodiscard]] auto select_dynamic(condition op) -> access::ventity;
+    [[nodiscard]] auto select_dynamic(condition op) const
+        -> access::ventity;
 
     /*  Generate a random number.
      *  Sync.
      */
-    template <typename distribution>
-    [[nodiscard]] auto random(distribution &dist) ->
-        typename distribution::result_type;
+    template <typename dist_>
+    [[nodiscard]] auto random(dist_ &dist) const ->
+        typename dist_::result_type;
 
   private:
-    auto get_random_engine() -> ref_rand;
+    auto get_random_engine() const -> ref_rand;
 
     std::reference_wrapper<engine::world> m_world;
     mode                                  m_mode = forbidden;
