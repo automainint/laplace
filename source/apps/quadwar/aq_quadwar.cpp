@@ -22,11 +22,10 @@ namespace quadwar_app {
 
   auto quadwar::get_player_name() -> u8string_view {
     auto dev  = std::random_device {};
-    auto rng  = std::default_random_engine(dev());
     auto dist = std::uniform_int_distribution<size_t>(
         0u, default_player_names.size() - 1);
 
-    return default_player_names.begin()[dist(rng)];
+    return default_player_names.begin()[dist(dev)];
   }
 
   auto quadwar::get_config() -> family {
