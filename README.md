@@ -1,5 +1,5 @@
 #   The Laplace engine
-The quality of the real-time strategy game depends on low-latency responsiveness and scalability. Scalability requires parallelism on the local instance and lockstep networking. Lockstep systems requires a totally deterministic engine. In addition, extensibility is a useful feature.
+The quality of the real-time strategy game depends on low-latency responsiveness and scalability. Scalability requires parallelism on the local instance and lockstep networking. Lockstep systems require a totally deterministic engine. In addition, extensibility is a useful feature.
 
 Laplace is an interactive multimedia framework that provides the deterministic and extensible engine with concurrency support and lockstep synchronization.
 
