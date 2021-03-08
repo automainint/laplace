@@ -52,11 +52,11 @@ namespace laplace::network {
 
     auto slot = add_slot(m_host_address, m_host_port);
 
-    m_slots[slot].tran.setup_cipher<dh_rabbit>();
-
-    const auto key = m_slots[slot].tran.get_public_key();
-
-    send_event(encode<public_key>(ids::cipher_dh_rabbit, key));
+    if (is_encryption_enabled()) {
+      m_slots[slot].tran.setup_cipher<dh_rabbit>();
+      const auto key = m_slots[slot].tran.get_public_key();
+      send_event(encode<public_key>(ids::cipher_dh_rabbit, key));
+    }
 
     emit<client_enter>();
   }

@@ -29,11 +29,13 @@ namespace laplace::network {
     static constexpr size_t slot_host            = -1;
     static constexpr size_t slot_count_unlimited = -1;
 
-    static constexpr size_t default_chunk_size     = 4096;
-    static constexpr size_t default_chunk_overhead = 1024;
+    static constexpr size_t default_chunk_size        = 4096;
+    static constexpr size_t default_chunk_overhead    = 1024;
+    static constexpr size_t default_loss_compensation = 4;
 
     ~udp_server() override;
 
+    void set_encryption_enabled(bool is_enabled) noexcept;
     void set_allowed_commands(cref_vuint16 commands);
 
     void set_chunk_size(size_t size,
@@ -77,8 +79,9 @@ namespace laplace::network {
 
     void cleanup();
 
-    [[nodiscard]] auto get_local_time() const -> uint64_t;
-    [[nodiscard]] auto get_chunk_size() const -> size_t;
+    [[nodiscard]] auto is_encryption_enabled() const noexcept -> bool;
+    [[nodiscard]] auto get_local_time() const noexcept -> uint64_t;
+    [[nodiscard]] auto get_chunk_size() const noexcept -> size_t;
     [[nodiscard]] auto adjust_chunk_size(cref_vbyte chunk) const
         -> size_t;
 
@@ -128,22 +131,24 @@ namespace laplace::network {
     [[nodiscard]] auto adjust_overtake(uint64_t time) -> uint64_t;
 
     std::vector<slot_info> m_slots;
-    event_queue            m_queue;
 
     std::unique_ptr<udp_node> m_node;
-
-    size_t m_overhead = default_chunk_overhead;
-    vbyte m_buffer = vbyte(default_chunk_size + default_chunk_overhead);
 
   private:
     [[nodiscard]] auto has_free_slots() const -> bool;
 
+    vbyte m_buffer = vbyte(default_chunk_size + default_chunk_overhead);
+    event_queue m_queue;
+
     vuint16  m_allowed_commands;
-    bool     m_is_master      = false;
-    size_t   m_max_slot_count = 0;
-    uint64_t m_local_time     = 0;
-    uint64_t m_time_limit     = 0;
-    uint64_t m_ping_clock     = 0;
+    bool     m_is_master             = false;
+    bool     m_is_encryption_enabled = true;
+    size_t   m_max_slot_count        = 0;
+    size_t   m_overhead              = default_chunk_overhead;
+    size_t   m_loss_compensation     = default_loss_compensation;
+    uint64_t m_local_time            = 0;
+    uint64_t m_time_limit            = 0;
+    uint64_t m_ping_clock            = 0;
   };
 }
 

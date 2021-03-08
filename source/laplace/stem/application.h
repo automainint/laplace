@@ -55,8 +55,6 @@ namespace laplace::stem {
     void load_shaders();
     void adjust_frame_size(int width, int height);
 
-    void setup_to(render::ptr_context cont);
-
     [[nodiscard]] auto shader_path(const char *name,
                                    const char *type) const
         -> std::wstring;

@@ -36,14 +36,15 @@ namespace laplace::test {
       auto my_host = make_shared<host>();
       auto client  = make_shared<remote>();
 
-      my_host->set_factory(make_shared<basic_factory>());
-      client->set_factory(make_shared<basic_factory>());
+      my_host->make_factory<basic_factory>();
+      client->make_factory<basic_factory>();
 
       uint16_t allowed_commands[] = { ids::debug, ids::client_enter };
 
       my_host->set_allowed_commands(allowed_commands);
       my_host->listen();
 
+      client->set_encryption_enabled(false);
       client->connect(localhost, my_host->get_port());
 
       int64_t test_value = 12367;
@@ -92,8 +93,8 @@ namespace laplace::test {
       auto my_host = make_shared<host>();
       auto client  = make_shared<remote>();
 
-      my_host->set_factory(make_shared<basic_factory>());
-      client->set_factory(make_shared<basic_factory>());
+      my_host->make_factory<basic_factory>();
+      client->make_factory<basic_factory>();
 
       uint16_t allowed_commands[] = { ids::debug, ids::client_enter,
                                       ids::public_key };

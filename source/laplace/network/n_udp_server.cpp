@@ -46,8 +46,12 @@ namespace laplace::network {
       engine::time_undefined, engine::id_undefined, engine::encode,
       crypto::dh_rabbit;
 
-  udp_server ::~udp_server() {
+  udp_server::~udp_server() {
     cleanup();
+  }
+
+  void udp_server::set_encryption_enabled(bool is_enabled) noexcept {
+    m_is_encryption_enabled = is_enabled;
   }
 
   void udp_server::set_allowed_commands(cref_vuint16 commands) {
@@ -172,11 +176,16 @@ namespace laplace::network {
     }
 
     if (public_key::scan(seq)) {
-      if (public_key::get_cipher(seq) == ids::cipher_dh_rabbit) {
+      const auto cipher_id = public_key::get_cipher(seq);
+
+      if (cipher_id == ids::cipher_dh_rabbit) {
 
         if (slot < m_slots.size()) {
           if (is_master()) {
-            m_slots[slot].tran.setup_cipher<dh_rabbit>();
+
+            if (!m_slots[slot].tran.is_encrypted()) {
+              m_slots[slot].tran.setup_cipher<dh_rabbit>();
+            }
 
             send_event_to(                 //
                 slot,                      //
@@ -185,19 +194,22 @@ namespace laplace::network {
                     m_slots[slot].tran.get_public_key()));
           }
 
-          m_slots[slot].is_encrypted = !is_master();
-          m_slots[slot].tran.set_remote_key(public_key::get_key(seq));
+          if (!m_slots[slot].tran.is_encrypted()) {
+            m_slots[slot].is_encrypted = !is_master();
+            m_slots[slot].tran.set_remote_key(public_key::get_key(seq));
 
-          if (is_verbose()) {
-            verb("Network: Mutual key");
+            if (is_verbose()) {
+              verb("Network: Mutual key");
+            }
+
+            dump(m_slots[slot].tran.get_mutual_key());
           }
-
-          dump(m_slots[slot].tran.get_mutual_key());
 
         } else {
           error(__FUNCTION__, "Invalid slot.");
         }
-      } else {
+
+      } else if (cipher_id != ids::cipher_plain) {
         verb("Network: Unknown cipher.");
       }
 
@@ -227,11 +239,15 @@ namespace laplace::network {
     set_connected(false);
   }
 
-  auto udp_server::get_local_time() const -> uint64_t {
+  auto udp_server::is_encryption_enabled() const noexcept -> bool {
+    return m_is_encryption_enabled;
+  }
+
+  auto udp_server::get_local_time() const noexcept -> uint64_t {
     return m_local_time;
   }
 
-  auto udp_server::get_chunk_size() const -> size_t {
+  auto udp_server::get_chunk_size() const noexcept -> size_t {
     return m_buffer.size();
   }
 
@@ -419,11 +435,36 @@ namespace laplace::network {
   }
 
   void udp_server::check_outdate(size_t slot) {
-    if (is_master() && m_slots[slot].outdate >= get_update_timeout()) {
+    if (m_slots[slot].outdate >= get_update_timeout()) {
+      if (is_master()) {
+        if (auto sol = get_solver(); sol) {
+          send_event_to(                 //
+              slot,                      //
+              encode<server_idle>(       //
+                  m_queue.events.size(), //
+                  sol->get_time()));
+        }
+      }
 
-      if (auto sol = get_solver(); sol) {
-        send_event_to(slot, encode<server_idle>(m_queue.events.size(),
-                                                sol->get_time()));
+      if (is_encryption_enabled() && !m_slots[slot].is_encrypted) {
+        const auto key = m_slots[slot].tran.get_public_key();
+
+        if (!key.empty()) {
+          send_event_to(                 //
+              slot,                      //
+              encode<public_key>(        //
+                  ids::cipher_dh_rabbit, //
+                  key));
+        }
+      }
+
+      const auto compensate = min(
+          m_queue.events.size(), m_loss_compensation);
+
+      for (size_t i = m_queue.events.size() - compensate;
+           i < m_queue.events.size(); i++) {
+
+        send_event_to(slot, m_queue.events[i]);
       }
 
       m_slots[slot].outdate = 0;
@@ -616,24 +657,24 @@ namespace laplace::network {
       }
 
     } else if (index >= qu.index) {
-      if (is_verbose()) {
-        const auto id = prime_impact::get_id(seq);
-
-        if (id < ids::_native_count) {
-          verb(" :: (slot %2zu) %4zu '%s (%hu)'", slot, index,
-               ids::table[id].data(), id);
-        } else {
-          verb(" :: (slot %2zu) %4zu '%hu'", slot, index, id);
-        }
-      }
-
-      auto n = index - qu.index;
+      const auto n = index - qu.index;
 
       if (n >= qu.events.size()) {
         qu.events.resize(n + 1);
       }
 
       if (qu.events[n].empty()) {
+        if (is_verbose()) {
+          const auto id = prime_impact::get_id(seq);
+
+          if (id < ids::_native_count) {
+            verb(" :: (slot %2zu) %4zu '%s (%hu)'", slot, index,
+                 ids::table[id].data(), id);
+          } else {
+            verb(" :: (slot %2zu) %4zu '%hu'", slot, index, id);
+          }
+        }
+
         qu.events[n].assign(seq.begin(), seq.end());
         m_slots[slot].outdate = 0;
       }

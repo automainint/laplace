@@ -17,16 +17,16 @@
 #include "world.h"
 
 namespace laplace::engine {
-  using std::unique_lock, std::shared_lock, std::thread,
-      std::function;
+  using std::unique_lock, std::shared_lock, std::thread, std::function;
 
   scheduler::scheduler(ref_world w) : m_world(w) { }
 
   scheduler::~scheduler() {
     set_done();
 
-    for (size_t i = 0; i < m_threads.size(); i++)
+    for (size_t i = 0; i < m_threads.size(); i++) {
       m_threads[i].join();
+    }
   }
 
   void scheduler::schedule(size_t delta) {
@@ -58,8 +58,8 @@ namespace laplace::engine {
                                     overthreading_limit;
 
     if (thread_count > thread_count_limit) {
-      verb("%s: Invalid thread count %zd (max %zd).",
-           __FUNCTION__, thread_count, thread_count_limit);
+      verb("Scheduler: Invalid thread count %zu (max %zu).", __FUNCTION__,
+           thread_count, thread_count_limit);
 
       thread_count = thread_count_limit;
     }

@@ -153,7 +153,10 @@ namespace laplace::stem {
         m_flat_sprite = make_shared<sprite_shader>(*vert, *frag);
       }
 
-      setup_to(m_render);
+      if (m_render) {
+        m_render->setup(m_flat_solid);
+        m_render->setup(m_flat_sprite);
+      }
     }
   }
 
@@ -175,13 +178,6 @@ namespace laplace::stem {
         m_flat_sprite->set_position({ x0, y0 });
         m_flat_sprite->set_scale({ w, h });
       }
-    }
-  }
-
-  void application::setup_to(render::ptr_context cont) {
-    if (cont) {
-      cont->setup(m_flat_solid);
-      cont->setup(m_flat_sprite);
     }
   }
 
