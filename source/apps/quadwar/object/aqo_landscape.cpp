@@ -14,7 +14,7 @@
 #include "landscape.h"
 
 namespace quadwar_app::object {
-  using engine::basic_entity;
+  using engine::basic_entity, std::vector, std::span, std::min;
 
   size_t landscape::n_width  = 0;
   size_t landscape::n_height = 0;
@@ -58,6 +58,15 @@ namespace quadwar_app::object {
     return rd<int64_t>(tile, 0);
   }
 
+  auto landscape::get_tiles(entity en) -> vector<int64_t> {
+    const auto bytes = en.request(sets::land_get_tiles);
+    const auto count = bytes.size() / sizeof(int64_t);
+    auto       tiles = vector<int64_t>(count);
+
+    memcpy(tiles.data(), bytes.data(), count * sizeof(int64_t));
+    return tiles;
+  }
+
   void landscape::set_tile( //
       entity  en,           //
       size_t  x,            //
@@ -67,6 +76,14 @@ namespace quadwar_app::object {
     en.modify(               //
         sets::land_set_tile, //
         pack_to_array(x, y, tile));
+  }
+
+  void landscape::set_tiles(     //
+      entity                 en, //
+      const vector<int64_t> &tiles) {
+
+    en.modify(sets::land_set_tiles,
+              pack_to_bytes(span<const int64_t>(tiles)));
   }
 
   void landscape::set_size( //
@@ -82,33 +99,42 @@ namespace quadwar_app::object {
   auto landscape::do_request(size_t id, cref_vbyte args) const
       -> vbyte {
     if (id == sets::land_get_tile) {
-      const auto x = rd<size_t>(args, args_x);
-      const auto y = rd<size_t>(args, args_y);
 
-      const auto tile = get_tile(x, y);
+      return pack_to_bytes(get_tile( //
+          rd<size_t>(args, args_x),  //
+          rd<size_t>(args, args_y)));
 
-      vbyte result(sizeof tile);
-      write_bytes(result, tile);
-
-      return result;
+    } else if (id == sets::land_get_tiles) {
+      return pack_to_bytes(span<const int64_t>(m_tiles));
     }
 
     return {};
   }
 
   void landscape::do_modify(size_t id, cref_vbyte args) {
-    if (id == sets::land_set_tile) {
-      const auto x    = rd<size_t>(args, args_x);
-      const auto y    = rd<size_t>(args, args_y);
-      const auto tile = rd<int64_t>(args, args_tile);
+    if (id == sets::land_set_size) {
 
-      set_tile(x, y, tile);
+      set_size(                         //
+          rd<size_t>(args, args_width), //
+          rd<size_t>(args, args_height));
 
-    } else if (id == sets::land_set_size) {
-      const auto width  = rd<size_t>(args, args_width);
-      const auto height = rd<size_t>(args, args_height);
+    } else if (id == sets::land_set_tile) {
 
-      set_size(width, height);
+      set_tile(                     //
+          rd<size_t>(args, args_x), //
+          rd<size_t>(args, args_y), //
+          rd<int64_t>(args, args_tile));
+
+    } else if (id == sets::land_set_tiles) {
+
+      const auto size = min( //
+          m_tiles.size(),    //
+          args.size() / sizeof(int64_t));
+
+      memcpy(             //
+          m_tiles.data(), //
+          args.data(),    //
+          size * sizeof(int64_t));
     }
   }
 

@@ -37,6 +37,8 @@ namespace quadwar_app::object::sets {
     land_set_size,
     land_get_tile,
     land_set_tile,
+    land_set_tiles,
+    land_get_tiles,
 
     _count
   };

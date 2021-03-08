@@ -31,11 +31,18 @@ namespace quadwar_app::object {
         size_t x,                       //
         size_t y) -> int64_t;
 
+    [[nodiscard]] static auto get_tiles(entity en)
+        -> std::vector<int64_t>;
+
     static void set_tile( //
         entity  en,       //
         size_t  x,        //
         size_t  y,        //
         int64_t tile);
+
+    static void set_tiles(              //
+        entity                      en, //
+        const std::vector<int64_t> &tiles);
 
     static void set_size( //
         entity en,        //

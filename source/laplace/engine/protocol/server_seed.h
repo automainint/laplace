@@ -21,18 +21,21 @@ namespace laplace::engine::protocol {
     enum encoding_offset : size_t { n_seed = 18 };
 
     static constexpr uint16_t id   = ids::server_seed;
-    static constexpr size_t   size = 22;
+    static constexpr size_t   size = 26;
 
     ~server_seed() final = default;
 
-    constexpr server_seed(uint32_t seed) {
+    constexpr server_seed(uint64_t seed) {
       set_encoded_size(size);
 
       m_seed = seed;
     }
 
-    constexpr server_seed(
-        size_t index, uint64_t time, uint32_t seed) {
+    constexpr server_seed( //
+        size_t   index,    //
+        uint64_t time,     //
+        uint64_t seed) {
+
       set_order({ index });
       set_time(time);
       set_encoded_size(size);
@@ -41,13 +44,11 @@ namespace laplace::engine::protocol {
     }
 
     static constexpr auto get_seed(cref_vbyte seq) {
-      return rd<uint32_t>(seq, n_seed);
+      return rd<uint64_t>(seq, n_seed);
     }
 
-    inline void encode_to(
-        std::span<uint8_t> bytes) const final {
-      write_bytes(
-          bytes, id, get_index64(), get_time64(), m_seed);
+    inline void encode_to(std::span<uint8_t> bytes) const final {
+      write_bytes(bytes, id, get_index64(), get_time64(), m_seed);
     }
 
     static constexpr auto scan(cref_vbyte seq) {
@@ -55,12 +56,14 @@ namespace laplace::engine::protocol {
     }
 
     static inline auto decode(cref_vbyte seq) {
-      return server_seed { get_index(seq), get_time(seq),
-        get_seed(seq) };
+      return server_seed    //
+          { get_index(seq), //
+            get_time(seq),  //
+            get_seed(seq) };
     }
 
   private:
-    uint32_t m_seed = 0;
+    uint64_t m_seed = 0;
   };
 }
 

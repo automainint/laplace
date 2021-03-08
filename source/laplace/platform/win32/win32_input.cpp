@@ -276,6 +276,15 @@ namespace laplace::win32 {
     }
   }
 
+  void input::reset() {
+    for (size_t i = 0; i < key_count; i++) {
+      const auto is_changed = m_keyboard_state[i].is_down;
+
+      m_keyboard_state[i].is_down    = false;
+      m_keyboard_state[i].is_changed = is_changed;
+    }
+  }
+
   auto input::has(uint32_t flags, uint32_t flag) -> bool {
     return (flags & flag) == flag;
   }
@@ -361,8 +370,8 @@ namespace laplace::win32 {
       GetCursorPos(&p);
       ScreenToClient(m_handle, &p);
 
-      m_mouse_state.delta_x = p.x - m_mouse_state.x;
-      m_mouse_state.delta_y = p.y - m_mouse_state.y;
+      m_mouse_state.delta_x += p.x - m_mouse_state.x;
+      m_mouse_state.delta_y += p.y - m_mouse_state.y;
 
       m_mouse_state.x = m_mouse_state.cursor_x = p.x;
       m_mouse_state.y = m_mouse_state.cursor_y = p.y;

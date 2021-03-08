@@ -37,7 +37,7 @@ namespace quadwar_app {
   static constexpr auto default_game_name      = "Unknown";
   static constexpr auto default_player_count   = 4u;
   static constexpr auto default_unit_count     = 8u;
-  static constexpr auto default_map_size       = 16u;
+  static constexpr auto default_map_size       = 128u;
 
   class quadwar : public stem::app_flat {
   public:

@@ -25,9 +25,6 @@
 #include <vector>
 
 namespace laplace {
-  template <typename type_>
-  using static_vector = std::vector<type_>;
-
   /*  TODO
    *  Small vector implementation.
    */

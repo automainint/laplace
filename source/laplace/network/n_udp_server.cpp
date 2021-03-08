@@ -33,10 +33,10 @@ namespace laplace::network {
   namespace protocol = engine::protocol;
   namespace ids      = protocol::ids;
 
-  using std::this_thread::sleep_for, std::min, std::any_of,
+  using std::this_thread::sleep_for, std::min, std::max, std::any_of,
       std::find_if, std::make_unique, std::span, std::numeric_limits,
       std::string, std::string_view, std::chrono::milliseconds,
-      engine::prime_impact, protocol::slot_create,
+      engine::prime_impact, engine::seed_type, protocol::slot_create,
       protocol::slot_remove, protocol::request_events,
       protocol::server_idle, protocol::ping_request,
       protocol::ping_response, protocol::public_key,
@@ -128,7 +128,11 @@ namespace laplace::network {
 
     if (server_seed::scan(seq)) {
       if (get_state() == server_state::prepare) {
-        set_random_seed(server_seed::get_seed(seq));
+
+        set_random_seed(            //
+            static_cast<seed_type>( //
+                server_seed::get_seed(seq)));
+
         return !is_master();
 
       } else {
@@ -143,17 +147,29 @@ namespace laplace::network {
 
     if (request_events::scan(seq) && slot != slot_host) {
       if (slot < m_slots.size()) {
-        const auto count = request_events::get_event_count(seq);
+        const auto count    = request_events::get_event_count(seq);
+        size_t     distance = 0;
 
         for (size_t i = 0; i < count; i++) {
           auto n = request_events::get_event(seq, i);
 
           if (n < m_queue.events.size()) {
+            distance = max(distance, m_queue.events.size() - n);
             send_event_to(slot, m_queue.events[n]);
           } else if (is_verbose()) {
             verb("Network: No requested event %zu.", n);
           }
         }
+
+        if (m_loss_compensation < distance) {
+          m_loss_compensation++;
+
+          if (is_verbose()) {
+            verb("Network: Loss compensation %zu.",
+                 m_loss_compensation);
+          }
+        }
+
       } else {
         error(__FUNCTION__, "Invalid slot.");
       }
@@ -161,13 +177,13 @@ namespace laplace::network {
       return true;
     }
 
-    if (ping_request::scan(seq)) {
+    if (ping_request::scan(seq) && slot != slot_host) {
       const auto time = ping_request::get_ping_time(seq);
       send_event_to(slot, encode<ping_response>(time));
       return true;
     }
 
-    if (ping_response::scan(seq)) {
+    if (ping_response::scan(seq) && slot != slot_host) {
       const auto ping = get_local_time() -
                         ping_response::get_ping_time(seq);
 
@@ -175,7 +191,7 @@ namespace laplace::network {
       return true;
     }
 
-    if (public_key::scan(seq)) {
+    if (public_key::scan(seq) && slot != slot_host) {
       const auto cipher_id = public_key::get_cipher(seq);
 
       if (cipher_id == ids::cipher_dh_rabbit) {
@@ -845,8 +861,10 @@ namespace laplace::network {
     uint64_t overtake = 0;
 
     if (get_tick_duration() > 0) {
-      auto ping_ticks = get_ping() / get_tick_duration();
-      auto time_gape  = m_time_limit - time;
+      auto ping_ticks = get_ping() /
+                        (get_tick_duration() * get_overtake_factor());
+
+      auto time_gape = m_time_limit - time;
 
       if (time_gape > ping_ticks)
         overtake = time_gape - ping_ticks;

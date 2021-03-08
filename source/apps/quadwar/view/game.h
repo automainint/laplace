@@ -21,6 +21,8 @@ namespace quadwar_app::view {
   public:
     void adjust_layout(int width, int height);
 
+    void set_position(const vec2 v);
+
     void move(const vec2 delta);
     void scale(const real delta);
 

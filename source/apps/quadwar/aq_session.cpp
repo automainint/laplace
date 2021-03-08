@@ -18,6 +18,7 @@
 #include "../../laplace/platform/keys.h"
 #include "object/player.h"
 #include "object/root.h"
+#include "protocol/qw_loading.h"
 #include "protocol/qw_player_name.h"
 #include "session.h"
 #include <filesystem>
@@ -42,6 +43,12 @@ namespace quadwar_app {
 
     m_lobby.on_start([=] {
       if (m_server) {
+
+        m_server->emit<protocol::qw_loading>( //
+            m_map_size,                       //
+            m_player_count,                   //
+            m_unit_count);
+
         m_server->emit<protocol::server_launch>();
         m_server->emit<protocol::server_action>();
 
@@ -231,6 +238,12 @@ namespace quadwar_app {
 
     if (in.get_wheel_delta() != 0) {
       m_view.scale(sense_scale * in.get_wheel_delta());
+    }
+
+    if (in.is_key_down(platform::key_mbutton)) {
+      is_moved = true;
+      delta.x() -= in.get_mouse_delta_x();
+      delta.y() -= in.get_mouse_delta_y();
     }
 
     if (is_moved) {

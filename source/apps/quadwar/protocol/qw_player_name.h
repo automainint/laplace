@@ -13,18 +13,18 @@
 #ifndef quadwar_protocol_qw_player_name_h
 #define quadwar_protocol_qw_player_name_h
 
-#include "defs.h"
 #include "../object/player.h"
 #include "../object/root.h"
+#include "defs.h"
 
 namespace quadwar_app::protocol {
-  class qw_player_name : public engine::sync_prime_impact {
+  class qw_player_name final : public engine::sync_prime_impact {
   public:
-    enum encoding_offset { n_name = 26 };
+    enum encoding_offset : size_t { n_name = 26 };
 
     static constexpr auto id = ids::player_name;
 
-    ~qw_player_name() override = default;
+    ~qw_player_name() final = default;
 
     inline qw_player_name(std::u8string_view name) {
       set_encoded_size(n_name + name.size());
@@ -56,7 +56,7 @@ namespace quadwar_app::protocol {
       m_name = name;
     }
 
-    inline void perform(world w) const override {
+    inline void perform(world w) const final {
       verb(" :: event  Quadwar/player_name");
 
       object::player::set_name(w.get_entity(get_actor()), m_name);

@@ -26,6 +26,7 @@ namespace laplace::engine::protocol::ids {
     "server-idle",
     "client-desync",
     "server-init",
+    "server-loading",
     "server-launch",
     "server-action",
     "server-pause",
@@ -94,6 +95,14 @@ namespace laplace::engine::protocol::ids {
      *  uint64_t    index
      */
     server_init = _unindexed_count,
+
+    /*  Custom loading command.
+     *
+     *  uint16_t    id
+     *  uint64_t    index
+     *  ...         data
+     */
+    server_loading,
 
     /*  uint16_t    id
      *  uint64_t    index

@@ -102,6 +102,7 @@ namespace laplace::win32 {
     void attach(HWND handle);
     void process(HRAWINPUT raw_input);
     void tick(uint64_t delta_msec);
+    void reset();
 
   private:
     static auto has(uint32_t flags, uint32_t flag) -> bool;

@@ -183,6 +183,10 @@ namespace laplace::network {
     return m_ping_timeout_msec;
   }
 
+  auto server::get_overtake_factor() const noexcept -> size_t {
+    return m_overtake_factor;
+  }
+
   void server::dump(cref_vbyte bytes) {
     if (m_verbose) [[unlikely]] {
       ostringstream ss;

@@ -26,6 +26,7 @@ namespace laplace::network {
     static constexpr uint64_t default_update_timeout_msec     = 10;
     static constexpr uint64_t default_ping_timeout_msec       = 100;
     static constexpr uint64_t default_connection_timeout_msec = 1000;
+    static constexpr size_t   default_overtake_factor         = 3;
 
     server() = default;
     virtual ~server();
@@ -94,6 +95,7 @@ namespace laplace::network {
 
     [[nodiscard]] auto get_update_timeout() const noexcept -> uint64_t;
     [[nodiscard]] auto get_ping_timeout() const noexcept -> uint64_t;
+    [[nodiscard]] auto get_overtake_factor() const noexcept -> size_t;
 
     void dump(cref_vbyte bytes);
 
@@ -112,6 +114,7 @@ namespace laplace::network {
     uint64_t m_connection_timeout_msec = default_connection_timeout_msec;
     uint64_t m_update_timeout_msec     = default_update_timeout_msec;
     uint64_t m_ping_timeout_msec       = default_ping_timeout_msec;
+    size_t   m_overtake_factor         = default_overtake_factor;
 
     size_t m_bytes_sent     = 0;
     size_t m_bytes_received = 0;

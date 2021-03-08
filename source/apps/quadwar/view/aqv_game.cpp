@@ -26,6 +26,10 @@ namespace quadwar_app::view {
           static_cast<real>(height) });
   }
 
+  void game::set_position(const vec2 v) {
+    m_camera.set_position(v);
+  }
+
   void game::move(const vec2 delta) {
     const auto s = get_scale();
 
@@ -61,14 +65,14 @@ namespace quadwar_app::view {
       const auto fx = m_camera.get_frame().x() / s;
       const auto fy = m_camera.get_frame().y() / s;
 
-      const auto dx = landscape::tail_size * width;
-      const auto dy = landscape::tail_size * height;
+      const auto dx = landscape::tail_size * width / 2.f;
+      const auto dy = landscape::tail_size * height / 2.f;
 
-      const auto hx = min(dx, fx) / 2.f;
-      const auto hy = min(dy, fy) / 2.f;
+      const auto hx = min(dx, fx / 2.f);
+      const auto hy = min(dy, fy / 2.f);
 
-      const auto x0 = hx;
-      const auto y0 = hy;
+      const auto x0 = hx - dx;
+      const auto y0 = hy - dy;
       const auto x1 = dx - hx;
       const auto y1 = dy - hy;
 

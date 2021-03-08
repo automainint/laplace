@@ -22,8 +22,8 @@
 
 namespace laplace::win32 {
   using std::make_unique, std::string_view, std::wstring_view,
-      std::shared_ptr, std::unique_lock,
-      std::chrono::duration_cast, std::chrono::milliseconds;
+      std::shared_ptr, std::unique_lock, std::chrono::duration_cast,
+      std::chrono::milliseconds;
 
   void window::init(window::native_handle parent) {
     if (!parent) {
@@ -247,8 +247,7 @@ namespace laplace::win32 {
         }
       }
 
-      auto delta = duration_cast<milliseconds>(clock::now() -
-                                               time);
+      auto delta = duration_cast<milliseconds>(clock::now() - time);
       auto delta_msec = static_cast<size_t>(delta.count());
 
       if (m_input) {
@@ -281,8 +280,8 @@ namespace laplace::win32 {
 
   void window::get_exe_file_name() {
     wchar_t chars[MAX_PATH + 1];
-    auto n = GetModuleFileNameW(m_module_handle, chars, MAX_PATH);
-    chars[n] = L'\0';
+    auto    n = GetModuleFileNameW(m_module_handle, chars, MAX_PATH);
+    chars[n]  = L'\0';
 
     m_exe_file_name = chars;
   }
@@ -318,10 +317,9 @@ namespace laplace::win32 {
       auto window_name = m_window_name.c_str();
 
       m_handle = CreateWindowExW(
-          static_cast<DWORD>(get_style_ex()), class_name,
-          window_name, static_cast<DWORD>(get_style()),
-          static_cast<int>(get_x()), static_cast<int>(get_y()),
-          static_cast<int>(get_width()),
+          static_cast<DWORD>(get_style_ex()), class_name, window_name,
+          static_cast<DWORD>(get_style()), static_cast<int>(get_x()),
+          static_cast<int>(get_y()), static_cast<int>(get_width()),
           static_cast<int>(get_height()), m_parent, nullptr,
           m_module_handle, nullptr);
 
@@ -340,13 +338,13 @@ namespace laplace::win32 {
               .right  = static_cast<LONG>(m_frame_width),
               .bottom = static_cast<LONG>(m_frame_height) };
 
-    AdjustWindowRectEx(&rc, static_cast<DWORD>(get_style()),
-                       false, static_cast<DWORD>(get_style_ex()));
+    AdjustWindowRectEx(&rc, static_cast<DWORD>(get_style()), false,
+                       static_cast<DWORD>(get_style_ex()));
 
-    m_width = static_cast<size_t>(
-        static_cast<int64_t>(rc.right) - rc.left);
-    m_height = static_cast<size_t>(
-        static_cast<int64_t>(rc.bottom) - rc.top);
+    m_width  = static_cast<size_t>(static_cast<int64_t>(rc.right) -
+                                  rc.left);
+    m_height = static_cast<size_t>(static_cast<int64_t>(rc.bottom) -
+                                   rc.top);
   }
 
   void window::update_rect() {
@@ -356,9 +354,9 @@ namespace laplace::win32 {
       size_t width  = get_width();
       size_t height = get_height();
 
-      MoveWindow(m_handle, static_cast<int>(x),
-                 static_cast<int>(y), static_cast<int>(width),
-                 static_cast<int>(height), m_is_visible);
+      MoveWindow(m_handle, static_cast<int>(x), static_cast<int>(y),
+                 static_cast<int>(width), static_cast<int>(height),
+                 m_is_visible);
 
       if (m_input) {
         m_input->set_window_rect(x, y, width, height);
@@ -384,25 +382,24 @@ namespace laplace::win32 {
       memset(&mode, 0, sizeof mode);
 
       mode.dmSize   = sizeof mode;
-      mode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH |
-                      DM_PELSHEIGHT | DM_DISPLAYFREQUENCY;
+      mode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT |
+                      DM_DISPLAYFREQUENCY;
 
       mode.dmBitsPerPel = 32;
-      mode.dmPelsWidth = static_cast<DWORD>(m_fullscreen_width);
+      mode.dmPelsWidth  = static_cast<DWORD>(m_fullscreen_width);
       mode.dmPelsHeight = static_cast<DWORD>(m_fullscreen_height);
       mode.dmDisplayFrequency = static_cast<DWORD>(m_frame_rate);
 
       if (ChangeDisplaySettings(&mode, CDS_FULLSCREEN) !=
           DISP_CHANGE_SUCCESSFUL) {
-        error(__FUNCTION__,
-              "Toggle on. ChangeDisplaySettings failed.");
+        error(
+            __FUNCTION__, "Toggle on. ChangeDisplaySettings failed.");
       }
     } else {
       /*  Reset to default settings.
        */
 
-      if (ChangeDisplaySettings(nullptr, 0) !=
-          DISP_CHANGE_SUCCESSFUL) {
+      if (ChangeDisplaySettings(nullptr, 0) != DISP_CHANGE_SUCCESSFUL) {
         error(__FUNCTION__,
               "Toggle off. ChangeDisplaySettings failed.");
       }
@@ -443,8 +440,8 @@ namespace laplace::win32 {
     DragFinish(drop);
   }
 
-  auto window::process(UINT message, WPARAM wparam,
-                       LPARAM lparam) -> LRESULT {
+  auto window::process(UINT message, WPARAM wparam, LPARAM lparam)
+      -> LRESULT {
     switch (message) {
       case WM_INPUT:
         if (m_input && m_has_focus) {
@@ -467,7 +464,12 @@ namespace laplace::win32 {
           case WA_ACTIVE:
           case WA_CLICKACTIVE: m_has_focus = true; break;
 
-          case WA_INACTIVE: m_has_focus = false; break;
+          case WA_INACTIVE:
+            if (m_input)
+              m_input->reset();
+
+            m_has_focus = false;
+            break;
         }
 
         if (m_on_focus) {
@@ -489,9 +491,9 @@ namespace laplace::win32 {
     return 0;
   }
 
-  auto CALLBACK window::window_proc(HWND window_handle,
-                                    UINT message, WPARAM wparam,
-                                    LPARAM lparam) -> LRESULT {
+  auto CALLBACK window::window_proc(HWND window_handle, UINT message,
+                                    WPARAM wparam, LPARAM lparam)
+      -> LRESULT {
     if (message != WM_CREATE) {
       window *w = reinterpret_cast<window *>(
           GetWindowLongPtr(window_handle, GWLP_USERDATA));
@@ -499,8 +501,7 @@ namespace laplace::win32 {
       if (w) {
         return w->process(message, wparam, lparam);
       } else {
-        return DefWindowProcW(
-            window_handle, message, wparam, lparam);
+        return DefWindowProcW(window_handle, message, wparam, lparam);
       }
     }
 

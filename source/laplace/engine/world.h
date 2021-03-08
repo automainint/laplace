@@ -97,11 +97,11 @@ namespace laplace::engine {
     size_t m_next_id             = 0;
     size_t m_index               = 0;
 
-    random_engine m_rand;
-    vuint         m_dynamic_ids;
-    vptr_entity   m_entities;
-    vptr_impact   m_queue;
-    vptr_impact   m_sync_queue;
+    eval::random m_rand;
+    vuint        m_dynamic_ids;
+    vptr_entity  m_entities;
+    vptr_impact  m_queue;
+    vptr_impact  m_sync_queue;
   };
 }
 

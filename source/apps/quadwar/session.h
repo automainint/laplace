@@ -36,9 +36,7 @@ namespace quadwar_app {
       protocol::ids::public_key,   protocol::ids::request_events,
       protocol::ids::ping_request, protocol::ids::ping_response,
       protocol::ids::client_enter, protocol::ids::client_leave,
-      protocol::ids::client_ready, protocol::ids::slot_create,
-      protocol::ids::slot_remove,  protocol::ids::player_name,
-      protocol::ids::server_launch
+      protocol::ids::client_ready, protocol::ids::player_name
     };
 
     static constexpr auto     default_server_ip = "127.0.0.1";
