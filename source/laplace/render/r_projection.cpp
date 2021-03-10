@@ -16,9 +16,9 @@
 namespace laplace::render {
   using std::monostate;
 
-  void projection::set_matrix(cref_mat4 matrix) {
+  void projection::set_matrix(cref_mat4 mat) {
     this->m_data = monostate();
-    this->matrix = matrix;
+    this->matrix = mat;
   }
 
   void projection::set_ortho(real left, real right, real bottom,

@@ -59,6 +59,7 @@ namespace quadwar_app {
 
     ui::ptr_mainmenu m_mainmenu;
     ptr_session      m_session;
+    bool             m_return_to_mainmenu = false;
   };
 }
 

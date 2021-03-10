@@ -179,8 +179,9 @@ namespace laplace::win32 {
 
   void input::set_window_rect(size_t x, size_t y, size_t width,
                               size_t height) {
-    m_center_x = x + width / 2;
-    m_center_y = y + height / 2;
+
+    m_center_x = static_cast<int>(x + width / 2);
+    m_center_y = static_cast<int>(y + height / 2);
 
     m_window_width  = width;
     m_window_height = height;
@@ -402,20 +403,20 @@ namespace laplace::win32 {
           if (x < 0)
             x = 0;
           else if (x >= m_res_x)
-            x = m_res_x - 1;
+            x = static_cast<int>(m_res_x - 1);
         } else if (m_res_x > 0) {
-          while (x < 0) x += m_res_x;
-          while (x >= m_res_x) x -= m_res_x;
+          while (x < 0) { x += static_cast<int>(m_res_x); }
+          while (x >= m_res_x) { x -= static_cast<int>(m_res_x); }
         }
 
         if (m_clamp_y) {
           if (y < 0)
             y = 0;
           else if (y >= m_res_y)
-            y = m_res_y - 1;
+            y = static_cast<int>(m_res_y - 1);
         } else if (m_res_y > 0) {
-          while (y < 0) y += m_res_x;
-          while (y >= m_res_y) y -= m_res_x;
+          while (y < 0) { y += static_cast<int>(m_res_x); }
+          while (y >= m_res_y) { y -= static_cast<int>(m_res_x); }
         }
 
         m_mouse_state.x = x;

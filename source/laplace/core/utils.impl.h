@@ -31,15 +31,15 @@ namespace laplace {
   }
 
   constexpr auto int_to_hex(int x) -> char {
-    char result = 0;
-
-    if (x < 10) {
-      result = '0' + x;
-    } else if (x < 16) {
-      result = 'a' + (x - 10);
+    if (x >= 0 && x < 10) {
+      return static_cast<char>('0' + x);
+    }
+      
+    if (x >= 10 && x < 16) {
+      return static_cast<char>('a' + (x - 10));
     }
 
-    return result;
+    return '\0';
   }
 
   constexpr auto hex_to_int(char16_t x) -> int {

@@ -44,16 +44,16 @@ namespace laplace::test {
       uint64_t a = 0x1020304050607080;
       uint64_t b = 0x2030405060708090;
 
-      EXPECT_EQ(as_index(a), 0x1020304050607080);
-      EXPECT_EQ(as_index(b), 0x2030405060708090);
+      EXPECT_EQ(as_index(a), 0x1020304050607080ull);
+      EXPECT_EQ(as_index(b), 0x2030405060708090ull);
     }
 
     if constexpr (sizeof(size_t) == 4) {
       uint64_t a = 0x10203040;
       uint64_t b = 0x20304050;
 
-      EXPECT_EQ(as_index(a), 0x10203040);
-      EXPECT_EQ(as_index(b), 0x20304050);
+      EXPECT_EQ(as_index(a), 0x10203040u);
+      EXPECT_EQ(as_index(b), 0x20304050u);
     }
   }
 

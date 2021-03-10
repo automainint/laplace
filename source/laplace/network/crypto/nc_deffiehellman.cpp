@@ -44,8 +44,8 @@ namespace laplace::network::crypto {
     vbyte priv_key(key_size);
     vbyte publ_key(key_size);
 
-    uint32_t priv_size = key_size;
-    uint32_t publ_size = key_size;
+    uint32_t priv_size = static_cast<uint32_t>(key_size);
+    uint32_t publ_size = static_cast<uint32_t>(key_size);
 
     status = wc_DhGenerateKeyPair(   //
         &m_key, &m_random,           //
@@ -67,17 +67,27 @@ namespace laplace::network::crypto {
     if (m_is_ok) {
       const auto priv_key = get_private_key();
 
-      uint32_t mutual_size = max(key.size(), priv_key.size());
-      vbyte    mutual_key(mutual_size);
+      uint32_t mutual_size = static_cast<uint32_t>(
+          max(key.size(), priv_key.size()));
 
-      auto status = wc_DhAgree(             //
-          &m_key,                           //
-          mutual_key.data(), &mutual_size,  //
-          priv_key.data(), priv_key.size(), //
-          key.data(), key.size());
+      vbyte mutual_key(mutual_size * 2);
+
+      auto status = wc_DhAgree(                   //
+          &m_key,                                 //
+          mutual_key.data(),                      //
+          &mutual_size,                           //
+          priv_key.data(),                        //
+          static_cast<uint32_t>(priv_key.size()), //
+          key.data(),                             //
+          static_cast<uint32_t>(key.size()));
 
       if (status != 0) {
         error(__FUNCTION__, "wc_DhAgree failed.");
+        return false;
+      }
+
+      if (mutual_key.size() < mutual_size) {
+        error(__FUNCTION__, "Invalid mutual key size.");
         return false;
       }
 

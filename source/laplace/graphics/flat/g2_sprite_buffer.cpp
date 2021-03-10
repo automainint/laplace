@@ -51,6 +51,6 @@ namespace laplace::graphics::flat {
         1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex),
         reinterpret_cast<const void *>(offsetof(vertex, texcoord)));
 
-    glDrawArrays(mode, 0, vertices.size());
+    glDrawArrays(mode, 0, static_cast<GLsizei>(vertices.size()));
   }
 }

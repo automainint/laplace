@@ -15,6 +15,7 @@
 #include "../../laplace/network/crypto/prime.h"
 #include <gtest/gtest.h>
 #include <string>
+#include <random>
 
 namespace laplace::test {
   namespace crypto = network::crypto;
@@ -85,13 +86,15 @@ namespace laplace::test {
   TEST(network, wolfssl_rabbit) {
     constexpr size_t test_count = 4;
 
+    std::random_device rdev;
+
     for (size_t i = 0; i < test_count; i++) {
       Rabbit alice = { 0 };
       Rabbit bob   = { 0 };
 
       uint8_t key[16] = { 0 };
-      for (size_t i = 0; i < 16; i++) {
-        key[i] = static_cast<uint8_t>(rand());
+      for (size_t j = 0; j < 16; j++) {
+        key[j] = static_cast<uint8_t>(rdev());
       }
 
       const uint8_t test[100] = { 0 };

@@ -208,6 +208,15 @@ namespace quadwar_app {
         return to_string("%s:%hu", network::localhost, port);
       }
     }
+    else if (auto f2 = ifstream(session::host_info_file_debug); f2) {
+      auto port = network::any_port;
+      f2 >> port;
+
+      if (f2) {
+        verb("Host address found: %s:%hu", network::localhost, port);
+        return to_string("%s:%hu", network::localhost, port);
+      }
+    }
 
     return string(default_address);
   }

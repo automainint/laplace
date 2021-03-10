@@ -28,7 +28,7 @@ namespace laplace::engine {
     this->m_id_actor = id;
   }
 
-  inline void basic_impact::perform(access::world w) const { }
+  inline void basic_impact::perform(access::world) const { }
 
   constexpr auto basic_impact::get_index() const -> size_t {
     return this->m_order.get_index();

@@ -40,7 +40,7 @@ namespace laplace::stem::config {
   auto scan_flag(int argc, char **argv, string_view name) -> bool {
     for (size_t i = 0; i < argc; i++) {
       if (argv[i] && argv[i][0] == '-' && argv[i][1] == '-') {
-        if (memcmp(argv[i] + 2, name.data(), name.size()) == 0)
+        if (string(argv[i] + 2) == name)
           return true;
       }
     }
@@ -213,7 +213,7 @@ namespace laplace::stem::config {
     auto arg = argv + 1;
     auto end = argv + argc;
 
-    while (arg = process_tag(arg, end, cfg)) { }
+    while (arg) { arg = process_tag(arg, end, cfg); }
 
     return cfg;
   }

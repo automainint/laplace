@@ -226,17 +226,15 @@ namespace laplace::network::crypto {
     vbyte result(block_size * block_count);
 
     for (size_t i = 0; i < block_count; i++) {
-      const auto offset = i * block_size;
-      const auto size   = bytes.size() - offset;
+      const auto p    = i * block_size;
+      const auto size = bytes.size() - p;
 
-      if (bytes.size() - offset < block_size) {
-        verb_error(__FUNCTION__, "Invalid block size.");
-        return {};
-      }
+      if (bytes.size() - p < block_size)
+        break;
 
-      if (!do_decrypt({ bytes.data() + offset, block_size },
-                      { result.data() + offset, block_size }))
-        return {};
+      if (!do_decrypt({ bytes.data() + p, block_size },
+                      { result.data() + p, block_size }))
+        break;
 
       m_dec_offset += block_size;
     }

@@ -62,7 +62,7 @@ namespace quadwar_app {
     m_mainmenu->set_unit_count(m_config[k_unit_count].get_uint());
 
     auto return_to_mainmenu = [=] {
-      m_session.reset();
+      m_return_to_mainmenu = true;
 
       m_mainmenu->refresh();
       m_mainmenu->set_visible(true);
@@ -122,6 +122,11 @@ namespace quadwar_app {
 
     if (m_session) {
       m_session->tick(delta_msec, get_input());
+
+      if (m_return_to_mainmenu) {
+        m_session.reset();
+        m_return_to_mainmenu = false;
+      }
     }
   }
 

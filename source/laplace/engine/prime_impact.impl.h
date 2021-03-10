@@ -20,8 +20,7 @@ namespace laplace::engine {
     return seq;
   }
 
-  inline void prime_impact::encode_to(std::span<uint8_t> bytes) const {
-  }
+  inline void prime_impact::encode_to(std::span<uint8_t>) const { }
 
   constexpr auto prime_impact::get_encoded_size() const -> size_t {
     return this->m_encoded_size;
@@ -65,7 +64,7 @@ namespace laplace::engine {
     using namespace protocol;
 
     if (get_id(seq) < ids::_unindexed_count) {
-      return -1;
+      return id_undefined;
     }
 
     return get_index_unsafe(seq);

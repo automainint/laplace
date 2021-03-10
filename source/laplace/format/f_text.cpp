@@ -13,8 +13,8 @@
 #include "../core/parser.h"
 #include "../core/utils.h"
 #include "text.h"
-#include <sstream>
 #include <iomanip>
+#include <sstream>
 
 namespace laplace::format::text {
   using std::make_shared, std::string, std::u8string, core::parser,
@@ -24,22 +24,27 @@ namespace laplace::format::text {
     bool   result = true;
     family field;
 
+    uint64_t x_u64 = {};
+    int64_t  x_64  = {};
+    double   x_f   = {};
+    u8string x_s;
+
     if (in.parse(" true ")) {
       field = true;
     } else if (in.parse(" false ")) {
       field = false;
-    } else if (uint64_t x; in.parse(" %D ", &x)) {
-      field = x;
-    } else if (int64_t x; in.parse(" %d ", &x)) {
-      field = x;
-    } else if (uint64_t x; in.parse(" 0x%X ", &x)) {
-      field = x;
-    } else if (double x; in.parse(" %f ", &x)) {
-      field = x;
-    } else if (u8string x; in.parse(" \"%s\" ", &x)) {
-      field = x;
-    } else if (u8string x; in.parse(" %a ", &x)) {
-      auto id = family(x);
+    } else if (in.parse(" %D ", &x_u64)) {
+      field = x_u64;
+    } else if (in.parse(" %d ", &x_64)) {
+      field = x_64;
+    } else if (in.parse(" 0x%X ", &x_u64)) {
+      field = x_u64;
+    } else if (in.parse(" %f ", &x_f)) {
+      field = x_f;
+    } else if (in.parse(" \"%s\" ", &x_s)) {
+      field = x_s;
+    } else if (in.parse(" %a ", &x_s)) {
+      auto id = family(x_s);
 
       if (in.parse(" ( ")) {
         field[text::s_function] = id;
@@ -230,10 +235,10 @@ namespace laplace::format::text {
       auto size = f.get_size();
 
       for (size_t i = 0; i < size; i++) {
-        auto &k = f.get_key(i);
-        for (size_t k = 0; k <= indent; k++)
+        for (size_t n = 0; n <= indent; n++)
           if (!print("  "))
             return false;
+        const auto &k = f.get_key(i);
         if (!printdown(print, k, indent + 1) || !print(" = "))
           return false;
         if (!printdown(print, f[k], indent + 1) || !print("\n"))

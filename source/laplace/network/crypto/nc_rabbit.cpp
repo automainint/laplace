@@ -46,7 +46,8 @@ namespace laplace::network::crypto {
     }
 
     const auto status = wc_RabbitProcess(
-        &m_encrypt, dst.data(), src.data(), src.size());
+        &m_encrypt, dst.data(), src.data(),
+        static_cast<uint32_t>(src.size()));
 
     if (status != 0) {
       error(__FUNCTION__, "wc_RabbitProcess failed.");
@@ -63,7 +64,8 @@ namespace laplace::network::crypto {
     }
 
     const auto status = wc_RabbitProcess(
-        &m_decrypt, dst.data(), src.data(), src.size());
+        &m_decrypt, dst.data(), src.data(),
+        static_cast<uint32_t>(src.size()));
 
     if (status != 0) {
       error(__FUNCTION__, "wc_RabbitProcess failed.");

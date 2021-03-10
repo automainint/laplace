@@ -30,7 +30,8 @@ namespace quadwar_app {
     static constexpr auto sense_move  = 1.5f;
     static constexpr auto sense_scale = .0003f;
 
-    static constexpr auto host_info_file = ".host";
+    static constexpr auto host_info_file       = ".host";
+    static constexpr auto host_info_file_debug = "../../.host";
 
     static constexpr uint16_t allowed_commands[] = {
       protocol::ids::public_key,   protocol::ids::request_events,

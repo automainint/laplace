@@ -40,7 +40,7 @@ namespace quadwar_app::object {
   }
 
   auto player::do_request(size_t id, cref_vbyte args) const -> vbyte {
-    if (id == sets::player_name) {
+    if (id == sets::player_name && args.empty()) {
       return pack_to_bytes(u8string_view { m_name });
     }
 

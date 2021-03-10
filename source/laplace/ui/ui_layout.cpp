@@ -19,22 +19,22 @@ namespace laplace::ui {
     return [width, line_height, spacing]( //
                cref_rect       bounds,    //
                vlayout_context context) -> vrect {
-      const int height = line_height * context.size();
+      const auto height = line_height * context.size();
 
-      const int elem_width  = width - spacing * 2;
-      const int elem_height = line_height - spacing * 2;
+      const auto elem_width  = width - spacing * 2;
+      const auto elem_height = line_height - spacing * 2;
 
-      const int x0 = (bounds.width - width) / 2;
-      const int y0 = 0;
+      const auto x0 = (bounds.width - width) / 2;
+      const auto y0 = 0;
 
       vrect rects;
       rects.reserve(context.size());
 
       for (size_t i = 0; i < context.size(); i++) {
         rects.emplace_back(rect {
-            .x = x0 + spacing,
-            .y = y0 + spacing + line_height * static_cast<int>(i),
-            .width  = elem_width,
+            .x     = x0 + spacing,
+            .y     = y0 + spacing + line_height * static_cast<int>(i),
+            .width = elem_width,
             .height = elem_height });
       }
 

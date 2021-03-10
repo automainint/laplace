@@ -116,9 +116,9 @@ namespace laplace::test {
       auto a = mat4 {};
       auto b = mat4 {};
 
-      for (size_t i = 0; i < 16; i++) {
-        a.v[i] = dst(rnd);
-        b.v[i] = dst(rnd);
+      for (size_t j = 0; j < 16; j++) {
+        a.v[j] = dst(rnd);
+        b.v[j] = dst(rnd);
       }
 
       auto c = sub(add(a, b), b);

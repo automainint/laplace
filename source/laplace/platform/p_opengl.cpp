@@ -70,9 +70,9 @@ namespace laplace::gl {
     return platform::get_proc_address(name);
   }
 
-  void require_extensions(vector<string_view> extensions) {
+  void require_extensions(vector<string_view> exts) {
     has_extensions_required = true;
-    extensions_required.assign(extensions.begin(), extensions.end());
+    extensions_required.assign(exts.begin(), exts.end());
   }
 
   auto init() -> bool {

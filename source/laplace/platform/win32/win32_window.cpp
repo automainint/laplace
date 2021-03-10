@@ -313,11 +313,11 @@ namespace laplace::win32 {
 
   void window::create_window() {
     if (register_class()) {
-      auto class_name  = m_class_name.c_str();
-      auto window_name = m_window_name.c_str();
+      auto window_class = m_class_name.c_str();
+      auto window_name  = m_window_name.c_str();
 
       m_handle = CreateWindowExW(
-          static_cast<DWORD>(get_style_ex()), class_name, window_name,
+          static_cast<DWORD>(get_style_ex()), window_class, window_name,
           static_cast<DWORD>(get_style()), static_cast<int>(get_x()),
           static_cast<int>(get_y()), static_cast<int>(get_width()),
           static_cast<int>(get_height()), m_parent, nullptr,

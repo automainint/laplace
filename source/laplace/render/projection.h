@@ -37,7 +37,7 @@ namespace laplace::render {
 
     mat4 matrix = unit<mat4>;
 
-    void set_matrix(cref_mat4 matrix);
+    void set_matrix(cref_mat4 mat);
 
     void set_ortho(            //
         real left, real right, //

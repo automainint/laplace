@@ -287,9 +287,9 @@ namespace laplace::win32 {
     format->cbSize     = 0;
     format->wFormatTag = WAVE_FORMAT_PCM;
 
-    format->nChannels      = a.get_channel_count();
-    format->nSamplesPerSec = a.get_sample_rate();
-    format->wBitsPerSample = a.get_sample_bits();
+    format->nChannels = static_cast<uint16_t>(a.get_channel_count());
+    format->nSamplesPerSec = static_cast<uint32_t>(a.get_sample_rate());
+    format->wBitsPerSample = static_cast<uint16_t>(a.get_sample_bits());
 
     format->nBlockAlign = (format->nChannels * format->wBitsPerSample) /
                           8;

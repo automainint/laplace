@@ -197,10 +197,10 @@ namespace laplace::core {
           return true;
       }
 
-      return c == p[2];
+      return c == static_cast<char32_t>(p[2]);
     }
 
-    return c == p[1];
+    return c == static_cast<char32_t>(p[1]);
   }
 
   auto parser::parse(const char *format, ...) -> bool {
@@ -650,7 +650,7 @@ namespace laplace::core {
                 f_value = -f_value;
               }
 
-              *va_arg(ap, double *) = f_value;
+              *va_arg(ap, double *) = static_cast<double>(f_value);
             }
           }
         } else if (*p == c_char) {
@@ -679,14 +679,19 @@ namespace laplace::core {
 
             if (c == '\\') {
               if (!is_silent) {
-                s_value.append(1, c);
+                s_value.append(1, static_cast<char8_t>(c));
               }
 
               c = get_char();
             }
 
             if (!is_silent) {
-              s_value.append(1, c);
+              auto offset = s_value.size();
+
+              if (!utf8_encode(c, s_value, offset)) {
+                error(__FUNCTION__, "UTF-8 encoding failed.");
+                is_silent = true;
+              }
             }
 
             if (c == '\0') {
@@ -714,16 +719,25 @@ namespace laplace::core {
           if (c == '_' || (c >= 'a' && c <= 'z') ||
               (c >= 'A' && c <= 'Z')) {
             if (!is_silent) {
-              s_value.append(1, c);
+              auto offset = s_value.size();
+
+              if (!utf8_encode(c, s_value, offset)) {
+                error(__FUNCTION__, "UTF-8 encoding failed.");
+                is_silent = true;
+              }
             }
 
             c = get_char();
 
             while (c == '_' || (c >= '0' && c <= '9') ||
-                   (c >= 'a' && c <= 'z') ||
-                   (c >= 'A' && c <= 'Z')) {
+                   (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
               if (!is_silent) {
-                s_value.append(1, c);
+                auto offset = s_value.size();
+
+                if (!utf8_encode(c, s_value, offset)) {
+                  error(__FUNCTION__, "UTF-8 encoding failed.");
+                  is_silent = true;
+                }
               }
 
               c = get_char();
@@ -747,12 +761,16 @@ namespace laplace::core {
           bool     is_empty = true;
           char32_t c        = get_char();
 
-          while ((c >= 'a' && c <= 'z') ||
-                 (c >= 'A' && c <= 'Z')) {
+          while ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
             is_empty = false;
 
             if (!is_silent) {
-              s_value.append(1, c);
+              auto offset = s_value.size();
+
+              if (!utf8_encode(c, s_value, offset)) {
+                error(__FUNCTION__, "UTF-8 encoding failed.");
+                is_silent = true;
+              }
             }
 
             c = get_char();
@@ -779,7 +797,12 @@ namespace laplace::core {
             is_empty = false;
 
             if (!is_silent) {
-              s_value.append(1, c);
+              auto offset = s_value.size();
+
+              if (!utf8_encode(c, s_value, offset)) {
+                error(__FUNCTION__, "UTF-8 encoding failed.");
+                is_silent = true;
+              }
             }
 
             c = get_char();
@@ -806,7 +829,12 @@ namespace laplace::core {
             is_empty = false;
 
             if (!is_silent) {
-              s_value.append(1, c);
+              auto offset = s_value.size();
+
+              if (!utf8_encode(c, s_value, offset)) {
+                error(__FUNCTION__, "UTF-8 encoding failed.");
+                is_silent = true;
+              }
             }
 
             c = get_char();
@@ -844,7 +872,7 @@ namespace laplace::core {
           result  = false;
           is_done = true;
         }
-      } else if (*p != get_char()) {
+      } else if (static_cast<char32_t>(*p) != get_char()) {
         result  = false;
         is_done = true;
       }

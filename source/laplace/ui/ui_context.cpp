@@ -1,4 +1,4 @@
-/*  laplace/ui/context.h
+/*  laplace/ui/ui_context.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -91,11 +91,11 @@ namespace laplace::ui {
 
     auto a = m_font->adjust(text);
 
-    int dx = button_state.rect.width - a.width;
-    int dy = button_state.rect.height - a.height;
+    auto dx = button_state.rect.width - a.width;
+    auto dy = button_state.rect.height - a.height;
 
-    int x = button_state.rect.x + dx / 2;
-    int y = button_state.rect.y + dy / 2;
+    auto x = button_state.rect.x + dx / 2;
+    auto y = button_state.rect.y + dy / 2;
 
     m_font->render(x, y, text);
   }
