@@ -59,6 +59,7 @@ namespace laplace::network {
       -> size_t {
     size_t size = 0;
 
+    m_is_msgsize   = false;
     m_is_connreset = false;
 
     if (m_socket != INVALID_SOCKET && (p != nullptr || count == 0)) {
@@ -77,7 +78,7 @@ namespace laplace::network {
         if (n != SOCKET_ERROR) {
           size += n;
         } else if (socket_error() == socket_msgsize()) {
-          verb("UDP: recvfrom failed, buffer too small (EMSGSIZE).");
+          m_is_msgsize = true;
           break;
         } else if (socket_error() == socket_connreset()) {
           m_is_connreset = true;
@@ -149,6 +150,10 @@ namespace laplace::network {
 
   auto udp_node::get_remote_port() const -> uint16_t {
     return ::ntohs(m_remote.sin_port);
+  }
+
+  auto udp_node::is_msgsize() const noexcept -> bool {
+    return m_is_msgsize;
   }
 
   auto udp_node::is_connreset() const noexcept -> bool {

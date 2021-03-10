@@ -17,9 +17,12 @@ namespace laplace::network {
   using std::min, std::unique_ptr, crypto::basic_cipher, std::span,
       std::vector;
 
+  void transfer::set_verbose(bool is_verbose) noexcept {
+    m_verbose = is_verbose;
+  }
+
   void transfer::set_cipher(unique_ptr<basic_cipher> cipher) {
     m_cipher = std::move(cipher);
-    m_cipher->set_verbose(true);
   }
 
   void transfer::set_remote_key(cref_vbyte key) {
@@ -177,7 +180,8 @@ namespace laplace::network {
     }
 
     if (sum != check_sum({ data.data() + n_data, size })) {
-      verb("Transfer: Wrong check sum.");
+      if (m_verbose)
+        verb("Transfer: Wrong check sum.");
       return 0;
     }
 

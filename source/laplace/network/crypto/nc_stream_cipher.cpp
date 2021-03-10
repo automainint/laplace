@@ -144,11 +144,11 @@ namespace laplace::network::crypto {
     const auto sum    = rd<uint64_t>(data, n_sum);
     const auto size   = rd<uint64_t>(data, n_size);
 
-    if (offset > m_dec_offset + (block_size << 6u)) {
+    if (offset > m_dec_offset + max_offset_change) {
       return false;
     }
 
-    if (m_dec_offset > offset + (block_size << 6u)) {
+    if (m_dec_offset > offset + max_offset_change) {
       return false;
     }
 

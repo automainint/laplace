@@ -48,7 +48,8 @@ namespace laplace::network::crypto {
       n_data   = 24
     };
 
-    static constexpr size_t block_size = 64;
+    static constexpr size_t block_size        = 64;
+    static constexpr size_t max_offset_change = block_size << 5;
 
     size_t m_enc_offset = 0;
     size_t m_dec_offset = 0;

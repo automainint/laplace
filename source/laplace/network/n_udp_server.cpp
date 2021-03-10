@@ -58,9 +58,8 @@ namespace laplace::network {
     m_allowed_commands.assign(commands.begin(), commands.end());
   }
 
-  void udp_server::set_chunk_size(size_t size, size_t overhead) {
-    m_overhead = overhead;
-    m_buffer.resize(size + overhead);
+  void udp_server::set_chunk_size(size_t size) {
+    m_buffer.resize(size);
   }
 
   void udp_server::queue(cref_vbyte seq) {
@@ -263,10 +262,6 @@ namespace laplace::network {
     return m_local_time;
   }
 
-  auto udp_server::get_chunk_size() const noexcept -> size_t {
-    return m_buffer.size();
-  }
-
   void udp_server::update_world(uint64_t delta_msec) {
     if (is_master()) {
       if (get_state() == server_state::action) {
@@ -356,6 +351,18 @@ namespace laplace::network {
     m_slots.emplace_back(
         slot_info { .address = string(address), .port = port });
     return id;
+  }
+
+  auto udp_server::has_slot(string_view address, uint16_t port) const
+      -> bool {
+
+    for (size_t i = 0; i < m_slots.size(); i++) {
+      if (m_slots[i].address == address && m_slots[i].port == port) {
+        return m_slots[i].id_actor != id_undefined;
+      }
+    }
+
+    return false;
   }
 
   auto udp_server::find_slot(string_view address, uint16_t port)
@@ -585,10 +592,18 @@ namespace laplace::network {
     if (m_node) {
       for (;;) {
         const auto n = m_node->receive_to(
-            m_buffer.data(), get_chunk_size(), async);
+            m_buffer.data(), m_buffer.size(), async);
 
         if (n == 0) {
-          if (m_node->is_connreset()) {
+          if (m_node->is_msgsize()) {
+
+            if (has_slot(m_node->get_remote_address(),
+                         m_node->get_remote_port())) {
+              if (m_buffer.size() < max_chunk_size)
+                m_buffer.resize(m_buffer.size() + chunk_size_increment);
+            }
+
+          } else if (m_node->is_connreset()) {
             disconnect(find_slot(             //
                 m_node->get_remote_address(), //
                 m_node->get_remote_port()));

@@ -18,6 +18,7 @@
 namespace laplace::network {
   class transfer {
   public:
+    void set_verbose(bool is_verbose) noexcept;
     void set_cipher(std::unique_ptr<crypto::basic_cipher> cipher);
     void set_remote_key(cref_vbyte key);
 
@@ -67,6 +68,7 @@ namespace laplace::network {
 
     std::unique_ptr<crypto::basic_cipher> m_cipher;
 
+    bool   m_verbose    = false;
     size_t m_loss_count = 0;
   };
 }

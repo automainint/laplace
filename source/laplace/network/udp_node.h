@@ -43,6 +43,7 @@ namespace laplace::network {
     [[nodiscard]] auto get_remote_address() const -> std::string;
     [[nodiscard]] auto get_remote_port() const -> uint16_t;
 
+    [[nodiscard]] auto is_msgsize() const noexcept -> bool;
     [[nodiscard]] auto is_connreset() const noexcept -> bool;
 
   private:
@@ -55,6 +56,7 @@ namespace laplace::network {
     SOCKET      m_socket;
     uint16_t    m_port = 0;
     sockaddr_in m_remote;
+    bool        m_is_msgsize   = false;
     bool        m_is_connreset = false;
   };
 
