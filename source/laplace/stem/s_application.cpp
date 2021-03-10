@@ -162,10 +162,10 @@ namespace laplace::stem {
 
   void application::adjust_frame_size(int width, int height) {
     if (width != 0 && height != 0) {
-      const float x0 = width < 0 ? 1.f : -1.f;
-      const float y0 = height < 0 ? -1.f : 1.f;
-      const float w  = 2.f / width;
-      const float h  = -2.f / height;
+      const auto x0 = width < 0 ? 1.f : -1.f;
+      const auto y0 = height < 0 ? -1.f : 1.f;
+      const auto w  = 2.f / static_cast<float>(width);
+      const auto h  = -2.f / static_cast<float> (height);
 
       if (m_flat_solid) {
         m_flat_solid->use();

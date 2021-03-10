@@ -33,6 +33,6 @@ namespace laplace::test {
   TEST(core, element_inheritance) {
     my_element e;
 
-    EXPECT_EQ(e.get_type_id(), 1);
+    EXPECT_EQ(e.get_type_id(), 1u);
   }
 }

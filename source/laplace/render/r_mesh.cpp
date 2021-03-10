@@ -14,6 +14,11 @@
 #include "model.h"
 
 namespace laplace::render {
-  void mesh::setup(ptr_model source) { }
-  void mesh::adjust(cref_motion state) { }
+  void mesh::setup(ptr_model source) {
+    error(__FUNCTION__, "Not implemented.");
+  }
+
+  void mesh::adjust(cref_motion state) {
+    error(__FUNCTION__, "Not implemented.");
+  }
 }

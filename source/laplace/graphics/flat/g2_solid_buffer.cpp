@@ -37,8 +37,11 @@ namespace laplace::graphics::flat {
                                      uint32_t           mode) {
 
     glBindBuffer(GL_ARRAY_BUFFER, m_id);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertex),
-                 vertices.data(), GL_DYNAMIC_DRAW);
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        static_cast<GLsizeiptr>(vertices.size() * sizeof(vertex)),
+        vertices.data(), GL_DYNAMIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);

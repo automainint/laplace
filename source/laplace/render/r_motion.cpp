@@ -14,7 +14,15 @@
 #include "motion.h"
 
 namespace laplace::render {
-  void motion::setup(ptr_model source) { }
-  void motion::solve(timeval time) { }
-  void motion::blend(cref_motion state, realmax_t factor) { }
+  void motion::setup(ptr_model source) {
+    error(__FUNCTION__, "Not implemented.");
+  }
+
+  void motion::solve(timeval time) {
+    error(__FUNCTION__, "Not implemented.");
+  }
+
+  void motion::blend(cref_motion state, realmax_t factor) {
+    error(__FUNCTION__, "Not implemented.");
+  }
 }

@@ -16,11 +16,11 @@
 namespace laplace {
   class socket_library {
   public:
+    socket_library(const socket_library &) = delete;
+    auto operator=(const socket_library &) -> socket_library & = delete;
+
     socket_library();
     ~socket_library();
-
-    socket_library(const socket_library &) = delete;
-    socket_library(socket_library &&)      = delete;
 
   private:
     bool m_is_ok;

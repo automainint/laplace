@@ -34,7 +34,7 @@ namespace laplace {
     if (x >= 0 && x < 10) {
       return static_cast<char>('0' + x);
     }
-      
+
     if (x >= 10 && x < 16) {
       return static_cast<char>('a' + (x - 10));
     }
@@ -67,7 +67,9 @@ namespace laplace {
 
   template <>
   inline auto to_u8string<>(std::string_view s) -> std::u8string {
-    return std::u8string(s.begin(), s.end());
+    return std::u8string(                            //
+        reinterpret_cast<const char8_t *>(s.data()), //
+        s.size());
   }
 
   template <>
@@ -75,9 +77,9 @@ namespace laplace {
     return std::u8string(s.begin(), s.end());
   }
 
-  template <typename type>
-  constexpr auto rd(cref_vbyte seq, size_t offset) -> type {
-    type value = 0;
+  template <trivial type_>
+  constexpr auto rd(cref_vbyte seq, size_t offset) -> type_ {
+    type_ value = {};
 
     if (offset + sizeof value <= seq.size()) {
       auto dst = &value;
@@ -89,8 +91,8 @@ namespace laplace {
     return value;
   }
 
-  template <typename type>
-  constexpr void wr(std::span<uint8_t> seq, size_t offset, type value) {
+  template <trivial type_>
+  constexpr void wr(std::span<uint8_t> seq, size_t offset, type_ value) {
     if (offset + sizeof value <= seq.size()) {
       auto dst = seq.data() + offset;
       auto src = &value;
@@ -99,8 +101,8 @@ namespace laplace {
     }
   }
 
-  template <typename type>
-  constexpr void wr(uint8_t *seq, size_t offset, type value) {
+  template <trivial type_>
+  constexpr void wr(uint8_t *seq, size_t offset, type_ value) {
     auto dst = seq + offset;
     auto src = &value;
 
@@ -116,6 +118,10 @@ namespace laplace {
     }
 
     return static_cast<size_t>(value);
+  }
+
+  constexpr auto as_index(int64_t value) -> size_t {
+    return as_index(static_cast<uint64_t>(value));
   }
 
   constexpr auto byte_count() -> size_t {
@@ -186,8 +192,12 @@ namespace laplace {
     write_bytes(data, arg0);
 
     if (data.size() >= size) {
-      write_bytes(std::span<uint8_t> { data.begin() + size, data.end() },
-                  args...);
+      write_bytes(
+          std::span<uint8_t> {
+              data.begin() +
+                  static_cast<decltype(data)::difference_type>(size),
+              data.end() },
+          args...);
     } else {
       error(__FUNCTION__, "Invalid size %zd.", data.size());
     }

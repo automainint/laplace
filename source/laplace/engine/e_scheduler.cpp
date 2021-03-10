@@ -44,8 +44,8 @@ namespace laplace::engine {
     auto _ul    = unique_lock(m_lock);
 
     if (!m_threads.empty()) {
-      m_sync.wait(_ul, [=] {
-        return m_tick_count == 0 || m_threads.empty();
+      m_sync.wait(_ul, [this] {
+        return m_tick_count == 0u || m_threads.empty();
       });
     }
   }
@@ -58,8 +58,8 @@ namespace laplace::engine {
                                     overthreading_limit;
 
     if (thread_count > thread_count_limit) {
-      verb("Scheduler: Invalid thread count %zu (max %zu).", __FUNCTION__,
-           thread_count, thread_count_limit);
+      verb("Scheduler: Invalid thread count %zu (max %zu).",
+           __FUNCTION__, thread_count, thread_count_limit);
 
       thread_count = thread_count_limit;
     }
@@ -85,7 +85,7 @@ namespace laplace::engine {
     }
 
     for (size_t i = n; i < m_threads.size(); i++) {
-      m_threads[i] = thread([=] {
+      m_threads[i] = thread([this] {
         this->tick_thread();
       });
     }
@@ -123,7 +123,7 @@ namespace laplace::engine {
 
       _ul.lock();
     } else {
-      m_sync.wait(_ul, [=] {
+      m_sync.wait(_ul, [this] {
         return m_in >= m_threads.size();
       });
     }
@@ -136,7 +136,7 @@ namespace laplace::engine {
 
       m_sync.notify_all();
     } else {
-      m_sync.wait(_ul, [=] {
+      m_sync.wait(_ul, [this] {
         return m_out >= m_threads.size();
       });
     }
@@ -146,7 +146,7 @@ namespace laplace::engine {
     auto _ul = unique_lock(m_lock);
 
     while (m_sync.wait(_ul,
-                       [=] {
+                       [this] {
                          return m_tick_count > 0 || m_done;
                        }),
            !m_done) {
@@ -157,7 +157,7 @@ namespace laplace::engine {
           /*  Execute the sync queue.
            */
 
-          sync([=] {
+          sync([this] {
             while (auto ev = m_world.get().next_sync_impact()) {
               ev->perform({ m_world, access::sync });
             }
@@ -172,7 +172,7 @@ namespace laplace::engine {
             ev->perform({ m_world, access::async });
           }
 
-          sync([=] {
+          sync([this] {
             m_world.get().clean_async_queue();
           });
         }
@@ -186,7 +186,7 @@ namespace laplace::engine {
           }
         }
 
-        sync([=] {
+        sync([this] {
           m_world.get().reset_index();
         });
 
@@ -197,7 +197,7 @@ namespace laplace::engine {
           en->adjust();
         }
 
-        sync([=] {
+        sync([this] {
           m_world.get().reset_index();
 
           m_tick_count--;

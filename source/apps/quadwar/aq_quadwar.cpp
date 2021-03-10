@@ -61,18 +61,18 @@ namespace quadwar_app {
     m_mainmenu->set_player_count(m_config[k_player_count].get_uint());
     m_mainmenu->set_unit_count(m_config[k_unit_count].get_uint());
 
-    auto return_to_mainmenu = [=] {
+    auto return_to_mainmenu = [this] {
       m_return_to_mainmenu = true;
 
       m_mainmenu->refresh();
       m_mainmenu->set_visible(true);
     };
 
-    auto quit = [=] {
+    auto quit = [this] {
       get_window().quit();
     };
 
-    auto init_session = [=] {
+    auto init_session = [this, return_to_mainmenu, quit] {
       m_mainmenu->set_visible(false);
 
       m_session = make_shared<session>();
@@ -85,27 +85,29 @@ namespace quadwar_app {
       m_session->on_quit(quit);
     };
 
-    m_mainmenu->on_create([=](ui::mainmenu::create_info info) {
-      init_session();
+    m_mainmenu->on_create(
+        [this, init_session](ui::mainmenu::create_info info) {
+          init_session();
 
-      m_session->set_game_name(info.game_name);
-      m_session->set_player_name(info.player_name);
-      m_session->set_map_size(info.map_size);
-      m_session->set_player_count(info.player_count);
-      m_session->set_unit_count(info.unit_count);
+          m_session->set_game_name(info.game_name);
+          m_session->set_player_name(info.player_name);
+          m_session->set_map_size(info.map_size);
+          m_session->set_player_count(info.player_count);
+          m_session->set_unit_count(info.unit_count);
 
-      m_session->create();
-    });
+          m_session->create();
+        });
 
-    m_mainmenu->on_join([=](ui::mainmenu::join_info info) {
-      init_session();
+    m_mainmenu->on_join(
+        [this, init_session](ui::mainmenu::join_info info) {
+          init_session();
 
-      m_session->set_server_ip(info.server_ip);
-      m_session->set_game_name(info.game_name);
-      m_session->set_player_name(info.player_name);
+          m_session->set_server_ip(info.server_ip);
+          m_session->set_game_name(info.game_name);
+          m_session->set_player_name(info.player_name);
 
-      m_session->join();
-    });
+          m_session->join();
+        });
 
     m_mainmenu->on_quit(quit);
   }

@@ -33,15 +33,15 @@ namespace quadwar_app {
       std::u8string_view, std::ofstream, std::ifstream, network::host,
       network::remote, protocol::qw_player_name, object::root,
       object::player, engine::id_undefined, platform::ref_input,
-      view::vec2;
+      view::vec2, view::real;
 
   session::session() {
-    m_lobby.on_abort([=] {
+    m_lobby.on_abort([this] {
       if (m_on_done)
         m_on_done();
     });
 
-    m_lobby.on_start([=] {
+    m_lobby.on_start([this] {
       if (m_server) {
 
         m_server->emit<protocol::qw_loading>( //
@@ -117,8 +117,8 @@ namespace quadwar_app {
     if (i == server_ip.end()) {
       m_server_ip = server_ip;
     } else {
-      const auto   p    = &(i + 1)[0];
-      const size_t size = server_ip.end() - (i + 1);
+      const auto p    = &(i + 1)[0];
+      const auto size = static_cast<size_t>(server_ip.end() - (i + 1));
 
       m_server_ip = string(server_ip.begin(), i);
 
@@ -207,8 +207,7 @@ namespace quadwar_app {
         verb("Host address found: %s:%hu", network::localhost, port);
         return to_string("%s:%hu", network::localhost, port);
       }
-    }
-    else if (auto f2 = ifstream(session::host_info_file_debug); f2) {
+    } else if (auto f2 = ifstream(session::host_info_file_debug); f2) {
       auto port = network::any_port;
       f2 >> port;
 
@@ -225,34 +224,37 @@ namespace quadwar_app {
     bool is_moved = false;
     vec2 delta;
 
+    const auto fdelta = static_cast<real>(delta_msec);
+
     if (in.is_key_down(platform::key_left)) {
       is_moved = true;
-      delta.x() -= sense_move * delta_msec;
+      delta.x() -= sense_move * fdelta;
     }
 
     if (in.is_key_down(platform::key_right)) {
       is_moved = true;
-      delta.x() += sense_move * delta_msec;
+      delta.x() += sense_move * fdelta;
     }
 
     if (in.is_key_down(platform::key_up)) {
       is_moved = true;
-      delta.y() -= sense_move * delta_msec;
+      delta.y() -= sense_move * fdelta;
     }
 
     if (in.is_key_down(platform::key_down)) {
       is_moved = true;
-      delta.y() += sense_move * delta_msec;
+      delta.y() += sense_move * fdelta;
     }
 
     if (in.get_wheel_delta() != 0) {
-      m_view.scale(sense_scale * in.get_wheel_delta());
+      const auto fwheel = static_cast<real>(in.get_wheel_delta());
+      m_view.scale(sense_scale * fwheel);
     }
 
     if (in.is_key_down(platform::key_mbutton)) {
       is_moved = true;
-      delta.x() -= in.get_mouse_delta_x();
-      delta.y() -= in.get_mouse_delta_y();
+      delta.x() -= static_cast<real>(in.get_mouse_delta_x());
+      delta.y() -= static_cast<real>(in.get_mouse_delta_y());
     }
 
     if (is_moved) {

@@ -45,17 +45,18 @@ namespace laplace::win32 {
     if (in_background != is_background_mode) {
       auto status = SetPriorityClass(
           GetCurrentProcess(),
-          is_background_mode ? PROCESS_MODE_BACKGROUND_BEGIN
-                             : PROCESS_MODE_BACKGROUND_END);
+          static_cast<DWORD>(is_background_mode
+                                 ? PROCESS_MODE_BACKGROUND_BEGIN
+                                 : PROCESS_MODE_BACKGROUND_END));
 
       if (!status) {
         /*  For Windows XP.
          */
 
-        SetThreadPriority(GetCurrentThread(),
-                          is_background_mode
-                              ? THREAD_MODE_BACKGROUND_BEGIN
-                              : THREAD_MODE_BACKGROUND_END);
+        SetThreadPriority(
+            GetCurrentThread(), is_background_mode
+                                    ? THREAD_MODE_BACKGROUND_BEGIN
+                                    : THREAD_MODE_BACKGROUND_END);
       }
 
       in_background = is_background_mode;
@@ -64,9 +65,10 @@ namespace laplace::win32 {
 
   void win32::set_realtime_mode(bool is_realtime_mode) {
     SetPriorityClass(
-        GetCurrentProcess(), is_realtime_mode
-                                 ? REALTIME_PRIORITY_CLASS
-                                 : ABOVE_NORMAL_PRIORITY_CLASS);
+        GetCurrentProcess(),
+        static_cast<DWORD>(is_realtime_mode
+                               ? REALTIME_PRIORITY_CLASS
+                               : ABOVE_NORMAL_PRIORITY_CLASS));
   }
 
   void win32::set_thread_priority(int priority) {

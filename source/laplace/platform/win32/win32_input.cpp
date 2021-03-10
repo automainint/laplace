@@ -102,29 +102,29 @@ namespace laplace::win32 {
 
   auto input::is_key_down(int code) const -> bool {
     assert(code >= 0 && code < key_count);
-    return m_keyboard_state[code].is_down;
+    return m_keyboard_state[static_cast<size_t>(code)].is_down;
   }
 
   auto input::is_key_up(int code) const -> bool {
     assert(code >= 0 && code < key_count);
-    return !m_keyboard_state[code].is_down;
+    return !m_keyboard_state[static_cast<size_t>(code)].is_down;
   }
 
   auto input::is_key_changed(int code) const -> bool {
     assert(code >= 0 && code < key_count);
-    return m_keyboard_state[code].is_changed;
+    return m_keyboard_state[static_cast<size_t>(code)].is_changed;
   }
 
   auto input::is_key_pressed(int code) const -> bool {
     assert(code >= 0 && code < key_count);
-    return m_keyboard_state[code].is_down &&
-           m_keyboard_state[code].is_changed;
+    return m_keyboard_state[static_cast<size_t>(code)].is_down &&
+           m_keyboard_state[static_cast<size_t>(code)].is_changed;
   }
 
   auto input::is_key_unpressed(int code) const -> bool {
     assert(code >= 0 && code < key_count);
-    return !m_keyboard_state[code].is_down &&
-           m_keyboard_state[code].is_changed;
+    return !m_keyboard_state[static_cast<size_t>(code)].is_down &&
+           m_keyboard_state[static_cast<size_t>(code)].is_changed;
   }
 
   auto input::get_mouse_resolution_x() const -> size_t {
@@ -293,7 +293,7 @@ namespace laplace::win32 {
   auto input::to_char(uint8_t key) -> char32_t {
     if (key >= key_numpad0 && key <= key_numpad9) {
       if (is_numlock() && !is_shift()) {
-        return '0' + (key - key_numpad0);
+        return U'0' + (key - key_numpad0);
       } else if (key == key_numpad4) {
         return ctrl_left;
       } else if (key == key_numpad8) {
@@ -305,39 +305,39 @@ namespace laplace::win32 {
       }
     } else if (key >= key_a && key <= key_z) {
       if (is_shift() == is_capslock()) {
-        return 'a' + (key - key_a);
+        return U'a' + (key - key_a);
       } else {
-        return 'A' + (key - key_a);
+        return U'A' + (key - key_a);
       }
     } else if (key >= key_0 && key <= key_9) {
       if (!is_shift()) {
-        return '0' + (key - key_0);
+        return U'0' + (key - key_0);
       } else {
-        constexpr auto chars = ")!@#$%^&*(";
+        constexpr auto chars = U")!@#$%^&*(";
         return chars[key - key_0];
       }
     } else if (key == key_space) {
-      return ' ';
+      return U' ';
     } else if (key == key_multiply) {
-      return '*';
+      return U'*';
     } else if (key == key_add) {
-      return '+';
+      return U'+';
     } else if (key == key_subtract) {
-      return '-';
+      return U'-';
     } else if (key == key_decimal) {
-      return is_numlock() && !is_shift() ? '.' : ctrl_delete;
+      return is_numlock() && !is_shift() ? U'.' : ctrl_delete;
     } else if (key == key_devide) {
-      return '/';
+      return U'/';
     } else if (key >= key_semicolon && key <= key_tilda) {
-      constexpr auto lower = ";=,-./`";
-      constexpr auto upper = ":+<_>?~";
+      constexpr auto lower = U";=,-./`";
+      constexpr auto upper = U":+<_>?~";
 
       auto n = key - key_semicolon;
 
       return is_shift() ? upper[n] : lower[n];
     } else if (key >= key_open && key <= key_quote) {
-      constexpr auto lower = "[\\]'";
-      constexpr auto upper = "{|}\"";
+      constexpr auto lower = U"[\\]'";
+      constexpr auto upper = U"{|}\"";
 
       auto n = key - key_open;
 
@@ -360,7 +360,7 @@ namespace laplace::win32 {
       return ctrl_down;
     }
 
-    return 0;
+    return 0u;
   }
 
   void input::process_mouse(const void *raw_data) {
@@ -381,8 +381,13 @@ namespace laplace::win32 {
         /*  Absolute cursor position.
          */
 
-        auto x = static_cast<int>((raw.lLastX / 65535.) * m_res_x);
-        auto y = static_cast<int>((raw.lLastY / 65535.) * m_res_y);
+        auto x = static_cast<int>(
+            (static_cast<double>(raw.lLastX) / 65535.) *
+            static_cast<double>(m_res_x));
+
+        auto y = static_cast<int>(
+            (static_cast<double>(raw.lLastY) / 65535.) *
+            static_cast<double>(m_res_y));
 
         m_mouse_state.delta_x += x - m_mouse_state.x;
         m_mouse_state.delta_y += y - m_mouse_state.y;
@@ -402,21 +407,25 @@ namespace laplace::win32 {
         if (m_clamp_x) {
           if (x < 0)
             x = 0;
-          else if (x >= m_res_x)
+          else if (x >= static_cast<int>(m_res_x))
             x = static_cast<int>(m_res_x - 1);
         } else if (m_res_x > 0) {
           while (x < 0) { x += static_cast<int>(m_res_x); }
-          while (x >= m_res_x) { x -= static_cast<int>(m_res_x); }
+          while (x >= static_cast<int>(m_res_x)) {
+            x -= static_cast<int>(m_res_x);
+          }
         }
 
         if (m_clamp_y) {
           if (y < 0)
             y = 0;
-          else if (y >= m_res_y)
+          else if (y >= static_cast<int>(m_res_y))
             y = static_cast<int>(m_res_y - 1);
         } else if (m_res_y > 0) {
           while (y < 0) { y += static_cast<int>(m_res_x); }
-          while (y >= m_res_y) { y -= static_cast<int>(m_res_x); }
+          while (y >= static_cast<int>(m_res_y)) {
+            y -= static_cast<int>(m_res_x);
+          }
         }
 
         m_mouse_state.x = x;

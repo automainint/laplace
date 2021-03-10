@@ -37,7 +37,8 @@ namespace laplace::engine::eval {
           f[1] ? d[1] / 2 : d[1], //
           f[2] ? d[2] / 2 : d[2] };
 
-    int n = (f[0] ? 2 : 1) * (f[1] ? 2 : 1) * (f[2] ? 2 : 1);
+    const auto n = (f[0] ? 2u : 1u) * (f[1] ? 2u : 1u) *
+                   (f[2] ? 2u : 1u);
 
     if (n == 1) {
       tree.childs = vtriangle();
@@ -59,19 +60,18 @@ namespace laplace::engine::eval {
             if (k == 1 && !f[2])
               continue;
 
-            build(v[index], delta,
-                  box { { i == 0 ? bounds.min.x()
-                                 : bounds.min.x() + s[0],
-                          j == 0 ? bounds.min.y()
-                                 : bounds.min.y() + s[1],
-                          k == 0 ? bounds.min.z()
-                                 : bounds.min.z() + s[2] },
-                        { i == 0 && f[0] ? bounds.min.x() + s[0]
-                                         : bounds.max.x(),
-                          j == 0 && f[1] ? bounds.min.y() + s[1]
-                                         : bounds.max.y(),
-                          k == 0 && f[2] ? bounds.min.z() + s[2]
-                                         : bounds.max.z() } });
+            build(
+                v[index], delta,
+                box {
+                    { i == 0 ? bounds.min.x() : bounds.min.x() + s[0],
+                      j == 0 ? bounds.min.y() : bounds.min.y() + s[1],
+                      k == 0 ? bounds.min.z() : bounds.min.z() + s[2] },
+                    { i == 0 && f[0] ? bounds.min.x() + s[0]
+                                     : bounds.max.x(),
+                      j == 0 && f[1] ? bounds.min.y() + s[1]
+                                     : bounds.max.y(),
+                      k == 0 && f[2] ? bounds.min.z() + s[2]
+                                     : bounds.max.z() } });
 
             index++;
           }
@@ -108,7 +108,7 @@ namespace laplace::engine::eval {
         cleanup(v[i]);
 
         if (is_empty(v[i])) {
-          v.erase(v.begin() + i);
+          v.erase(v.begin() + static_cast<ptrdiff_t>(i));
         } else {
           i++;
         }
@@ -130,11 +130,9 @@ namespace laplace::engine::eval {
     return is_box() ? eval::contains(get<n_box>(m_data), point)
            : is_cylinder()
                ? eval::contains(get<n_cylinder>(m_data), point)
-           : is_sphere()
-               ? eval::contains(get<n_sphere>(m_data), point)
-           : is_octree()
-               ? eval::contains(get<n_octree>(m_data), point)
-               : false;
+           : is_sphere() ? eval::contains(get<n_sphere>(m_data), point)
+           : is_octree() ? eval::contains(get<n_octree>(m_data), point)
+                         : false;
   }
 
   auto shape::get_bounds() const -> box {

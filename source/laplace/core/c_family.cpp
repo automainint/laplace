@@ -118,14 +118,12 @@ namespace laplace::core {
     assign(value);
   }
 
-  auto family::operator=(family::cref_vfamily value)
-      -> ref_family {
+  auto family::operator=(family::cref_vfamily value) -> ref_family {
     assign(value);
     return *this;
   }
 
-  auto family::operator=(family::cref_composite value)
-      -> ref_family {
+  auto family::operator=(family::cref_composite value) -> ref_family {
     assign(value);
     return *this;
   }
@@ -240,33 +238,27 @@ namespace laplace::core {
     return *this;
   }
 
-  auto family::operator==(cref_family value) const noexcept
-      -> bool {
+  auto family::operator==(cref_family value) const noexcept -> bool {
     return compare(value) == 0;
   }
 
-  auto family::operator!=(cref_family value) const noexcept
-      -> bool {
+  auto family::operator!=(cref_family value) const noexcept -> bool {
     return compare(value) != 0;
   }
 
-  auto family::operator<(cref_family value) const noexcept
-      -> bool {
+  auto family::operator<(cref_family value) const noexcept -> bool {
     return compare(value) < 0;
   }
 
-  auto family::operator>(cref_family value) const noexcept
-      -> bool {
+  auto family::operator>(cref_family value) const noexcept -> bool {
     return compare(value) > 0;
   }
 
-  auto family::operator<=(cref_family value) const noexcept
-      -> bool {
+  auto family::operator<=(cref_family value) const noexcept -> bool {
     return compare(value) <= 0;
   }
 
-  auto family::operator>=(cref_family value) const noexcept
-      -> bool {
+  auto family::operator>=(cref_family value) const noexcept -> bool {
     return compare(value) >= 0;
   }
 
@@ -347,10 +339,10 @@ namespace laplace::core {
   }
 
   auto family::get_integer() const -> int64_t {
-    constexpr uint64_t max_int = numeric_limits<int64_t>::max();
+    constexpr auto max_int = static_cast<uint64_t>(
+        numeric_limits<int64_t>::max());
 
-    if (m_data.index() == n_uint &&
-        get<n_uint>(m_data) <= max_int) {
+    if (m_data.index() == n_uint && get<n_uint>(m_data) <= max_int) {
       return static_cast<int64_t>(get<n_uint>(m_data));
     }
 
@@ -364,8 +356,7 @@ namespace laplace::core {
   auto family::get_string() const -> u8string_view {
     static const auto nil = u8string(u8"");
 
-    return m_data.index() == n_string ? get<n_string>(m_data)
-                                      : nil;
+    return m_data.index() == n_string ? get<n_string>(m_data) : nil;
   }
 
   auto family::get_uint() const -> uint64_t {
@@ -428,8 +419,9 @@ namespace laplace::core {
     if (get<n_composite>(m_data).size() <= index)
       return;
 
-    get<n_composite>(m_data).erase(
-        get<n_composite>(m_data).begin() + index);
+    get<n_composite>(m_data).erase(        //
+        get<n_composite>(m_data).begin() + //
+        static_cast<ptrdiff_t>(index));
 
     auto i = lower_bound(get<n_composite>(m_data).begin(),
                          get<n_composite>(m_data).end(), k,
@@ -632,11 +624,9 @@ namespace laplace::core {
         size_t n = min(na, nb);
 
         for (size_t i = 0; i < n; i++) {
-          if (get<n_bytes>(m_data)[i] <
-              get<n_bytes>(value.m_data)[i])
+          if (get<n_bytes>(m_data)[i] < get<n_bytes>(value.m_data)[i])
             return -1;
-          if (get<n_bytes>(m_data)[i] >
-              get<n_bytes>(value.m_data)[i])
+          if (get<n_bytes>(m_data)[i] > get<n_bytes>(value.m_data)[i])
             return 1;
         }
 

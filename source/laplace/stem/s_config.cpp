@@ -25,7 +25,7 @@ namespace laplace::stem::config {
       core::cref_family, platform::window, format::wrap;
 
   auto scan_flag(int argc, char **argv, char c) -> bool {
-    for (size_t i = 0; i < argc; i++) {
+    for (int i = 0; i < argc; i++) {
       if (argv[i] && argv[i][0] == '-') {
         for (size_t k = 1; argv[i][k]; k++) {
           if (argv[i][k] == c)
@@ -38,7 +38,7 @@ namespace laplace::stem::config {
   }
 
   auto scan_flag(int argc, char **argv, string_view name) -> bool {
-    for (size_t i = 0; i < argc; i++) {
+    for (int i = 0; i < argc; i++) {
       if (argv[i] && argv[i][0] == '-' && argv[i][1] == '-') {
         if (string(argv[i] + 2) == name)
           return true;

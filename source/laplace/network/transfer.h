@@ -21,16 +21,19 @@ namespace laplace::network {
     void set_cipher(std::unique_ptr<crypto::basic_cipher> cipher);
     void set_remote_key(cref_vbyte key);
 
-    [[nodiscard]] auto pack(cref_vbyte data) -> vbyte;
-    [[nodiscard]] auto unpack(cref_vbyte data) -> vbyte;
+    [[nodiscard]] auto pack(std::span<const cref_vbyte> data) -> vbyte;
+    [[nodiscard]] auto unpack(cref_vbyte data) -> std::vector<vbyte>;
 
-    [[nodiscard]] auto encode(cref_vbyte data) -> vbyte;
-    [[nodiscard]] auto decode(cref_vbyte data) -> vbyte;
+    [[nodiscard]] auto encode(std::span<const cref_vbyte> data)
+        -> vbyte;
+    [[nodiscard]] auto decode(cref_vbyte data) -> std::vector<vbyte>;
 
     [[nodiscard]] auto get_public_key() const noexcept -> cref_vbyte;
     [[nodiscard]] auto get_mutual_key() const noexcept -> cref_vbyte;
 
     [[nodiscard]] auto is_encrypted() const noexcept -> bool;
+
+    [[nodiscard]] auto get_loss_count() const noexcept -> size_t;
 
     [[nodiscard]] static auto check_sum(cref_vbyte data) -> uint64_t;
 
@@ -40,22 +43,31 @@ namespace laplace::network {
     }
 
   private:
-    [[nodiscard]] auto pack_marked(cref_vbyte data) -> vbyte;
-    [[nodiscard]] auto unpack_marked(cref_vbyte data) -> vbyte;
+    [[nodiscard]] auto pack_internal(     //
+        std::span<const cref_vbyte> data, //
+        const uint16_t              mark) -> vbyte;
 
-    [[nodiscard]] auto mark(cref_vbyte data, uint8_t value) -> vbyte;
-    [[nodiscard]] auto unmark(cref_vbyte data, uint8_t value) -> vbyte;
+    [[nodiscard]] auto unpack_internal( //
+        cref_vbyte     data,            //
+        const uint16_t mark) -> std::vector<vbyte>;
 
-    static constexpr uint8_t mark_plain     = 0;
-    static constexpr uint8_t mark_encrypted = 1;
+    [[nodiscard]] auto scan( //
+        cref_vbyte data,     //
+        uint16_t   mark) const noexcept -> size_t;
 
-    enum encodng_offset : size_t {
-      n_size      = 0,
-      n_check_sum = 8,
-      n_data      = 16
+    static constexpr uint16_t mark_plain     = 0;
+    static constexpr uint16_t mark_encrypted = 1;
+
+    enum encoding_offset : size_t {
+      n_mark = 0,
+      n_sum  = 2,
+      n_size = 10,
+      n_data = 18
     };
 
     std::unique_ptr<crypto::basic_cipher> m_cipher;
+
+    size_t m_loss_count = 0;
   };
 }
 

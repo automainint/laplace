@@ -46,6 +46,9 @@ namespace laplace::win32 {
     static constexpr int    default_thread_priority =
         platform::priority::critical;
 
+    audio(const audio &) = delete;
+    auto operator=(const audio &) = delete;
+
     audio(format request = default_format_request);
     ~audio();
 
@@ -88,10 +91,11 @@ namespace laplace::win32 {
 
     static void render_thread(ref a);
 
+    std::atomic_bool m_done;
+    std::atomic_bool m_active;
+    std::atomic_bool m_sync;
+
     std::shared_mutex            m_lock;
-    std::atomic_bool             m_done;
-    std::atomic_bool             m_active;
-    std::atomic_bool             m_sync;
     std::unique_ptr<std::thread> m_thread;
 
     std::vector<std::string> m_errors;

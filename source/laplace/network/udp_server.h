@@ -24,8 +24,6 @@ namespace laplace::network {
    */
   class udp_server : public server {
   public:
-    enum encoding_offset { n_command = 2 };
-
     static constexpr size_t slot_host            = -1;
     static constexpr size_t slot_count_unlimited = -1;
 
@@ -63,11 +61,11 @@ namespace laplace::network {
       uint64_t outdate      = 0;
       uint64_t wait         = 0;
 
-      vbyte       buffer;
-      vbyte       chunks;
-      event_queue queue;
+      std::vector<vbyte> in;
+      std::vector<vbyte> out;
 
-      transfer tran;
+      event_queue queue;
+      transfer    tran;
     };
 
     /*  Returns false if the event should be
@@ -82,8 +80,6 @@ namespace laplace::network {
     [[nodiscard]] auto is_encryption_enabled() const noexcept -> bool;
     [[nodiscard]] auto get_local_time() const noexcept -> uint64_t;
     [[nodiscard]] auto get_chunk_size() const noexcept -> size_t;
-    [[nodiscard]] auto adjust_chunk_size(cref_vbyte chunk) const
-        -> size_t;
 
     void update_world(uint64_t delta_msec);
 

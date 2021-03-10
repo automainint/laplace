@@ -37,7 +37,9 @@ namespace laplace::engine::protocol {
 
       set_encoded_size(n_key + m_key_size);
 
-      std::copy(key.begin(), key.begin() + m_key_size, m_key.begin());
+      std::copy(key.begin(),
+                key.begin() + static_cast<ptrdiff_t>(m_key_size),
+                m_key.begin());
     }
 
     static constexpr auto get_cipher(cref_vbyte seq) {

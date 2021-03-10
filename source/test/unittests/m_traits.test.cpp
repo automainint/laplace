@@ -34,13 +34,13 @@ namespace laplace::test {
     constexpr auto comp_size  = get_size<comp>();
     constexpr auto quat_size  = get_size<quat>();
 
-    EXPECT_EQ(float_size, 1);
-    EXPECT_EQ(vec2_size, 2);
-    EXPECT_EQ(vec3_size, 3);
-    EXPECT_EQ(mat2_size, 4);
-    EXPECT_EQ(mat4_size, 16);
-    EXPECT_EQ(comp_size, 2);
-    EXPECT_EQ(quat_size, 4);
+    EXPECT_EQ(float_size, 1u);
+    EXPECT_EQ(vec2_size, 2u);
+    EXPECT_EQ(vec3_size, 3u);
+    EXPECT_EQ(mat2_size, 4u);
+    EXPECT_EQ(mat4_size, 16u);
+    EXPECT_EQ(comp_size, 2u);
+    EXPECT_EQ(quat_size, 4u);
   }
 
   TEST(math, traits_get_constexpr) {

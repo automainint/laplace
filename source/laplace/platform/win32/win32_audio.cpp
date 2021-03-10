@@ -48,7 +48,7 @@ namespace laplace::win32 {
     m_read  = 0;
     m_write = 0;
 
-    m_thread = make_unique<thread>([=]() {
+    m_thread = make_unique<thread>([this]() {
       render_thread(*this);
     });
 
@@ -138,11 +138,13 @@ namespace laplace::win32 {
 
         if (m_read > 0) {
           vbyte temp(m_read);
-          move(m_buffer.begin(), m_buffer.begin() + m_read,
+          move(m_buffer.begin(),
+               m_buffer.begin() + static_cast<ptrdiff_t>(m_read),
                temp.begin());
-          move(m_buffer.begin() + m_read, m_buffer.end(),
-               m_buffer.begin());
-          move(temp.begin(), temp.end(), m_buffer.end() - m_read);
+          move(m_buffer.begin() + static_cast<ptrdiff_t>(m_read),
+               m_buffer.end(), m_buffer.begin());
+          move(temp.begin(), temp.end(),
+               m_buffer.end() - static_cast<ptrdiff_t>(m_read));
           m_read = 0;
         }
 
@@ -161,14 +163,16 @@ namespace laplace::win32 {
       m_write = i1 - m_buffer.size();
       i1      = m_buffer.size();
 
-      move(samples.begin(), samples.begin() + (i1 - i0),
-           m_buffer.begin() + i0);
-      move(samples.begin() + (i1 - i0), samples.end(),
-           m_buffer.begin());
+      move(samples.begin(),
+           samples.begin() + static_cast<ptrdiff_t>(i1 - i0),
+           m_buffer.begin() + static_cast<ptrdiff_t>(i0));
+      move(samples.begin() + static_cast<ptrdiff_t>(i1 - i0),
+           samples.end(), m_buffer.begin());
     } else {
       m_write = i1;
 
-      move(samples.begin(), samples.end(), m_buffer.begin() + i0);
+      move(samples.begin(), samples.end(),
+           m_buffer.begin() + static_cast<ptrdiff_t>(i0));
     }
   }
 
@@ -191,8 +195,9 @@ namespace laplace::win32 {
     auto _sl = shared_lock(m_lock);
 
     if (m_read + size <= m_buffer.size()) {
-      copy(m_buffer.begin() + m_read,
-           m_buffer.begin() + m_read + size, data);
+      copy(m_buffer.begin() + static_cast<ptrdiff_t>(m_read),
+           m_buffer.begin() + static_cast<ptrdiff_t>(m_read + size),
+           data);
 
       reset = m_write >= m_read && m_write < m_read + size;
 
@@ -205,8 +210,10 @@ namespace laplace::win32 {
       size_t m = m_buffer.size() - m_read;
       size_t n = size - m;
 
-      copy(m_buffer.begin() + m_read, m_buffer.end(), data);
-      copy(m_buffer.begin(), m_buffer.begin() + n, data + m);
+      copy(m_buffer.begin() + static_cast<ptrdiff_t>(m_read),
+           m_buffer.end(), data);
+      copy(m_buffer.begin(),
+           m_buffer.begin() + static_cast<ptrdiff_t>(n), data + m);
 
       reset = m_write >= m_read || m_write < n;
 
@@ -292,7 +299,7 @@ namespace laplace::win32 {
     format->wBitsPerSample = static_cast<uint16_t>(a.get_sample_bits());
 
     format->nBlockAlign = (format->nChannels * format->wBitsPerSample) /
-                          8;
+                          8u;
     format->nAvgBytesPerSec = format->nSamplesPerSec *
                               format->nBlockAlign;
 

@@ -171,7 +171,7 @@ namespace quadwar_app::object {
   void landscape::set_size(size_t width, size_t height) {
     m_tiles.resize(width * height);
 
-    init(n_width, width);
-    init(n_height, height);
+    init(n_width, static_cast<int64_t>(width));
+    init(n_height, static_cast<int64_t>(height));
   }
 }

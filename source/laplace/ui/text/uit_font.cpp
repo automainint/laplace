@@ -47,7 +47,7 @@ namespace laplace::ui::text {
           height = static_cast<int>(slot->bitmap.rows);
         }
 
-        width_total = width + slot->bitmap.width;
+        width_total = width + static_cast<int>(slot->bitmap.width);
         width += slot->advance.x >> 6;
       }
     }

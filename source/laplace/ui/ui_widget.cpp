@@ -220,7 +220,9 @@ namespace laplace::ui {
     if (child->m_is_attached &&
         child->m_parent.lock() == shared_from_this()) {
       if (child->m_attach_index < m_childs.size()) {
-        m_childs.erase(m_childs.begin() + child->m_attach_index);
+        m_childs.erase(        //
+            m_childs.begin() + //
+            static_cast<ptrdiff_t>(child->m_attach_index));
 
         update_indices(child->m_attach_index);
       }
@@ -239,7 +241,9 @@ namespace laplace::ui {
       m_childs[child_index]->m_attach_index = 0;
       m_childs[child_index]->m_parent.reset();
 
-      m_childs.erase(m_childs.begin() + child_index);
+      m_childs.erase(        //
+          m_childs.begin() + //
+          static_cast<ptrdiff_t>(child_index));
 
       update_indices(child_index);
 

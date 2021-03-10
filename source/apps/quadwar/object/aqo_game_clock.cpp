@@ -41,6 +41,6 @@ namespace quadwar_app::object {
 
     verb("Time: %jd:%02jd", seconds / 60, seconds % 60);
 
-    apply_delta(n_clock_time, get_tick_period());
+    apply_delta(n_clock_time, static_cast<int64_t>(get_tick_period()));
   }
 }

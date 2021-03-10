@@ -24,6 +24,9 @@ namespace laplace::graphics::flat {
       vec4 color;
     };
 
+    solid_shader(const solid_shader &) = delete;
+    auto operator=(const solid_shader &) -> solid_shader & = delete;
+
     solid_shader(ref_istream vert, ref_istream frag);
     ~solid_shader();
 

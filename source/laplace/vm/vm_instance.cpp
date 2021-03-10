@@ -40,7 +40,7 @@ namespace laplace::vm {
       execute(m_threads[i]);
 
       if (!m_threads[i].is_active) {
-        m_threads.erase(m_threads.begin() + i);
+        m_threads.erase(m_threads.begin() + static_cast<ptrdiff_t>(i));
       } else {
         i++;
       }
@@ -48,11 +48,11 @@ namespace laplace::vm {
   }
 
   void instance::execute(execute::ref_state s) {
-    auto fork = [=](size_t address, cref_vbyte args) {
+    auto fork = [this](size_t address, cref_vbyte args) {
       new_thread(address, args);
     };
 
-    auto call_ext = [=](size_t id, cref_vbyte args) -> vbyte {
+    auto call_ext = [this](size_t id, cref_vbyte args) -> vbyte {
       if (auto e = get_env(); e) {
         return e->perform(id, args);
       }
@@ -60,7 +60,7 @@ namespace laplace::vm {
       return {};
     };
 
-    auto exp = [=](size_t id, size_t address) {
+    auto exp = [this](size_t id, size_t address) {
       if (auto e = get_env(); e) {
         m_exports.emplace(std::pair { id, address });
         e->add(id, shared_from_this());

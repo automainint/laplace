@@ -25,8 +25,6 @@ namespace laplace::network::crypto {
     [[nodiscard]] auto decrypt(cref_vbyte bytes) -> vbyte override;
 
   protected:
-    auto setup() -> bool override;
-
     [[nodiscard]] virtual auto do_encrypt( //
         cref_vbyte         src,            //
         std::span<uint8_t> dst) -> bool;
@@ -41,43 +39,16 @@ namespace laplace::network::crypto {
         size_t offset) -> bool;
 
   private:
-    static constexpr size_t block_size = 64;
+    [[nodiscard]] auto scan(cref_vbyte data) const -> bool;
 
     enum encoding_offset : size_t {
-      n_chunk_offset    = 0,
-      n_chunk_check_sum = 8,
-      n_chunk_data      = 16,
-
-      n_pack_size      = 0,
-      n_pack_check_sum = 8,
-      n_pack_data      = 16
+      n_offset = 0,
+      n_sum    = 8,
+      n_size   = 16,
+      n_data   = 24
     };
 
-    [[nodiscard]] auto data_pack( //
-        cref_vbyte bytes) -> vbyte;
-
-    [[nodiscard]] auto data_unpack( //
-        cref_vbyte bytes) -> vbyte;
-
-    [[nodiscard]] auto chunk_scan( //
-        cref_vbyte bytes) -> bool;
-
-    [[nodiscard]] auto chunk_pack( //
-        const size_t offset,       //
-        cref_vbyte   bytes) -> vbyte;
-
-    [[nodiscard]] auto chunk_unpack( //
-        cref_vbyte bytes) -> std::tuple<vbyte, size_t>;
-
-    [[nodiscard]] auto chunk_encrypt( //
-        cref_vbyte bytes) -> vbyte;
-
-    [[nodiscard]] auto rewind( //
-        const size_t offset) -> bool;
-
-    [[nodiscard]] auto chunk_decrypt( //
-        const size_t offset,          //
-        cref_vbyte   bytes) -> vbyte;
+    static constexpr size_t block_size = 64;
 
     size_t m_enc_offset = 0;
     size_t m_dec_offset = 0;

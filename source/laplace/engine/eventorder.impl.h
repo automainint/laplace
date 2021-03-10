@@ -58,7 +58,8 @@ namespace laplace::engine {
               this->m_indices.begin());
 
     this->m_indices[parent.m_size] = index;
-    this->m_size                   = parent.m_size + 1;
+
+    this->m_size = static_cast<uint8_t>(parent.m_size + 1);
   }
 }
 

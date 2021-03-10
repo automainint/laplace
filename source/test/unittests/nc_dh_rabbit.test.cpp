@@ -14,8 +14,8 @@
 #include "../../laplace/network/crypto/dh_rabbit.h"
 #include "../../laplace/network/crypto/prime.h"
 #include <gtest/gtest.h>
-#include <string>
 #include <random>
+#include <string>
 
 namespace laplace::test {
   namespace crypto = network::crypto;
@@ -24,7 +24,7 @@ namespace laplace::test {
       std::string;
 
   TEST(network, wolfssl_dh) {
-    constexpr size_t test_count = 4;
+    constexpr size_t test_count = 1;
     constexpr size_t key_size   = 256;
 
     for (size_t i = 0; i < test_count; i++) {
@@ -84,7 +84,7 @@ namespace laplace::test {
   }
 
   TEST(network, wolfssl_rabbit) {
-    constexpr size_t test_count = 4;
+    constexpr size_t test_count = 1;
 
     std::random_device rdev;
 
@@ -117,14 +117,14 @@ namespace laplace::test {
     for (size_t i = 0; i < test_count; i++) {
       dh_rabbit alice, bob;
 
-      EXPECT_NE(alice.get_public_key().size(), 0);
-      EXPECT_NE(bob.get_public_key().size(), 0);
+      EXPECT_NE(alice.get_public_key().size(), 0u);
+      EXPECT_NE(bob.get_public_key().size(), 0u);
 
       alice.set_remote_key(bob.get_public_key());
       bob.set_remote_key(alice.get_public_key());
 
-      EXPECT_NE(alice.get_mutual_key().size(), 0);
-      EXPECT_NE(bob.get_mutual_key().size(), 0);
+      EXPECT_NE(alice.get_mutual_key().size(), 0u);
+      EXPECT_NE(bob.get_mutual_key().size(), 0u);
 
       const auto akey = alice.get_mutual_key();
       const auto bkey = bob.get_mutual_key();
@@ -151,6 +151,10 @@ namespace laplace::test {
       vbyte enc1 = alice.encrypt(msg1);
       vbyte enc2 = alice.encrypt(msg2);
 
+      EXPECT_FALSE(enc0.empty());
+      EXPECT_FALSE(enc1.empty());
+      EXPECT_FALSE(enc2.empty());
+
       EXPECT_FALSE(msg0 == enc0);
       EXPECT_FALSE(msg1 == enc1);
       EXPECT_FALSE(msg2 == enc2);
@@ -162,10 +166,14 @@ namespace laplace::test {
   }
 
   TEST(network, rabbit_packet_loss) {
-    constexpr size_t test_count = 1;
+    constexpr size_t test_count = 4;
+
+    std::random_device rdev;
 
     for (size_t i = 0; i < test_count; i++) {
       dh_rabbit alice, bob;
+      alice.set_verbose(true);
+      bob.set_verbose(true);
 
       alice.set_remote_key(bob.get_public_key());
       bob.set_remote_key(alice.get_public_key());
@@ -175,7 +183,9 @@ namespace laplace::test {
       vbyte msg2(50);
 
       vbyte baaad(128);
-      wr<uint64_t>(baaad, 0, 7000);
+
+      for (size_t k = 0; k < baaad.size(); k += 8)
+        wr(baaad, k, static_cast<uint64_t>(rdev()));
 
       auto enc0 = alice.encrypt(msg0);
       static_cast<void>(alice.encrypt(msg1));

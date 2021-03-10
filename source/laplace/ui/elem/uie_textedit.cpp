@@ -80,14 +80,15 @@ namespace laplace::ui::elem {
                         textedit::state  textedit_state,
                         textedit::filter f, ref_input in)
       -> textedit::update_result {
+
+    const auto x = in.get_cursor_x();
+    const auto y = in.get_cursor_y();
+
+    const auto has_cursor = contains(textedit_state.rect, x, y) &&
+                            (!object || object->event_allowed(x, y));
+
     auto event_status = false;
     auto has_focus    = textedit_state.has_focus;
-
-    auto x = in.get_cursor_x();
-    auto y = in.get_cursor_y();
-
-    auto has_cursor = contains(textedit_state.rect, x, y) &&
-                      (!object || object->event_allowed(x, y));
 
     auto text      = u8string(textedit_state.text);
     auto cursor    = textedit_state.cursor;
@@ -109,7 +110,8 @@ namespace laplace::ui::elem {
                 break;
             }
 
-            text.erase(text.begin() + n, text.begin() + cursor);
+            text.erase(text.begin() + static_cast<ptrdiff_t>(n),
+                       text.begin() + static_cast<ptrdiff_t>(cursor));
 
             cursor = n;
           } else if (c != ctrl_delete) {

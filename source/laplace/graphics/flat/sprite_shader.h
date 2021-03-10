@@ -24,6 +24,9 @@ namespace laplace::graphics::flat {
       vec2 texcoord;
     };
 
+    sprite_shader(const sprite_shader &) = delete;
+    auto operator=(const sprite_shader &) -> sprite_shader & = delete;
+
     sprite_shader(ref_istream vert, ref_istream frag);
     ~sprite_shader();
 

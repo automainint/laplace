@@ -43,19 +43,25 @@ namespace laplace::network::crypto {
     return { m_mutual_key.data(), m_mutual_key.size() };
   }
 
+  auto basic_cipher::get_loss_count() const noexcept -> size_t {
+    return m_loss_count;
+  }
+
   void basic_cipher::verb_error(string_view sender,
-                                string_view message) {
+                                string_view message) const {
     if (m_is_verbose) {
-      verb("[ %s ] %s", string(sender).c_str(),
+      verb("%s: %s", string(sender).c_str(),
            string(message).c_str());
     }
   }
 
   auto basic_cipher::setup_remote_key(cref_vbyte key) -> bool {
+    error(__FUNCTION__, "Not implemented.");
     return false;
   }
 
   auto basic_cipher::setup() -> bool {
+    error(__FUNCTION__, "Not implemented.");
     return false;
   }
 
@@ -73,6 +79,14 @@ namespace laplace::network::crypto {
 
   void basic_cipher::set_mutual_key(cref_vbyte key) noexcept {
     m_mutual_key = vbyte { key.begin(), key.end() };
+  }
+
+  void basic_cipher::reset_loss_count() noexcept {
+    m_loss_count = 0;
+  }
+
+  void basic_cipher::add_bytes_lost(size_t count) noexcept {
+    m_loss_count += count;
   }
 
   auto basic_cipher::get_private_key() const noexcept -> cref_vbyte {

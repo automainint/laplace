@@ -125,7 +125,8 @@ namespace laplace::ui::text {
       in.seekg(ios::end);
       buffer.resize(as_index(in.tellg()));
       in.seekg(ios::beg);
-      in.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
+      in.read(reinterpret_cast<char *>(buffer.data()),
+              static_cast<ptrdiff_t>(buffer.size()));
       buffer.resize(as_index(in.tellg()));
 
       load(buffer);

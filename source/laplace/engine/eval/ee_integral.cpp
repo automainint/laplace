@@ -18,8 +18,8 @@
 namespace laplace::engine::eval {
   using std::sqrtl, std::sinl, std::cosl, std::tanl, std::asinl,
       std::acosl, std::atanl, std::atan2l, std::powl, std::expl,
-      std::exp2l, std::logl, std::log2l, std::log10l,
-      math::round, math::realmax_t;
+      std::exp2l, std::logl, std::log2l, std::log10l, math::round,
+      math::realmax_t;
 
   inline auto _scale(intval x, intval scale) -> math::realmax_t {
 
@@ -28,20 +28,23 @@ namespace laplace::engine::eval {
       return 0;
     }
 
-    return static_cast<realmax_t>(x) / scale;
+    return static_cast<realmax_t>(x) / static_cast<realmax_t>(scale);
   }
 
   template <typename func_, typename... args_>
   inline auto _fixed(func_ op, intval scale, args_... args) -> intval {
-    return round<intval>(op(_scale(args, scale)...) * scale);
+    return round<intval>(op(_scale(args, scale)...) *
+                         static_cast<realmax_t>(scale));
   }
 
   auto pi(intval scale) -> intval {
-    return round<intval>(std::numbers::pi_v<realmax_t> * scale);
+    return round<intval>(std::numbers::pi_v<realmax_t> *
+                         static_cast<realmax_t>(scale));
   }
 
   auto e(intval scale) -> intval {
-    return round<intval>(std::numbers::e_v<realmax_t> * scale);
+    return round<intval>(std::numbers::e_v<realmax_t> *
+                         static_cast<realmax_t>(scale));
   }
 
   auto sqrt(intval x) -> intval {

@@ -22,7 +22,7 @@ namespace laplace::engine::object {
   timer::timer(impact_gen gen, uint64_t period, size_t count) {
     *this = m_proto;
 
-    init(n_tick_period, period);
+    init(n_tick_period, static_cast<int64_t>(period));
 
     reset_clock();
 

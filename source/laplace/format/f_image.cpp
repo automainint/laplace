@@ -1,99 +1,98 @@
-#include "image.h"
+/*  laplace/format/f_image.cpp
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
 #include "binary.h"
-#include "text.h"
 #include "buffer.h"
+#include "image.h"
+#include "text.h"
 
-using namespace laplace;
-using namespace core;
-using namespace format;
-using namespace std;
+namespace laplace::format::image {
+  using std::make_shared, core::family;
 
-auto image::extract(const_pack_type pack) -> image::data_type
-{
+  auto extract(const_pack_type pack) -> image::data_type {
     auto result = make_shared<graphics::image>();
 
-    size_t width    = pack["width"].get_uint();
-    size_t height   = pack["height"].get_uint();
-    size_t depth    = pack["depth"].get_uint();
+    size_t width  = pack["width"].get_uint();
+    size_t height = pack["height"].get_uint();
+    size_t depth  = pack["depth"].get_uint();
 
     result->set_size(width, height, depth);
 
     auto pixels = pack["pixels"].get_bytes();
 
-    if (pixels.size_bytes() == result->get_size_bytes())
-    {
-        copy(pixels.begin(), pixels.end(), result->data());
-    }
-    else
-    {
-        result.reset();
+    if (pixels.size_bytes() == result->get_size_bytes()) {
+      copy(pixels.begin(), pixels.end(), result->data());
+    } else {
+      result.reset();
     }
 
     return result;
-}
+  }
 
-auto image::package(const_data_type data) -> pack_type
-{
+  auto package(const_data_type data) -> pack_type {
     auto result = make_shared<family>();
 
-    (*result)["width"] = data.get_width();
+    (*result)["width"]  = data.get_width();
     (*result)["height"] = data.get_height();
-    (*result)["depth"] = data.get_depth();
+    (*result)["depth"]  = data.get_depth();
 
-    (*result)["pixels"] = cref_vbyte(data.get_data(), data.get_data() + data.get_size_bytes());
+    (*result)["pixels"] = cref_vbyte(
+        data.get_data(), data.get_data() + data.get_size_bytes());
 
     return result;
-}
+  }
 
-auto image::decode(fn_read read) -> image::data_type
-{
+  auto decode(fn_read read) -> image::data_type {
     data_type result;
 
-    if (read)
-    {
-        buffer buf(read);
+    if (read) {
+      buffer buf(read);
 
-        auto buffering = [&buf](size_t n) -> vbyte {
-            return buf.read(n);
-        };
+      auto buffering = [&buf](size_t n) -> vbyte {
+        return buf.read(n);
+      };
 
-        auto pack = binary::decode(buffering);
+      auto pack = binary::decode(buffering);
 
-        if (!pack)
-        {
-            buf.restore();
-            pack = text::decode(buffering);
-        }
+      if (!pack) {
+        buf.restore();
+        pack = text::decode(buffering);
+      }
 
-        if (pack)
-        {
-            result = extract(*pack);
-        }
+      if (pack) {
+        result = extract(*pack);
+      }
     }
 
     return result;
-}
+  }
 
-auto image::encode(fn_write write, const_data_type data, mode encoding_mode) -> bool
-{
+  auto encode(fn_write write, const_data_type data, mode encoding_mode)
+      -> bool {
     bool result = false;
 
-    if (write)
-    {
-        auto pack = package(data);
+    if (write) {
+      auto pack = package(data);
 
-        if (pack)
+      if (pack) {
+        if (encoding_mode == mode::text) {
+          result = text::encode(write, *pack);
+        } else /*if (encoding_mode == mode::binary)*/
         {
-            if (encoding_mode == mode::text)
-            {
-                result = text::encode(write, *pack);
-            }
-            else /*if (encoding_mode == mode::binary)*/
-            {
-                result = binary::encode(write, *pack);
-            }
+          result = binary::encode(write, *pack);
         }
+      }
     }
 
     return result;
+  }
 }

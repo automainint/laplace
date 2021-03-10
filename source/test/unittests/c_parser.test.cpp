@@ -49,10 +49,10 @@ namespace laplace::test {
     EXPECT_EQ(i_oct, -017);
     EXPECT_EQ(i_dec, -99);
     EXPECT_EQ(i_hex, -0xf7);
-    EXPECT_EQ(u_bin, 3);
-    EXPECT_EQ(u_oct, 057);
-    EXPECT_EQ(u_dec, 79);
-    EXPECT_EQ(u_hex, 0x7ff);
+    EXPECT_EQ(u_bin, 3u);
+    EXPECT_EQ(u_oct, 057u);
+    EXPECT_EQ(u_dec, 79u);
+    EXPECT_EQ(u_hex, 0x7ffu);
     EXPECT_EQ(f, 2.0e2);
     EXPECT_EQ(c, U'a');
     EXPECT_EQ(str, u8string(u8"abc:_~\\/&^123"));

@@ -17,8 +17,12 @@ namespace laplace::network {
   using std::min, std::copy, std::string_view;
 
   tcp_joint::tcp_joint(string_view address, uint16_t port) {
-    auto size = min(address.size(), sizeof m_address - 1);
-    copy(address.begin(), address.begin() + size, m_address);
+    const auto size = min(address.size(), sizeof m_address - 1);
+
+    copy(address.begin(),                                //
+         address.begin() + static_cast<ptrdiff_t>(size), //
+         m_address);
+
     m_address[size] = '\0';
 
     m_port = port;

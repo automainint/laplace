@@ -10,6 +10,7 @@
  *  the MIT License for more details.
  */
 
+#include "../../core/utils.h"
 #include "../transfer.h"
 #include "stream_cipher.h"
 
@@ -17,45 +18,110 @@ namespace laplace::network::crypto {
   using std::min, std::tuple, std::span;
 
   auto stream_cipher::encrypt(cref_vbyte bytes) -> vbyte {
-    const auto offset = m_enc_offset;
-    return chunk_pack(offset, chunk_encrypt(data_pack(bytes)));
+
+    uint8_t block[block_size] = {};
+
+    vbyte  buf;
+    size_t n = 0;
+
+    while (n < bytes.size()) {
+      const auto size = min(block_size, bytes.size() - n);
+
+      const auto n_buf = buf.size();
+      buf.resize(n_buf + n_data + block_size);
+
+      wr<uint64_t>(buf, n_buf + n_offset, m_enc_offset);
+      wr<uint64_t>(buf, n_buf + n_size, size);
+
+      memcpy(block, bytes.data() + n, size);
+      memset(block + size, 0, block_size - size);
+
+      if (!do_encrypt(
+              block, { buf.data() + n_buf + n_data, block_size }))
+        break;
+
+      const auto sum = transfer::check_sum(
+          { buf.data() + n_buf + n_data, size });
+
+      wr<uint64_t>(buf, n_buf + n_sum, sum);
+
+      m_enc_offset += block_size;
+      n += size;
+    }
+
+    return buf;
   }
 
   auto stream_cipher::decrypt(cref_vbyte bytes) -> vbyte {
-    vbyte result;
 
-    for (size_t n = 0;           //
-         chunk_scan(             //
-             { bytes.data() + n, //
-               bytes.size() - n });) {
+    reset_loss_count();
 
-      const auto [chunk, offset] = chunk_unpack({ bytes.data() + n, //
-                                                  bytes.size() - n });
+    uint8_t block[block_size] = {};
 
-      const auto data = data_unpack(chunk_decrypt(offset, chunk));
+    vbyte  buf;
+    size_t n = 0;
 
-      result.insert(result.end(), data.begin(), data.end());
-      n += n_chunk_data + chunk.size();
+    while (n < bytes.size()) {
+      const auto offset = static_cast<size_t>(
+          rd<uint64_t>(bytes, n + n_offset));
+
+      const auto size = static_cast<size_t>(
+          rd<uint64_t>(bytes, n + n_size));
+
+      if (scan({ bytes.begin() + static_cast<ptrdiff_t>(n),
+                 bytes.end() })) {
+
+        if (offset != m_dec_offset) {
+          if (!rewind_decryption()) {
+            add_bytes_lost(bytes.size() - n);
+            break;
+          }
+
+          m_dec_offset = 0;
+
+          if (!pass_decryption(offset)) {
+            add_bytes_lost(bytes.size() - n);
+            break;
+          }
+
+          m_dec_offset = offset;
+        }
+
+        n += n_data;
+
+        if (!do_decrypt({ bytes.data() + n, block_size }, block)) {
+          add_bytes_lost(bytes.size() - n);
+          break;
+        }
+
+        buf.insert(buf.end(), block, block + size);
+
+        m_dec_offset += block_size;
+        n += block_size;
+
+      } else {
+        add_bytes_lost(1);
+        n++;
+      }
     }
 
-    return result;
-  }
-
-  auto stream_cipher::setup() -> bool {
-    return false;
+    return buf;
   }
 
   auto stream_cipher::do_encrypt(cref_vbyte src, span<uint8_t> dst)
       -> bool {
+    error(__FUNCTION__, "Not implemented.");
     return false;
   }
 
   auto stream_cipher::do_decrypt(cref_vbyte src, span<uint8_t> dst)
       -> bool {
+    error(__FUNCTION__, "Not implemented.");
     return false;
   }
 
   auto stream_cipher::rewind_decryption() -> bool {
+    error(__FUNCTION__, "Not implemented.");
     return false;
   }
 
@@ -73,172 +139,34 @@ namespace laplace::network::crypto {
     return true;
   }
 
-  auto stream_cipher::data_pack(cref_vbyte bytes) -> vbyte {
-    const uint64_t size = bytes.size();
-    const auto     sum  = transfer::check_sum(bytes);
+  auto stream_cipher::scan(cref_vbyte data) const -> bool {
+    const auto offset = rd<uint64_t>(data, n_offset);
+    const auto sum    = rd<uint64_t>(data, n_sum);
+    const auto size   = rd<uint64_t>(data, n_size);
 
-    vbyte result(n_pack_data + bytes.size());
-    memcpy(result.data() + n_pack_size, &size, sizeof size);
-    memcpy(result.data() + n_pack_check_sum, &sum, sizeof sum);
-    memcpy(result.data() + n_pack_data, bytes.data(), bytes.size());
-
-    return result;
-  }
-
-  auto stream_cipher::data_unpack(cref_vbyte bytes) -> vbyte {
-    if (bytes.size() < n_pack_data) {
-      verb_error(__FUNCTION__, "Invalid data.");
-      return {};
-    }
-
-    uint64_t size = 0;
-    uint64_t sum  = 0;
-
-    memcpy(&size, bytes.data() + n_pack_size, sizeof size);
-    memcpy(&sum, bytes.data() + n_pack_check_sum, sizeof sum);
-
-    if (bytes.size() < n_pack_data + size) {
-      verb_error(__FUNCTION__, "Invalid size.");
-      return {};
-    }
-
-    if (transfer::check_sum({ bytes.data() + n_pack_data, size }) !=
-        sum) {
-
-      verb("Stream cipher: WRONG CHECK SUM");
-      return {};
-    }
-
-    vbyte result(size);
-    memcpy(result.data(), bytes.data() + n_pack_data, size);
-    return result;
-  }
-
-  auto stream_cipher::chunk_scan(cref_vbyte bytes) -> bool {
-    if (bytes.empty())
-      return false;
-
-    if (bytes.size() < n_chunk_data) {
-      verb_error(__FUNCTION__, "Invalid size.");
+    if (offset > m_dec_offset + (block_size << 6u)) {
       return false;
     }
 
-    uint64_t sum = 0;
-    memcpy(&sum, bytes.data() + n_chunk_check_sum, sizeof sum);
+    if (m_dec_offset > offset + (block_size << 6u)) {
+      return false;
+    }
 
-    if (transfer::check_sum({ bytes.data() + n_chunk_data,
-                              bytes.size() - n_chunk_data }) != sum) {
-      // verb_error(__FUNCTION__, "Wrong check sum.");
+    if (block_size + n_data > data.size()) {
+      return false;
+    }
+
+    if (size > block_size) {
+      return false;
+    }
+
+    if (sum != transfer::check_sum(        //
+                   { data.data() + n_data, //
+                     size })) {
+      verb_error("Stream cipher", "Wrong check sum.");
       return false;
     }
 
     return true;
-  }
-
-  auto stream_cipher::chunk_pack( //
-      const size_t offset,        //
-      cref_vbyte   bytes) -> vbyte {
-    vbyte chunk(n_chunk_data + bytes.size());
-
-    const uint64_t offset64 = offset;
-    const uint64_t size     = bytes.size();
-    const uint64_t sum      = transfer::check_sum(bytes);
-
-    memcpy(chunk.data() + n_chunk_offset, &offset64, sizeof offset64);
-    memcpy(chunk.data() + n_chunk_check_sum, &sum, sizeof sum);
-    memcpy(chunk.data() + n_chunk_data, bytes.data(), bytes.size());
-
-    return chunk;
-  }
-
-  auto stream_cipher::chunk_unpack(cref_vbyte bytes)
-      -> tuple<vbyte, size_t> {
-    if (bytes.size() < n_chunk_data) {
-      verb_error(__FUNCTION__, "Invalid size.");
-      return {};
-    }
-
-    uint64_t offset = 0;
-    vbyte    chunk(bytes.size() - n_chunk_data);
-
-    memcpy(&offset, bytes.data() + n_chunk_offset, sizeof offset);
-    memcpy(chunk.data(), bytes.data() + n_chunk_data, chunk.size());
-
-    return { chunk, static_cast<size_t>(offset) };
-  }
-
-  auto stream_cipher::chunk_encrypt(cref_vbyte bytes) -> vbyte {
-    const auto block_count = (bytes.size() + (block_size - 1)) /
-                             block_size;
-
-    vbyte result(block_size * block_count);
-
-    for (size_t i = 0; i < block_count; i++) {
-      const auto offset = i * block_size;
-      const auto size   = bytes.size() - offset;
-
-      if (size < block_size) {
-        uint8_t block[block_size] = { 0 };
-        memcpy(block, bytes.data() + offset, size);
-
-        if (!do_encrypt({ block, block_size },
-                        { result.data() + offset, block_size }))
-          return {};
-
-      } else {
-        if (!do_encrypt({ bytes.data() + offset, block_size },
-                        { result.data() + offset, block_size }))
-          return {};
-      }
-
-      m_enc_offset += block_size;
-    }
-
-    return result;
-  }
-
-  auto stream_cipher::rewind(const size_t offset) -> bool {
-    if (offset < m_dec_offset) {
-      if (!rewind_decryption())
-        return false;
-
-      m_dec_offset = 0;
-    }
-
-    if (offset > m_dec_offset) {
-      if (!pass_decryption(offset - m_dec_offset))
-        return false;
-
-      m_dec_offset = offset;
-    }
-
-    return true;
-  }
-
-  auto stream_cipher::chunk_decrypt(const size_t offset,
-                                    cref_vbyte   bytes) -> vbyte {
-    if (!rewind(offset))
-      return {};
-
-    const auto block_count = (bytes.size() + (block_size - 1)) /
-                             block_size;
-
-    vbyte result(block_size * block_count);
-
-    for (size_t i = 0; i < block_count; i++) {
-      const auto p    = i * block_size;
-      const auto size = bytes.size() - p;
-
-      if (bytes.size() - p < block_size)
-        break;
-
-      if (!do_decrypt({ bytes.data() + p, block_size },
-                      { result.data() + p, block_size }))
-        break;
-
-      m_dec_offset += block_size;
-    }
-
-    return result;
   }
 }

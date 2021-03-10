@@ -19,9 +19,6 @@
 namespace laplace::vm {
   class environment {
   public:
-    environment();
-    ~environment();
-
     auto add(size_t unique_id, ptr_agent a) -> size_t;
     auto get_id(size_t unique_id) -> size_t;
     auto perform(size_t id, cref_vbyte args) -> vbyte;

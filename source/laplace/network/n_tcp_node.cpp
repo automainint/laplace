@@ -101,7 +101,7 @@ namespace laplace::network {
         }
       } else {
         int len = sizeof m_remote;
-        memset(&m_remote, 0, len);
+        memset(&m_remote, 0, static_cast<size_t>(len));
 
         m_socket = ::accept(
             m_listen, reinterpret_cast<sockaddr *>(&m_remote), &len);

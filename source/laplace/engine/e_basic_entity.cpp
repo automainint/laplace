@@ -101,7 +101,7 @@ namespace laplace::engine {
 
     for (size_t i = 1; i < m_sets.size();) {
       if (m_sets[i - 1].id == m_sets[i].id) {
-        m_sets.erase(m_sets.begin() + i);
+        m_sets.erase(m_sets.begin() + static_cast<ptrdiff_t>(i));
       } else {
         i++;
       }

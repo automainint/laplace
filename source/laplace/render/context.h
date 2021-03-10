@@ -23,8 +23,6 @@
 #include "../graphics/tridi/refract_shader.h"
 #include "../graphics/tridi/shadow_shader.h"
 #include "../graphics/tridi/uvmap_shader.h"
-#include "projection.h"
-#include "scene.h"
 #include <array>
 #include <memory>
 #include <string>
@@ -62,9 +60,6 @@ namespace laplace::render {
 
     void set_settings(cref_settings sets);
 
-    void set_projection(cref_projection proj);
-    void set_scene(ptr_scene sce);
-
     void render(std::span<const solid_vertex> vertices);
     void render_strip(std::span<const solid_vertex> vertices);
 
@@ -74,16 +69,12 @@ namespace laplace::render {
     void render_strip(std::span<const sprite_vertex> vertices,
                       graphics::ref_texture          tex);
 
-    void render();
-
     static auto get_default() -> ptr_context;
 
   private:
     static std::weak_ptr<context> m_default;
 
     settings   m_settings = default_settings;
-    projection m_projection;
-    ptr_scene  m_scene;
 
     graphics::flat::solid_buffer  m_solid_buffer;
     graphics::flat::sprite_buffer m_sprite_buffer;

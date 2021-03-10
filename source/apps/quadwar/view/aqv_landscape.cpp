@@ -37,10 +37,11 @@ namespace quadwar_app::view {
       const auto s = cam.get_scale();
       const auto d = tail_size - tail_border * 2.f;
 
-      const auto fx = (cam.get_frame().x() - tail_size * width * s) /
-                      2.f;
-      const auto fy = (cam.get_frame().y() - tail_size * height * s) /
-                      2.f;
+      const auto fw = static_cast<real>(width);
+      const auto fh = static_cast<real>(height);
+
+      const auto fx = (cam.get_frame().x() - tail_size * fw * s) / 2.f;
+      const auto fy = (cam.get_frame().y() - tail_size * fh * s) / 2.f;
 
       const auto px = -cam.get_position().x();
       const auto py = -cam.get_position().y();
@@ -52,8 +53,15 @@ namespace quadwar_app::view {
 
           if (tiles[j * width + i]) {
 
-            const auto x0 = fx + (px + tail_border + i * tail_size) * s;
-            const auto y0 = fy + (py + tail_border + j * tail_size) * s;
+            const auto tail_x = px + tail_border +
+                                static_cast<real>(i) * tail_size;
+
+            const auto tail_y = py + tail_border +
+                                static_cast<real>(j) * tail_size;
+
+            const auto x0 = fx + tail_x * s;
+            const auto y0 = fy + tail_y * s;
+
             const auto x1 = x0 + d * s;
             const auto y1 = y0 + d * s;
 

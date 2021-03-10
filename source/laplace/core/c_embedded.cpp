@@ -80,7 +80,7 @@ namespace laplace::embedded {
     auto i = lower_bound(aliases.begin(), aliases.end(), file_name);
 
     if (i != aliases.end() && *i == file_name) {
-      return bytes[i - aliases.begin()];
+      return bytes[static_cast<size_t>(i - aliases.begin())];
     }
 
     return {};

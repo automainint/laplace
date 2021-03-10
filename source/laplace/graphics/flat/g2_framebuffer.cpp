@@ -44,8 +44,10 @@ namespace laplace::graphics::flat {
 
       glBindTexture(GL_TEXTURE_2D, color_texture.get_id());
 
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0,
-                   GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+                   static_cast<GLsizei>(m_width),
+                   static_cast<GLsizei>(m_height), 0, GL_RGBA,
+                   GL_UNSIGNED_BYTE, nullptr);
 
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                              GL_TEXTURE_2D, color_texture.get_id(), 0);
@@ -60,7 +62,8 @@ namespace laplace::graphics::flat {
   void framebuffer::render(function<void()> op) {
     if (op) {
       glBindFramebuffer(GL_FRAMEBUFFER, m_id);
-      glViewport(0, 0, m_width, m_height);
+      glViewport(0, 0, static_cast<GLsizei>(m_width),
+                 static_cast<GLsizei>(m_height));
 
       op();
 

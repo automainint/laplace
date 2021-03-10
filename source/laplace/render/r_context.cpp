@@ -60,13 +60,6 @@ namespace laplace::render {
     m_settings = sets;
   }
 
-  void context::set_projection(cref_projection proj) {
-    m_projection = proj;
-  }
-  void context::set_scene(ptr_scene sce) {
-    m_scene = sce;
-  }
-
   void context::render(span<const solid_vertex> vertices) {
     if (m_solid_shader) {
       m_solid_shader->use();
@@ -102,8 +95,6 @@ namespace laplace::render {
       m_sprite_buffer.render_strip(vertices);
     }
   }
-
-  void context::render() { }
 
   auto context::get_default() -> ptr_context {
     auto result = m_default.lock();

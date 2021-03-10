@@ -48,7 +48,7 @@ namespace laplace::ui::text {
     }
 
     for (size_t index = 0; index < pixel_count; index++) {
-      m_pixels[index] = (bits[i] & (1ull << k)) ? 0 : 1;
+      m_pixels[index] = (bits[i] & (1ull << k)) ? 0u : 1u;
 
       if (++k >= 64) {
         i++;
@@ -128,7 +128,8 @@ namespace laplace::ui::text {
     }
 
     if (m_sizes[index].size == 0) {
-      m_sizes[index].size = static_cast<int>(m_char_width - m_sizes[index].left);
+      m_sizes[index].size = static_cast<int>(m_char_width -
+                                             m_sizes[index].left);
     }
   }
 
@@ -184,7 +185,7 @@ namespace laplace::ui::text {
     for (size_t j = 0; j < m_char_height; j++) {
       const auto size = get_char_size(c);
 
-      for (size_t i = 0; i < size; i++) {
+      for (size_t i = 0; i < static_cast<size_t>(size); i++) {
         size_t index = get_pixel_index(i0, j0, i, j);
 
         if (index < m_pixels.size() && m_pixels[index]) {
@@ -204,7 +205,12 @@ namespace laplace::ui::text {
   void lcd::draw_dot(ref_image img, int x0, int y0, int x1, int y1,
                      cref_pixel color) {
     for (int i = x0; i < x1; i++) {
-      for (int j = y0; j < y1; j++) { img.set_pixel(i, j, color); }
+      for (int j = y0; j < y1; j++) {
+        img.set_pixel(              //
+            static_cast<size_t>(i), //
+            static_cast<size_t>(j), //
+            color);
+      }
     }
   }
 }

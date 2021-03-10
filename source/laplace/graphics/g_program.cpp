@@ -128,7 +128,8 @@ namespace laplace::graphics {
     }
 
     glShaderSource(
-        shader, static_cast<uint32_t>(p.size()), p.data(), nullptr);
+        shader, static_cast<GLsizei>(p.size()), p.data(), nullptr);
+
     glCompileShader(shader);
 
     int32_t status;
@@ -145,18 +146,18 @@ namespace laplace::graphics {
   void program::log_program() {
     int32_t length;
     glGetProgramiv(m_id, GL_INFO_LOG_LENGTH, &length);
-    string info_log(length, '\0');
+    string info_log(static_cast<size_t>(length), '\0');
     glGetProgramInfoLog(m_id, length, &length, &info_log[0]);
-    info_log.resize(length);
+    info_log.resize(static_cast<size_t>(length));
     log(info_log);
   }
 
   void program::log_shader(uint32_t shader) {
     int32_t length;
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-    string info_log(length, '\0');
+    string info_log(static_cast<size_t>(length), '\0');
     glGetShaderInfoLog(shader, length, &length, &info_log[0]);
-    info_log.resize(length);
+    info_log.resize(static_cast<size_t>(length));
     log(info_log);
   }
 }

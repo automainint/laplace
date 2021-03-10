@@ -39,8 +39,11 @@ namespace laplace::network::crypto {
     [[nodiscard]] auto get_public_key() const noexcept -> cref_vbyte;
     [[nodiscard]] auto get_mutual_key() const noexcept -> cref_vbyte;
 
+    [[nodiscard]] auto get_loss_count() const noexcept -> size_t;
+
   protected:
-    void verb_error(std::string_view sender, std::string_view message);
+    void verb_error(std::string_view sender,
+                    std::string_view message) const;
 
     [[nodiscard]] virtual auto setup_remote_key(cref_vbyte key) -> bool;
     [[nodiscard]] virtual auto setup() -> bool;
@@ -51,11 +54,15 @@ namespace laplace::network::crypto {
     void set_public_key(cref_vbyte key) noexcept;
     void set_mutual_key(cref_vbyte key) noexcept;
 
+    void reset_loss_count() noexcept;
+    void add_bytes_lost(size_t count) noexcept;
+
     [[nodiscard]] auto get_private_key() const noexcept -> cref_vbyte;
 
   private:
-    bool m_is_ready   = false;
-    bool m_is_verbose = default_verbose;
+    bool   m_is_ready   = false;
+    bool   m_is_verbose = default_verbose;
+    size_t m_loss_count = 0;
 
     vbyte m_private_key;
     vbyte m_public_key;

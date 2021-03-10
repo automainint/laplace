@@ -39,7 +39,9 @@ namespace laplace::engine {
           auto time = m_time;
           rewind_to(imp->get_time());
 
-          m_history.emplace(m_history.begin() + m_position, imp);
+          m_history.emplace(
+              m_history.begin() + static_cast<ptrdiff_t>(m_position),
+              imp);
 
           rewind_to(time);
         } else {
@@ -51,8 +53,9 @@ namespace laplace::engine {
           return a->get_time() < b;
         };
 
-        auto it = lower_bound(m_history.begin() + m_position,
-                              m_history.end(), imp->get_time(), op);
+        auto it = lower_bound(
+            m_history.begin() + static_cast<ptrdiff_t>(m_position),
+            m_history.end(), imp->get_time(), op);
 
         m_history.emplace(it, imp);
       }
@@ -146,11 +149,14 @@ namespace laplace::engine {
       };
 
       auto i_end = lower_bound(
-          m_history.begin() + m_position, m_history.end(), time, op);
+          m_history.begin() + static_cast<ptrdiff_t>(m_position),
+          m_history.end(), time, op);
 
       auto t0 = m_time;
 
-      for (auto i = m_history.begin() + m_position; i != i_end; i++) {
+      for (auto i =
+               m_history.begin() + static_cast<ptrdiff_t>(m_position);
+           i != i_end; i++) {
         auto t1 = (*i)->get_time();
 
         if (t0 < t1) {
@@ -170,7 +176,7 @@ namespace laplace::engine {
       }
 
       m_time     = time;
-      m_position = i_end - m_history.begin();
+      m_position = static_cast<size_t>(i_end - m_history.begin());
     }
   }
 }

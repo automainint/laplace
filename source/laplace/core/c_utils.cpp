@@ -84,10 +84,11 @@ namespace laplace {
     string result;
 
     if (c_format) {
-      size_t size = vsnprintf(nullptr, 0, c_format, ap);
+      const auto size = static_cast<size_t>(
+          vsnprintf(nullptr, 0u, c_format, ap));
 
       result.resize(size);
-      vsnprintf(result.data(), size + 1, c_format, ap);
+      vsnprintf(result.data(), size + 1u, c_format, ap);
     }
 
     return result;
@@ -179,6 +180,26 @@ namespace laplace {
     return n;
   }
 
+  auto to_uint(std::string_view s) -> uint64_t {
+    auto buf = string(s);
+    auto ss  = istringstream(buf);
+
+    uint64_t n;
+    ss >> n;
+
+    return n;
+  }
+
+  auto to_uint(u8string_view s) -> uint64_t {
+    auto buf = string(as_ascii_string(s));
+    auto ss  = istringstream(buf);
+
+    uint64_t n;
+    ss >> n;
+
+    return n;
+  }
+
   auto to_real(string_view s) -> double {
     auto buf = string(s);
     auto ss  = istringstream(buf);
@@ -226,7 +247,8 @@ namespace laplace {
         return false;
       }
 
-      code = ((bytes[offset] & 0x1F) << 6) | (bytes[offset + 1] & 0x3F);
+      code = ((bytes[offset] & 0x1Fu) << 6u) |
+             (bytes[offset + 1u] & 0x3Fu);
 
       offset += 2;
     } else if ((bytes[offset] & 0xF0) == 0xE0) {
@@ -240,9 +262,9 @@ namespace laplace {
         }
       }
 
-      code = ((bytes[offset] & 0x0F) << 12) |
-             ((bytes[offset + 1] & 0x3F) << 6) |
-             (bytes[offset + 2] & 0x3F);
+      code = ((bytes[offset] & 0x0Fu) << 12u) |
+             ((bytes[offset + 1u] & 0x3Fu) << 6u) |
+             (bytes[offset + 2u] & 0x3Fu);
 
       offset += 3;
     } else if ((bytes[offset] & 0xF8) == 0xF0) {
@@ -256,10 +278,10 @@ namespace laplace {
         }
       }
 
-      code = ((bytes[offset] & 0x0F) << 18) |
-             ((bytes[offset + 1] & 0x3F) << 12) |
-             ((bytes[offset + 2] & 0x3F) << 6) |
-             (bytes[offset + 3] & 0x3F);
+      code = ((bytes[offset] & 0x0Fu) << 18u) |
+             ((bytes[offset + 1u] & 0x3Fu) << 12u) |
+             ((bytes[offset + 2u] & 0x3Fu) << 6u) |
+             (bytes[offset + 3u] & 0x3Fu);
 
       offset += 4;
     }
@@ -273,8 +295,9 @@ namespace laplace {
       return false;
     }
 
-    if (code <= 0x7F) {
-      bytes.insert(bytes.begin() + offset, static_cast<uint8_t>(code));
+    if (code <= 0x7Fu) {
+      bytes.insert(bytes.begin() + static_cast<ptrdiff_t>(offset),
+                   static_cast<uint8_t>(code));
       offset++;
       return true;
     }
@@ -304,7 +327,8 @@ namespace laplace {
       return false;
     }
 
-    bytes.insert(bytes.begin() + offset, temp.begin(), temp.end());
+    bytes.insert(bytes.begin() + static_cast<ptrdiff_t>(offset),
+                 temp.begin(), temp.end());
     offset += temp.size();
 
     return true;

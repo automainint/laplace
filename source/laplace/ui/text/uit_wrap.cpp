@@ -26,7 +26,10 @@ void wrap::render(int x, int y, u8string_view text) {
     image img;
 
     auto a = m_paint->adjust(text);
-    img.set_size(a.width, a.height);
+
+    img.set_size(                     //
+        static_cast<size_t>(a.width), //
+        static_cast<size_t>(a.height));
 
     m_paint->print(img, 0, a.top, text);
     m_tex->image_2d_nearest(img);
@@ -35,11 +38,10 @@ void wrap::render(int x, int y, u8string_view text) {
       m_context = context::get_default();
     }
 
-    m_context->render(
-        rect { .x      = x,
-               .y      = y,
-               .width  = static_cast<int>(a.width),
-               .height = static_cast<int>(a.height) },
-        *m_tex);
+    m_context->render(rect { .x      = x,
+                             .y      = y,
+                             .width  = static_cast<int>(a.width),
+                             .height = static_cast<int>(a.height) },
+                      *m_tex);
   }
 }

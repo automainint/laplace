@@ -66,7 +66,7 @@ namespace laplace::engine::protocol {
 
     inline void
     encode_to(std::span<uint8_t> bytes) const final {
-      uint8_t flag_local = is_local() ? 1 : 0;
+      uint8_t flag_local = is_local() ? 1u : 0u;
 
       write_bytes(bytes, id, get_index64(), get_time64(),
                   get_actor64(), flag_local);

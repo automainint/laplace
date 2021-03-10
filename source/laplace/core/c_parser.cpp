@@ -54,13 +54,13 @@ namespace laplace::core {
 
   auto parser::wrap(std::string_view s) -> parser {
     return parser([s, i = size_t {}]() mutable -> char32_t {
-      return i < s.size() ? s[i++] : 0;
+      return i < s.size() ? s[i++] : U'\0';
     });
   }
 
   auto parser::wrap(std::u8string_view s) -> parser {
     return parser([s, i = size_t {}]() mutable -> char32_t {
-      return i < s.size() ? s[i++] : 0;
+      return i < s.size() ? s[i++] : U'\0';
     });
   }
 

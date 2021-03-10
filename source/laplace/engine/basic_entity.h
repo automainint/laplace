@@ -21,9 +21,9 @@
 #include "object/sets.h"
 #include "world.predef.h"
 #include <atomic>
+#include <chrono>
 #include <memory>
 #include <shared_mutex>
-#include <chrono>
 
 namespace laplace::engine {
   /*  TODO
@@ -31,8 +31,7 @@ namespace laplace::engine {
    */
   class basic_entity {
   public:
-    static constexpr auto lock_timeout =
-        std::chrono::milliseconds(100);
+    static constexpr auto lock_timeout = std::chrono::milliseconds(100);
 
     enum dummy_tag { dummy };
     enum proto_tag { proto };
@@ -252,8 +251,7 @@ namespace laplace::engine {
     /*  Get a state value by id
      *  without locking.
      */
-    [[nodiscard]] auto locked_get_by_id(size_t id) const
-        -> int64_t;
+    [[nodiscard]] auto locked_get_by_id(size_t id) const -> int64_t;
 
     void self_destruct(const access::world &w);
     void desync();
@@ -280,13 +278,13 @@ namespace laplace::engine {
     void assign(cref_entity en) noexcept;
     void assign(basic_entity &&en) noexcept;
 
-    bool   m_is_changed = false;
-    size_t m_id         = id_undefined;
+    std::weak_ptr<world> m_world;
 
     vsets_row m_sets;
     uint64_t  m_clock = 0;
 
-    std::weak_ptr<world> m_world;
+    size_t  m_id         = id_undefined;
+    bool    m_is_changed = false;
   };
 }
 

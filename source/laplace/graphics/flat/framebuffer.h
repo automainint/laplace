@@ -21,6 +21,9 @@ namespace laplace::graphics::flat {
   public:
     texture color_texture;
 
+    framebuffer(const framebuffer &) = delete;
+    auto operator=(const framebuffer &) -> framebuffer & = delete;
+
     framebuffer();
     ~framebuffer();
 
@@ -29,9 +32,9 @@ namespace laplace::graphics::flat {
     void render(std::function<void()> op);
 
   private:
-    uint32_t m_id;
-    uint32_t m_width;
-    uint32_t m_height;
+    uint32_t m_id     = 0;
+    uint32_t m_width  = 0;
+    uint32_t m_height = 0;
   };
 
   using ptr_framebuffer = std::shared_ptr<framebuffer>;

@@ -35,16 +35,16 @@ namespace laplace::network {
 
   using std::this_thread::sleep_for, std::min, std::max, std::any_of,
       std::find_if, std::make_unique, std::span, std::numeric_limits,
-      std::string, std::string_view, std::chrono::milliseconds,
-      engine::prime_impact, engine::seed_type, protocol::slot_create,
-      protocol::slot_remove, protocol::request_events,
-      protocol::server_idle, protocol::ping_request,
-      protocol::ping_response, protocol::public_key,
-      protocol::server_action, protocol::server_pause,
-      protocol::server_clock, protocol::server_seed,
-      protocol::server_quit, protocol::client_leave,
-      engine::time_undefined, engine::id_undefined, engine::encode,
-      crypto::dh_rabbit;
+      std::string, std::vector, std::string_view,
+      std::chrono::milliseconds, engine::prime_impact,
+      engine::seed_type, protocol::slot_create, protocol::slot_remove,
+      protocol::request_events, protocol::server_idle,
+      protocol::ping_request, protocol::ping_response,
+      protocol::public_key, protocol::server_action,
+      protocol::server_pause, protocol::server_clock,
+      protocol::server_seed, protocol::server_quit,
+      protocol::client_leave, engine::time_undefined,
+      engine::id_undefined, engine::encode, crypto::dh_rabbit;
 
   udp_server::~udp_server() {
     cleanup();
@@ -267,21 +267,6 @@ namespace laplace::network {
     return m_buffer.size();
   }
 
-  auto udp_server::adjust_chunk_size(cref_vbyte chunk) const -> size_t {
-    size_t chunk_size = 0;
-
-    while (chunk_size + 2 < chunk.size()) {
-      size_t size = rd<uint16_t>(chunk, chunk_size);
-
-      if (chunk_size + size + 2 + m_overhead > m_buffer.size())
-        break;
-
-      chunk_size += size + 2;
-    }
-
-    return chunk_size;
-  }
-
   void udp_server::update_world(uint64_t delta_msec) {
     if (is_master()) {
       if (get_state() == server_state::action) {
@@ -340,19 +325,7 @@ namespace laplace::network {
 
   void udp_server::append_event(size_t slot, cref_vbyte seq) {
     if (m_slots[slot].is_connected) {
-      auto &chunk = m_slots[slot].chunks;
-
-      const auto size   = seq.size();
-      const auto offset = chunk.size();
-
-      if (size <= numeric_limits<uint16_t>::max()) {
-        chunk.resize(offset + n_command + size);
-        write_bytes(
-            span<uint8_t> { chunk.begin() + offset, chunk.end() },
-            static_cast<uint16_t>(size), seq);
-      } else {
-        error(__FUNCTION__, "Incorrect event size: %zu.", size);
-      }
+      m_slots[slot].out.emplace_back(vbyte { seq.begin(), seq.end() });
     }
   }
 
@@ -445,7 +418,8 @@ namespace laplace::network {
       m_slots[slot].request_flag = true;
     }
 
-    qu.events.erase(qu.events.begin(), qu.events.begin() + n);
+    qu.events.erase(qu.events.begin(),
+                    qu.events.begin() + static_cast<ptrdiff_t>(n));
 
     qu.index += n;
   }
@@ -643,14 +617,15 @@ namespace laplace::network {
 
         auto plain = m_slots[slot].tran.decode({ m_buffer.data(), n });
 
+        add_bytes_loss(m_slots[slot].tran.get_loss_count());
+
         if (plain.empty()) {
-          add_bytes_loss(n);
           continue;
         }
 
-        m_slots[slot].buffer.insert(    //
-            m_slots[slot].buffer.end(), //
-            plain.begin(),              //
+        m_slots[slot].in.insert(    //
+            m_slots[slot].in.end(), //
+            plain.begin(),          //
             plain.end());
 
         m_slots[slot].is_connected = true;
@@ -704,26 +679,13 @@ namespace laplace::network {
 
   void udp_server::process_buffers() {
     for (size_t slot = 0; slot < m_slots.size(); slot++) {
-      auto & buf   = m_slots[slot].buffer;
-      size_t index = 0;
 
-      while (buf.size() - index > n_command) {
-        const size_t size = rd<uint16_t>(buf, index);
-
-        if (buf.size() - index < n_command + size) {
-          /*  Should not happen.
-           */
-          verb("Network: CORRUPTED DATA");
-
-          buf.clear();
-          break;
-        }
-
-        const auto id = prime_impact::get_id(
-            { buf.begin() + index + n_command, buf.end() });
+      for (size_t i = 0; i < m_slots[slot].in.size(); i++) {
+        const auto &ev = m_slots[slot].in[i];
+        const auto  id = prime_impact::get_id(ev);
 
         if (is_allowed(id)) {
-          add_event(slot, { buf.data() + index + n_command, size });
+          add_event(slot, ev);
         } else {
           if (is_verbose()) {
             if (id < ids::_native_count) {
@@ -734,46 +696,35 @@ namespace laplace::network {
             }
           }
         }
-
-        index += n_command + size;
       }
 
-      if (buf.size() >= index) {
-        buf.erase(buf.begin(), buf.begin() + index);
-      }
+      m_slots[slot].in.clear();
     }
   }
 
   void udp_server::send_chunks() {
     if (m_node) {
       for (auto &s : m_slots) {
-        auto &buf = s.chunks;
 
-        if (buf.empty())
+        if (s.out.empty())
           continue;
 
-        auto chunk_size = adjust_chunk_size(buf);
+        auto plain = vector<cref_vbyte> {};
 
-        if (chunk_size == 0) {
-          buf.clear();
-          continue;
+        for (size_t i = 0; i < s.out.size(); i++) {
+          plain.emplace_back(
+              cref_vbyte { s.out[i].begin(), s.out[i].end() });
         }
-
-        const auto plain = cref_vbyte { buf.data(), chunk_size };
 
         const auto chunk = s.is_encrypted ? s.tran.encode(plain)
                                           : s.tran.pack(plain);
 
-        if (chunk.size() == 0) {
-          buf.clear();
-          continue;
+        s.out.clear();
+
+        if (!chunk.empty()) {
+          s.is_encrypted = s.tran.is_encrypted();
+          add_bytes_sent(m_node->send_to(s.address, s.port, chunk));
         }
-
-        s.is_encrypted = s.tran.is_encrypted();
-
-        add_bytes_sent(m_node->send_to(s.address, s.port, chunk));
-
-        buf.erase(buf.begin(), buf.begin() + chunk_size);
       }
     }
   }

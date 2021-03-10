@@ -56,8 +56,11 @@ namespace quadwar_app::view {
 
     const auto land = w.get_entity(object::root::get_landscape(r));
 
-    const auto width  = object::landscape::get_width(land);
-    const auto height = object::landscape::get_height(land);
+    const auto width = static_cast<real>(
+        object::landscape::get_width(land));
+
+    const auto height = static_cast<real>(
+        object::landscape::get_height(land));
 
     const auto s = get_scale();
 

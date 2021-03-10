@@ -24,10 +24,11 @@ namespace laplace::graphics {
 
   void graphics::viewport(int x, int y, size_t width,
                           size_t height) {
-    auto x0 = static_cast<int32_t>(x);
-    auto y0 = static_cast<int32_t>(y);
-    auto w  = static_cast<uint32_t>(width);
-    auto h  = static_cast<uint32_t>(height);
+
+    auto x0 = static_cast<GLint>(x);
+    auto y0 = static_cast<GLint>(y);
+    auto w  = static_cast<GLsizei>(width);
+    auto h  = static_cast<GLsizei>(height);
 
     glViewport(x0, y0, w, h);
   }

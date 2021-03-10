@@ -38,7 +38,7 @@ namespace laplace::network {
     if (s == INVALID_SOCKET)
       return true;
 
-    u_long flag = (m == network::sync ? 0 : 1);
+    u_long flag = (m == network::sync ? 0u : 1u);
 
     if (::ioctlsocket(s, FIONBIO, &flag) == SOCKET_ERROR) {
       ::closesocket(s);

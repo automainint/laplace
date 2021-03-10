@@ -56,8 +56,10 @@ namespace laplace::engine {
   constexpr auto prime_impact::get_id(cref_vbyte seq) -> uint16_t {
     using namespace protocol;
 
-    return seq.size() >= sizeof(uint16_t) ? get_id_unsafe(seq)
-                                          : ids::undefined;
+    if (seq.size() >= sizeof(uint16_t))
+      return get_id_unsafe(seq);
+
+    return ids::undefined;
   }
 
   constexpr auto prime_impact::get_index(cref_vbyte seq) -> size_t {

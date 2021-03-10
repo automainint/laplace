@@ -71,7 +71,8 @@ namespace laplace::ui {
 
   void context::render(button::state button_state) {
     if (m_render) {
-      size_t n0      = button_state.is_enabled ? 0 : 4;
+      const size_t n0 = button_state.is_enabled ? 0u : 4u;
+
       size_t n_color = 0;
 
       if (button_state.is_pressed) {

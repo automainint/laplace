@@ -28,6 +28,9 @@ namespace laplace::engine {
   public:
     static constexpr bool default_allow_relaxed_spawn = false;
 
+    world(const world &) = delete;
+    auto operator=(const world &) -> world & = delete;
+
     world();
     ~world() = default;
 
@@ -88,8 +91,8 @@ namespace laplace::engine {
     void locked_add_dynamic(size_t id);
     void locked_erase_dynamic(size_t id);
 
-    std::shared_mutex m_lock;
-    scheduler         m_scheduler;
+    std::shared_mutex          m_lock;
+    std::unique_ptr<scheduler> m_scheduler;
 
     bool   m_allow_relaxed_spawn = default_allow_relaxed_spawn;
     bool   m_desync              = false;

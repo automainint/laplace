@@ -10,10 +10,12 @@
  *  the MIT License for more details.
  */
 
+#include "../core/utils.h"
 #include "transfer.h"
 
 namespace laplace::network {
-  using std::min, std::unique_ptr, crypto::basic_cipher;
+  using std::min, std::unique_ptr, crypto::basic_cipher, std::span,
+      std::vector;
 
   void transfer::set_cipher(unique_ptr<basic_cipher> cipher) {
     m_cipher = std::move(cipher);
@@ -28,29 +30,31 @@ namespace laplace::network {
     }
   }
 
-  auto transfer::pack(cref_vbyte data) -> vbyte {
-    return mark(pack_marked(data), mark_plain);
+  auto transfer::pack(span<const cref_vbyte> data) -> vbyte {
+    return pack_internal(data, mark_plain);
   }
 
-  auto transfer::unpack(cref_vbyte data) -> vbyte {
-    return unpack_marked(unmark(data, mark_plain));
+  auto transfer::unpack(cref_vbyte data) -> vector<vbyte> {
+    m_loss_count = 0;
+    return unpack_internal(data, mark_plain);
   }
 
-  auto transfer::encode(cref_vbyte data) -> vbyte {
-    if (m_cipher && m_cipher->is_ready()) {
-      return mark(m_cipher->encrypt(pack_marked(data)), mark_encrypted);
+  auto transfer::encode(span<const cref_vbyte> data) -> vbyte {
+    if (is_encrypted()) {
+      return m_cipher->encrypt(pack_internal(data, mark_encrypted));
     }
 
-    return pack(data);
+    return pack_internal(data, mark_plain);
   }
 
-  auto transfer::decode(cref_vbyte data) -> vbyte {
-    if (m_cipher && m_cipher->is_ready()) {
-      return unpack_marked(
-          m_cipher->decrypt(unmark(data, mark_encrypted)));
+  auto transfer::decode(cref_vbyte data) -> vector<vbyte> {
+    if (is_encrypted()) {
+      m_loss_count = m_cipher->get_loss_count();
+      return unpack_internal(m_cipher->decrypt(data), mark_encrypted);
     }
 
-    return unpack(data);
+    m_loss_count = 0;
+    return unpack_internal(data, mark_plain);
   }
 
   auto transfer::get_public_key() const noexcept -> cref_vbyte {
@@ -75,6 +79,10 @@ namespace laplace::network {
     return m_cipher && m_cipher->is_ready();
   }
 
+  auto transfer::get_loss_count() const noexcept -> size_t {
+    return m_loss_count;
+  }
+
   auto transfer::check_sum(cref_vbyte data) -> uint64_t {
     uint64_t sum = 0;
 
@@ -92,72 +100,87 @@ namespace laplace::network {
     return sum;
   }
 
-  auto transfer::pack_marked(cref_vbyte data) -> vbyte {
-    auto buf = vbyte(n_data + data.size());
+  auto transfer::pack_internal(    //
+      span<const cref_vbyte> data, //
+      const uint16_t         mark) -> vbyte {
 
-    const uint64_t size = data.size();
-    const auto     sum  = check_sum(data);
+    size_t size = 0;
+    for (size_t i = 0; i < data.size(); i++) {
+      size += n_data + data[i].size();
+    }
 
-    memcpy(buf.data() + n_size, &size, sizeof size);
-    memcpy(buf.data() + n_check_sum, &sum, sizeof sum);
-    memcpy(buf.data() + n_data, data.data(), data.size());
+    auto buf = vbyte {};
+    buf.reserve(size);
+
+    for (size_t i = 0; i < data.size(); i++) {
+      const size_t offset = buf.size();
+      buf.resize(offset + n_data + data[i].size());
+
+      const uint64_t sum = check_sum(data[i]);
+      const uint64_t n   = data[i].size();
+
+      wr(buf, offset + n_mark, mark);
+      wr(buf, offset + n_sum, sum);
+      wr(buf, offset + n_size, n);
+
+      memcpy(                           //
+          buf.data() + offset + n_data, //
+          data[i].data(),               //
+          data[i].size());
+    }
 
     return buf;
   }
 
-  auto transfer::unpack_marked(cref_vbyte data) -> vbyte {
-    if (data.empty()) {
-      return {};
+  auto transfer::unpack_internal( //
+      cref_vbyte     data,        //
+      const uint16_t mark) -> vector<vbyte> {
+
+    vector<vbyte> buf;
+    size_t        offset = 0;
+
+    while (offset < data.size()) {
+      const auto size = scan(
+          { data.begin() + static_cast<ptrdiff_t>(offset), data.end() },
+          mark);
+
+      if (size > 0) {
+        offset += n_data;
+
+        buf.emplace_back(vbyte {
+            data.begin() + static_cast<ptrdiff_t>(offset),
+            data.begin() + static_cast<ptrdiff_t>(offset + size) });
+
+        offset += size;
+
+      } else {
+        m_loss_count++;
+        offset++;
+      }
     }
-
-    if (data.size() < n_data) {
-      verb("Transfer: Invalid data.");
-      return {};
-    }
-
-    uint64_t size;
-    uint64_t sum;
-
-    memcpy(&size, data.data() + n_size, sizeof size);
-    memcpy(&sum, data.data() + n_check_sum, sizeof sum);
-
-    if (n_data + size > data.size()) {
-      verb("Transfer: Invalid data size.");
-      return {};
-    }
-
-    if (check_sum({ data.data() + n_data, size }) != sum) {
-      verb("Transfer: WRONG CHECK SUM");
-      return {};
-    }
-
-    return { data.begin() + n_data, data.begin() + n_data + size };
-  }
-
-  auto transfer::mark(cref_vbyte data, uint8_t value) -> vbyte {
-    auto buf = vbyte(data.size() + 1);
-
-    buf[0] = value;
-    memcpy(buf.data() + 1, data.data(), data.size());
 
     return buf;
   }
 
-  auto transfer::unmark(cref_vbyte data, uint8_t value) -> vbyte {
-    if (data.empty()) {
-      return {};
+  auto transfer::scan( //
+      cref_vbyte data, //
+      uint16_t   mark) const noexcept -> size_t {
+
+    if (rd<uint16_t>(data, n_mark) != mark)
+      return 0;
+
+    const auto sum  = rd<uint64_t>(data, n_sum);
+    const auto size = static_cast<size_t>(rd<uint64_t>(data, n_size));
+
+    if (size + n_data > data.size()) {
+      return 0;
     }
 
-    if (data[0] != value) {
-      if (data[0] == mark_plain)
-        verb("Transfer: Unexpected plain data.");
-      else if (data[0] == mark_encrypted)
-        verb("Transfer: Unexpected enrypted data.");
-      else
-        verb("Transfer: Invalid data mark.");
-      return {};
+    if (sum != check_sum({ data.data() + n_data, size })) {
+      verb("Transfer: Wrong check sum.");
+      return 0;
     }
 
-    return { data.begin() + 1, data.end() };
+    return size;
   }
 }

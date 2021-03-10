@@ -19,19 +19,18 @@
 
 namespace laplace::ui {
   struct layout_context {
-    size_t    level;
-    cref_rect box;
+    size_t level;
+    rect   box;
   };
 
   using vrect           = std::vector<rect>;
   using vlayout_context = std::vector<layout_context>;
 
   using layout = std::function<vrect( //
-      cref_rect       bounds,         //
+      rect            bounds,         //
       vlayout_context context)>;
 
-  auto column_layout(int width, int line_height, int spacing)
-      -> layout;
+  auto column_layout(int width, int line_height, int spacing) -> layout;
 }
 
 #endif

@@ -57,8 +57,8 @@ namespace laplace::vm {
         return;
       }
 
-      copy(m_data.begin() + n0, m_data.begin() + n1,
-           data.begin());
+      copy(m_data.begin() + static_cast<ptrdiff_t>(n0),
+           m_data.begin() + static_cast<ptrdiff_t>(n1), data.begin());
     }
   }
 
@@ -84,7 +84,8 @@ namespace laplace::vm {
         return;
       }
 
-      copy(data.begin(), data.end(), m_data.begin() + n0);
+      copy(data.begin(), data.end(),
+           m_data.begin() + static_cast<ptrdiff_t>(n0));
     }
   }
 
@@ -110,14 +111,14 @@ namespace laplace::vm {
     if (i != m_blocks.end() && i->offset == offset) {
       if (size > i->size &&
           !is_empty(i->offset + i->size, size - i->size)) {
-        auto i0 = m_data.begin() + i->offset;
-        auto i1 = m_data.begin() + i->size;
+        auto i0 = m_data.begin() + static_cast<ptrdiff_t>(i->offset);
+        auto i1 = m_data.begin() + static_cast<ptrdiff_t>(i->size);
 
         m_blocks.erase(i);
 
         offset = find_place(size);
 
-        move(i0, i1, m_data.begin() + offset);
+        move(i0, i1, m_data.begin() + static_cast<ptrdiff_t>(offset));
 
         auto j = lower_bound(
             m_blocks.begin(), m_blocks.end(), offset, op_left);
@@ -190,13 +191,11 @@ namespace laplace::vm {
     return *this;
   }
 
-  auto heap::op_left(const heap::block &b, size_t offset)
-      -> bool {
+  auto heap::op_left(const heap::block &b, size_t offset) -> bool {
     return b.offset < offset;
   }
 
-  auto heap::op_right(const heap::block &b, size_t offset)
-      -> bool {
+  auto heap::op_right(const heap::block &b, size_t offset) -> bool {
     return b.offset + b.size <= offset;
   }
 }

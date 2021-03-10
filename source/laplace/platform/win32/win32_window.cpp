@@ -37,8 +37,8 @@ namespace laplace::win32 {
 
     get_exe_file_name();
 
-    m_screen_width  = GetSystemMetrics(SM_CXSCREEN);
-    m_screen_height = GetSystemMetrics(SM_CYSCREEN);
+    m_screen_width = static_cast<size_t>(GetSystemMetrics(SM_CXSCREEN));
+    m_screen_height = static_cast<size_t>(GetSystemMetrics(SM_CYSCREEN));
 
     set_size(default_frame_width, default_frame_height);
     set_centered();
@@ -86,7 +86,9 @@ namespace laplace::win32 {
   void window::set_name(string_view name) {
     m_window_name.clear();
 
-    for (auto c : name) { m_window_name.append(1, c); }
+    for (auto c : name) {
+      m_window_name.append(1, static_cast<wchar_t>(c));
+    }
 
     if (m_handle) {
       SetWindowTextW(m_handle, m_window_name.c_str());

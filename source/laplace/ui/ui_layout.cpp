@@ -17,7 +17,7 @@ namespace laplace::ui {
       -> layout {
 
     return [width, line_height, spacing]( //
-               cref_rect       bounds,    //
+               rect            bounds,    //
                vlayout_context context) -> vrect {
       const auto height = line_height * context.size();
 

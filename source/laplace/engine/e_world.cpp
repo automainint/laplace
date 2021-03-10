@@ -18,7 +18,9 @@
 namespace laplace::engine {
   using std::make_shared, std::unique_lock, std::shared_lock;
 
-  world::world() : m_scheduler(*this) { }
+  world::world() {
+    m_scheduler = make_unique<scheduler>(*this);
+  }
 
   auto world::reserve(size_t id) -> size_t {
     return spawn(make_shared<basic_entity>(), id);
@@ -196,61 +198,67 @@ namespace laplace::engine {
   }
 
   void world::schedule(uint64_t delta) {
-    if (m_scheduler.get_thread_count() == 0) {
-      auto _ul = unique_lock(m_lock);
+    if (m_scheduler) {
+      if (m_scheduler->get_thread_count() == 0) {
+        auto _ul = unique_lock(m_lock);
 
-      for (uint64_t t = 0; t < delta; t++) {
-        while (!m_sync_queue.empty() || !m_queue.empty()) {
-          for (size_t i = 0; i < m_sync_queue.size(); i++) {
+        for (uint64_t t = 0; t < delta; t++) {
+          while (!m_sync_queue.empty() || !m_queue.empty()) {
+            for (size_t i = 0; i < m_sync_queue.size(); i++) {
+              _ul.unlock();
+
+              m_sync_queue[i]->perform({ *this, access::sync });
+
+              _ul.lock();
+            }
+
+            m_sync_queue.clear();
+
+            for (size_t i = 0; i < m_queue.size(); i++) {
+              _ul.unlock();
+
+              m_queue[i]->perform({ *this, access::async });
+
+              _ul.lock();
+            }
+
+            m_queue.clear();
+          }
+
+          for (size_t i = 0; i < m_dynamic_ids.size(); i++) {
             _ul.unlock();
 
-            m_sync_queue[i]->perform({ *this, access::sync });
+            auto &en = m_entities[m_dynamic_ids[i]];
+
+            if (en->clock())
+              en->tick({ *this, access::async });
 
             _ul.lock();
           }
 
-          m_sync_queue.clear();
-
-          for (size_t i = 0; i < m_queue.size(); i++) {
-            _ul.unlock();
-
-            m_queue[i]->perform({ *this, access::async });
-
-            _ul.lock();
+          for (auto &e : m_entities) {
+            if (e)
+              e->adjust();
           }
-
-          m_queue.clear();
         }
 
-        for (size_t i = 0; i < m_dynamic_ids.size(); i++) {
-          _ul.unlock();
-
-          auto &en = m_entities[m_dynamic_ids[i]];
-
-          if (en->clock())
-            en->tick({ *this, access::async });
-
-          _ul.lock();
-        }
-
-        for (auto &e : m_entities) {
-          if (e)
-            e->adjust();
-        }
+      } else {
+        m_scheduler->schedule(delta);
       }
-
-    } else {
-      m_scheduler.schedule(delta);
     }
   }
 
   void world::join() {
-    m_scheduler.join();
+    if (m_scheduler) {
+      m_scheduler->join();
+    }
   }
 
   void world::set_thread_count(size_t thread_count) {
     auto _ul = unique_lock(m_lock);
-    m_scheduler.set_thread_count(thread_count);
+    if (m_scheduler) {
+      m_scheduler->set_thread_count(thread_count);
+    }
   }
 
   auto world::get_thread_count() -> size_t {
@@ -363,7 +371,8 @@ namespace laplace::engine {
 
     if (m_index <= m_sync_queue.size()) {
       m_sync_queue.erase(
-          m_sync_queue.begin(), m_sync_queue.begin() + m_index);
+          m_sync_queue.begin(),
+          m_sync_queue.begin() + static_cast<ptrdiff_t>(m_index));
 
       m_index = 0;
     }
@@ -373,7 +382,8 @@ namespace laplace::engine {
     auto _ul = unique_lock(m_lock);
 
     if (m_index <= m_queue.size()) {
-      m_queue.erase(m_queue.begin(), m_queue.begin() + m_index);
+      m_queue.erase(m_queue.begin(),
+                    m_queue.begin() + static_cast<ptrdiff_t>(m_index));
 
       m_index = 0;
     }

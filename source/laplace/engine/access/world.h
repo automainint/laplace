@@ -111,7 +111,8 @@ namespace laplace::engine::access {
     auto get_random_engine() const -> ref_rand;
 
     std::reference_wrapper<engine::world> m_world;
-    mode                                  m_mode = forbidden;
+
+    mode m_mode = forbidden;
   };
 }
 

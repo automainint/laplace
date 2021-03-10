@@ -84,7 +84,7 @@ namespace quadwar_app::ui {
     m_page_create->set_visible(false);
     m_page_join->set_visible(false);
 
-    m_create->on_click([=](ui::ptr_widget) {
+    m_create->on_click([this](ui::ptr_widget) {
       m_current_page = page::create;
 
       m_page_root->set_visible(false);
@@ -93,7 +93,7 @@ namespace quadwar_app::ui {
       m_info->set_text(c_create_game);
     });
 
-    m_join->on_click([=](ui::ptr_widget) {
+    m_join->on_click([this](ui::ptr_widget) {
       m_current_page = page::join;
 
       m_page_root->set_visible(false);
@@ -107,7 +107,7 @@ namespace quadwar_app::ui {
       m_j_server_ip->set_text(as_u8string(host));
     });
 
-    m_c_cancel->on_click([=](ui::ptr_widget) {
+    m_c_cancel->on_click([this](ui::ptr_widget) {
       m_current_page = page::root;
 
       m_page_root->set_visible(true);
@@ -116,7 +116,7 @@ namespace quadwar_app::ui {
       m_info->set_text(c_welcome);
     });
 
-    m_j_cancel->on_click([=](ui::ptr_widget) {
+    m_j_cancel->on_click([this](ui::ptr_widget) {
       m_current_page = page::root;
 
       m_page_root->set_visible(true);
@@ -136,21 +136,21 @@ namespace quadwar_app::ui {
   }
 
   void mainmenu::on_create(mainmenu::event_create ev) {
-    m_c_continue->on_click([=](ui::ptr_widget) {
+    m_c_continue->on_click([this, ev](ui::ptr_widget) {
       create_info info;
 
       info.game_name    = m_c_game_name->get_text();
       info.player_name  = m_c_player_name->get_text();
-      info.map_size     = to_integer(m_c_map_size->get_text());
-      info.player_count = to_integer(m_c_player_count->get_text());
-      info.unit_count   = to_integer(m_c_unit_count->get_text());
+      info.map_size     = to_uint(m_c_map_size->get_text());
+      info.player_count = to_uint(m_c_player_count->get_text());
+      info.unit_count   = to_uint(m_c_unit_count->get_text());
 
       ev(info);
     });
   }
 
   void mainmenu::on_join(mainmenu::event_join ev) {
-    m_j_continue->on_click([=](ui::ptr_widget) {
+    m_j_continue->on_click([this, ev](ui::ptr_widget) {
       join_info info;
 
       info.server_ip   = to_string(m_j_server_ip->get_text());

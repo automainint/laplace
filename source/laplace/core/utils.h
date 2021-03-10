@@ -57,6 +57,10 @@ namespace laplace {
 
   [[nodiscard]] auto to_integer(std::u8string_view s) -> int64_t;
 
+  [[nodiscard]] auto to_uint(std::string_view s) -> uint64_t;
+
+  [[nodiscard]] auto to_uint(std::u8string_view s) -> uint64_t;
+
   [[nodiscard]] auto to_real(std::string_view s) -> double;
 
   [[nodiscard]] auto to_real(std::u8string_view s) -> double;
@@ -75,17 +79,17 @@ namespace laplace {
 
   /*  Read value of specified type from specified offset.
    */
-  template <typename type>
+  template <trivial type_>
   [[nodiscard]] constexpr auto rd(cref_vbyte seq, size_t offset)
-      -> type;
+      -> type_;
 
   /*  Write the value to specified offset.
    */
-  template <typename type>
-  constexpr void wr(std::span<uint8_t> seq, size_t offset, type value);
+  template <trivial type_>
+  constexpr void wr(std::span<uint8_t> seq, size_t offset, type_ value);
 
-  template <typename type>
-  constexpr void wr(uint8_t *seq, size_t offset, type value);
+  template <trivial type_>
+  constexpr void wr(uint8_t *seq, size_t offset, type_ value);
 
   /*  Convert unsigned integer value to an index.
    *  All indices are size_t values.
@@ -93,6 +97,8 @@ namespace laplace {
    *  Returns -1 for invalid index.
    */
   [[nodiscard]] constexpr auto as_index(uint64_t value) -> size_t;
+
+  [[nodiscard]] constexpr auto as_index(int64_t value) -> size_t;
 
   [[nodiscard]] constexpr auto byte_count() -> size_t;
 

@@ -21,6 +21,9 @@
 namespace laplace {
   class bytestreambuf final : public std::stringbuf {
   public:
+    bytestreambuf(const bytestreambuf &) = delete;
+    auto operator=(const bytestreambuf &) -> bytestreambuf & = delete;
+
     bytestreambuf(cref_vbyte bytes) {
       _Init(reinterpret_cast<const char *>(bytes.data()),
             bytes.size(), 2 /* _Constant from basic_stringbuf. */
@@ -34,6 +37,9 @@ namespace laplace {
    */
   class ibytestream final : public std::istream {
   public:
+    ibytestream(const ibytestream &) = delete;
+    auto operator=(const ibytestream &) -> ibytestream & = delete;
+
     ibytestream(cref_vbyte bytes) :
         std::istream(new bytestreambuf(bytes)) { }
 

@@ -27,24 +27,26 @@ namespace laplace::ui {
   void frame::render() {
     if (m_context) {
       rect r = {
-        .x     = 0,
-        .y     = 0,
-        .width = static_cast<int>(m_context->get_frame_width()),
+        .x      = 0,
+        .y      = 0,
+        .width  = static_cast<int>(m_context->get_frame_width()),
         .height = static_cast<int>(m_context->get_frame_height())
       };
 
       if (is_widget_changed()) {
-        m_buffer.set_size(r.width, r.height);
+        m_buffer.set_size(static_cast<size_t>(r.width),
+                          static_cast<size_t>(r.height));
       }
 
       if (is_widget_changed() || has_childs_expired()) {
-        m_buffer.render([=]() {
+        m_buffer.render([this]() {
           clear_color_buffer({ 0.f, 0.f, 0.f, 0.f });
 
           widget_render();
         });
 
-        viewport(0, 0, r.width, r.height);
+        viewport(0, 0, static_cast<size_t>(r.width),
+                 static_cast<size_t>(r.height));
       }
 
       m_context->render(r, m_buffer.color_texture);

@@ -10,6 +10,7 @@
  *  the MIT License for more details.
  */
 
+#include "../core/defs.h"
 #include "../math/transform.h"
 #include "projection.h"
 
@@ -26,8 +27,7 @@ namespace laplace::render {
 
     m_data = ortho { left, right, bottom, top, near, far };
 
-    /*matrix = math::ortho_matrix(
-        left, right, bottom, top, near, far);*/
+    error(__FUNCTION__, "Not implemented.");
   }
 
   void projection::set_perspective(real fovy, real aspect, real near,
@@ -35,7 +35,7 @@ namespace laplace::render {
 
     m_data = perspective { fovy, aspect, near, far };
 
-    /*matrix = math::perspective_matrix(fovy, aspect, near, far);*/
+    error(__FUNCTION__, "Not implemented.");
   }
 
   auto projection::is_matrix() const -> bool {
@@ -53,6 +53,7 @@ namespace laplace::render {
   auto projection::get_ortho() const -> projection::ortho {
 
     if (m_data.index() != n_ortho) {
+      error(__FUNCTION__, "Not ortho projection.");
       return {};
     }
 
@@ -62,6 +63,7 @@ namespace laplace::render {
   auto projection::get_perspective() const -> projection::perspective {
 
     if (m_data.index() != n_perspective) {
+      error(__FUNCTION__, "Not perspective projection.");
       return {};
     }
 

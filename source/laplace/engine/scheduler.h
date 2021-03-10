@@ -28,6 +28,9 @@ namespace laplace::engine {
   public:
     static constexpr size_t overthreading_limit = 8;
 
+    scheduler(const scheduler &) = delete;
+    auto operator=(const scheduler &) -> scheduler & = delete;
+
     scheduler(ref_world w);
     ~scheduler();
 

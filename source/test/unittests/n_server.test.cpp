@@ -27,7 +27,7 @@ namespace laplace::test {
   namespace ids  = engine::protocol::ids;
 
   TEST(network, server_echo) {
-    constexpr size_t test_count     = 3;
+    constexpr size_t test_count     = 1;
     constexpr size_t test_threshold = 1;
 
     size_t success = 0;
@@ -84,7 +84,7 @@ namespace laplace::test {
   }
 
   TEST(network, server_encryption) {
-    constexpr size_t test_count     = 3;
+    constexpr size_t test_count     = 1;
     constexpr size_t test_threshold = 1;
 
     size_t success = 0;

@@ -124,11 +124,11 @@ namespace laplace::win32 {
       int32_t num_extensions = 0;
       gl::glGetIntegerv(gl::GL_NUM_EXTENSIONS, &num_extensions);
 
-      gl::extensions.reserve(num_extensions);
+      gl::extensions.reserve(static_cast<size_t>(num_extensions));
 
       for (int32_t i = 0; i < num_extensions; i++) {
-        auto p = reinterpret_cast<const char *>(
-            gl::glGetStringi(gl::GL_EXTENSIONS, i));
+        auto p = reinterpret_cast<const char *>(gl::glGetStringi(
+            gl::GL_EXTENSIONS, static_cast<gl::GLuint>(i)));
 
         if (p) {
           auto name = std::string(p);

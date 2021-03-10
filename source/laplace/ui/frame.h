@@ -20,6 +20,9 @@
 namespace laplace::ui {
   class frame final : public widget {
   public:
+    frame(const frame &) = delete;
+    auto operator=(const frame &) -> frame & = delete;
+
     frame();
     ~frame() final = default;
 
