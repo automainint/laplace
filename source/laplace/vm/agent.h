@@ -21,8 +21,7 @@ namespace laplace::vm {
   public:
     static constexpr size_t id_undefined = -1;
 
-    agent();
-    virtual ~agent();
+    virtual ~agent() = default;
 
     void set_environment(ptr_environment env);
 

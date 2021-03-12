@@ -84,8 +84,8 @@ namespace laplace::engine::access {
     return m_mode > forbidden ? m_entity->scale_of(index) : 0;
   }
 
-  auto entity::get(size_t index) const -> int64_t {
-    return m_mode > forbidden ? m_entity->get(index) : 0;
+  auto entity::get(size_t index, int64_t defval) const -> int64_t {
+    return m_mode > forbidden ? m_entity->get(index) : defval;
   }
 
   void entity::set(size_t index, int64_t value) const {

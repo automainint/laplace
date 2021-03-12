@@ -25,7 +25,7 @@ namespace laplace::network {
     static constexpr uint64_t default_tick_duration_msec      = 10;
     static constexpr uint64_t default_update_timeout_msec     = 10;
     static constexpr uint64_t default_ping_timeout_msec       = 100;
-    static constexpr uint64_t default_connection_timeout_msec = 1000;
+    static constexpr uint64_t default_connection_timeout_msec = 5000;
     static constexpr size_t   default_overtake_factor         = 3;
 
     server() = default;

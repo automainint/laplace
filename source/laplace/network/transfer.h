@@ -36,6 +36,7 @@ namespace laplace::network {
 
     [[nodiscard]] auto get_loss_count() const noexcept -> size_t;
 
+    [[nodiscard]] static auto get_data_overhead() -> size_t;
     [[nodiscard]] static auto check_sum(cref_vbyte data) -> uint64_t;
 
     template <typename cipher_>

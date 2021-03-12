@@ -30,6 +30,7 @@ namespace laplace::network {
     static constexpr size_t default_chunk_size        = 2096;
     static constexpr size_t chunk_size_increment      = 128;
     static constexpr size_t chunk_size_limit          = 0x4000;
+    static constexpr size_t max_index_delta           = 0x100;
     static constexpr size_t default_loss_compensation = 4;
 
     ~udp_server() override;

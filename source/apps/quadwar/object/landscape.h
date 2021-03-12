@@ -31,13 +31,18 @@ namespace quadwar_app::object {
         size_t x0, size_t y0,           //
         size_t x1, size_t y1) noexcept -> bool;
 
+    /*  Access: sync.
+     */
     static auto gen_maze( //
         world  w,         //
         size_t width,     //
         size_t height) noexcept -> std::vector<int64_t>;
 
+    /*  Access: sync.
+     */
     static void create_maze(world w, size_t width, size_t height);
 
+    [[nodiscard]] static auto get_version(entity en) -> size_t;
     [[nodiscard]] static auto get_width(entity en) -> size_t;
     [[nodiscard]] static auto get_height(entity en) -> size_t;
 
@@ -49,16 +54,26 @@ namespace quadwar_app::object {
     [[nodiscard]] static auto get_tiles(entity en)
         -> std::vector<int64_t>;
 
+    /*  Access: async.
+     */
+    static void inc_version(entity en);
+
+    /*  Access: sync.
+     */
     static void set_tile( //
         entity  en,       //
         size_t  x,        //
         size_t  y,        //
         int64_t tile);
 
+    /*  Access: sync.
+     */
     static void set_tiles(              //
         entity                      en, //
         const std::vector<int64_t> &tiles);
 
+    /*  Access: sync.
+     */
     static void set_size( //
         entity en,        //
         size_t width,     //
@@ -84,6 +99,7 @@ namespace quadwar_app::object {
     void set_tile(size_t x, size_t y, int64_t value);
     void set_size(size_t width, size_t height);
 
+    static size_t n_version;
     static size_t n_width;
     static size_t n_height;
 

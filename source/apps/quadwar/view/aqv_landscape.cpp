@@ -19,11 +19,12 @@ namespace quadwar_app::view {
   using std::span, graphics::flat::solid_shader;
 
   void landscape::render(const camera &cam, world w) {
-    auto cont = render::context::get_default();
+    const auto r    = w.get_entity(w.get_root());
+    const auto land = w.get_entity(object::root::get_landscape(r));
 
-    if (cont) {
-      const auto r    = w.get_entity(w.get_root());
-      const auto land = w.get_entity(object::root::get_landscape(r));
+    const auto ver = object::landscape::get_version(land);
+
+    if (m_state_version != ver) {
 
       const auto width  = object::landscape::get_width(land);
       const auto height = object::landscape::get_height(land);
@@ -35,38 +36,31 @@ namespace quadwar_app::view {
       const auto c_tile   = vec4 { .3f, .25f, .2f, 1.f };
       const auto c_border = vec4 { .2f, .15f, .15f, .7f };
 
-      const auto s = cam.get_scale();
-
       const auto fw = static_cast<real>(width);
       const auto fh = static_cast<real>(height);
 
-      const auto fx = (cam.get_frame().x() - tail_size * fw * s) / 2.f;
-      const auto fy = (cam.get_frame().y() - tail_size * fh * s) / 2.f;
-
-      const auto px = -cam.get_position().x();
-      const auto py = -cam.get_position().y();
+      const auto fx = (tail_size * fw) / -2.f;
+      const auto fy = (tail_size * fh) / -2.f;
 
       m_vertices.reserve(12 * width * height);
+      m_vertices.clear();
 
       for (size_t j = 0; j < height; j++) {
         for (size_t i = 0; i < width; i++) {
 
           if (tiles[j * width + i] == object::landscape::tile_border) {
 
-            const auto tail_x = px + static_cast<real>(i) * tail_size;
-            const auto tail_y = py + static_cast<real>(j) * tail_size;
+            const auto x0 = fx + static_cast<real>(i) * tail_size;
+            const auto y0 = fy + static_cast<real>(j) * tail_size;
 
-            const auto x0 = fx + tail_x * s;
-            const auto y0 = fy + tail_y * s;
+            const auto x1 = x0 + tail_size;
+            const auto y1 = y0 + tail_size;
 
-            const auto x1 = x0 + tail_size * s;
-            const auto y1 = y0 + tail_size * s;
+            const auto x2 = x0 + tail_border;
+            const auto y2 = y0 + tail_border;
 
-            const auto x2 = x0 + tail_border * s;
-            const auto y2 = y0 + tail_border * s;
-
-            const auto x3 = x1 - tail_border * s;
-            const auto y3 = y1 - tail_border * s;
+            const auto x3 = x1 - tail_border;
+            const auto y3 = y1 - tail_border;
 
             m_vertices.emplace_back(
                 vertex { .position = { x0, y0 }, .color = c_border });
@@ -97,9 +91,24 @@ namespace quadwar_app::view {
         }
       }
 
-      cont->render(m_vertices);
+      m_state_version = ver;
+      m_width         = width;
+      m_height        = height;
+      m_dynamic       = m_vertices;
+    }
 
-      m_vertices.clear();
+    auto cont = render::context::get_default();
+
+    if (cont) {
+      const auto s = cam.get_scale();
+      const auto f = cam.get_frame() / 2.f;
+      const auto p = -cam.get_position();
+
+      for (size_t i = 0; i < m_dynamic.size(); i++) {
+        m_dynamic[i].position = f + (p + m_vertices[i].position) * s;
+      }
+
+      cont->render(m_dynamic);
     }
   }
 }

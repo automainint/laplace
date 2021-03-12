@@ -20,18 +20,21 @@ namespace quadwar_app::object {
   using engine::basic_entity, std::vector, std::span, std::min,
       std::tuple;
 
-  size_t landscape::n_width  = 0;
-  size_t landscape::n_height = 0;
+  size_t landscape::n_version = 0;
+  size_t landscape::n_width   = 0;
+  size_t landscape::n_height  = 0;
 
   landscape landscape::m_proto(landscape::proto);
 
   landscape::landscape(proto_tag) {
 
-    setup_sets({ { .id = sets::land_width, .scale = 1 },
+    setup_sets({ { .id = sets::state_version, .scale = 1 },
+                 { .id = sets::land_width, .scale = 1 },
                  { .id = sets::land_height, .scale = 1 } });
 
-    n_width  = index_of(sets::land_width);
-    n_height = index_of(sets::land_height);
+    n_version = index_of(sets::state_version);
+    n_width   = index_of(sets::land_width);
+    n_height  = index_of(sets::land_height);
   }
 
   landscape::landscape() : basic_entity(dummy) {
@@ -280,14 +283,18 @@ namespace quadwar_app::object {
   }
 
   void landscape::create_maze(world w, size_t width, size_t height) {
-    auto r = w.get_entity(w.get_root());
-
+    auto r    = w.get_entity(w.get_root());
     auto land = std::make_shared<object::landscape>();
 
     set_size({ land, access::sync }, width, height);
     set_tiles({ land, access::sync }, gen_maze(w, width, height));
+    inc_version({ land, access::async });
 
     object::root::set_landscape(r, w.spawn(land, engine::id_undefined));
+  }
+
+  auto landscape::get_version(entity en) -> size_t {
+    return static_cast<size_t>(en.get(n_version));
   }
 
   auto landscape::get_width(entity en) -> size_t {
@@ -317,6 +324,10 @@ namespace quadwar_app::object {
 
     memcpy(tiles.data(), bytes.data(), count * sizeof(int64_t));
     return tiles;
+  }
+
+  void landscape::inc_version(entity en) {
+    en.apply_delta(n_version, 1);
   }
 
   void landscape::set_tile( //

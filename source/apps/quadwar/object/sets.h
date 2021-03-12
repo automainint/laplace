@@ -19,7 +19,9 @@ namespace quadwar_app::object::sets {
   using namespace laplace::engine::object::sets;
 
   enum set_id : size_t {
-    player_name = _native_count,
+    state_version = _native_count,
+
+    player_name,
 
     root_is_changed,
     root_is_launched,

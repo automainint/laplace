@@ -52,8 +52,9 @@ namespace laplace::network {
 
   auto transfer::decode(cref_vbyte data) -> vector<vbyte> {
     if (is_encrypted()) {
-      m_loss_count = m_cipher->get_loss_count();
-      return unpack_internal(m_cipher->decrypt(data), mark_encrypted);
+      const auto plain = m_cipher->decrypt(data);
+      m_loss_count     = m_cipher->get_loss_count();
+      return unpack_internal(plain, mark_encrypted);
     }
 
     m_loss_count = 0;
@@ -84,6 +85,10 @@ namespace laplace::network {
 
   auto transfer::get_loss_count() const noexcept -> size_t {
     return m_loss_count;
+  }
+
+  auto transfer::get_data_overhead() -> size_t {
+    return n_data;
   }
 
   auto transfer::check_sum(cref_vbyte data) -> uint64_t {

@@ -507,6 +507,7 @@ namespace laplace::network {
 
       if (!ev) {
         verb("Network: Unable to decode command.");
+        add_bytes_loss(seq.size() + transfer::get_data_overhead());
         return;
       }
 
@@ -665,24 +666,29 @@ namespace laplace::network {
     } else if (index >= qu.index) {
       const auto n = index - qu.index;
 
-      if (n >= qu.events.size()) {
-        qu.events.resize(n + 1);
-      }
-
-      if (qu.events[n].empty()) {
-        if (is_verbose()) {
-          const auto id = prime_impact::get_id(seq);
-
-          if (id < ids::_native_count) {
-            verb(" :: (slot %2zu) %4zu '%s (%hu)'", slot, index,
-                 ids::table[id].data(), id);
-          } else {
-            verb(" :: (slot %2zu) %4zu '%hu'", slot, index, id);
-          }
+      if (n < qu.events.size() + max_index_delta) {
+        if (n >= qu.events.size()) {
+          qu.events.resize(n + 1);
         }
 
-        qu.events[n].assign(seq.begin(), seq.end());
-        m_slots[slot].outdate = 0;
+        if (qu.events[n].empty()) {
+          if (is_verbose()) {
+            const auto id = prime_impact::get_id(seq);
+
+            if (id < ids::_native_count) {
+              verb(" :: (slot %2zu) %4zu '%s (%hu)'", slot, index,
+                   ids::table[id].data(), id);
+            } else {
+              verb(" :: (slot %2zu) %4zu '%hu'", slot, index, id);
+            }
+          }
+
+          qu.events[n].assign(seq.begin(), seq.end());
+          m_slots[slot].outdate = 0;
+        }
+      } else {
+        verb("Network: Invalid command index.");
+        add_bytes_loss(seq.size() + transfer::get_data_overhead());
       }
     }
   }

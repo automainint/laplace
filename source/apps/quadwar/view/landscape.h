@@ -21,14 +21,19 @@ namespace quadwar_app::view {
   class landscape : engine::helper {
   public:
     static constexpr auto tail_size   = 50.f;
-    static constexpr auto tail_border = 5.f;
+    static constexpr auto tail_border = 10.f;
 
     void render(const camera &cam, world w);
 
   private:
     using vertex = graphics::flat::solid_shader::vertex;
 
+    size_t m_state_version = 0;
+    size_t m_width         = 0;
+    size_t m_height        = 0;
+
     std::vector<vertex> m_vertices;
+    std::vector<vertex> m_dynamic;
   };
 }
 

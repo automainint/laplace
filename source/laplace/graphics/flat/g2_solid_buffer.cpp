@@ -26,11 +26,15 @@ namespace laplace::graphics::flat {
   }
 
   void solid_buffer::render(span<const vertex> vertices) {
-    render_internal(vertices, GL_TRIANGLES);
+    if (!vertices.empty()) {
+      render_internal(vertices, GL_TRIANGLES);
+    }
   }
 
   void solid_buffer::render_strip(span<const vertex> vertices) {
-    render_internal(vertices, GL_TRIANGLE_STRIP);
+    if (!vertices.empty()) {
+      render_internal(vertices, GL_TRIANGLE_STRIP);
+    }
   }
 
   void solid_buffer::render_internal(span<const vertex> vertices,

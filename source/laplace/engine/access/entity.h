@@ -43,7 +43,7 @@ namespace laplace::engine::access {
 
     [[nodiscard]] auto id_of(size_t index) const -> size_t;
     [[nodiscard]] auto scale_of(size_t index) const -> size_t;
-    [[nodiscard]] auto get(size_t index) const -> int64_t;
+    [[nodiscard]] auto get(size_t index, int64_t defval = 0) const -> int64_t;
 
     void set(size_t index, int64_t value) const;
     void apply_delta(size_t index, int64_t delta) const;

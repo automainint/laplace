@@ -30,7 +30,7 @@ namespace quadwar_app::object {
         { { .id = sets::root_is_changed, .scale = 1 },
           { .id = sets::root_is_launched, .scale = 1 },
           { .id = sets::root_slot_count, .scale = 1 },
-          { .id = sets::root_landscape } });
+          { .id = sets::root_landscape, .value = -1 } });
 
     n_is_changed  = index_of(sets::root_is_changed);
     n_is_launched = index_of(sets::root_is_launched);
@@ -90,7 +90,7 @@ namespace quadwar_app::object {
   }
 
   auto root::get_landscape(entity en) -> size_t {
-    return static_cast<size_t>(en.get(n_landscape));
+    return static_cast<size_t>(en.get(n_landscape, -1));
   }
 
   auto root::do_request(size_t id, cref_vbyte args) const -> vbyte {
