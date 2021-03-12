@@ -44,34 +44,42 @@ auto main(int argc, char **argv) -> int
 auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR args, int) -> int
 #endif
 {
+  int status = 0;
+
+  try {
 #ifndef _CONSOLE
-  freopen(log_file_name, "w", stdout);
+    freopen(log_file_name, "w", stdout);
 #endif
 
 #ifdef USE_WINMAIN
-  auto [argc, argv] = parse_cmdline(args);
+    auto [argc, argv] = parse_cmdline(args);
 #endif
 
-  int  status = 0;
-  bool run    = true;
+    bool run = true;
 
-  if (scan_flag(argc, argv, f_tests, a_tests)) {
-    run    = false;
-    status = run_tests(argc, argv);
-  }
+    if (scan_flag(argc, argv, f_tests, a_tests)) {
+      run    = false;
+      status = run_tests(argc, argv);
+    }
 
-  if (status == 0 && scan_flag(argc, argv, f_benchmarks, a_benchmarks)) {
-    run = false;
-    run_benchmarks(argc, argv);
-  }
+    if (status == 0 &&
+        scan_flag(argc, argv, f_benchmarks, a_benchmarks)) {
+      run = false;
+      run_benchmarks(argc, argv);
+    }
 
-  if (scan_flag(argc, argv, f_run, a_run)) {
-    run = true;
-  }
+    if (scan_flag(argc, argv, f_run, a_run)) {
+      run = true;
+    }
 
-  if (status == 0 && run) {
-    socket_library sockets;
-    status = quadwar(argc, argv).run();
+    if (status == 0 && run) {
+      socket_library sockets;
+      status = quadwar(argc, argv).run();
+    }
+
+  } catch (std::exception &e) {
+    std::cout << "[ exception ] " << e.what() << '\n';
+    status = -1;
   }
 
 #if defined(_CONSOLE) && defined(LAPLACE_WAIT_FOR_ANY_KEY)

@@ -67,26 +67,7 @@ namespace quadwar_app::protocol {
           std::make_shared<object::game_clock>(), //
           engine::id_undefined);
 
-      auto land = std::make_shared<object::landscape>();
-
-      object::root::set_landscape(
-          r, w.spawn(land, engine::id_undefined));
-
-      object::landscape::generate(
-          { land, engine::access::sync }, m_map_size, m_map_size);
-
-      auto dist = std::uniform_int_distribution(0, 1);
-
-      std::vector<int64_t> tiles(m_map_size * m_map_size);
-
-      for (size_t i = 0; i < m_map_size; i++) {
-        for (size_t j = 0; j < m_map_size; j++) {
-          tiles[j * m_map_size + i] = w.random(dist);
-        }
-      }
-
-      object::landscape::set_tiles(
-          { land, engine::access::sync }, tiles);
+      object::landscape::create_maze(w, m_map_size, m_map_size);
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {

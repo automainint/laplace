@@ -19,9 +19,24 @@
 namespace quadwar_app::object {
   class landscape : public engine::basic_entity, helper {
   public:
+    enum tile_state : int64_t { tile_walkable, tile_border };
+
+    static constexpr size_t cave_size = 12;
+
     landscape();
 
-    static void generate(entity en, size_t width, size_t height);
+    static auto path_exists(            //
+        std::span<const int64_t> tiles, //
+        size_t width, size_t height,    //
+        size_t x0, size_t y0,           //
+        size_t x1, size_t y1) noexcept -> bool;
+
+    static auto gen_maze( //
+        world  w,         //
+        size_t width,     //
+        size_t height) noexcept -> std::vector<int64_t>;
+
+    static void create_maze(world w, size_t width, size_t height);
 
     [[nodiscard]] static auto get_width(entity en) -> size_t;
     [[nodiscard]] static auto get_height(entity en) -> size_t;
