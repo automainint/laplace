@@ -24,9 +24,7 @@ namespace quadwar_app::protocol {
     w.set_root(w.spawn(root, engine::id_undefined));
   });
 
-  using qw_init = event_handler< //
-      server_init,               //
-      init_lambda>;
+  using qw_init = event_handler<server_init, init_lambda>;
 }
 
 #endif

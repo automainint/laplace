@@ -47,6 +47,7 @@ namespace laplace::engine::access {
 
     void set(size_t index, int64_t value) const;
     void apply_delta(size_t index, int64_t delta) const;
+    void adjust() const;
 
     [[nodiscard]] auto request(size_t id, cref_vbyte args = {}) const
         -> vbyte;

@@ -47,13 +47,13 @@ namespace quadwar_app::object {
     void do_launch();
 
   private:
-    static size_t n_is_changed;
     static size_t n_is_launched;
     static size_t n_slot_count;
     static size_t n_landscape;
 
     static root m_proto;
 
+    bool  m_is_changed;
     vuint m_slots;
   };
 

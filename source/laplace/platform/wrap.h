@@ -15,6 +15,8 @@
 #ifndef laplace_platform_wrap_h
 #define laplace_platform_wrap_h
 
+#include "../core/defs.h"
+
 #if !defined(LAPLACE_POSIX_SOCKETS) && \
     (defined(_WIN32) || defined(_WINDOWS))
 #  include <winsock2.h>

@@ -100,12 +100,4 @@ namespace laplace::gl {
 
     return i != extensions.end() && *i == extension;
   }
-
-  auto platform_init() -> bool {
-    return platform::gl_init();
-  }
-
-  void platform_cleanup() {
-    platform::gl_cleanup();
-  }
 }

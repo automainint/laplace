@@ -23,7 +23,7 @@ namespace quadwar_app::object::sets {
 
     player_name,
 
-    root_is_changed,
+    root_changed,
     root_is_launched,
     root_slot_count,
     root_slot_get,

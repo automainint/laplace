@@ -12,10 +12,10 @@
  *  the MIT License for more details.
  */
 
+#include "../../laplace/core/defs.h"
 #include <cstdint>
 
-extern "C" int LLVMFuzzerTestOneInput(
-    const uint8_t *data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   /*  TODO
    *  data -> factory => impacts -> solver -> world
    */

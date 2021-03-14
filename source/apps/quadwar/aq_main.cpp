@@ -75,7 +75,7 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR args, int) -> int
     status = quadwar(argc, argv).run();
   }
 
-#if defined(_CONSOLE) && defined(LAPLACE_WAIT_FOR_ANY_KEY)
+#if defined(_CONSOLE) && defined(LAPLACE_VERBOSE)
   std::cout << "\n  Press Enter... ";
   static_cast<void>(getchar());
 #endif

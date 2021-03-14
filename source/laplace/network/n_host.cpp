@@ -57,6 +57,8 @@ namespace laplace::network {
     process_event(slot_host, encode<server_clock>(get_tick_duration()));
     process_event(slot_host, encode<server_seed>(m_seed));
     process_event(slot_host, encode<server_init>());
+
+    perform_instant_events();
   }
 
   auto host::perform_control(size_t slot, cref_vbyte seq) -> bool {
@@ -90,11 +92,7 @@ namespace laplace::network {
           auto ev = f->decode(seq);
 
           if (ev) {
-            if (auto wor = get_world(); wor) {
-              ev->perform({ *get_world(), access::sync });
-            } else {
-              error(__FUNCTION__, "No world.");
-            }
+            add_instant_event(ev);
           } else {
             verb("Network: Unable to decode command.");
           }

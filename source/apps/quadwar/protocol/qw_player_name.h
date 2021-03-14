@@ -59,8 +59,11 @@ namespace quadwar_app::protocol {
     inline void perform(world w) const final {
       verb(" :: event  Quadwar/player_name");
 
-      object::player::set_name(w.get_entity(get_actor()), m_name);
-      object::root::status_changed(w.get_entity(w.get_root()));
+      const auto id_actor = get_actor();
+      const auto id_root  = w.get_root();
+
+      object::player::set_name(w.get_entity(id_actor), m_name);
+      object::root::status_changed(w.get_entity(id_root));
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {

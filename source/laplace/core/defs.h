@@ -16,12 +16,30 @@
 #ifndef laplace_core_defs_h
 #define laplace_core_defs_h
 
+/*  Enable verbose logging.
+ */
+//#define LAPLACE_VERBOSE
+
+/*  Force to use POSIX sockets.
+ */
+//#define LAPLACE_POSIX_SOCKETS
+
+/*  Disable platform-dependent features.
+ */
+//#define LAPLACE_PLATFORM_DUMMY
+
+#ifdef _MSC_VER
+#  pragma warning(disable : 4245 4100 4250)
+#endif
+
 #include <array>
 #include <cstdint>
 #include <iostream>
+#include <memory>
 #include <span>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace laplace {

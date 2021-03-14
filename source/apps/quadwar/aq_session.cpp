@@ -164,7 +164,7 @@ namespace quadwar_app {
 
     /*  Create the host actor.
      */
-    auto id_actor = m_world->reserve(id_undefined);
+    const auto id_actor = m_world->reserve(engine::id_undefined);
 
     server->emit<protocol::slot_create>(id_actor);
     server->emit<qw_player_name>(id_actor, m_player_name);
@@ -273,23 +273,24 @@ namespace quadwar_app {
     if (!root::changed({ r, access::sync }))
       return;
 
-    if (root::is_launched({ r, access::async })) {
+    if (root::is_launched({ r, access::read_only })) {
       m_lobby.set_visible(false);
       return;
     }
 
-    auto count = root::get_slot_count({ r, access::async });
+    auto count = root::get_slot_count({ r, access::read_only });
 
     for (size_t i = 0; i < count; i++) {
 
-      const auto id_actor = root::get_slot({ r, access::async }, i);
+      const auto id_actor = root::get_slot({ r, access::read_only }, i);
       const auto actor    = m_world->get_entity(id_actor);
-      const auto is_local = player::is_local({ actor, access::async });
+      const auto is_local = player::is_local(
+          { actor, access::read_only });
 
       if (is_local)
         m_id_actor = id_actor;
 
-      auto name = player::get_name({ actor, access::async });
+      auto name = player::get_name({ actor, access::read_only });
 
       if (name.empty()) {
         name = u8"[ Reserved ]";

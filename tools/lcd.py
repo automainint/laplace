@@ -33,7 +33,7 @@ if n > 0:
   if len(s) > 0:
     s += ', '
   s += format(b, '#0x')
-  
+
 previous_stdout = sys.stdout
 sys.stdout = open(os.path.join(folder, 'lcd.h'), 'w')
 

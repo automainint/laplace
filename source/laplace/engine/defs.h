@@ -16,10 +16,8 @@
 #ifndef laplace_engine_defs_h
 #define laplace_engine_defs_h
 
+#include "../core/defs.h"
 #include "../math/vector.h"
-#include <array>
-#include <variant>
-#include <vector>
 
 namespace laplace::engine {
   using intval = int64_t;

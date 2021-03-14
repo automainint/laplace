@@ -16,8 +16,6 @@
 #define laplace_core_family_h
 
 #include "defs.h"
-#include <memory>
-#include <variant>
 
 namespace laplace::core {
   /*  TODO

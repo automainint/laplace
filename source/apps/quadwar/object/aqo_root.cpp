@@ -18,7 +18,6 @@ namespace quadwar_app::object {
   using std::lower_bound, std::unique_lock, std::shared_lock,
       engine::id_undefined;
 
-  size_t root::n_is_changed  = 0;
   size_t root::n_is_launched = 0;
   size_t root::n_slot_count  = 0;
   size_t root::n_landscape   = 0;
@@ -27,12 +26,10 @@ namespace quadwar_app::object {
 
   root::root(root::proto_tag) {
     setup_sets( //
-        { { .id = sets::root_is_changed, .scale = 1 },
-          { .id = sets::root_is_launched, .scale = 1 },
+        { { .id = sets::root_is_launched, .scale = 1 },
           { .id = sets::root_slot_count, .scale = 1 },
           { .id = sets::root_landscape, .value = -1 } });
 
-    n_is_changed  = index_of(sets::root_is_changed);
     n_is_launched = index_of(sets::root_is_launched);
     n_slot_count  = index_of(sets::root_slot_count);
     n_landscape   = index_of(sets::root_landscape);
@@ -57,13 +54,14 @@ namespace quadwar_app::object {
   }
 
   void root::status_changed(entity en) {
-    en.set(n_is_changed, true);
+    en.modify(sets::root_changed, pack_to_bytes(true));
   }
 
   auto root::changed(entity en) -> bool {
-    const auto is_changed = en.get(n_is_changed);
-    en.set(n_is_changed, 0);
-    return is_changed > 0;
+    const auto is_changed = rd<bool>(en.request(sets::root_changed), 0);
+    if (is_changed)
+      en.modify(sets::root_changed, pack_to_bytes(false));
+    return is_changed;
   }
 
   auto root::is_launched(entity en) -> bool {
@@ -95,6 +93,10 @@ namespace quadwar_app::object {
 
   auto root::do_request(size_t id, cref_vbyte args) const -> vbyte {
 
+    if (id == sets::root_changed) {
+      return pack_to_bytes(m_is_changed);
+    }
+
     if (id == sets::root_slot_get) {
       const auto index = rd<size_t>(args, 0);
 
@@ -109,6 +111,10 @@ namespace quadwar_app::object {
   void root::do_modify(size_t id, cref_vbyte args) {
 
     switch (id) {
+      case sets::root_changed:
+        m_is_changed = rd<bool>(args, 0);
+        break;
+
       case sets::root_slot_create:
         do_slot_create(rd<size_t>(args, 0));
         break;
@@ -127,8 +133,9 @@ namespace quadwar_app::object {
 
     m_slots.emplace(it, id_actor);
 
+    m_is_changed = true;
+
     init(n_slot_count, static_cast<int64_t>(m_slots.size()));
-    init(n_is_changed, 1);
   }
 
   void root::do_slot_remove(const size_t id_actor) {
@@ -138,8 +145,9 @@ namespace quadwar_app::object {
     if (it != m_slots.end() && *it == id_actor)
       m_slots.erase(it);
 
+    m_is_changed = true;
+
     init(n_slot_count, static_cast<int64_t>(m_slots.size()));
-    init(n_is_changed, 1);
   }
 
   void root::do_launch() {
@@ -152,8 +160,9 @@ namespace quadwar_app::object {
  ************************************
 )");
 
+      m_is_changed = true;
+
       init(n_is_launched, 1);
-      init(n_is_changed, 1);
     }
   }
 }

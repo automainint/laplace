@@ -39,16 +39,6 @@ namespace laplace::gl {
   /*  Check if extension enabled.
    */
   auto has(std::string_view extension) -> bool;
-
-  /*  Platform-specific OpenGL initialization.
-   *  Loading dynamic-link library.
-   */
-  auto platform_init() -> bool;
-
-  /*  Platform-specific OpenGL cleanup.
-   *  Free dynamic-link library.
-   */
-  void platform_cleanup();
 }
 
 #endif

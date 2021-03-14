@@ -155,19 +155,22 @@ namespace quadwar_app::object {
       tiles[j * width + (width - 1)] = tile_border;
     }
 
-    const auto cols = width / cave_size;
-    const auto rows = height / cave_size;
+    const auto cols = (width + cave_size / 2) / cave_size;
+    const auto rows = (height + cave_size / 2) / cave_size;
 
     if (cols > 0 && rows > 0) {
-      const auto cave_width  = (width + cols / 2) / cols;
-      const auto cave_height = (height + rows / 2) / rows;
+      const auto cave_width  = width / cols;
+      const auto cave_height = height / rows;
+
+      const auto caves_x0 = (width - cols * cave_width) / 2;
+      const auto caves_y0 = (height - rows * cave_height) / 2;
 
       for (size_t col = 0; col < cols; col++)
         for (size_t row = 0; row < rows; row++) {
-          const auto x0 = col * cave_width;
-          const auto y0 = row * cave_height;
-          const auto x1 = min(width - 1, (col + 1) * cave_width - 1);
-          const auto y1 = min(height - 1, (row + 1) * cave_height - 1);
+          const auto x0 = caves_x0 + col * cave_width;
+          const auto y0 = caves_y0 + row * cave_height;
+          const auto x1 = min(width - 1, x0 + cave_width - 1);
+          const auto y1 = min(height - 1, y0 + cave_height - 1);
 
           for (size_t i = x0; i <= x1; i++) {
             tiles[y0 * width + i] = tile_border;
@@ -244,10 +247,10 @@ namespace quadwar_app::object {
           return tuple { col0, row0 };
         }();
 
-        const auto x0 = cave_width / 2 + col0 * cave_width;
-        const auto y0 = cave_height / 2 + row0 * cave_height;
-        const auto x1 = cave_width / 2 + col1 * cave_width;
-        const auto y1 = cave_height / 2 + row1 * cave_height;
+        const auto x0 = caves_x0 + cave_width / 2 + col0 * cave_width;
+        const auto y0 = caves_y0 + cave_height / 2 + row0 * cave_height;
+        const auto x1 = caves_x0 + cave_width / 2 + col1 * cave_width;
+        const auto y1 = caves_y0 + cave_height / 2 + row1 * cave_height;
 
         if (!path_exists(tiles, width, height, x0, y0, x1, y1)) {
           caves.erase(caves.begin() + static_cast<ptrdiff_t>(cave));

@@ -46,7 +46,7 @@ namespace laplace::win32 {
       return;
     }
 
-    if (!gl::platform_init()) {
+    if (!gl_init()) {
       error(__FUNCTION__, "WGL initialization failed.");
       return;
     }
@@ -173,7 +173,7 @@ namespace laplace::win32 {
       }
     }
 
-    gl::platform_cleanup();
+    gl_cleanup();
 
     m_hDC = nullptr;
     m_hRC = nullptr;

@@ -36,15 +36,16 @@ namespace laplace::network {
   using std::this_thread::sleep_for, std::min, std::max, std::any_of,
       std::find_if, std::make_unique, std::span, std::numeric_limits,
       std::string, std::vector, std::string_view,
-      std::chrono::milliseconds, engine::prime_impact,
-      engine::seed_type, protocol::slot_create, protocol::slot_remove,
-      protocol::request_events, protocol::server_idle,
-      protocol::ping_request, protocol::ping_response,
-      protocol::public_key, protocol::server_action,
-      protocol::server_pause, protocol::server_clock,
-      protocol::server_seed, protocol::server_quit,
-      protocol::client_leave, engine::time_undefined,
-      engine::id_undefined, engine::encode, crypto::dh_rabbit;
+      std::chrono::milliseconds, engine::ptr_impact,
+      engine::prime_impact, engine::seed_type, protocol::slot_create,
+      protocol::slot_remove, protocol::request_events,
+      protocol::server_idle, protocol::ping_request,
+      protocol::ping_response, protocol::public_key,
+      protocol::server_action, protocol::server_pause,
+      protocol::server_clock, protocol::server_seed,
+      protocol::server_quit, protocol::client_leave,
+      engine::time_undefined, engine::id_undefined, engine::encode,
+      crypto::dh_rabbit;
 
   udp_server::~udp_server() {
     cleanup();
@@ -263,6 +264,8 @@ namespace laplace::network {
   }
 
   void udp_server::update_world(uint64_t delta_msec) {
+    perform_instant_events();
+
     if (is_master()) {
       if (get_state() == server_state::action) {
         if (auto sol = get_solver(); sol) {
@@ -280,6 +283,13 @@ namespace laplace::network {
           error(__FUNCTION__, "No solver.");
           set_state(server_state::pause);
         }
+      }
+    }
+
+    if (auto wor = get_world(); wor) {
+      if (wor->is_desync()) {
+        cleanup();
+        set_quit(true);
       }
     }
   }
@@ -489,7 +499,7 @@ namespace laplace::network {
       if (is_master()) {
         distribute_event(slot, seq);
       } else {
-        instant_event(slot, seq);
+        add_instant_event(slot, seq);
       }
 
     } else {
@@ -532,16 +542,12 @@ namespace laplace::network {
         }
       }
 
-      /*  Add the event to the main queue.
-       */
-      m_queue.events.emplace_back(ev->encode());
-
       if (get_state() == server_state::prepare) {
         if (auto wor = get_world(); wor) {
           /*  Perform the event. The event
            *  time will be undefined.
            */
-          ev->perform({ *wor, access::sync });
+          m_instant_events.emplace_back(ev);
         }
       } else {
         if (auto sol = get_solver(); sol) {
@@ -551,12 +557,21 @@ namespace laplace::network {
           sol->apply(ev);
         }
       }
+
+      /*  Add the event to the main queue.
+       */
+      m_queue.events.emplace_back(ev->encode());
+
     } else {
       error(__FUNCTION__, "No factory.");
     }
   }
 
-  void udp_server::instant_event(size_t slot, cref_vbyte seq) {
+  void udp_server::add_instant_event(ptr_impact ev) {
+    m_instant_events.emplace_back(ev);
+  }
+
+  void udp_server::add_instant_event(size_t slot, cref_vbyte seq) {
     if (auto f = get_factory(); f) {
       auto ev = f->decode(seq);
 
@@ -565,7 +580,7 @@ namespace laplace::network {
         return;
       }
 
-      ev->perform({ *get_world(), access::sync });
+      m_instant_events.emplace_back(ev);
 
     } else {
       error(__FUNCTION__, "No factory.");
@@ -586,6 +601,16 @@ namespace laplace::network {
       if (auto sol = get_solver(); sol) {
         sol->apply(ev);
       }
+    }
+  }
+
+  void udp_server::perform_instant_events() {
+    if (auto wor = get_world(); wor) {
+      for (size_t i = 0; i < m_instant_events.size(); i++) {
+        m_instant_events[i]->perform({ *wor, access::sync });
+      }
+
+      m_instant_events.clear();
     }
   }
 
@@ -806,6 +831,9 @@ namespace laplace::network {
 
     if (t > m_local_time) {
       error(__FUNCTION__, "Time value overflow.");
+
+      cleanup();
+      set_quit(true);
     }
   }
 

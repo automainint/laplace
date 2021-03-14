@@ -111,8 +111,10 @@ namespace laplace::network {
     void clean_slots();
     void process_event(size_t slot, cref_vbyte seq);
     void distribute_event(size_t slot, cref_vbyte seq);
-    void instant_event(size_t slot, cref_vbyte seq);
+    void add_instant_event(engine::ptr_impact ev);
+    void add_instant_event(size_t slot, cref_vbyte seq);
     void perform_event(size_t slot, cref_vbyte seq);
+    void perform_instant_events();
 
     void receive_events();
     void process_buffers();
@@ -138,6 +140,8 @@ namespace laplace::network {
 
     vbyte       m_buffer = vbyte(default_chunk_size);
     event_queue m_queue;
+
+    engine::vptr_impact m_instant_events;
 
     vuint16  m_allowed_commands;
     bool     m_is_master             = false;
