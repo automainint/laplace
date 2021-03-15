@@ -22,14 +22,14 @@
 #include "host.h"
 
 namespace laplace::network {
-  namespace access   = engine::access;
-  namespace protocol = engine::protocol;
+  namespace access = engine::access;
+  namespace pro    = engine::protocol;
 
   using std::make_unique, engine::encode, engine::id_undefined,
-      engine::solver, protocol::client_enter, protocol::client_leave,
-      protocol::client_ready, protocol::server_clock,
-      protocol::server_seed, protocol::server_init,
-      protocol::slot_create, protocol::slot_remove;
+      engine::solver, engine::prime_impact, pro::client_enter,
+      pro::client_leave, pro::client_ready, pro::server_clock,
+      pro::server_seed, pro::server_init, pro::slot_create,
+      pro::slot_remove;
 
   host::host() {
     setup_world();
@@ -92,7 +92,7 @@ namespace laplace::network {
           auto ev = f->decode(seq);
 
           if (ev) {
-            add_instant_event(ev);
+            add_instant_event(prime_impact::get_id(seq), ev);
           } else {
             verb("Network: Unable to decode command.");
           }

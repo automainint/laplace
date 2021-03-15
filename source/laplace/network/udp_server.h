@@ -14,6 +14,7 @@
 #define laplace_network_udp_server_h
 
 #include "../engine/defs.h"
+#include "../engine/loader.h"
 #include "server.h"
 #include "transfer.h"
 #include "udp_node.h"
@@ -111,8 +112,8 @@ namespace laplace::network {
     void clean_slots();
     void process_event(size_t slot, cref_vbyte seq);
     void distribute_event(size_t slot, cref_vbyte seq);
-    void add_instant_event(engine::ptr_impact ev);
-    void add_instant_event(size_t slot, cref_vbyte seq);
+    void add_instant_event(uint16_t id, engine::ptr_impact ev);
+    void add_instant_event(cref_vbyte seq);
     void perform_event(size_t slot, cref_vbyte seq);
     void perform_instant_events();
 
@@ -140,6 +141,8 @@ namespace laplace::network {
 
     vbyte       m_buffer = vbyte(default_chunk_size);
     event_queue m_queue;
+
+    std::unique_ptr<engine::loader> m_loader;
 
     engine::vptr_impact m_instant_events;
 

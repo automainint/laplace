@@ -24,10 +24,12 @@ namespace quadwar_app::object {
 
     static void slot_create(entity en, size_t id_actor);
     static void slot_remove(entity en, size_t id_actor);
+    static void loading(entity en);
     static void launch(entity en);
     static void status_changed(entity en);
 
-    [[nodiscard]] static auto changed(entity en) -> bool;
+    [[nodiscard]] static auto get_version(entity en) -> size_t;
+    [[nodiscard]] static auto is_loading(entity en) -> bool;
     [[nodiscard]] static auto is_launched(entity en) -> bool;
     [[nodiscard]] static auto get_slot_count(entity en) -> size_t;
     [[nodiscard]] static auto get_slot(entity en, size_t index)
@@ -47,14 +49,15 @@ namespace quadwar_app::object {
     void do_launch();
 
   private:
+    static size_t n_version;
+    static size_t n_is_loading;
     static size_t n_is_launched;
     static size_t n_slot_count;
     static size_t n_landscape;
 
     static root m_proto;
 
-    bool  m_is_changed;
-    vuint m_slots;
+    vuint  m_slots;
   };
 
   using ptr_root = std::shared_ptr<root>;

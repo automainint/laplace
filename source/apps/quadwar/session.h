@@ -80,6 +80,7 @@ namespace quadwar_app {
     /*  Local actor id.
      */
     size_t m_id_actor = engine::id_undefined;
+    size_t m_root_ver = 0;
 
     engine::ptr_world m_world;
 

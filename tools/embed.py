@@ -97,7 +97,6 @@ out.write('#include <cstdint>\n')
 out.write('#include <string>\n')
 out.write('#include <vector>\n\n')
 out.write('namespace laplace::embedded {\n')
-out.write('  using std::vector, std::wstring;\n\n')
 
 lines = list_file.readlines()
 aliases = list()

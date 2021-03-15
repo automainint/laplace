@@ -39,6 +39,7 @@ namespace quadwar_app::ui {
     void adjust_layout(int width, int height);
 
     void show_info(std::u8string_view text);
+    void show_loading();
 
     void set_slot(size_t index, size_t id_actor,
                   std::u8string_view name);

@@ -63,6 +63,8 @@ namespace quadwar_app::protocol {
 
       auto r = w.get_entity(w.get_root());
 
+      object::root::loading(r);
+
       w.spawn(                                    //
           std::make_shared<object::game_clock>(), //
           engine::id_undefined);

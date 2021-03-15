@@ -91,6 +91,13 @@ namespace quadwar_app::ui {
     m_info->set_text(text);
   }
 
+  void lobby::show_loading() {
+    m_info->set_text(u8"Loading...");
+
+    m_abort->set_visible(false);
+    m_start->set_visible(false);
+  }
+
   void lobby::set_slot(size_t index, size_t id_actor,
                        u8string_view name) {
     if (index < m_slots.size()) {

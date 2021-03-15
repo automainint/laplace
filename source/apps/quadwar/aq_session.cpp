@@ -164,7 +164,7 @@ namespace quadwar_app {
 
     /*  Create the host actor.
      */
-    const auto id_actor = m_world->reserve(engine::id_undefined);
+    const auto id_actor = m_world->reserve(id_undefined);
 
     server->emit<protocol::slot_create>(id_actor);
     server->emit<qw_player_name>(id_actor, m_player_name);
@@ -268,43 +268,50 @@ namespace quadwar_app {
 
     auto r = m_world->get_entity(m_world->get_root());
 
-    /*  Sync access required to reset the change status.
-     */
-    if (!root::changed({ r, access::sync }))
-      return;
+    const auto ver = root::get_version({ r, access::read_only });
 
-    if (root::is_launched({ r, access::read_only })) {
-      m_lobby.set_visible(false);
-      return;
-    }
+    if (m_root_ver < ver) {
+      m_root_ver = ver;
 
-    auto count = root::get_slot_count({ r, access::read_only });
-
-    for (size_t i = 0; i < count; i++) {
-
-      const auto id_actor = root::get_slot({ r, access::read_only }, i);
-      const auto actor    = m_world->get_entity(id_actor);
-      const auto is_local = player::is_local(
-          { actor, access::read_only });
-
-      if (is_local)
-        m_id_actor = id_actor;
-
-      auto name = player::get_name({ actor, access::read_only });
-
-      if (name.empty()) {
-        name = u8"[ Reserved ]";
+      if (root::is_launched({ r, access::read_only })) {
+        m_lobby.set_visible(false);
+        return;
       }
 
-      if (is_local) {
-        name.append(u8" *");
+      if (root::is_loading({ r, access::read_only })) {
+        m_lobby.show_loading();
+        return;
       }
 
-      m_lobby.set_slot(i, id_actor, name);
-    }
+      const auto count = root::get_slot_count({ r, access::read_only });
 
-    for (size_t i = count; i < m_lobby.get_slot_count(); i++) {
-      m_lobby.remove_slot(i);
+      for (size_t i = 0; i < count; i++) {
+
+        const auto id_actor = root::get_slot(
+            { r, access::read_only }, i);
+        const auto actor    = m_world->get_entity(id_actor);
+        const auto is_local = player::is_local(
+            { actor, access::read_only });
+
+        if (is_local)
+          m_id_actor = id_actor;
+
+        auto name = player::get_name({ actor, access::read_only });
+
+        if (name.empty()) {
+          name = u8"[ Reserved ]";
+        }
+
+        if (is_local) {
+          name.append(u8" *");
+        }
+
+        m_lobby.set_slot(i, id_actor, name);
+      }
+
+      for (size_t i = count; i < m_lobby.get_slot_count(); i++) {
+        m_lobby.remove_slot(i);
+      }
     }
   }
 
