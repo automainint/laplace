@@ -3,7 +3,7 @@ The quality of the real-time strategy game depends on low-latency responsiveness
 
 Laplace is an interactive multimedia framework that provides the deterministic and extensible engine with concurrency support and lockstep synchronization.
 
-Official repository: [laplace](https://github.com/automainint/laplace)
+Official repository: [GitHub](https://github.com/automainint/laplace)
 
     Work in progress...
     The project is far from complete.

@@ -6,6 +6,7 @@ def parse_argv():
   args = dict()
   args['generator'] = ''
   args['config'] = 'Release'
+  args['msvc-runtime'] = 'MultiThreaded'
 
   argv = sys.argv
 
@@ -14,6 +15,8 @@ def parse_argv():
       args['generator'] = argv[i+1]
     elif arg == '--config':
       args['config'] = argv[i+1]
+    elif arg == '--msvc-runtime':
+      args['msvc-runtime'] = argv[i+1]
 
   return args
 
@@ -137,7 +140,7 @@ def freetype_include_fix():
       shutil.move(f, dst)
     shutil.rmtree(ft2_folder)
 
-def build_repo(build_to, generator, config, flags):
+def build_repo(build_to, generator, config, msvc_runtime, flags):
   if not os.path.exists(build_to):
     os.mkdir(build_to)
   gen = ''
@@ -149,7 +152,7 @@ def build_repo(build_to, generator, config, flags):
     ' -D CMAKE_INSTALL_PREFIX=../../tmp' +
     ' -D CMAKE_INSTALL_LIBDIR=../lib' +
     ' -D CMAKE_INSTALL_INCLUDEDIR=../include' +
-    ' -D CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded' +
+    ' -D CMAKE_MSVC_RUNTIME_LIBRARY=' + msvc_runtime +
     ' -D CMAKE_BUILD_TYPE=' + config +
     ' -B ' + build_to + 
     ' -S .')
@@ -211,6 +214,7 @@ for dep in deps:
     dep['build-folder'],
     args['generator'],
     args['config'],
+    args['msvc-runtime'],
     dep['flags'])
   print('')
 
