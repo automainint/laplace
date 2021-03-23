@@ -21,7 +21,8 @@ namespace cfg = laplace::stem::config;
 
 using cfg::scan_flag, cfg::f_tests, cfg::a_tests, cfg::f_benchmarks,
     cfg::a_benchmarks, cfg::f_run, cfg::a_run,
-    laplace::socket_library, quadwar_app::quadwar;
+    laplace::socket_library, quadwar_app::quadwar,
+    quadwar_app::log_file_name;
 
 auto run_tests(int &argc, char **argv) -> int {
   testing::InitGoogleTest(&argc, argv);
@@ -47,7 +48,7 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR args, int) -> int
   int status = 0;
 
 #ifndef _CONSOLE
-  freopen(log_file_name, "w", stdout);
+  freopen(log_file_name, "w", stderr);
 #endif
 
 #ifdef USE_WINMAIN

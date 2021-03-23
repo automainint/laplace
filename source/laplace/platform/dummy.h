@@ -157,7 +157,10 @@ namespace laplace::platform::dummy {
     void set_parent(native_handle) { }
     void reset_parent() { }
 
-    auto message_loop() -> int { }
+    auto message_loop() -> int {
+      return 0;
+    }
+
     void quit(int = 0) { }
 
     auto get_screen_width() const -> size_t {

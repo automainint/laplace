@@ -46,8 +46,7 @@ namespace laplace::math {
       -> type_ & {
 
     if (index >= size_) {
-      static auto nil = type_ {};
-      return nil;
+      return *static_cast<type_ *>(nullptr);
     }
 
     return this->v[index];
@@ -85,8 +84,7 @@ namespace laplace::math {
       -> type_ & {
 
     if (index >= 2) {
-      static auto nil = type_ {};
-      return nil;
+      return *static_cast<type_ *>(nullptr);
     }
 
     return this->v[index];
@@ -134,8 +132,7 @@ namespace laplace::math {
       -> type_ & {
 
     if (index >= 3) {
-      static auto nil = type_ {};
-      return nil;
+      return *static_cast<type_ *>(nullptr);
     }
 
     return this->v[index];
@@ -193,8 +190,7 @@ namespace laplace::math {
       -> type_ & {
 
     if (index >= 4) {
-      static auto nil = type_ {};
-      return nil;
+      return *static_cast<type_ *>(nullptr);
     }
 
     return this->v[index];

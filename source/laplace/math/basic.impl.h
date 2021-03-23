@@ -137,7 +137,7 @@ namespace laplace::math {
       ) -> scalar_type<type_> {
 
     return length(v, [](const auto x) {
-      return std::sqrtl(x);
+      return std::sqrt(x);
     });
   }
 
