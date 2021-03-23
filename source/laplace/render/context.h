@@ -60,11 +60,26 @@ namespace laplace::render {
 
     void set_settings(cref_settings sets);
 
+    void adjust_frame_size(int width, int height);
+
     void render(std::span<const solid_vertex> vertices);
+
+    void render(                                //
+        std::span<const solid_vertex> vertices, //
+        graphics::cref_vec2           position, //
+        graphics::cref_vec2           scale);
+
     void render_strip(std::span<const solid_vertex> vertices);
 
-    void render(std::span<const sprite_vertex> vertices,
-                graphics::ref_texture          tex);
+    void render(                                 //
+        std::span<const sprite_vertex> vertices, //
+        graphics::ref_texture          tex);
+
+    void render(                                 //
+        std::span<const sprite_vertex> vertices, //
+        graphics::cref_vec2            position, //
+        graphics::cref_vec2            scale,    //
+        graphics::ref_texture          tex);
 
     void render_strip(std::span<const sprite_vertex> vertices,
                       graphics::ref_texture          tex);
@@ -74,7 +89,7 @@ namespace laplace::render {
   private:
     static std::weak_ptr<context> m_default;
 
-    settings   m_settings = default_settings;
+    settings m_settings = default_settings;
 
     graphics::flat::solid_buffer  m_solid_buffer;
     graphics::flat::sprite_buffer m_sprite_buffer;

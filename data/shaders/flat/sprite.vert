@@ -1,5 +1,7 @@
 #version 420
 
+uniform vec2 view_position;
+uniform vec2 view_scale;
 uniform vec2 mesh_position;
 uniform vec2 mesh_scale;
 
@@ -11,7 +13,7 @@ out vec2 texcoord;
 
 void main()
 {
-    position = mesh_position + vertex_position * mesh_scale;
+    position = view_position + (mesh_position + vertex_position * mesh_scale) * view_scale;
     texcoord = vertex_texcoord;
 
     gl_Position = vec4(position, 0.0, 1.0);

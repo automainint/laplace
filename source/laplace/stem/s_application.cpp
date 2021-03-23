@@ -14,6 +14,8 @@
 
 #include "../core/embedded.h"
 #include "../core/utils.h"
+#include "../graphics/flat/solid_shader.h"
+#include "../graphics/flat/sprite_shader.h"
 #include "../graphics/utils.h"
 #include "application.h"
 #include "config.h"
@@ -132,7 +134,7 @@ namespace laplace::stem {
   }
 
   void application::load_shaders() {
-    if (m_config.has(k_shaders)) {
+    if (m_config.has(k_shaders) && m_render) {
       auto &s_cfg = m_config[k_shaders];
 
       if (s_cfg.has(k_flat_solid)) {
@@ -141,7 +143,7 @@ namespace laplace::stem {
         const auto vert      = open(vert_path);
         const auto frag      = open(frag_path);
 
-        m_flat_solid = make_shared<solid_shader>(*vert, *frag);
+        m_render->setup(make_shared<solid_shader>(*vert, *frag));
       }
 
       if (s_cfg.has(k_flat_sprite)) {
@@ -150,34 +152,15 @@ namespace laplace::stem {
         const auto vert      = open(vert_path);
         const auto frag      = open(frag_path);
 
-        m_flat_sprite = make_shared<sprite_shader>(*vert, *frag);
-      }
-
-      if (m_render) {
-        m_render->setup(m_flat_solid);
-        m_render->setup(m_flat_sprite);
+        m_render->setup(make_shared<sprite_shader>(*vert, *frag));
       }
     }
   }
 
   void application::adjust_frame_size(int width, int height) {
     if (width != 0 && height != 0) {
-      const auto x0 = width < 0 ? 1.f : -1.f;
-      const auto y0 = height < 0 ? -1.f : 1.f;
-      const auto w  = 2.f / static_cast<float>(width);
-      const auto h  = -2.f / static_cast<float> (height);
-
-      if (m_flat_solid) {
-        m_flat_solid->use();
-        m_flat_solid->set_position({ x0, y0 });
-        m_flat_solid->set_scale({ w, h });
-      }
-
-      if (m_flat_sprite) {
-        m_flat_sprite->use();
-        m_flat_sprite->set_position({ x0, y0 });
-        m_flat_sprite->set_scale({ w, h });
-      }
+      if (m_render)
+        m_render->adjust_frame_size(width, height);
     }
   }
 

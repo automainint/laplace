@@ -17,8 +17,6 @@
 
 #include "../core/family.h"
 #include "../graphics/defs.h"
-#include "../graphics/flat/solid_shader.h"
-#include "../graphics/flat/sprite_shader.h"
 #include "../platform/wrap.h"
 #include "../render/context.h"
 #include "../ui/context.h"
@@ -35,9 +33,6 @@ namespace laplace::stem {
     auto run() -> int;
 
   protected:
-    graphics::flat::ptr_solid_shader  m_flat_solid;
-    graphics::flat::ptr_sprite_shader m_flat_sprite;
-
     core::family m_config;
 
     virtual void init();
@@ -55,12 +50,12 @@ namespace laplace::stem {
     void load_shaders();
     void adjust_frame_size(int width, int height);
 
-    [[nodiscard]] auto shader_path(const char *name,
-                                   const char *type) const
-        -> std::wstring;
+    [[nodiscard]] auto shader_path( //
+        const char *name,           //
+        const char *type) const -> std::wstring;
 
-    [[nodiscard]] auto open(std::wstring_view file_name)
-        -> std::unique_ptr<std::istream>;
+    [[nodiscard]] auto open( //
+        std::wstring_view file_name) -> std::unique_ptr<std::istream>;
 
     platform::ptr_window    m_window;
     platform::ptr_glcontext m_gl;

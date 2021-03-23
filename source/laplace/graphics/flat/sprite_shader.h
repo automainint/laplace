@@ -28,17 +28,20 @@ namespace laplace::graphics::flat {
     auto operator=(const sprite_shader &) -> sprite_shader & = delete;
 
     sprite_shader(ref_istream vert, ref_istream frag);
-    ~sprite_shader();
 
     void use();
 
-    void set_position(cref_vec2 position);
-    void set_scale(cref_vec2 scale);
+    void set_view_position(cref_vec2 position);
+    void set_view_scale(cref_vec2 scale);
+    void set_mesh_position(cref_vec2 position);
+    void set_mesh_scale(cref_vec2 scale);
     void set_texture(size_t id);
 
   private:
-    int n_position;
-    int n_scale;
+    int n_view_position;
+    int n_view_scale;
+    int n_mesh_position;
+    int n_mesh_scale;
     int n_texture;
 
     program m_program;

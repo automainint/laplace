@@ -24,31 +24,45 @@ namespace laplace::graphics::flat {
 
     m_program.use(true);
 
-    n_position = glGetUniformLocation( //
-        m_program.get_id(),            //
+    n_view_position = glGetUniformLocation( //
+        m_program.get_id(),                 //
+        "view_position");
+
+    n_view_scale = glGetUniformLocation( //
+        m_program.get_id(),              //
+        "view_scale");
+
+    n_mesh_position = glGetUniformLocation( //
+        m_program.get_id(),                 //
         "mesh_position");
 
-    n_scale = glGetUniformLocation( //
-        m_program.get_id(),         //
+    n_mesh_scale = glGetUniformLocation( //
+        m_program.get_id(),              //
         "mesh_scale");
 
     n_texture = glGetUniformLocation( //
         m_program.get_id(),           //
         "mesh_texture");
   }
-
-  sprite_shader::~sprite_shader() { }
-
+  
   void sprite_shader::use() {
     m_program.use(true);
   }
 
-  void sprite_shader::set_position(cref_vec2 position) {
-    glUniform2fv(n_position, 1, position.v);
+  void sprite_shader::set_view_position(cref_vec2 position) {
+    glUniform2fv(n_view_position, 1, position.v);
   }
 
-  void sprite_shader::set_scale(cref_vec2 scale) {
-    glUniform2fv(n_scale, 1, scale.v);
+  void sprite_shader::set_view_scale(cref_vec2 scale) {
+    glUniform2fv(n_view_scale, 1, scale.v);
+  }
+
+  void sprite_shader::set_mesh_position(cref_vec2 position) {
+    glUniform2fv(n_mesh_position, 1, position.v);
+  }
+
+  void sprite_shader::set_mesh_scale(cref_vec2 scale) {
+    glUniform2fv(n_mesh_scale, 1, scale.v);
   }
 
   void sprite_shader::set_texture(size_t id) {

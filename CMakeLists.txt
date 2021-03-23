@@ -16,10 +16,6 @@ set_property(
 )
 
 if(MSVC)
-  set_property(
-    TARGET ${EXE_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded"
-  )
-
   set_target_properties(
     ${EXE_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE"
   )

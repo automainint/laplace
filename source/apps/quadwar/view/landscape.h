@@ -33,7 +33,6 @@ namespace quadwar_app::view {
     size_t m_height        = 0;
 
     std::vector<vertex> m_vertices;
-    std::vector<vertex> m_dynamic;
   };
 }
 

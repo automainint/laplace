@@ -94,7 +94,6 @@ namespace quadwar_app::view {
       m_state_version = ver;
       m_width         = width;
       m_height        = height;
-      m_dynamic       = m_vertices;
     }
 
     auto cont = render::context::get_default();
@@ -104,11 +103,7 @@ namespace quadwar_app::view {
       const auto f = cam.get_frame() / 2.f;
       const auto p = -cam.get_position();
 
-      for (size_t i = 0; i < m_dynamic.size(); i++) {
-        m_dynamic[i].position = f + (p + m_vertices[i].position) * s;
-      }
-
-      cont->render(m_dynamic);
+      cont->render(m_vertices, f + p * s, vec2 { s, s });
     }
   }
 }
