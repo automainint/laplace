@@ -16,6 +16,18 @@
 namespace laplace::test {
   using core::parser, std::u8string;
 
+  TEST(core, parser_silent) {
+    const auto s =
+        "-0110 12 -989 f7ad0 11000 527 169 fffffbca10 -1.01e-2 x "
+        "123xxx:ppp_~\\/&^123 __10x0x0x droW \":/path to/file\" "
+        "https://url.to/some/page.htm";
+
+    auto p = parser::wrap(s);
+
+    EXPECT_TRUE(p.parse(" %~b %~o %~d %~x %~B %~O %~D %~X %~f %~c "
+                        "%~s %~a %~A \"%~p\" %~u "));
+  }
+
   TEST(core, parser) {
     const auto s =
         "-0100 -17 -99 -f7 11 57 79 7ff 2.0e2 a abc:_~\\/&^123 "

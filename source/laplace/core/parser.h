@@ -60,7 +60,7 @@ namespace laplace::core {
 
     void push_offset();
 
-    /*  apply - if true, returns saved offset.
+    /*  apply - if true, reverts saved offset.
      */
     void pop_offset(bool apply);
 
@@ -69,6 +69,7 @@ namespace laplace::core {
 
   private:
     enum control_chars : char {
+      c_silent      = '~',
       c_whitespace  = ' ',
       c_line_end    = 'n',
       c_bin_integer = 'b',

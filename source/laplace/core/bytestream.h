@@ -19,33 +19,50 @@
 #include <sstream>
 
 namespace laplace {
-  class bytestreambuf final : public std::stringbuf {
+  class bytestreambuf : public std::streambuf {
   public:
-    bytestreambuf(const bytestreambuf &) = delete;
-    auto operator=(const bytestreambuf &) -> bytestreambuf & = delete;
-
     bytestreambuf(cref_vbyte bytes) {
-      _Init(reinterpret_cast<const char *>(bytes.data()),
-            bytes.size(), 2 /* _Constant from basic_stringbuf. */
-      );
+      auto p = const_cast<char *>(
+          reinterpret_cast<const char *>(bytes.data()));
+
+      this->setg(p, p, p + bytes.size());
     }
 
-    ~bytestreambuf() final = default;
+  protected:
+    auto seekoff(                    //
+        off_type                off, //
+        std::ios_base::seekdir  dir, //
+        std::ios_base::openmode which) -> pos_type override {
+
+      if (dir == std::ios_base::cur) {
+        gbump(static_cast<int>(off));
+      } else if (dir == std::ios_base::end) {
+        setg(eback(), egptr() + off, egptr());
+      } else if (dir == std::ios_base::beg) {
+        setg(eback(), eback() + off, egptr());
+      }
+
+      return gptr() - eback();
+    }
+
+    auto seekpos(                   //
+        pos_type                sp, //
+        std::ios_base::openmode which) -> pos_type override {
+
+      return seekoff(                 //
+          sp - pos_type(off_type(0)), //
+          std::ios_base::beg,         //
+          which);
+    }
   };
 
   /*  span<const uint8_t> wrapper for std::istream.
    */
-  class ibytestream final : public std::istream {
+  class ibytestream final : private bytestreambuf, public std::istream {
   public:
-    ibytestream(const ibytestream &) = delete;
-    auto operator=(const ibytestream &) -> ibytestream & = delete;
-
     ibytestream(cref_vbyte bytes) :
-        std::istream(new bytestreambuf(bytes)) { }
-
-    ~ibytestream() final {
-      delete rdbuf();
-    }
+        bytestreambuf(bytes), //
+        std::istream(static_cast<std::streambuf *>(this)) { }
   };
 }
 

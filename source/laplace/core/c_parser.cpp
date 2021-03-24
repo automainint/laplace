@@ -211,7 +211,7 @@ namespace laplace::core {
     bool is_done   = false;
     bool is_silent = false;
 
-    const char *p = format;
+    auto p = format;
 
     while (!is_done) {
       if (*p == '\0') {
@@ -228,7 +228,7 @@ namespace laplace::core {
         is_silent = false;
         p++;
 
-        if (*p == '~') {
+        if (*p == c_silent) {
           is_silent = true;
           p++;
         }
