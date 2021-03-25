@@ -208,14 +208,14 @@ namespace laplace {
     constexpr auto            size = (sizeof args + ...);
     std::array<uint8_t, size> result;
     write_bytes(result, args...);
-    return std::move(result);
+    return result;
   }
 
   template <typename... args_>
   inline auto pack_to_bytes(args_... args) {
     vbyte result(byte_count(args...));
     write_bytes(result, args...);
-    return std::move(result);
+    return result;
   }
 }
 

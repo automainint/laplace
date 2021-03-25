@@ -35,6 +35,10 @@ namespace laplace::engine {
   using vec3i = math::vector<3, intval>;
   using vec4i = math::vector<4, intval>;
 
+  using vec2z = math::vector<2, size_t>;
+  using vec3z = math::vector<3, size_t>;
+  using vec4z = math::vector<4, size_t>;
+
   using ref_vec2i = vec2i &;
   using ref_vec3i = vec3i &;
   using ref_vec4i = vec4i &;
