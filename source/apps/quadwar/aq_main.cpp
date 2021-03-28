@@ -71,7 +71,7 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR args, int) -> int {
 
 #if defined(_CONSOLE) && defined(LAPLACE_VERBOSE)
   std::cout << "\n  Press Enter... ";
-  static_cast<void>(getchar());
+  std::ignore = getchar();
 #endif
 
   return status;

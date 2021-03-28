@@ -95,12 +95,12 @@ namespace laplace::math {
   }
 
   template <typename type_, typename arg_>
-  constexpr auto round(const arg_ t) noexcept -> type_ {
+  inline auto round(const arg_ t) noexcept -> type_ {
     return static_cast<type_>(t);
   }
 
   template <typename type_, typename arg_>
-  constexpr auto round(const arg_ t) noexcept -> type_
+  inline auto round(const arg_ t) noexcept -> type_
       requires std::is_integral_v<type_> {
     return static_cast<type_>(std::round(t));
   }

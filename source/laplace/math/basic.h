@@ -30,7 +30,7 @@ namespace laplace::math {
       const scalar_type<type_> epsilon) noexcept -> bool;
 
   template <typename type_, typename arg_>
-  constexpr auto round(const arg_ t) noexcept -> type_;
+  inline auto round(const arg_ t) noexcept -> type_;
 
   template <typename type_, typename sqrt_>
   auto length(         //

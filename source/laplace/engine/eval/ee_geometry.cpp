@@ -19,10 +19,12 @@
 namespace laplace::engine::eval {
   using std::min, std::max, std::midpoint;
 
-  using _unary = intval (*)(intval);
+  using _unary = std::function<intval(intval)>;
 
   auto length(cref_vec3i v) -> intval {
-    return math::length<vec3i, _unary>(v, eval::sqrt);
+    return math::length<vec3i, _unary>(v, [](intval x) {
+      return eval::sqrt(x, 1);
+    });
   }
 
   void append(ref_box a, cref_vec3i point) {
@@ -146,17 +148,13 @@ namespace laplace::engine::eval {
     if (index == 0)
       return plane { a.min, { 0, 0, -1 } };
     if (index == 1)
-      return plane { { a.min.x(), a.min.y(), a.max.z() },
-                     { 0, 0, 1 } };
+      return plane { { a.min.x(), a.min.y(), a.max.z() }, { 0, 0, 1 } };
     if (index == 2)
-      return plane { { a.min.x(), a.min.y(), a.max.z() },
-                     { 0, -1, 0 } };
+      return plane { { a.min.x(), a.min.y(), a.max.z() }, { 0, -1, 0 } };
     if (index == 3)
-      return plane { { a.min.x(), a.max.y(), a.max.z() },
-                     { 0, 1, 0 } };
+      return plane { { a.min.x(), a.max.y(), a.max.z() }, { 0, 1, 0 } };
     if (index == 4)
-      return plane { { a.min.x(), a.max.y(), a.max.z() },
-                     { -1, 0, 0 } };
+      return plane { { a.min.x(), a.max.y(), a.max.z() }, { -1, 0, 0 } };
     return plane { a.max, { 1, 0, 0 } };
   }
 
@@ -233,8 +231,7 @@ namespace laplace::engine::eval {
     return math::cross(a, b);
   }
 
-  auto orientation(cref_triangle plane, cref_vec3i point)
-      -> intval {
+  auto orientation(cref_triangle plane, cref_vec3i point) -> intval {
     const auto n = raw_normal(plane);
     const auto r = point - plane[0];
     return math::dot(n, r);
@@ -347,8 +344,7 @@ namespace laplace::engine::eval {
   }
 
   auto contains_flat(cref_cylinder a, cref_vec3i point) -> bool {
-    if (auto dx = abs(point.x() - a.base.x());
-        dx - epsilon <= a.radius)
+    if (auto dx = abs(point.x() - a.base.x()); dx - epsilon <= a.radius)
       if (auto dy = abs(point.y() - a.base.y());
           dy - epsilon <= a.radius) {
         auto rr = dx * dx + dy * dy;
@@ -456,8 +452,7 @@ namespace laplace::engine::eval {
     auto contains_flat = [](intval x, intval y,
                             const cylinder &b) -> bool {
       if (auto dx = abs(b.base.x() - x); dx - epsilon <= b.radius)
-        if (auto dy = abs(b.base.y() - y);
-            dy - epsilon <= b.radius) {
+        if (auto dy = abs(b.base.y() - y); dy - epsilon <= b.radius) {
           auto r = dx * dx + dy * dy;
           return r - epsilon <= b.radius * b.radius;
         }
@@ -541,8 +536,7 @@ namespace laplace::engine::eval {
       return false;
     auto d = a.radius + b.radius;
     if (auto dx = abs(a.base.x() - b.base.x()); dx - epsilon <= d)
-      if (auto dy = abs(a.base.y() - b.base.y());
-          dy - epsilon <= d) {
+      if (auto dy = abs(a.base.y() - b.base.y()); dy - epsilon <= d) {
         auto r = dx * dx + dy * dy;
         return r - epsilon <= d;
       }
@@ -565,7 +559,7 @@ namespace laplace::engine::eval {
     if (r - epsilon >= d)
       return false;
 
-    auto l = eval::sqrt(r) - math::round<intval>(a.radius);
+    auto l = eval::sqrt(r, 1) - math::round<intval>(a.radius);
     auto h = a.radius * a.radius - l * l;
     if (a.base.z() - epsilon >= b.center.z() + h)
       return false;
@@ -595,17 +589,11 @@ namespace laplace::engine::eval {
     ray  stem { a.base, { 0, 0, 1 } };
     auto d = a.radius * a.radius;
 
-    if (square_distance(stem, ray { b[0], b[1] - b[0] }) -
-            epsilon <=
-        d)
+    if (square_distance(stem, ray { b[0], b[1] - b[0] }) - epsilon <= d)
       return true;
-    if (square_distance(stem, ray { b[1], b[2] - b[1] }) -
-            epsilon <=
-        d)
+    if (square_distance(stem, ray { b[1], b[2] - b[1] }) - epsilon <= d)
       return true;
-    if (square_distance(stem, ray { b[2], b[0] - b[2] }) -
-            epsilon <=
-        d)
+    if (square_distance(stem, ray { b[2], b[0] - b[2] }) - epsilon <= d)
       return true;
 
     return intersection(stem, plane_of(b)) + epsilon >= 0;
@@ -746,8 +734,8 @@ namespace laplace::engine::eval {
     const auto n     = r_cos < 0 ? b.normal : -b.normal;
     const auto v     = n * math::dot(n, a.direction);
 
-    return v.x() * v.x() >= epsilon ||
-           v.y() * v.y() >= epsilon || v.z() * v.z() >= epsilon;
+    return v.x() * v.x() >= epsilon || v.y() * v.y() >= epsilon ||
+           v.z() * v.z() >= epsilon;
   }
 
   auto intersects(cref_ray a, cref_triangle b) -> bool {
@@ -791,11 +779,9 @@ namespace laplace::engine::eval {
       return false;
     }
 
-    auto t0 = intersection(
-        ra, plane { cyl.base, vec3i { 0, 0, 1 } });
+    auto t0 = intersection(ra, plane { cyl.base, vec3i { 0, 0, 1 } });
 
-    if (t0 + epsilon >= 0 &&
-        contains_flat(cyl, point_of(ra, t0))) {
+    if (t0 + epsilon >= 0 && contains_flat(cyl, point_of(ra, t0))) {
       return true;
     }
 
@@ -804,8 +790,7 @@ namespace laplace::engine::eval {
                             cyl.base.z() + cyl.height },
                     vec3i { 0, 0, 1 } });
 
-    if (t1 + epsilon >= 0 &&
-        contains_flat(cyl, point_of(ra, t1))) {
+    if (t1 + epsilon >= 0 && contains_flat(cyl, point_of(ra, t1))) {
       return true;
     }
 
@@ -941,10 +926,9 @@ namespace laplace::engine::eval {
       return -safe_limit;
     }
 
-    auto delta = eval::sqrt(d);
+    auto delta = eval::sqrt(d, 1);
 
-    return (b <= 0 && -b >= delta ? -b - delta : -b + delta) /
-           (2 * a);
+    return (b <= 0 && -b >= delta ? -b - delta : -b + delta) / (2 * a);
   }
 
   auto intersection(cref_ray ra, cref_cylinder cyl) -> intval {
@@ -956,8 +940,7 @@ namespace laplace::engine::eval {
       return -safe_limit;
     }
 
-    auto t0 = intersection(
-        ra, plane { cyl.base, vec3i { 0, 0, 1 } });
+    auto t0 = intersection(ra, plane { cyl.base, vec3i { 0, 0, 1 } });
 
     auto t1 = intersection(
         ra, plane { vec3i { cyl.base.x(), cyl.base.y(),
