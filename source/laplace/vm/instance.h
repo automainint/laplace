@@ -18,8 +18,8 @@ namespace laplace::vm
         instance();
         ~instance();
 
-        void new_thread(size_t id, cref_vbyte args);
-        auto perform(size_t id, cref_vbyte args) -> vbyte final;
+        void new_thread(size_t id, span_cbyte args);
+        auto perform(size_t id, span_cbyte args) -> vbyte final;
 
         void tick();
 

@@ -1,3 +1,16 @@
+/*  laplace/network/n_udp_node.cpp
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#include "../core/string.h"
 #include "udp_node.h"
 #include "utils.h"
 
@@ -34,7 +47,7 @@ namespace laplace::network {
                          sizeof name);
 
     if (status == SOCKET_ERROR) {
-      verb("UDP: bind failed (code %d).", socket_error());
+      verb(fmt("UDP: bind failed (code %d).", socket_error()));
       return;
     }
 
@@ -43,7 +56,7 @@ namespace laplace::network {
 
       if (::getsockname(m_socket, reinterpret_cast<sockaddr *>(&name),
                         &len) == SOCKET_ERROR) {
-        verb("UDP: getsockname failed (code %d).", socket_error());
+        verb(fmt("UDP: getsockname failed (code %d).", socket_error()));
         ::closesocket(m_socket);
         m_socket = INVALID_SOCKET;
         return;
@@ -84,13 +97,14 @@ namespace laplace::network {
           m_is_connreset = true;
           break;
         } else if (socket_error() != socket_wouldblock()) {
-          verb("UDP: recvfrom failed (code %d).", socket_error());
+          verb(fmt("UDP: recvfrom failed (code %d).", socket_error()));
           break;
         } else if (mode == sync) {
           is_sync = set_mode(m_socket, sync);
 
           if (!is_sync) {
-            verb("UDP: ioctlsocket failed (code %d).", socket_error());
+            verb(fmt("UDP: ioctlsocket failed (code %d).",
+                     socket_error()));
             break;
           }
         } else
@@ -99,7 +113,8 @@ namespace laplace::network {
 
       if (is_sync) {
         if (!set_mode(m_socket, async)) {
-          verb("UDP: ioctlsocket failed (code %d).", socket_error());
+          verb(fmt(
+              "UDP: ioctlsocket failed (code %d).", socket_error()));
         }
       }
     }
@@ -119,7 +134,7 @@ namespace laplace::network {
   }
 
   auto udp_node::send_to(string_view address, uint16_t port,
-                         cref_vbyte seq) -> size_t {
+                         span_cbyte seq) -> size_t {
     size_t result = 0;
 
     sockaddr_in name;
@@ -132,7 +147,7 @@ namespace laplace::network {
         AF_INET, address.data(), &name.sin_addr.s_addr);
 
     if (status != 1) {
-      verb("UDP: inet_pton failed (code %d).", socket_error());
+      verb(fmt("UDP: inet_pton failed (code %d).", socket_error()));
     } else {
       result = send_internal(name, seq);
     }
@@ -166,16 +181,16 @@ namespace laplace::network {
     m_socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
     if (m_socket == INVALID_SOCKET) {
-      verb("UDP: socket failed (code %d).", socket_error());
+      verb(fmt("UDP: socket failed (code %d).", socket_error()));
       return;
     }
 
     if (!set_mode(m_socket, async)) {
-      verb("UDP: ioctlsocket failed (code %d).", socket_error());
+      verb(fmt("UDP: ioctlsocket failed (code %d).", socket_error()));
     }
   }
 
-  auto udp_node::send_internal(const sockaddr_in &name, cref_vbyte seq)
+  auto udp_node::send_internal(const sockaddr_in &name, span_cbyte seq)
       -> size_t {
     size_t count = 0;
 
@@ -198,15 +213,16 @@ namespace laplace::network {
 
           count += n;
         } else if (socket_error() != socket_wouldblock()) {
-          verb("UDP: sendto failed (code %d).", socket_error());
+          verb(fmt("UDP: sendto failed (code %d).", socket_error()));
           break;
         } else {
-          verb("UDP: sendto blocking.");
+          verb(fmt("UDP: sendto blocking."));
 
           is_sync = set_mode(m_socket, sync);
 
           if (!is_sync) {
-            verb("UDP: ioctlsocket failed (code %d).", socket_error());
+            verb(fmt("UDP: ioctlsocket failed (code %d).",
+                     socket_error()));
             break;
           }
         }
@@ -214,7 +230,8 @@ namespace laplace::network {
 
       if (is_sync) {
         if (!set_mode(m_socket, async)) {
-          verb("UDP: ioctlsocket failed (code %d).", socket_error());
+          verb(fmt(
+              "UDP: ioctlsocket failed (code %d).", socket_error()));
         }
       }
     }

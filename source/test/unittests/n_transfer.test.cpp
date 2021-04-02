@@ -29,8 +29,8 @@ namespace laplace::test {
       for (size_t i = 0; i < msg.size(); i++)
         msg[i] = static_cast<uint8_t>(rdev());
 
-      vector<cref_vbyte> msgs;
-      msgs.emplace_back(cref_vbyte { msg });
+      vector<span_cbyte> msgs;
+      msgs.emplace_back(span_cbyte { msg });
 
       transfer alice;
       transfer bob;

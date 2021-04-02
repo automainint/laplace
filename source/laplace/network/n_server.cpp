@@ -21,12 +21,13 @@ namespace laplace::network {
 
   server::~server() {
     if (is_verbose()) {
-      verb("Total bytes sent:     %zu", m_total_sent);
-      verb("Total bytes received: %zu", m_total_received);
+      verb(fmt("Total bytes sent:     %zu", m_total_sent));
+      verb(fmt("Total bytes received: %zu", m_total_received));
 
       if (m_total_received > 0) {
-        verb("Total loss: %zu bytes (%zu%%)", m_total_loss,
-             (m_total_loss * 100) / m_total_received);
+        verb(fmt("Corruption: %zu bytes (%zu%%)", m_total_loss,
+                 (m_total_loss * 100 + m_total_received / 2) /
+                     m_total_received));
       }
     }
   }
@@ -39,7 +40,7 @@ namespace laplace::network {
     m_verbose = verbose;
   }
 
-  void server::queue(cref_vbyte seq) { }
+  void server::queue(span_cbyte seq) { }
   void server::tick(uint64_t delta_msec) { }
   void server::reconnect() { }
 
@@ -187,16 +188,16 @@ namespace laplace::network {
     return m_overtake_factor;
   }
 
-  void server::dump(cref_vbyte bytes) {
-    if (m_verbose) [[unlikely]] {
-      ostringstream ss;
+  void server::dump(span_cbyte bytes) {
+    if (m_verbose) {
+      auto ss = ostringstream {};
       ss << " ";
       for (size_t i = 0; i < bytes.size(); i++) {
         ss << " " << setw(2) << hex << static_cast<unsigned>(bytes[i]);
         if ((i % 16) == 15)
           ss << "\n ";
       }
-      verb("\n  DUMP\n%s\n", ss.str().c_str());
+      verb(fmt("\n  DUMP\n%s\n", ss.str().c_str()));
     }
   }
 }

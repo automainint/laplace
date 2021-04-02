@@ -34,7 +34,7 @@ namespace laplace::network {
     void set_factory(engine::ptr_factory fac);
     void set_verbose(bool verbose) noexcept;
 
-    virtual void queue(cref_vbyte seq);
+    virtual void queue(span_cbyte seq);
     virtual void tick(uint64_t delta_msec);
 
     virtual void reconnect();
@@ -97,7 +97,7 @@ namespace laplace::network {
     [[nodiscard]] auto get_ping_timeout() const noexcept -> uint64_t;
     [[nodiscard]] auto get_overtake_factor() const noexcept -> size_t;
 
-    void dump(cref_vbyte bytes);
+    void dump(span_cbyte bytes);
 
   private:
     bool m_verbose      = default_verbose;

@@ -13,6 +13,7 @@
 #ifndef laplace_engine_prime_impact_h
 #define laplace_engine_prime_impact_h
 
+#include "../core/serial.h"
 #include "basic_impact.h"
 
 namespace laplace::engine {
@@ -52,31 +53,31 @@ namespace laplace::engine {
 
     [[nodiscard]] constexpr auto get_encoded_size() const -> size_t;
 
-    static constexpr void set_index(ref_vbyte seq, size_t index);
+    static constexpr void set_index(span_byte seq, size_t index);
 
-    [[nodiscard]] static constexpr auto get_id_unsafe(cref_vbyte seq)
+    [[nodiscard]] static constexpr auto get_id_unsafe(span_cbyte seq)
         -> uint16_t;
-    [[nodiscard]] static constexpr auto get_index_unsafe(cref_vbyte seq)
+    [[nodiscard]] static constexpr auto get_index_unsafe(span_cbyte seq)
         -> size_t;
-    [[nodiscard]] static constexpr auto get_time_unsafe(cref_vbyte seq)
+    [[nodiscard]] static constexpr auto get_time_unsafe(span_cbyte seq)
         -> uint64_t;
-    [[nodiscard]] static constexpr auto get_actor_unsafe(cref_vbyte seq)
+    [[nodiscard]] static constexpr auto get_actor_unsafe(span_cbyte seq)
         -> size_t;
 
-    [[nodiscard]] static constexpr auto get_id(cref_vbyte seq)
+    [[nodiscard]] static constexpr auto get_id(span_cbyte seq)
         -> uint16_t;
-    [[nodiscard]] static constexpr auto get_index(cref_vbyte seq)
+    [[nodiscard]] static constexpr auto get_index(span_cbyte seq)
         -> size_t;
-    [[nodiscard]] static constexpr auto get_time(cref_vbyte seq)
+    [[nodiscard]] static constexpr auto get_time(span_cbyte seq)
         -> uint64_t;
-    [[nodiscard]] static constexpr auto get_actor(cref_vbyte seq)
+    [[nodiscard]] static constexpr auto get_actor(span_cbyte seq)
         -> size_t;
 
-    [[nodiscard]] static inline auto get_string(cref_vbyte seq,
+    [[nodiscard]] static inline auto get_string(span_cbyte seq,
                                                 size_t     offset)
         -> std::u8string_view;
 
-    [[nodiscard]] static inline auto get_string(cref_vbyte seq,
+    [[nodiscard]] static inline auto get_string(span_cbyte seq,
                                                 size_t     offset,
                                                 size_t     size)
         -> std::u8string_view;

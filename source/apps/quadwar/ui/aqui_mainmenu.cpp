@@ -218,21 +218,21 @@ namespace quadwar_app::ui {
   }
 
   void mainmenu::set_map_size(size_t map_size) {
-    const auto s = to_u8string(u8"%zu", map_size);
+    const auto s = fmt(u8"%zu", map_size);
 
     m_c_map_size->set_text(s);
     m_c_map_size->set_cursor(s.size());
   }
 
   void mainmenu::set_player_count(size_t player_count) {
-    const auto s = to_u8string(u8"%zu", player_count);
+    const auto s = fmt(u8"%zu", player_count);
 
     m_c_player_count->set_text(s);
     m_c_player_count->set_cursor(s.size());
   }
 
   void mainmenu::set_unit_count(size_t unit_count) {
-    const auto s = to_u8string(u8"%zu", unit_count);
+    const auto s = fmt(u8"%zu", unit_count);
 
     m_c_unit_count->set_text(s);
     m_c_unit_count->set_cursor(s.size());

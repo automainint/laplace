@@ -10,12 +10,13 @@
  *  the MIT License for more details.
  */
 
+#include "../../core/string.h"
 #include "basic_cipher.h"
 
 namespace laplace::network::crypto {
   using std::copy, std::string_view, std::string;
 
-  void basic_cipher::set_remote_key(cref_vbyte key) {
+  void basic_cipher::set_remote_key(span_cbyte key) {
     set_ready(setup_remote_key(key) && setup());
   }
 
@@ -23,11 +24,11 @@ namespace laplace::network::crypto {
     m_is_verbose = is_verbose;
   }
 
-  auto basic_cipher::encrypt(cref_vbyte bytes) -> vbyte {
+  auto basic_cipher::encrypt(span_cbyte bytes) -> vbyte {
     return { bytes.begin(), bytes.end() };
   }
 
-  auto basic_cipher::decrypt(cref_vbyte bytes) -> vbyte {
+  auto basic_cipher::decrypt(span_cbyte bytes) -> vbyte {
     return { bytes.begin(), bytes.end() };
   }
 
@@ -35,11 +36,11 @@ namespace laplace::network::crypto {
     return m_is_ready;
   }
 
-  auto basic_cipher::get_public_key() const noexcept -> cref_vbyte {
+  auto basic_cipher::get_public_key() const noexcept -> span_cbyte {
     return { m_public_key.data(), m_public_key.size() };
   }
 
-  auto basic_cipher::get_mutual_key() const noexcept -> cref_vbyte {
+  auto basic_cipher::get_mutual_key() const noexcept -> span_cbyte {
     return { m_mutual_key.data(), m_mutual_key.size() };
   }
 
@@ -50,18 +51,18 @@ namespace laplace::network::crypto {
   void basic_cipher::verb_error(string_view sender,
                                 string_view message) const {
     if (m_is_verbose) {
-      verb("%s: %s", string(sender).c_str(),
-           string(message).c_str());
+      verb(fmt(
+          "%s: %s", string(sender).c_str(), string(message).c_str()));
     }
   }
 
-  auto basic_cipher::setup_remote_key(cref_vbyte key) -> bool {
-    error(__FUNCTION__, "Not implemented.");
+  auto basic_cipher::setup_remote_key(span_cbyte key) -> bool {
+    error_("Not implemented.", __FUNCTION__);
     return false;
   }
 
   auto basic_cipher::setup() -> bool {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
     return false;
   }
 
@@ -69,15 +70,15 @@ namespace laplace::network::crypto {
     m_is_ready = is_ready;
   }
 
-  void basic_cipher::set_private_key(cref_vbyte key) noexcept {
+  void basic_cipher::set_private_key(span_cbyte key) noexcept {
     m_private_key = vbyte { key.begin(), key.end() };
   }
 
-  void basic_cipher::set_public_key(cref_vbyte key) noexcept {
+  void basic_cipher::set_public_key(span_cbyte key) noexcept {
     m_public_key = vbyte { key.begin(), key.end() };
   }
 
-  void basic_cipher::set_mutual_key(cref_vbyte key) noexcept {
+  void basic_cipher::set_mutual_key(span_cbyte key) noexcept {
     m_mutual_key = vbyte { key.begin(), key.end() };
   }
 
@@ -89,7 +90,7 @@ namespace laplace::network::crypto {
     m_loss_count += count;
   }
 
-  auto basic_cipher::get_private_key() const noexcept -> cref_vbyte {
+  auto basic_cipher::get_private_key() const noexcept -> span_cbyte {
     return { m_private_key.data(), m_private_key.size() };
   }
 }

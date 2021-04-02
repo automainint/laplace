@@ -26,25 +26,25 @@ namespace laplace::engine {
     virtual ~basic_factory() = default;
 
     virtual auto parse(std::string_view command) const -> vbyte;
-    virtual auto print(cref_vbyte seq) const -> std::string;
+    virtual auto print(span_cbyte seq) const -> std::string;
 
-    virtual auto decode(cref_vbyte seq) const -> ptr_prime_impact;
+    virtual auto decode(span_cbyte seq) const -> ptr_prime_impact;
 
     auto parse_multi(std::string_view commands) const
         -> std::vector<vbyte>;
-    auto print_multi(std::span<const cref_vbyte> seqs) const
+    auto print_multi(std::span<const span_cbyte> seqs) const
         -> std::string;
 
     static auto parse_native(std::span<const std::string_view> table,
                              std::string_view command) -> vbyte;
 
     static auto print_native(std::span<const std::string_view> table,
-                             cref_vbyte seq) -> std::string;
+                             span_cbyte seq) -> std::string;
 
-    static auto decode_native(cref_vbyte seq) -> ptr_prime_impact;
+    static auto decode_native(span_cbyte seq) -> ptr_prime_impact;
 
     template <typename impact_type_>
-    static auto make(cref_vbyte seq) -> ptr_prime_impact;
+    static auto make(span_cbyte seq) -> ptr_prime_impact;
   };
 
   using ptr_factory = std::shared_ptr<basic_factory>;

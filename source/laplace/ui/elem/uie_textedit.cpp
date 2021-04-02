@@ -1,4 +1,4 @@
-#include "../../core/utils.h"
+#include "../../core/utf8.h"
 #include "../../platform/keys.h"
 #include "../context.h"
 #include "textedit.h"
@@ -106,7 +106,7 @@ namespace laplace::ui::elem {
             for (size_t i = 0; i < cursor;) {
               n = i;
 
-              if (!utf8_decode(text, i, buf))
+              if (!utf8::decode(text, i, buf))
                 break;
             }
 
@@ -118,9 +118,9 @@ namespace laplace::ui::elem {
             if (!f || f(c)) {
               if (textedit_state.length_limit == 0 ||
                   text.size() < textedit_state.length_limit)
-                if (!utf8_encode(c, text, cursor))
-                  error(
-                      __FUNCTION__, "Unable to encode UTF-8 string.");
+                if (!utf8::encode(c, text, cursor))
+                  error_(
+                      "Unable to encode UTF-8 string.", __FUNCTION__);
             }
           }
         }

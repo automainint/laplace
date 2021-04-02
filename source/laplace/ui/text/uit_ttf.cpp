@@ -24,7 +24,7 @@ namespace laplace::ui::text {
     auto e = FT_Init_FreeType(&m_library);
 
     if (e) {
-      error(__FUNCTION__, "FT_Init_FreeType failed.");
+      error_("FT_Init_FreeType failed.", __FUNCTION__);
       m_library = nullptr;
     }
   }
@@ -44,7 +44,7 @@ namespace laplace::ui::text {
           m_library, file_name, static_cast<FT_Long>(index), &face);
 
       if (e) {
-        error(__FUNCTION__, "FT_New_Face failed.");
+        error_("FT_New_Face failed.", __FUNCTION__);
         face = nullptr;
       }
     }
@@ -62,7 +62,7 @@ namespace laplace::ui::text {
                                   static_cast<FT_Long>(index), &face);
 
       if (e) {
-        error(__FUNCTION__, "FT_New_Memory_Face failed.");
+        error_("FT_New_Memory_Face failed.", __FUNCTION__);
         face = nullptr;
       }
     }
@@ -116,7 +116,7 @@ namespace laplace::ui::text {
       ifstream in(file_name.data());
 
       if (!in) {
-        error(__FUNCTION__, "Can't open file.");
+        error_("Can't open file.", __FUNCTION__);
         return;
       }
 
@@ -133,7 +133,7 @@ namespace laplace::ui::text {
     }
   }
 
-  void ttf::load(cref_vbyte bytes) {
+  void ttf::load(span_cbyte bytes) {
     done();
 
     m_face = m_lib->new_memory_face(bytes.data(), bytes.size(), 0);
@@ -153,7 +153,7 @@ namespace laplace::ui::text {
           static_cast<FT_F26Dot6>(height * 64), 300, 300);
 
       if (e) {
-        error(__FUNCTION__, "FT_Set_Char_Size failed.");
+        error_("FT_Set_Char_Size failed.", __FUNCTION__);
       }
     }
   }
@@ -164,7 +164,7 @@ namespace laplace::ui::text {
                                   static_cast<FT_UInt>(height));
 
       if (e) {
-        error(__FUNCTION__, ": FT_Set_Pixel_Sizes failed.");
+        error_("FT_Set_Pixel_Sizes failed.", __FUNCTION__);
       }
     }
   }

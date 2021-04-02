@@ -15,10 +15,10 @@
 
 namespace laplace::render {
   void mesh::setup(ptr_model source) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void mesh::adjust(cref_motion state) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 }

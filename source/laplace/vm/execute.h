@@ -26,10 +26,10 @@ namespace laplace::vm::execute {
   constexpr uint64_t default_instructions_limit = -1;
 
   using fn_fork =
-      std::function<void(size_t address, cref_vbyte args)>;
+      std::function<void(size_t address, span_cbyte args)>;
 
   using fn_call_external =
-      std::function<vbyte(size_t id, cref_vbyte args)>;
+      std::function<vbyte(size_t id, span_cbyte args)>;
 
   using fn_export = std::function<void(size_t id, size_t address)>;
 
@@ -42,21 +42,21 @@ namespace laplace::vm::execute {
 
   using ref_state = state &;
 
-  auto read_inst(cref_vbyte code, ref_state s) -> uint8_t;
+  auto read_inst(span_cbyte code, ref_state s) -> uint8_t;
 
-  auto read_arg(cref_vbyte code, ref_state s, ref_heap heap)
+  auto read_arg(span_cbyte code, ref_state s, ref_heap heap)
       -> uint64_t;
 
-  auto read_const(cref_vbyte code, ref_state s, int size)
+  auto read_const(span_cbyte code, ref_state s, int size)
       -> uint64_t;
 
-  auto read_stack(cref_vbyte stack, int size, size_t offset)
+  auto read_stack(span_cbyte stack, int size, size_t offset)
       -> uint64_t;
 
   auto read_heap(ref_heap heap, int size, size_t address)
       -> uint64_t;
 
-  void write_stack(ref_vbyte stack, int size, uint64_t value,
+  void write_stack(span_byte stack, int size, uint64_t value,
                    size_t address);
 
   void write_heap(ref_heap heap, int size, uint64_t value,
@@ -114,7 +114,7 @@ namespace laplace::vm::execute {
   void do_fix_sin(ref_state s, ref_heap heap);
   void do_fix_cos(ref_state s, ref_heap heap);
 
-  auto tick(ref_state s, cref_vbyte code, ref_heap heap,
+  auto tick(ref_state s, span_cbyte code, ref_heap heap,
             fn_fork fork, fn_call_external call_ext,
             fn_export exp, size_t instr_limit) -> size_t;
 }

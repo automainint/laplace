@@ -171,8 +171,7 @@ namespace quadwar_app {
 
     save_host_info(server->get_port());
 
-    m_lobby.show_info(
-        to_u8string(u8"Game host (port %hu)", server->get_port()));
+    m_lobby.show_info(fmt(u8"Game host (port %hu)", server->get_port()));
 
     m_lobby.set_start_enabled(true);
   }
@@ -204,16 +203,16 @@ namespace quadwar_app {
       f >> port;
 
       if (f) {
-        verb("Host address found: %s:%hu", network::localhost, port);
-        return to_string("%s:%hu", network::localhost, port);
+        verb(fmt("Host address found: %s:%hu", network::localhost, port));
+        return fmt("%s:%hu", network::localhost, port);
       }
     } else if (auto f2 = ifstream(session::host_info_file_debug); f2) {
       auto port = network::any_port;
       f2 >> port;
 
       if (f2) {
-        verb("Host address found: %s:%hu", network::localhost, port);
-        return to_string("%s:%hu", network::localhost, port);
+        verb(fmt("Host address found: %s:%hu", network::localhost, port));
+        return fmt("%s:%hu", network::localhost, port);
       }
     }
 

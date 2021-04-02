@@ -35,16 +35,14 @@ namespace laplace::engine {
       std::u8string, core::parser;
 
   auto basic_factory::parse(string_view command) const -> vbyte {
-    return parse_native(
-        { ids::table, ids::_native_count }, command);
+    return parse_native({ ids::table, ids::_native_count }, command);
   }
 
-  auto basic_factory::print(cref_vbyte seq) const -> string {
+  auto basic_factory::print(span_cbyte seq) const -> string {
     return print_native({ ids::table, ids::_native_count }, seq);
   }
 
-  auto basic_factory::decode(cref_vbyte seq) const
-      -> ptr_prime_impact {
+  auto basic_factory::decode(span_cbyte seq) const -> ptr_prime_impact {
     return decode_native(seq);
   }
 
@@ -69,7 +67,7 @@ namespace laplace::engine {
     return result;
   }
 
-  auto basic_factory::print_multi(span<const cref_vbyte> seqs) const
+  auto basic_factory::print_multi(span<const span_cbyte> seqs) const
       -> string {
     string cmds;
 
@@ -93,9 +91,9 @@ namespace laplace::engine {
     auto col = in.get_column();
 
     if (!in.parse(" %a ", &u8_id)) {
-      error(__FUNCTION__,
-            "Invalid syntax. Id expected (%line %dz, col %dz).",
-            lin, col);
+      error_(fmt("Invalid syntax. Id expected (%line %dz, col %dz).",
+                 lin, col),
+             __FUNCTION__);
       return {};
     }
 
@@ -110,13 +108,13 @@ namespace laplace::engine {
     }
 
     if (id == ids::undefined) {
-      error(__FUNCTION__,
-            "Unknown command (line %dz, col %dz).", lin, col);
+      error_(fmt("Unknown command (line %dz, col %dz).", lin, col),
+             __FUNCTION__);
       return {};
     }
 
     vbyte seq(2);
-    wr<uint16_t>(seq, 0, id);
+    serial::wr<uint16_t>(seq, 0, id);
 
     uint64_t x;
 
@@ -125,8 +123,10 @@ namespace laplace::engine {
 
     while (in.parse(" %X ", &x)) {
       if (x != (x & 0xff)) {
-        error(__FUNCTION__, "Invalid syntax. Byte expected (line %dz, col %dz).",
-              lin, col);
+        error_(
+            fmt("Invalid syntax. Byte expected (line %dz, col %dz).",
+                lin, col),
+            __FUNCTION__);
         return {};
       }
 
@@ -134,9 +134,9 @@ namespace laplace::engine {
     }
 
     if (!in.is_eof()) {
-      error(__FUNCTION__,
-            "Invalid syntax. EOF expected (line %dz, col %dz).",
-            in.get_line(), in.get_column());
+      error_(fmt("Invalid syntax. EOF expected (line %dz, col %dz).",
+                 in.get_line(), in.get_column()),
+             __FUNCTION__);
       return {};
     }
 
@@ -145,7 +145,7 @@ namespace laplace::engine {
 
   auto basic_factory::print_native(  //
       span<const string_view> table, //
-      cref_vbyte              seq) -> string {
+      span_cbyte              seq) -> string {
 
     constexpr size_t max_id_size = 14;
     string           s;
@@ -158,7 +158,7 @@ namespace laplace::engine {
         s.append(table[id]);
 
         for (size_t i = 2; i < seq.size(); i++) {
-          s.append(to_string(" %02x", seq[i]));
+          s.append(fmt(" %02x", seq[i]));
         }
       }
     }
@@ -166,7 +166,7 @@ namespace laplace::engine {
     return s;
   }
 
-  auto basic_factory::decode_native(cref_vbyte seq)
+  auto basic_factory::decode_native(span_cbyte seq)
       -> ptr_prime_impact {
 
     if (public_key::scan(seq))

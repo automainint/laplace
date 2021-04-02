@@ -32,8 +32,8 @@ namespace quadwar_app::protocol {
         slot_create(index, time, id_actor, is_local) { }
 
     inline void perform(world w) const override {
-      verb(" :: event  Quadwar/slot_create: %zu %s", get_actor(),
-           is_local() ? "local" : "remote");
+      verb(fmt(" :: event  Quadwar/slot_create: %zu %s", get_actor(),
+           is_local() ? "local" : "remote"));
 
       w.emplace(
           std::make_shared<object::player>(is_local()), get_actor());
@@ -42,7 +42,7 @@ namespace quadwar_app::protocol {
           w.get_entity(w.get_root()), get_actor());
     }
 
-    static inline auto decode(cref_vbyte seq) {
+    static inline auto decode(span_cbyte seq) {
       return qw_slot_create { get_index(seq), get_time(seq),
                               get_actor(seq), get_local_flag(seq) > 0 };
     }

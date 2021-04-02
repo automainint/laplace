@@ -45,7 +45,7 @@ namespace laplace::format::image {
     (*result)["height"] = data.get_height();
     (*result)["depth"]  = data.get_depth();
 
-    (*result)["pixels"] = cref_vbyte(
+    (*result)["pixels"] = span_cbyte(
         data.get_data(), data.get_data() + data.get_size_bytes());
 
     return result;

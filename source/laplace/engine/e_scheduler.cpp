@@ -58,8 +58,8 @@ namespace laplace::engine {
                                     overthreading_limit;
 
     if (thread_count > thread_count_limit) {
-      verb("Scheduler: Invalid thread count %zu (max %zu).",
-           __FUNCTION__, thread_count, thread_count_limit);
+      verb(fmt("Scheduler: Invalid thread count %zu (max %zu).",
+               thread_count, thread_count_limit));
 
       thread_count = thread_count_limit;
     }

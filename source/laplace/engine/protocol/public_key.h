@@ -31,7 +31,7 @@ namespace laplace::engine::protocol {
       set_encoded_size(n_key);
     }
 
-    constexpr public_key(uint16_t cipher_id, cref_vbyte key) {
+    constexpr public_key(uint16_t cipher_id, span_cbyte key) {
       m_cipher_id = cipher_id;
       m_key_size  = std::min(key.size(), max_key_size);
 
@@ -42,11 +42,11 @@ namespace laplace::engine::protocol {
                 m_key.begin());
     }
 
-    static constexpr auto get_cipher(cref_vbyte seq) {
-      return rd<uint16_t>(seq, n_cipher);
+    static constexpr auto get_cipher(span_cbyte seq) {
+      return serial::rd<uint16_t>(seq, n_cipher);
     }
 
-    static constexpr auto get_key(cref_vbyte seq) -> cref_vbyte {
+    static constexpr auto get_key(span_cbyte seq) -> span_cbyte {
       if (seq.size() > n_key) {
         return { seq.begin() + n_key, seq.end() };
       }
@@ -55,15 +55,16 @@ namespace laplace::engine::protocol {
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
-      write_bytes(bytes, id, m_cipher_id,
-                  std::span<const uint8_t>(m_key.data(), m_key_size));
+      serial::write_bytes(
+          bytes, id, m_cipher_id,
+          std::span<const uint8_t>(m_key.data(), m_key_size));
     }
 
-    static constexpr auto scan(cref_vbyte seq) -> bool {
+    static constexpr auto scan(span_cbyte seq) -> bool {
       return seq.size() >= n_key && get_id(seq) == id;
     }
 
-    static inline auto decode(cref_vbyte seq) {
+    static inline auto decode(span_cbyte seq) {
       return public_key { get_cipher(seq), get_key(seq) };
     }
 

@@ -41,6 +41,10 @@ namespace quadwar_app::object::sets {
     land_set_tile,
     land_set_tiles,
     land_get_tiles,
+    land_get_start_loc,
+    land_set_start_loc,
+    land_get_start_locs,
+    land_set_start_locs,
 
     _count
   };

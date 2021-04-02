@@ -45,7 +45,7 @@ namespace laplace::graphics::tridi {
   }
 
   void mesh_buffer::setup(mesh_buffer::cref_vvertex vertices,
-                          cref_vuint32 indices, bool is_static) {
+                          span_cuint32 indices, bool is_static) {
     m_count = indices.size();
 
     glBindBuffer(GL_ARRAY_BUFFER, m_ids[0]);

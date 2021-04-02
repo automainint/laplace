@@ -13,21 +13,21 @@
 #ifndef laplace_engine_eval_maze_h
 #define laplace_engine_eval_maze_h
 
-#include "pathmap.h"
+#include "../defs.h"
 
 namespace laplace::engine::eval::maze {
-  void generate(                        //
-      const vec2z                 size, //
-      const std::span<intval>     map,  //
-      const std::function<bool()> random);
+  static constexpr uint8_t walkable = 0;
+  static constexpr uint8_t wall     = 1;
 
-  void stretch(                                 //
-      const vec2z                    dst_size,  //
-      const std::span<uint8_t>       dst,       //
-      const vec2z                    src_size,  //
-      const std::span<const uint8_t> src,       //
-      const size_t                   wall_size, //
-      const size_t                   gate_size) noexcept;
+  using fn_random = std::function<uint64_t()>;
+
+  void generate(const vec2z size, const span_byte map,
+                const fn_random random);
+
+  void stretch(const vec2z dst_size, const span_byte dst,
+               const vec2z src_size, const span_cbyte src,
+               const size_t tunnel_size,
+               const size_t gate_size) noexcept;
 }
 
 #endif

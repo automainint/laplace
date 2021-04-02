@@ -51,7 +51,7 @@ namespace laplace::stem {
     m_gl     = make_shared<glcontext>(m_window);
 
     if (!gl::is_ok()) {
-      error(__FUNCTION__, "Initialization failed.");
+      error_("Initialization failed.", __FUNCTION__);
       return 0;
     }
 
@@ -172,7 +172,7 @@ namespace laplace::stem {
 
   auto application::open(wstring_view file_name)
       -> unique_ptr<istream> {
-    verb("Load: '%s'", to_string(file_name).c_str());
+    verb(fmt("Load: '%s'", to_string(file_name).c_str()));
 
     if (embedded::scan(file_name)) {
       return make_unique<ibytestream>(embedded::open(file_name));

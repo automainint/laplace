@@ -29,7 +29,7 @@ namespace laplace {
     WSAData data;
 
     if (WSAStartup(version, &data) != ERROR_SUCCESS) {
-      error(__FUNCTION__, "WSAStartup failed.");
+      error_("WSAStartup failed.", __FUNCTION__);
       m_is_ok = false;
     }
   }
@@ -45,19 +45,19 @@ namespace laplace {
     return WSAGetLastError();
   }
 
-  auto socket_wouldblock() -> int {
+  auto socket_wouldblock() noexcept -> int {
     return WSAEWOULDBLOCK;
   }
 
-  auto socket_msgsize() -> int {
+  auto socket_msgsize() noexcept -> int {
     return WSAEMSGSIZE;
   }
 
-  auto socket_isconn() -> int {
+  auto socket_isconn() noexcept -> int {
     return WSAEISCONN;
   }
 
-  auto socket_connreset() -> int {
+  auto socket_connreset() noexcept -> int {
     return WSAECONNRESET;
   }
 #else
@@ -71,19 +71,19 @@ namespace laplace {
     return errno;
   }
 
-  auto socket_wouldblock() -> int {
+  auto socket_wouldblock() noexcept -> int {
     return EWOULDBLOCK;
   }
 
-  auto socket_msgsize() -> int {
+  auto socket_msgsize() noexcept -> int {
     return EMSGSIZE;
   }
 
-  auto socket_isconn() -> int {
+  auto socket_isconn() noexcept -> int {
     return EISCONN;
   }
 
-  auto socket_connreset() -> int {
+  auto socket_connreset() noexcept -> int {
     return ECONNRESET;
   }
 #endif

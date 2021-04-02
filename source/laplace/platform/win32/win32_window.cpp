@@ -306,7 +306,7 @@ namespace laplace::win32 {
     load_icon(wcex.hIcon, wcex.hIconSm);
 
     if (!RegisterClassExW(&wcex)) {
-      error(__FUNCTION__, "RegisterClassEx failed.");
+      error_("RegisterClassEx failed.", __FUNCTION__);
       return false;
     }
 
@@ -329,7 +329,7 @@ namespace laplace::win32 {
         SetWindowLongPtr(m_handle, GWLP_USERDATA,
                          reinterpret_cast<LONG_PTR>(this));
       } else {
-        error(__FUNCTION__, "CreateWindowEx failed.");
+        error_("CreateWindowEx failed.", __FUNCTION__);
       }
     }
   }
@@ -394,16 +394,16 @@ namespace laplace::win32 {
 
       if (ChangeDisplaySettings(&mode, CDS_FULLSCREEN) !=
           DISP_CHANGE_SUCCESSFUL) {
-        error(
-            __FUNCTION__, "Toggle on. ChangeDisplaySettings failed.");
+        error_(
+            "Toggle on. ChangeDisplaySettings failed.", __FUNCTION__);
       }
     } else {
       /*  Reset to default settings.
        */
 
       if (ChangeDisplaySettings(nullptr, 0) != DISP_CHANGE_SUCCESSFUL) {
-        error(__FUNCTION__,
-              "Toggle off. ChangeDisplaySettings failed.");
+        error_("Toggle off. ChangeDisplaySettings failed.",
+               __FUNCTION__);
       }
     }
   }

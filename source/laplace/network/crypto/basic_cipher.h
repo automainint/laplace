@@ -28,16 +28,16 @@ namespace laplace::network::crypto {
     basic_cipher()          = default;
     virtual ~basic_cipher() = default;
 
-    void set_remote_key(cref_vbyte key);
+    void set_remote_key(span_cbyte key);
     void set_verbose(bool is_verbose) noexcept;
 
-    [[nodiscard]] virtual auto encrypt(cref_vbyte bytes) -> vbyte;
-    [[nodiscard]] virtual auto decrypt(cref_vbyte bytes) -> vbyte;
+    [[nodiscard]] virtual auto encrypt(span_cbyte bytes) -> vbyte;
+    [[nodiscard]] virtual auto decrypt(span_cbyte bytes) -> vbyte;
 
     [[nodiscard]] auto is_ready() const noexcept -> bool;
 
-    [[nodiscard]] auto get_public_key() const noexcept -> cref_vbyte;
-    [[nodiscard]] auto get_mutual_key() const noexcept -> cref_vbyte;
+    [[nodiscard]] auto get_public_key() const noexcept -> span_cbyte;
+    [[nodiscard]] auto get_mutual_key() const noexcept -> span_cbyte;
 
     [[nodiscard]] auto get_loss_count() const noexcept -> size_t;
 
@@ -45,19 +45,19 @@ namespace laplace::network::crypto {
     void verb_error(std::string_view sender,
                     std::string_view message) const;
 
-    [[nodiscard]] virtual auto setup_remote_key(cref_vbyte key) -> bool;
+    [[nodiscard]] virtual auto setup_remote_key(span_cbyte key) -> bool;
     [[nodiscard]] virtual auto setup() -> bool;
 
     void set_ready(bool is_ready) noexcept;
 
-    void set_private_key(cref_vbyte key) noexcept;
-    void set_public_key(cref_vbyte key) noexcept;
-    void set_mutual_key(cref_vbyte key) noexcept;
+    void set_private_key(span_cbyte key) noexcept;
+    void set_public_key(span_cbyte key) noexcept;
+    void set_mutual_key(span_cbyte key) noexcept;
 
     void reset_loss_count() noexcept;
     void add_bytes_lost(size_t count) noexcept;
 
-    [[nodiscard]] auto get_private_key() const noexcept -> cref_vbyte;
+    [[nodiscard]] auto get_private_key() const noexcept -> span_cbyte;
 
   private:
     bool   m_is_ready   = false;

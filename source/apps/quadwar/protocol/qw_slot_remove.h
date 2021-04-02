@@ -31,7 +31,7 @@ namespace quadwar_app::protocol {
         slot_remove(index, time, id_actor) { }
 
     inline void perform(world w) const override {
-      verb(" :: event  Quadwar/slot_remove: %zu", get_actor());
+      verb(fmt(" :: event  Quadwar/slot_remove: %zu", get_actor()));
 
       object::root::slot_remove(
           w.get_entity(w.get_root()), get_actor());
@@ -39,7 +39,7 @@ namespace quadwar_app::protocol {
       w.remove(get_actor());
     }
 
-    static inline auto decode(cref_vbyte seq) {
+    static inline auto decode(span_cbyte seq) {
       return qw_slot_remove { get_index(seq), get_time(seq),
                               get_actor(seq) };
     }

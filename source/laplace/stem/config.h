@@ -94,30 +94,19 @@ namespace laplace::stem::config {
   constexpr auto default_shader_flat_sprite_fragment =
       u8"flat/sprite.frag";
 
-  auto scan_flag(            //
-      int argc, char **argv, //
-      char c                 //
-      ) -> bool;
+  auto scan_flag(int argc, char **argv, char c) -> bool;
 
-  auto scan_flag(            //
-      int argc, char **argv, //
-      std::string_view name  //
-      ) -> bool;
+  auto scan_flag(int argc, char **argv, std::string_view name) -> bool;
 
-  auto scan_flag(            //
-      int argc, char **argv, //
-      char             c,    //
-      std::string_view name  //
-      ) -> bool;
+  auto scan_flag(int argc, char **argv, char c, std::string_view name)
+      -> bool;
 
   auto get_default() -> core::family;
 
   auto parse_cmdline(const char *args) -> std::pair<int, char **>;
 
-  auto load(                                    //
-      int argc, char **argv,                    //
-      core::cref_family def_cfg = get_default() //
-      ) -> core::family;
+  auto load(int argc, char **argv,
+            core::cref_family def_cfg = get_default()) -> core::family;
 
   void save(core::cref_family cfg);
 }

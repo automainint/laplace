@@ -15,7 +15,10 @@
 
 #include "basic_cipher.h"
 
-#define WC_NO_HARDEN
+#ifndef WC_NO_HARDEN
+#define WC_NO_HARDEN 1
+#endif
+
 #include <wolfssl/wolfcrypt/dh.h>
 #include <wolfssl/wolfcrypt/random.h>
 
@@ -34,7 +37,7 @@ namespace laplace::network::crypto {
     ~deffiehellman() override = default;
 
   protected:
-    auto setup_remote_key(cref_vbyte key) -> bool override;
+    auto setup_remote_key(span_cbyte key) -> bool override;
 
   private:
     bool   m_is_ok  = false;

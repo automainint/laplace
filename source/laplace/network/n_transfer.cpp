@@ -10,12 +10,12 @@
  *  the MIT License for more details.
  */
 
-#include "../core/utils.h"
+#include "../core/serial.h"
 #include "transfer.h"
 
 namespace laplace::network {
   using std::min, std::unique_ptr, crypto::basic_cipher, std::span,
-      std::vector;
+      std::vector, serial::rd, serial::wr;
 
   void transfer::set_verbose(bool is_verbose) noexcept {
     m_verbose = is_verbose;
@@ -25,24 +25,24 @@ namespace laplace::network {
     m_cipher = std::move(cipher);
   }
 
-  void transfer::set_remote_key(cref_vbyte key) {
+  void transfer::set_remote_key(span_cbyte key) {
     if (m_cipher) {
       m_cipher->set_remote_key(key);
     } else {
-      error(__FUNCTION__, "No cipher.");
+      error_("No cipher.", __FUNCTION__);
     }
   }
 
-  auto transfer::pack(span<const cref_vbyte> data) -> vbyte {
+  auto transfer::pack(span<const span_cbyte> data) -> vbyte {
     return pack_internal(data, mark_plain);
   }
 
-  auto transfer::unpack(cref_vbyte data) -> vector<vbyte> {
+  auto transfer::unpack(span_cbyte data) -> vector<vbyte> {
     m_loss_count = 0;
     return unpack_internal(data, mark_plain);
   }
 
-  auto transfer::encode(span<const cref_vbyte> data) -> vbyte {
+  auto transfer::encode(span<const span_cbyte> data) -> vbyte {
     if (is_encrypted()) {
       return m_cipher->encrypt(pack_internal(data, mark_encrypted));
     }
@@ -50,7 +50,7 @@ namespace laplace::network {
     return pack_internal(data, mark_plain);
   }
 
-  auto transfer::decode(cref_vbyte data) -> vector<vbyte> {
+  auto transfer::decode(span_cbyte data) -> vector<vbyte> {
     if (is_encrypted()) {
       const auto plain = m_cipher->decrypt(data);
       m_loss_count     = m_cipher->get_loss_count();
@@ -61,21 +61,21 @@ namespace laplace::network {
     return unpack_internal(data, mark_plain);
   }
 
-  auto transfer::get_public_key() const noexcept -> cref_vbyte {
+  auto transfer::get_public_key() const noexcept -> span_cbyte {
     if (m_cipher) {
       return m_cipher->get_public_key();
     }
 
-    error(__FUNCTION__, "No cipher.");
+    error_("No cipher.", __FUNCTION__);
     return {};
   }
 
-  auto transfer::get_mutual_key() const noexcept -> cref_vbyte {
+  auto transfer::get_mutual_key() const noexcept -> span_cbyte {
     if (m_cipher) {
       return m_cipher->get_mutual_key();
     }
 
-    error(__FUNCTION__, "No cipher.");
+    error_("No cipher.", __FUNCTION__);
     return {};
   }
 
@@ -87,11 +87,11 @@ namespace laplace::network {
     return m_loss_count;
   }
 
-  auto transfer::get_data_overhead() -> size_t {
+  auto transfer::get_data_overhead() noexcept -> size_t {
     return n_data;
   }
 
-  auto transfer::check_sum(cref_vbyte data) -> uint64_t {
+  auto transfer::check_sum(span_cbyte data) -> uint64_t {
     uint64_t sum = 0;
 
     for (size_t i = 0; i < data.size(); i += sizeof sum) {
@@ -109,7 +109,7 @@ namespace laplace::network {
   }
 
   auto transfer::pack_internal(    //
-      span<const cref_vbyte> data, //
+      span<const span_cbyte> data, //
       const uint16_t         mark) -> vbyte {
 
     size_t size = 0;
@@ -141,7 +141,7 @@ namespace laplace::network {
   }
 
   auto transfer::unpack_internal( //
-      cref_vbyte     data,        //
+      span_cbyte     data,        //
       const uint16_t mark) -> vector<vbyte> {
 
     vector<vbyte> buf;
@@ -171,7 +171,7 @@ namespace laplace::network {
   }
 
   auto transfer::scan( //
-      cref_vbyte data, //
+      span_cbyte data, //
       uint16_t   mark) const noexcept -> size_t {
 
     if (rd<uint16_t>(data, n_mark) != mark)

@@ -31,7 +31,7 @@ namespace laplace::network {
         uint16_t         client_port = any_port);
 
   private:
-    auto perform_control(size_t slot, cref_vbyte seq) -> bool override;
+    auto perform_control(size_t slot, span_cbyte seq) -> bool override;
 
     std::string m_host_address = localhost;
     uint16_t    m_host_port    = any_port;

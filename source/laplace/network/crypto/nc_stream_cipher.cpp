@@ -10,14 +10,14 @@
  *  the MIT License for more details.
  */
 
-#include "../../core/utils.h"
+#include "../../core/serial.h"
 #include "../transfer.h"
 #include "stream_cipher.h"
 
 namespace laplace::network::crypto {
-  using std::min, std::tuple, std::span;
+  using std::min, std::tuple, std::span, serial::rd, serial::wr;
 
-  auto stream_cipher::encrypt(cref_vbyte bytes) -> vbyte {
+  auto stream_cipher::encrypt(span_cbyte bytes) -> vbyte {
 
     uint8_t block[block_size] = {};
 
@@ -52,7 +52,7 @@ namespace laplace::network::crypto {
     return buf;
   }
 
-  auto stream_cipher::decrypt(cref_vbyte bytes) -> vbyte {
+  auto stream_cipher::decrypt(span_cbyte bytes) -> vbyte {
 
     reset_loss_count();
 
@@ -108,20 +108,20 @@ namespace laplace::network::crypto {
     return buf;
   }
 
-  auto stream_cipher::do_encrypt(cref_vbyte src, span<uint8_t> dst)
+  auto stream_cipher::do_encrypt(span_cbyte src, span<uint8_t> dst)
       -> bool {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
     return false;
   }
 
-  auto stream_cipher::do_decrypt(cref_vbyte src, span<uint8_t> dst)
+  auto stream_cipher::do_decrypt(span_cbyte src, span<uint8_t> dst)
       -> bool {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
     return false;
   }
 
   auto stream_cipher::rewind_decryption() -> bool {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
     return false;
   }
 
@@ -139,7 +139,7 @@ namespace laplace::network::crypto {
     return true;
   }
 
-  auto stream_cipher::scan(cref_vbyte data) const -> bool {
+  auto stream_cipher::scan(span_cbyte data) const -> bool {
     const auto offset = rd<uint64_t>(data, n_offset);
     const auto sum    = rd<uint64_t>(data, n_sum);
     const auto size   = rd<uint64_t>(data, n_size);

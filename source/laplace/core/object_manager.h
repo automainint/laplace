@@ -46,7 +46,7 @@ namespace laplace::core {
 
   private:
     auto has_no_pool() -> bool;
-    void default_pool();
+    void check_pools();
     void locked_store(
         std::wstring_view file_name, ptr_element obj);
     auto load_internal(std::wstring_view file_name)

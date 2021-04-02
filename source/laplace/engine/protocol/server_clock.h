@@ -35,31 +35,28 @@ namespace laplace::engine::protocol {
       m_tick_duration_msec = tick_duration_msec;
     }
 
-    constexpr server_clock(
-        size_t index, uint64_t tick_duration_msec) {
+    constexpr server_clock(size_t index, uint64_t tick_duration_msec) {
       set_order({ index });
       set_encoded_size(size);
 
       m_tick_duration_msec = tick_duration_msec;
     }
 
-    static constexpr auto get_tick_duration(cref_vbyte seq) {
-      return rd<uint64_t>(seq, n_tick_duration);
+    static constexpr auto get_tick_duration(span_cbyte seq) {
+      return serial::rd<uint64_t>(seq, n_tick_duration);
     }
 
-    inline void encode_to(
-        std::span<uint8_t> bytes) const final {
-      write_bytes(
+    inline void encode_to(std::span<uint8_t> bytes) const final {
+      serial::write_bytes(
           bytes, id, get_index64(), m_tick_duration_msec);
     }
 
-    static constexpr auto scan(cref_vbyte seq) {
+    static constexpr auto scan(span_cbyte seq) {
       return seq.size() == size && get_id(seq) == id;
     }
 
-    static inline auto decode(cref_vbyte seq) {
-      return server_clock { get_index(seq),
-        get_tick_duration(seq) };
+    static inline auto decode(span_cbyte seq) {
+      return server_clock { get_index(seq), get_tick_duration(seq) };
     }
 
   private:

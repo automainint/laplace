@@ -106,11 +106,11 @@ namespace laplace::engine::access {
     }
   }
 
-  auto entity::request(size_t id, cref_vbyte args) const -> vbyte {
+  auto entity::request(size_t id, span_cbyte args) const -> vbyte {
     return m_mode > forbidden ? m_entity->request(id, args) : vbyte {};
   }
 
-  void entity::modify(size_t id, cref_vbyte args) const {
+  void entity::modify(size_t id, span_cbyte args) const {
     if (m_mode > async) {
       m_entity->modify(id, args);
     }

@@ -40,7 +40,7 @@ namespace laplace::network {
 
   void host::set_seed(engine::seed_type seed) {
     if (is_connected()) {
-      error(__FUNCTION__, "Unable to set seed.");
+      error_("Unable to set seed.", __FUNCTION__);
       return;
     }
 
@@ -61,7 +61,7 @@ namespace laplace::network {
     perform_instant_events();
   }
 
-  auto host::perform_control(size_t slot, cref_vbyte seq) -> bool {
+  auto host::perform_control(size_t slot, span_cbyte seq) -> bool {
 
     if (client_enter::scan(seq) && slot != slot_host) {
       if (auto wor = get_world(); wor) {
@@ -70,7 +70,7 @@ namespace laplace::network {
           process_event(slot, encode<slot_create>(false));
         }
       } else {
-        error(__FUNCTION__, "No world.");
+        error_("No world.", __FUNCTION__);
       }
 
       return true;
@@ -97,7 +97,7 @@ namespace laplace::network {
             verb("Network: Unable to decode command.");
           }
         } else {
-          error(__FUNCTION__, "No factory.");
+          error_("No factory.", __FUNCTION__);
         }
       } else {
         verb("Network: Ignore ready command.");

@@ -20,8 +20,8 @@ namespace laplace::engine::protocol {
   public:
     enum encoding_offset { n_value = 18 };
 
-    static constexpr uint16_t id = ids::debug;
-    static constexpr size_t size = 26;
+    static constexpr uint16_t id   = ids::debug;
+    static constexpr size_t   size = 26;
 
     ~debug() final = default;
 
@@ -35,8 +35,7 @@ namespace laplace::engine::protocol {
       m_value = value;
     }
 
-    constexpr debug(
-        size_t index, uint64_t time, int64_t value) {
+    constexpr debug(size_t index, uint64_t time, int64_t value) {
       set_order({ index });
       set_time(time);
       set_encoded_size(size);
@@ -44,25 +43,23 @@ namespace laplace::engine::protocol {
       m_value = value;
     }
 
-    static constexpr auto get_value(cref_vbyte seq) {
-      return rd<int64_t>(seq, n_value);
+    static constexpr auto get_value(span_cbyte seq) {
+      return serial::rd<int64_t>(seq, n_value);
     }
 
     void perform(access::world w) const final;
 
-    inline void encode_to(
-        std::span<uint8_t> bytes) const final {
-      write_bytes(
+    inline void encode_to(std::span<uint8_t> bytes) const final {
+      serial::write_bytes(
           bytes, id, get_index64(), get_time64(), m_value);
     }
 
-    static constexpr auto scan(cref_vbyte seq) -> bool {
+    static constexpr auto scan(span_cbyte seq) -> bool {
       return seq.size() == size && get_id(seq) == id;
     }
 
-    static inline auto decode(cref_vbyte seq) {
-      return debug { get_index(seq), get_time(seq),
-        get_value(seq) };
+    static inline auto decode(span_cbyte seq) {
+      return debug { get_index(seq), get_time(seq), get_value(seq) };
     }
 
   private:

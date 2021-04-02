@@ -69,12 +69,12 @@ namespace quadwar_app::protocol {
           std::make_shared<object::game_clock>(), //
           engine::id_undefined);
 
-      object::landscape::create_maze(w, m_map_size, m_map_size);
+      object::landscape::create_maze(
+          w, m_map_size, m_map_size, m_player_count);
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
-
-      write_bytes(                               //
+      serial::write_bytes(                       //
           bytes,                                 //
           id,                                    //
           get_index64(),                         //
@@ -83,23 +83,23 @@ namespace quadwar_app::protocol {
           static_cast<uint64_t>(m_unit_count));
     }
 
-    static constexpr auto scan(cref_vbyte seq) -> bool {
+    static constexpr auto scan(span_cbyte seq) -> bool {
       return seq.size() == size && get_id(seq) == id;
     }
 
-    static inline auto get_map_size(cref_vbyte seq) {
-      return as_index(rd<uint64_t>(seq, n_map_size));
+    static inline auto get_map_size(span_cbyte seq) {
+      return as_index(serial::rd<uint64_t>(seq, n_map_size));
     }
 
-    static inline auto get_player_count(cref_vbyte seq) {
-      return as_index(rd<uint64_t>(seq, n_player_count));
+    static inline auto get_player_count(span_cbyte seq) {
+      return as_index(serial::rd<uint64_t>(seq, n_player_count));
     }
 
-    static inline auto get_unit_count(cref_vbyte seq) {
-      return as_index(rd<uint64_t>(seq, n_unit_count));
+    static inline auto get_unit_count(span_cbyte seq) {
+      return as_index(serial::rd<uint64_t>(seq, n_unit_count));
     }
 
-    static inline auto decode(cref_vbyte seq) {
+    static inline auto decode(span_cbyte seq) {
       return qw_loading            //
           { get_index(seq),        //
             get_map_size(seq),     //

@@ -16,7 +16,7 @@ namespace laplace::stem {
   native_api::native_api() { }
   native_api::~native_api() { }
 
-  auto native_api::perform(size_t id, cref_vbyte args) -> vbyte {
+  auto native_api::perform(size_t id, span_cbyte args) -> vbyte {
     return {};
   }
 }

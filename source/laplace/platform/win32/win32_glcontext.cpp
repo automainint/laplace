@@ -31,8 +31,7 @@ extern "C" {
 
   /*  Require high performance for AMD.
    */
-  __declspec(dllexport) uint32_t
-      AmdPowerXpressRequestHighPerformance = 1;
+  __declspec(dllexport) uint32_t AmdPowerXpressRequestHighPerformance = 1;
 }
 
 namespace laplace::win32 {
@@ -42,12 +41,12 @@ namespace laplace::win32 {
 
   glcontext::glcontext(shared_ptr<window> win) {
     if (!win) {
-      error(__FUNCTION__, "No window.");
+      error_("No window.", __FUNCTION__);
       return;
     }
 
     if (!gl_init()) {
-      error(__FUNCTION__, "WGL initialization failed.");
+      error_("WGL initialization failed.", __FUNCTION__);
       return;
     }
 
@@ -72,7 +71,7 @@ namespace laplace::win32 {
     m_hDC = GetDC(win->get_native_handle());
 
     if (!m_hDC) {
-      error(__FUNCTION__, "GetDC failed.");
+      error_("GetDC failed.", __FUNCTION__);
       cleanup();
       return;
     }
@@ -80,7 +79,7 @@ namespace laplace::win32 {
     int pf = ChoosePixelFormat(m_hDC, &pfd);
 
     if (!SetPixelFormat(m_hDC, pf, &pfd)) {
-      error(__FUNCTION__, "SetPixelFormat failed.");
+      error_("SetPixelFormat failed.", __FUNCTION__);
       cleanup();
       return;
     }
@@ -88,13 +87,13 @@ namespace laplace::win32 {
     m_hRC = wglCreateContext(m_hDC);
 
     if (!m_hRC) {
-      error(__FUNCTION__, "wglCreateContext failed.");
+      error_("wglCreateContext failed.", __FUNCTION__);
       cleanup();
       return;
     }
 
     if (!wglMakeCurrent(m_hDC, m_hRC)) {
-      error(__FUNCTION__, "wglMakeCurrent failed.");
+      error_("wglMakeCurrent failed.", __FUNCTION__);
       cleanup();
       return;
     }
@@ -120,12 +119,10 @@ namespace laplace::win32 {
         attrs[5] = WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
       }
 
-      HGLRC hRC = wglCreateContextAttribsARB(
-          m_hDC, nullptr, attrs);
+      HGLRC hRC = wglCreateContextAttribsARB(m_hDC, nullptr, attrs);
 
       if (!hRC) {
-        error(
-            __FUNCTION__, "wglCreateContextAttribsARB failed.");
+        error_("wglCreateContextAttribsARB failed.", __FUNCTION__);
         cleanup();
         return;
       }
@@ -136,14 +133,14 @@ namespace laplace::win32 {
       m_hRC = hRC;
 
       if (!wglMakeCurrent(m_hDC, m_hRC)) {
-        error(__FUNCTION__, "wglMakeCurrent failed.");
+        error_("wglMakeCurrent failed.", __FUNCTION__);
         cleanup();
         return;
       }
     }
 
     if (!gl::init()) {
-      error(__FUNCTION__, "OpenGL initialization failed.");
+      error_("OpenGL initialization failed.", __FUNCTION__);
       cleanup();
       return;
     }

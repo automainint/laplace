@@ -53,7 +53,7 @@ namespace laplace::network {
     m_is_encryption_enabled = is_enabled;
   }
 
-  void udp_server::set_allowed_commands(cref_vuint16 commands) {
+  void udp_server::set_allowed_commands(span_cuint16 commands) {
     m_allowed_commands.assign(commands.begin(), commands.end());
   }
 
@@ -61,9 +61,9 @@ namespace laplace::network {
     m_buffer.resize(size);
   }
 
-  void udp_server::queue(cref_vbyte seq) {
+  void udp_server::queue(span_cbyte seq) {
     if (seq.empty()) {
-      error(__FUNCTION__, "Ignore empty event.");
+      error_("Ignore empty event.", __FUNCTION__);
       return;
     }
 
@@ -76,10 +76,10 @@ namespace laplace::network {
         const auto index = m_queue.events.size();
 
         if (id < ids::_native_count) {
-          verb(" :: queue %4zu '%s (%hu)'", index,
-               ids::table[id].data(), id);
+          verb(fmt(" :: queue %4zu '%s (%hu)'", index,
+                   ids::table[id].data(), id));
         } else {
-          verb(" :: queue %4zu '%hu'", index, id);
+          verb(fmt(" :: queue %4zu '%hu'", index, id));
         }
       }
 
@@ -106,7 +106,7 @@ namespace laplace::network {
     return m_node ? m_node->get_port() : any_port;
   }
 
-  auto udp_server::perform_control(size_t slot, cref_vbyte seq)
+  auto udp_server::perform_control(size_t slot, span_cbyte seq)
       -> bool {
 
     if (server_action::scan(seq)) {
@@ -155,7 +155,7 @@ namespace laplace::network {
             distance = max(distance, m_queue.events.size() - n);
             send_event_to(slot, m_queue.events[n]);
           } else if (is_verbose()) {
-            verb("Network: No requested event %zu.", n);
+            verb(fmt("Network: No requested event %zu.", n));
           }
         }
 
@@ -163,13 +163,13 @@ namespace laplace::network {
           m_loss_compensation++;
 
           if (is_verbose()) {
-            verb("Network: Loss compensation %zu.",
-                 m_loss_compensation);
+            verb(fmt("Network: Loss compensation %zu.",
+                     m_loss_compensation));
           }
         }
 
       } else {
-        error(__FUNCTION__, "Invalid slot.");
+        error_("Invalid slot.", __FUNCTION__);
       }
 
       return true;
@@ -220,7 +220,7 @@ namespace laplace::network {
           }
 
         } else {
-          error(__FUNCTION__, "Invalid slot.");
+          error_("Invalid slot.", __FUNCTION__);
         }
 
       } else if (cipher_id != ids::cipher_plain) {
@@ -274,7 +274,7 @@ namespace laplace::network {
           if (auto sol = get_solver(); sol) {
             sol->schedule(adjust_delta(delta_msec));
           } else {
-            error(__FUNCTION__, "No solver.");
+            error_("No solver.", __FUNCTION__);
             set_state(server_state::pause);
           }
         }
@@ -283,7 +283,7 @@ namespace laplace::network {
           if (auto sol = get_solver(); sol) {
             sol->schedule(convert_delta(delta_msec));
           } else {
-            error(__FUNCTION__, "No solver.");
+            error_("No solver.", __FUNCTION__);
             set_state(server_state::pause);
           }
         }
@@ -306,7 +306,7 @@ namespace laplace::network {
     send_chunks();
   }
 
-  void udp_server::send_event_to(size_t slot, cref_vbyte seq) {
+  void udp_server::send_event_to(size_t slot, span_cbyte seq) {
     if (slot_create::scan(seq)) {
       auto buf = vbyte(seq.begin(), seq.end());
       slot_create::alter(buf, m_slots[slot].id_actor);
@@ -317,7 +317,7 @@ namespace laplace::network {
     }
   }
 
-  void udp_server::send_event(cref_vbyte seq) {
+  void udp_server::send_event(span_cbyte seq) {
     if (slot_create::scan(seq)) {
       auto buf = vbyte(seq.begin(), seq.end());
 
@@ -332,7 +332,7 @@ namespace laplace::network {
     }
   }
 
-  void udp_server::append_event(size_t slot, cref_vbyte seq) {
+  void udp_server::append_event(size_t slot, span_cbyte seq) {
     if (m_slots[slot].is_connected) {
       m_slots[slot].out.emplace_back(vbyte { seq.begin(), seq.end() });
     }
@@ -389,12 +389,12 @@ namespace laplace::network {
     }
 
     if (!is_master()) {
-      error(__FUNCTION__, "Joining is disabled.");
+      error_("Joining is disabled.", __FUNCTION__);
       return -1;
     }
 
     if (!has_free_slots()) {
-      error(__FUNCTION__, "No free slots.");
+      error_("No free slots.", __FUNCTION__);
       return -1;
     }
 
@@ -495,7 +495,7 @@ namespace laplace::network {
     }
   }
 
-  void udp_server::process_event(size_t slot, cref_vbyte seq) {
+  void udp_server::process_event(size_t slot, span_cbyte seq) {
     if (prime_impact::get_time(seq) == time_undefined) {
       if (perform_control(slot, seq))
         return;
@@ -515,7 +515,7 @@ namespace laplace::network {
     }
   }
 
-  void udp_server::distribute_event(size_t slot, cref_vbyte seq) {
+  void udp_server::distribute_event(size_t slot, span_cbyte seq) {
     if (auto f = get_factory(); f) {
       auto ev = f->decode(seq);
 
@@ -539,10 +539,10 @@ namespace laplace::network {
         const auto index = m_queue.events.size();
 
         if (id < ids::_native_count) {
-          verb(" :: queue %4zu '%s (%hu)'", index,
-               ids::table[id].data(), id);
+          verb(fmt(" :: queue %4zu '%s (%hu)'", index,
+                   ids::table[id].data(), id));
         } else {
-          verb(" :: queue %4zu '%hu'", index, id);
+          verb(fmt(" :: queue %4zu '%hu'", index, id));
         }
       }
 
@@ -565,7 +565,7 @@ namespace laplace::network {
       m_queue.events.emplace_back(ev->encode());
 
     } else {
-      error(__FUNCTION__, "No factory.");
+      error_("No factory.", __FUNCTION__);
     }
   }
 
@@ -591,7 +591,7 @@ namespace laplace::network {
     }
   }
 
-  void udp_server::add_instant_event(cref_vbyte seq) {
+  void udp_server::add_instant_event(span_cbyte seq) {
     if (auto f = get_factory(); f) {
       auto ev = f->decode(seq);
 
@@ -603,11 +603,11 @@ namespace laplace::network {
       add_instant_event(prime_impact::get_id(seq), ev);
 
     } else {
-      error(__FUNCTION__, "No factory.");
+      error_("No factory.", __FUNCTION__);
     }
   }
 
-  void udp_server::perform_event(size_t slot, cref_vbyte seq) {
+  void udp_server::perform_event(size_t slot, span_cbyte seq) {
     if (auto f = get_factory(); f) {
       auto ev = f->decode(seq);
 
@@ -672,7 +672,7 @@ namespace laplace::network {
             m_node->get_remote_port());
 
         if (slot >= m_slots.size()) {
-          error(__FUNCTION__, "Unable to find slot.");
+          error_("Unable to find slot.", __FUNCTION__);
           continue;
         }
 
@@ -697,7 +697,7 @@ namespace laplace::network {
     }
   }
 
-  void udp_server::add_event(size_t slot, cref_vbyte seq) {
+  void udp_server::add_event(size_t slot, span_cbyte seq) {
     auto  index = prime_impact::get_index(seq);
     auto &qu    = m_slots[slot].queue;
 
@@ -705,7 +705,8 @@ namespace laplace::network {
       /*  For public_key, request_events and ping.
        */
       if (!perform_control(slot, seq)) {
-        verb("Network: Ignore unindexed command on slot %zu.", slot);
+        verb(fmt(
+            "Network: Ignore unindexed command on slot %zu.", slot));
       }
 
     } else if (index >= qu.index) {
@@ -721,10 +722,10 @@ namespace laplace::network {
             const auto id = prime_impact::get_id(seq);
 
             if (id < ids::_native_count) {
-              verb(" :: (slot %2zu) %4zu '%s (%hu)'", slot, index,
-                   ids::table[id].data(), id);
+              verb(fmt(" :: (slot %2zu) %4zu '%s (%hu)'", slot, index,
+                       ids::table[id].data(), id));
             } else {
-              verb(" :: (slot %2zu) %4zu '%hu'", slot, index, id);
+              verb(fmt(" :: (slot %2zu) %4zu '%hu'", slot, index, id));
             }
           }
 
@@ -755,10 +756,10 @@ namespace laplace::network {
         } else {
           if (is_verbose()) {
             if (id < ids::_native_count) {
-              verb("Network: Command '%s (%hu)' not allowed.",
-                   ids::table[id].data(), id);
+              verb(fmt("Network: Command '%s (%hu)' not allowed.",
+                       ids::table[id].data(), id));
             } else {
-              verb("Network: Command '%hu' not allowed.", id);
+              verb(fmt("Network: Command '%hu' not allowed.", id));
             }
           }
         }
@@ -775,11 +776,11 @@ namespace laplace::network {
         if (s.out.empty())
           continue;
 
-        auto plain = vector<cref_vbyte> {};
+        auto plain = vector<span_cbyte> {};
 
         for (size_t i = 0; i < s.out.size(); i++) {
           plain.emplace_back(
-              cref_vbyte { s.out[i].begin(), s.out[i].end() });
+              span_cbyte { s.out[i].begin(), s.out[i].end() });
         }
 
         const auto chunk = s.is_encrypted ? s.tran.encode(plain)
@@ -811,11 +812,11 @@ namespace laplace::network {
       }
 
       if (is_verbose()) {
-        verb("Network: Disconnect on slot %zu.", slot);
+        verb(fmt("Network: Disconnect on slot %zu.", slot));
       }
 
     } else {
-      error(__FUNCTION__, "Invalid slot.");
+      error_("Invalid slot.", __FUNCTION__);
     }
   }
 
@@ -850,7 +851,7 @@ namespace laplace::network {
     m_local_time += delta_msec;
 
     if (t > m_local_time) {
-      error(__FUNCTION__, "Time value overflow.");
+      error_("Time value overflow.", __FUNCTION__);
 
       cleanup();
       set_quit(true);

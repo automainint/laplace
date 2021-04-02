@@ -29,7 +29,7 @@ namespace laplace::network {
     void listen(uint16_t port = any_port);
 
   private:
-    [[nodiscard]] auto perform_control(size_t slot, cref_vbyte seq)
+    [[nodiscard]] auto perform_control(size_t slot, span_cbyte seq)
         -> bool override;
 
     engine::seed_type m_seed = engine::solver::generate_seed();

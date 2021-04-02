@@ -406,7 +406,7 @@ namespace laplace::ui {
           m_childs[childs[i]]->set_rect(rects[i]);
         }
       } else {
-        error(__FUNCTION__, "Invalid layout.");
+        error_("Invalid layout.", __FUNCTION__);
       }
     }
   }

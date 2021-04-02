@@ -21,7 +21,7 @@ namespace laplace::vm {
   public:
     auto add(size_t unique_id, ptr_agent a) -> size_t;
     auto get_id(size_t unique_id) -> size_t;
-    auto perform(size_t id, cref_vbyte args) -> vbyte;
+    auto perform(size_t id, span_cbyte args) -> vbyte;
 
   private:
     std::vector<std::pair<size_t, ptr_agent>> m_ids;

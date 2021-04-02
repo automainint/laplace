@@ -10,7 +10,7 @@
  *  the MIT License for more details.
  */
 
-#include "../../../laplace/core/utils.h"
+#include "../../../laplace/core/serial.h"
 #include "player.h"
 
 namespace quadwar_app::object {
@@ -27,7 +27,7 @@ namespace quadwar_app::object {
   }
 
   void player::set_name(entity en, u8string_view name) {
-    en.modify(sets::player_name, pack_to_bytes(name));
+    en.modify(sets::player_name, serial::pack_to_bytes(name));
   }
 
   auto player::get_name(entity en) -> u8string {
@@ -39,15 +39,15 @@ namespace quadwar_app::object {
     return result;
   }
 
-  auto player::do_request(size_t id, cref_vbyte args) const -> vbyte {
+  auto player::do_request(size_t id, span_cbyte args) const -> vbyte {
     if (id == sets::player_name && args.empty()) {
-      return pack_to_bytes(u8string_view { m_name });
+      return serial::pack_to_bytes(u8string_view { m_name });
     }
 
     return {};
   }
 
-  void player::do_modify(size_t id, cref_vbyte args) {
+  void player::do_modify(size_t id, span_cbyte args) {
     if (id == sets::player_name) {
       m_name.resize(args.size(), ' ');
       memcpy(m_name.data(), args.data(), args.size());

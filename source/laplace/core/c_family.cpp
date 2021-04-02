@@ -114,7 +114,7 @@ namespace laplace::core {
     assign(u32string_view(value));
   }
 
-  family::family(cref_vbyte value) {
+  family::family(span_cbyte value) {
     assign(value);
   }
 
@@ -233,7 +233,7 @@ namespace laplace::core {
     return *this;
   }
 
-  auto family::operator=(cref_vbyte value) -> ref_family {
+  auto family::operator=(span_cbyte value) -> ref_family {
     assign(value);
     return *this;
   }
@@ -367,7 +367,7 @@ namespace laplace::core {
     return m_data.index() == n_uint ? get<n_uint>(m_data) : 0ull;
   }
 
-  auto family::get_bytes() const -> cref_vbyte {
+  auto family::get_bytes() const -> span_cbyte {
     static const vbyte nil;
 
     return m_data.index() == n_bytes ? get<n_bytes>(m_data) : nil;
@@ -793,7 +793,7 @@ namespace laplace::core {
     m_data = move(to_u8string(value));
   }
 
-  void family::assign(cref_vbyte value) {
+  void family::assign(span_cbyte value) {
     m_data = move(vbyte(value.begin(), value.end()));
   }
 

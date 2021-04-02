@@ -32,19 +32,19 @@ namespace laplace::engine::protocol {
       set_encoded_size(n_events);
     }
 
-    inline request_events(cref_vuint events) {
+    inline request_events(span_cuint events) {
       set_encoded_size(n_events + events.size() * event_size);
 
       m_events.assign(events.begin(), events.end());
     }
 
-    static constexpr auto get_event_count(cref_vbyte seq) {
+    static constexpr auto get_event_count(span_cbyte seq) {
       return (seq.size() - n_events) / event_size;
     }
 
-    static constexpr auto get_event(cref_vbyte seq, size_t index) {
+    static constexpr auto get_event(span_cbyte seq, size_t index) {
       return as_index(
-          rd<uint64_t>(seq, n_events + index * event_size));
+          serial::rd<uint64_t>(seq, n_events + index * event_size));
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
@@ -52,14 +52,14 @@ namespace laplace::engine::protocol {
       for (size_t i = 0; i < events.size(); i++)
         events[i] = m_events[i];
 
-      write_bytes(bytes, id, std::span<const uint64_t>(events));
+      serial::write_bytes(bytes, id, std::span<const uint64_t>(events));
     }
 
-    static constexpr auto scan(cref_vbyte seq) {
+    static constexpr auto scan(span_cbyte seq) {
       return seq.size() >= n_events && get_id(seq) == id;
     }
 
-    static inline auto decode(cref_vbyte seq) {
+    static inline auto decode(span_cbyte seq) {
       vuint events(get_event_count(seq));
 
       for (size_t i = 0; i < events.size(); i++)

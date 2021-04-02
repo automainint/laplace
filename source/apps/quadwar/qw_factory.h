@@ -21,7 +21,7 @@ namespace quadwar_app {
   public:
     ~qw_factory() override = default;
 
-    auto decode(cref_vbyte seq) const
+    auto decode(span_cbyte seq) const
         -> engine::ptr_prime_impact override;
   };
 }

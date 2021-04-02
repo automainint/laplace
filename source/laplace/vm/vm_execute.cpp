@@ -10,19 +10,22 @@
  *  the MIT License for more details.
  */
 
+#include "../core/serial.h"
 #include "../core/utils.h"
 #include "bitcode.h"
 #include "instance.h"
 
 namespace laplace::vm::execute {
-  auto read_inst(cref_vbyte code, ref_state s) -> uint8_t {
+  using serial::rd, serial::wr;
+
+  auto read_inst(span_cbyte code, ref_state s) -> uint8_t {
     if (s.instruction_pointer >= code.size())
       return bitcode::i_abort;
 
     return code[s.instruction_pointer++];
   }
 
-  auto read_arg(cref_vbyte code, ref_state s, ref_heap heap)
+  auto read_arg(span_cbyte code, ref_state s, ref_heap heap)
       -> uint64_t {
     if (s.instruction_pointer < code.size()) {
       const auto x = code[s.instruction_pointer++];
@@ -38,21 +41,21 @@ namespace laplace::vm::execute {
       } else if (mode == bitcode::a_heap) {
         return read_heap(heap, size, as_index(read_arg(code, s, heap)));
       } else {
-        error(__FUNCTION__, "Invalid mode.");
+        error_("Invalid mode.", __FUNCTION__);
       }
     } else {
-      error(__FUNCTION__, "End of code.");
+      error_("End of code.", __FUNCTION__);
     }
 
     return 0;
   }
 
-  auto read_const(cref_vbyte code, ref_state s, int size) -> uint64_t {
+  auto read_const(span_cbyte code, ref_state s, int size) -> uint64_t {
     if (size == bitcode::s_byte) {
       if (s.instruction_pointer < code.size()) {
         return code[s.instruction_pointer++];
       } else {
-        error(__FUNCTION__, "End of code.");
+        error_("End of code.", __FUNCTION__);
       }
     } else if (size == bitcode::s_word) {
       if (s.instruction_pointer + sizeof(uint16_t) <= code.size()) {
@@ -60,7 +63,7 @@ namespace laplace::vm::execute {
         s.instruction_pointer += sizeof x;
         return x;
       } else {
-        error(__FUNCTION__, "End of code.");
+        error_("End of code.", __FUNCTION__);
       }
     } else if (size == bitcode::s_dword) {
       if (s.instruction_pointer + sizeof(uint32_t) <= code.size()) {
@@ -68,7 +71,7 @@ namespace laplace::vm::execute {
         s.instruction_pointer += sizeof x;
         return x;
       } else {
-        error(__FUNCTION__, "End of code.");
+        error_("End of code.", __FUNCTION__);
       }
     } else if (size == bitcode::s_qword) {
       if (s.instruction_pointer + sizeof(uint64_t) <= code.size()) {
@@ -76,16 +79,16 @@ namespace laplace::vm::execute {
         s.instruction_pointer += sizeof x;
         return x;
       } else {
-        error(__FUNCTION__, "End of code.");
+        error_("End of code.", __FUNCTION__);
       }
     } else {
-      error(__FUNCTION__, "Invalid size.");
+      error_("Invalid size.", __FUNCTION__);
     }
 
     return 0;
   }
 
-  auto read_stack(cref_vbyte stack, int size, size_t offset)
+  auto read_stack(span_cbyte stack, int size, size_t offset)
       -> uint64_t {
     if (size == bitcode::s_byte) {
       return rd<uint8_t>(stack, offset);
@@ -96,7 +99,7 @@ namespace laplace::vm::execute {
     } else if (size == bitcode::s_qword) {
       return rd<uint64_t>(stack, offset);
     } else {
-      error(__FUNCTION__, "Invalid size.");
+      error_("Invalid size.", __FUNCTION__);
     }
 
     return 0;
@@ -120,214 +123,214 @@ namespace laplace::vm::execute {
       heap.read(address, x);
       return rd<uint64_t>(x, 0);
     } else {
-      error(__FUNCTION__, "Invalid size.");
+      error_("Invalid size.", __FUNCTION__);
     }
 
     return 0;
   }
 
-  void write_stack(ref_vbyte stack, int size, uint64_t value,
+  void write_stack(span_byte stack, int size, uint64_t value,
                    size_t address) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void write_heap(ref_heap heap, int size, uint64_t value,
                   size_t address) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_return(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_call(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_jump(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_jump_if(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_push(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_pop(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_move(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_swap(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_alloc(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_less(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_larger(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_equals(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_not_less(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_not_larger(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_not_equals(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_and(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_or(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_unsigned_less(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_unsigned_larger(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_unsigned_not_less(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_unsigned_not_larger(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_bit_not(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_bit_add(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_bit_or(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_bit_xor(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_bit_shl(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_bit_shr(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_neg(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_add(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_sub(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_mul(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_div(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_umul(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_udiv(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_abs(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_clamp(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_fix_scale(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_fix_mul(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_fix_div(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_fix_floor(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_fix_ceil(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_fix_sqrt(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_fix_pow(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_fix_exp(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_fix_log(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_fix_sin(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void do_fix_cos(ref_state s, ref_heap heap) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
-  auto tick(ref_state s, cref_vbyte code, ref_heap heap, fn_fork fork,
+  auto tick(ref_state s, span_cbyte code, ref_heap heap, fn_fork fork,
             fn_call_external call_ext, fn_export exp,
             size_t instr_limit) -> size_t {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
     s.is_active = false;
     return 0;
   }

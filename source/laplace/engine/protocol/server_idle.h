@@ -34,22 +34,22 @@ namespace laplace::engine::protocol {
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
-      write_bytes(bytes, id, get_index64(), get_time64());
+      serial::write_bytes(bytes, id, get_index64(), get_time64());
     }
 
-    static constexpr auto scan(cref_vbyte seq) -> bool {
+    static constexpr auto scan(span_cbyte seq) -> bool {
       return seq.size() == size && get_id(seq) == id;
     }
 
-    static constexpr auto get_idle_index(cref_vbyte seq) {
+    static constexpr auto get_idle_index(span_cbyte seq) {
       return get_index_unsafe(seq);
     }
 
-    static constexpr auto get_idle_time(cref_vbyte seq) {
+    static constexpr auto get_idle_time(span_cbyte seq) {
       return get_time_unsafe(seq);
     }
 
-    static inline auto decode(cref_vbyte seq) {
+    static inline auto decode(span_cbyte seq) {
       return server_idle { get_idle_index(seq), get_idle_time(seq) };
     }
   };

@@ -60,26 +60,24 @@ namespace laplace::engine::protocol {
       return m_is_local ? true : false;
     }
 
-    static constexpr auto get_local_flag(cref_vbyte seq) {
-      return rd<uint8_t>(seq, n_local_flag);
+    static constexpr auto get_local_flag(span_cbyte seq) {
+      return serial::rd<uint8_t>(seq, n_local_flag);
     }
 
-    inline void
-    encode_to(std::span<uint8_t> bytes) const final {
+    inline void encode_to(std::span<uint8_t> bytes) const final {
       uint8_t flag_local = is_local() ? 1u : 0u;
 
-      write_bytes(bytes, id, get_index64(), get_time64(),
-                  get_actor64(), flag_local);
+      serial::write_bytes(bytes, id, get_index64(), get_time64(),
+                          get_actor64(), flag_local);
     }
 
-    static constexpr auto scan(cref_vbyte seq) {
+    static constexpr auto scan(span_cbyte seq) {
       return seq.size() == size && get_id(seq) == id;
     }
 
-    static inline auto decode(cref_vbyte seq) {
+    static inline auto decode(span_cbyte seq) {
       return slot_create { get_index(seq), get_time(seq),
-                           get_actor(seq),
-                           get_local_flag(seq) > 0 };
+                           get_actor(seq), get_local_flag(seq) > 0 };
     }
 
     /*  Alter the local status.
@@ -88,9 +86,9 @@ namespace laplace::engine::protocol {
      *  actor is equal to the impact actor.
      */
     static constexpr void alter(std::span<uint8_t> seq,
-                                size_t id_slot_actor) {
-      wr<uint8_t>(seq, n_local_flag,
-                  (get_actor(seq) == id_slot_actor));
+                                size_t             id_slot_actor) {
+      serial::wr<uint8_t>(
+          seq, n_local_flag, (get_actor(seq) == id_slot_actor));
     }
 
   private:

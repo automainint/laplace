@@ -24,7 +24,6 @@
 #define LAPLACE_GL_LOAD(a)                                         \
   if (!a) {                                                        \
     if (a = reinterpret_cast<pfn_##a>(get_proc_address(#a)); !a) { \
-      error(__FUNCTION__, "Unable to get %s function." #a);        \
       ok = false;                                                  \
     }                                                              \
   }
@@ -32,7 +31,6 @@
 #define LAPLACE_GL_LOAD_EX(a)                                      \
   if (!a) {                                                        \
     if (a = reinterpret_cast<pfn_##a>(get_proc_address(#a)); !a) { \
-      error(__FUNCTION__, "Unable to get %s function.", #a);       \
       status = false;                                              \
     }                                                              \
   }
@@ -42,25 +40,23 @@
 #define LAPLACE_GL_BEGIN_EX() \
   { status = true; }
 
-#define LAPLACE_GL_END_EX(x)                                    \
-  {                                                             \
-    if (!status)                                                \
-      error(__FUNCTION__, "%s OpenGL extension disabled.", #x); \
-    auto i = find(extensions.begin(), extensions.end(), #x);    \
-    if (i != extensions.end()) {                                \
-      extensions.erase(i);                                      \
-    }                                                           \
+#define LAPLACE_GL_END_EX(x)                                 \
+  {                                                          \
+    auto i = find(extensions.begin(), extensions.end(), #x); \
+    if (i != extensions.end()) {                             \
+      extensions.erase(i);                                   \
+    }                                                        \
   }
 
 namespace laplace::gl {
   using std::find, std::lower_bound, std::vector, std::string,
       std::string_view;
 
-  bool ok                      = false;
-  bool has_extensions_required = false;
+  auto ok                      = false;
+  auto has_extensions_required = false;
 
-  vector<string> extensions;
-  vector<string> extensions_required;
+  auto extensions          = vector<string> {};
+  auto extensions_required = vector<string> {};
 
   auto is_ok() -> bool {
     return ok;
@@ -83,7 +79,7 @@ namespace laplace::gl {
       sort(extensions.begin(), extensions.end());
     }
 
-    bool status = true;
+    auto status = true;
 
 #include "../../generated/gl/loads.impl.h"
 

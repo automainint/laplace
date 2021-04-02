@@ -43,19 +43,19 @@ namespace laplace::engine::protocol {
       m_seed = seed;
     }
 
-    static constexpr auto get_seed(cref_vbyte seq) {
-      return rd<uint64_t>(seq, n_seed);
+    static constexpr auto get_seed(span_cbyte seq) {
+      return serial::rd<uint64_t>(seq, n_seed);
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
-      write_bytes(bytes, id, get_index64(), get_time64(), m_seed);
+      serial::write_bytes(bytes, id, get_index64(), get_time64(), m_seed);
     }
 
-    static constexpr auto scan(cref_vbyte seq) {
+    static constexpr auto scan(span_cbyte seq) {
       return seq.size() == size && get_id(seq) == id;
     }
 
-    static inline auto decode(cref_vbyte seq) {
+    static inline auto decode(span_cbyte seq) {
       return server_seed    //
           { get_index(seq), //
             get_time(seq),  //

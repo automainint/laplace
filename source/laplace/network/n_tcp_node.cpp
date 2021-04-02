@@ -10,6 +10,7 @@
  *  the MIT License for more details.
  */
 
+#include "../core/string.h"
 #include "tcp_node.h"
 #include "utils.h"
 
@@ -23,7 +24,7 @@ namespace laplace::network {
 
     if (m_listen == INVALID_SOCKET) {
       done();
-      verb("TCP: socket failed (code %d).", socket_error());
+      verb(fmt("TCP: socket failed (code %d).", socket_error()));
       return;
     }
 
@@ -34,7 +35,7 @@ namespace laplace::network {
     name.sin_port   = ::htons(port);
 
     if (::inet_pton(AF_INET, localhost, &name.sin_addr.s_addr) != 1) {
-      verb("TCP: inet_pton failed (code %d).", socket_error());
+      verb(fmt("TCP: inet_pton failed (code %d).", socket_error()));
       closesocket(m_listen);
       m_listen = INVALID_SOCKET;
       done();
@@ -43,7 +44,7 @@ namespace laplace::network {
 
     if (::bind(m_listen, reinterpret_cast<const sockaddr *>(&name),
                sizeof name) == SOCKET_ERROR) {
-      verb("TCP: bind failed (code %d).", socket_error());
+      verb(fmt("TCP: bind failed (code %d).", socket_error()));
       ::closesocket(m_listen);
       m_listen = INVALID_SOCKET;
       done();
@@ -55,7 +56,7 @@ namespace laplace::network {
 
       if (::getsockname(m_listen, reinterpret_cast<sockaddr *>(&name),
                         &len) == SOCKET_ERROR) {
-        verb("TCP: getsockname failed (code %d).", socket_error());
+        verb(fmt("TCP: getsockname failed (code %d).", socket_error()));
         ::closesocket(m_listen);
         m_listen = INVALID_SOCKET;
         done();
@@ -68,7 +69,7 @@ namespace laplace::network {
     }
 
     if (::listen(m_listen, SOMAXCONN) == SOCKET_ERROR) {
-      verb("TCP: listen failed (code %d).", socket_error());
+      verb(fmt("TCP: listen failed (code %d).", socket_error()));
       ::closesocket(m_listen);
       m_listen = INVALID_SOCKET;
       done();
@@ -76,7 +77,7 @@ namespace laplace::network {
     }
 
     if (!set_mode(m_listen, async)) {
-      verb("TCP: ioctlsocket failed (code %d).", socket_error());
+      verb(fmt("TCP: ioctlsocket failed (code %d).", socket_error()));
       done();
     }
   }
@@ -108,13 +109,13 @@ namespace laplace::network {
 
         if (m_socket != INVALID_SOCKET) {
           if (!set_mode(m_socket, async)) {
-            verb("TCP: ioctlsocket failed (code %d).", socket_error());
+            verb(fmt("TCP: ioctlsocket failed (code %d).", socket_error()));
             done();
           } else if (m_on_accept) {
             m_on_accept(*this);
           }
         } else if (socket_error() != socket_wouldblock()) {
-          verb("TCP: accept failed (code %d).", socket_error());
+          verb(fmt("TCP: accept failed (code %d).", socket_error()));
           done();
         }
       }

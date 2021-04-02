@@ -41,8 +41,8 @@ namespace quadwar_app::object {
   protected:
     root(proto_tag);
 
-    auto do_request(size_t id, cref_vbyte args) const -> vbyte override;
-    void do_modify(size_t id, cref_vbyte args) override;
+    auto do_request(size_t id, span_cbyte args) const -> vbyte override;
+    void do_modify(size_t id, span_cbyte args) override;
 
     void do_slot_create(const size_t id_actor);
     void do_slot_remove(const size_t id_actor);

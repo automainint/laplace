@@ -37,11 +37,11 @@ namespace laplace::network {
     ~udp_server() override;
 
     void set_encryption_enabled(bool is_enabled) noexcept;
-    void set_allowed_commands(cref_vuint16 commands);
+    void set_allowed_commands(span_cuint16 commands);
 
     void set_chunk_size(size_t size);
 
-    void queue(cref_vbyte seq) override;
+    void queue(span_cbyte seq) override;
     void tick(uint64_t delta_msec) override;
 
     [[nodiscard]] auto get_port() const -> uint16_t;
@@ -75,7 +75,7 @@ namespace laplace::network {
      */
     [[nodiscard]] virtual auto perform_control( //
         size_t     slot,                        //
-        cref_vbyte seq) -> bool;
+        span_cbyte seq) -> bool;
 
     void cleanup();
 
@@ -86,10 +86,10 @@ namespace laplace::network {
 
     void send_events();
 
-    void send_event_to(size_t slot, cref_vbyte seq);
-    void send_event(cref_vbyte seq);
+    void send_event_to(size_t slot, span_cbyte seq);
+    void send_event(span_cbyte seq);
 
-    void append_event(size_t slot, cref_vbyte seq);
+    void append_event(size_t slot, span_cbyte seq);
 
     void set_max_slot_count(size_t count);
     void set_master(bool is_master);
@@ -110,18 +110,18 @@ namespace laplace::network {
     void process_queue(size_t slot);
     void check_outdate(size_t slot);
     void clean_slots();
-    void process_event(size_t slot, cref_vbyte seq);
-    void distribute_event(size_t slot, cref_vbyte seq);
+    void process_event(size_t slot, span_cbyte seq);
+    void distribute_event(size_t slot, span_cbyte seq);
     void add_instant_event(uint16_t id, engine::ptr_impact ev);
-    void add_instant_event(cref_vbyte seq);
-    void perform_event(size_t slot, cref_vbyte seq);
+    void add_instant_event(span_cbyte seq);
+    void perform_event(size_t slot, span_cbyte seq);
     void perform_instant_events();
 
     void receive_events();
     void process_buffers();
     void receive_chunks();
 
-    void add_event(size_t slot, cref_vbyte seq);
+    void add_event(size_t slot, span_cbyte seq);
     void send_chunks();
     void disconnect(size_t slot);
 

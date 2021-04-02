@@ -47,7 +47,7 @@ namespace laplace::ui::text {
 
     void open(std::string_view file_name);
     void open(std::wstring_view file_name);
-    void load(cref_vbyte bytes);
+    void load(span_cbyte bytes);
     void done();
 
     void set_char_size(double width, double height);

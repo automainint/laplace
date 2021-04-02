@@ -25,7 +25,7 @@ namespace laplace::vm {
 
     void set_environment(ptr_environment env);
 
-    virtual auto perform(size_t id, cref_vbyte args) -> vbyte;
+    virtual auto perform(size_t id, span_cbyte args) -> vbyte;
 
     auto get_env() const -> ptr_environment;
 

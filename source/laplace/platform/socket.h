@@ -30,10 +30,10 @@ namespace laplace {
    */
   auto socket_error() -> int;
 
-  auto socket_wouldblock() -> int;
-  auto socket_msgsize() -> int;
-  auto socket_isconn() -> int;
-  auto socket_connreset() -> int;
+  auto socket_wouldblock() noexcept -> int;
+  auto socket_msgsize() noexcept -> int;
+  auto socket_isconn() noexcept -> int;
+  auto socket_connreset() noexcept -> int;
 }
 
 #if !defined(LAPLACE_POSIX_SOCKETS) && \

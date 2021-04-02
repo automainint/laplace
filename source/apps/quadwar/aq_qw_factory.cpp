@@ -21,7 +21,7 @@
 namespace quadwar_app {
   using namespace protocol;
 
-  auto qw_factory::decode(cref_vbyte seq) const
+  auto qw_factory::decode(span_cbyte seq) const
       -> engine::ptr_prime_impact {
 
     if (qw_slot_create::scan(seq))

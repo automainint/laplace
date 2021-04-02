@@ -71,7 +71,7 @@ namespace laplace::network {
     reconnect();
   }
 
-  auto remote::perform_control(size_t slot, cref_vbyte seq) -> bool {
+  auto remote::perform_control(size_t slot, span_cbyte seq) -> bool {
 
     if (server_idle::scan(seq)) {
       const auto index = server_idle::get_idle_index(seq);

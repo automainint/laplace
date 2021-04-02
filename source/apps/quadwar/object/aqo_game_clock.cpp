@@ -10,6 +10,7 @@
  *  the MIT License for more details.
  */
 
+#include "../../../laplace/core/string.h"
 #include "../../../laplace/engine/access/world.h"
 #include "game_clock.h"
 #include "sets.h"
@@ -39,7 +40,7 @@ namespace quadwar_app::object {
     const auto time    = get(n_clock_time) * server_tick_duration;
     const auto seconds = time / sets::scale_time;
 
-    verb("Time: %jd:%02jd", seconds / 60, seconds % 60);
+    verb(fmt("Time: %jd:%02jd", seconds / 60, seconds % 60));
 
     apply_delta(n_clock_time, static_cast<int64_t>(get_tick_period()));
   }

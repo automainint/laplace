@@ -36,7 +36,7 @@ namespace laplace::vm {
     return id;
   }
 
-  auto environment::perform(size_t id, cref_vbyte args) -> vbyte {
+  auto environment::perform(size_t id, span_cbyte args) -> vbyte {
     vbyte result;
 
     if (id < m_ids.size()) {

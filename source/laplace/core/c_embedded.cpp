@@ -72,7 +72,7 @@ namespace laplace::embedded {
     return i != aliases.end() && *i == file_name;
   }
 
-  auto open(wstring_view file_name) -> cref_vbyte {
+  auto open(wstring_view file_name) -> span_cbyte {
     auto _ul = unique_lock(g_lock);
 
     init();

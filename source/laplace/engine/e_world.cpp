@@ -59,7 +59,7 @@ namespace laplace::engine {
         locked_add_dynamic(id);
       }
     } else {
-      error(__FUNCTION__, "Unable to spawn null entity.");
+      error_("Unable to spawn null entity.", __FUNCTION__);
     }
   }
 
@@ -77,7 +77,7 @@ namespace laplace::engine {
 
       if (m_entities[id]) {
         if (!m_allow_relaxed_spawn) {
-          error(__FUNCTION__, "Id is not free.");
+          error_("Id is not free.", __FUNCTION__);
           locked_desync();
 
           return id_undefined;
@@ -105,7 +105,7 @@ namespace laplace::engine {
 
       return id;
     } else {
-      error(__FUNCTION__, "Unable to spawn null entity.");
+      error_("Unable to spawn null entity.", __FUNCTION__);
     }
 
     return id_undefined;
@@ -124,7 +124,7 @@ namespace laplace::engine {
         m_entities[id].reset();
       } else {
         if (m_allow_relaxed_spawn) {
-          error(__FUNCTION__, "No entity.");
+          error_("No entity.", __FUNCTION__);
           locked_desync();
         }
       }
@@ -133,7 +133,7 @@ namespace laplace::engine {
         m_next_id = id;
       }
     } else {
-      error(__FUNCTION__, "Invalid entity id.");
+      error_("Invalid entity id.", __FUNCTION__);
       locked_desync();
     }
   }

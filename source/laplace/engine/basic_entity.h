@@ -142,14 +142,14 @@ namespace laplace::engine {
      */
     [[nodiscard]] auto request( //
         size_t     id,          //
-        cref_vbyte args = {}) -> vbyte;
+        span_cbyte args = {}) -> vbyte;
 
     /*  Perform an universal modification.
      *  Thread-safe.
      */
     void modify(       //
         size_t     id, //
-        cref_vbyte args = {});
+        span_cbyte args = {});
 
     /*  Dynamic Entity live loop.
      */
@@ -263,7 +263,7 @@ namespace laplace::engine {
      */
     [[nodiscard]] virtual auto do_request( //
         size_t     id,                     //
-        cref_vbyte args) const -> vbyte;
+        span_cbyte args) const -> vbyte;
 
     /*  Universal modification implementation.
      *
@@ -272,7 +272,7 @@ namespace laplace::engine {
      */
     virtual void do_modify( //
         size_t     id,      //
-        cref_vbyte args);
+        span_cbyte args);
 
   private:
     void assign(cref_entity en) noexcept;

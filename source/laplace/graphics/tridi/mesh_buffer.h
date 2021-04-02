@@ -15,7 +15,7 @@ namespace laplace::graphics::tridi
         mesh_buffer();
         ~mesh_buffer();
 
-        void setup(cref_vvertex vertices, cref_vuint32 indices, bool is_static);
+        void setup(cref_vvertex vertices, span_cuint32 indices, bool is_static);
         void update(cref_vvertex vertices);
 
         void render();

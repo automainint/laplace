@@ -51,14 +51,14 @@ namespace laplace::engine::protocol {
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const override {
-      write_bytes(bytes, id, this->get_index64());
+      serial::write_bytes(bytes, id, this->get_index64());
     }
 
-    static constexpr auto scan(cref_vbyte seq) {
+    static constexpr auto scan(span_cbyte seq) {
       return seq.size() == size && prime_impact::get_id(seq) == id;
     }
 
-    static inline auto decode(cref_vbyte seq) {
+    static inline auto decode(span_cbyte seq) {
       return basic_event { prime_impact::get_index(seq) };
     }
   };
@@ -85,14 +85,14 @@ namespace laplace::engine::protocol {
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
-      write_bytes(bytes, id, this->get_index64());
+      serial::write_bytes(bytes, id, this->get_index64());
     }
 
-    static constexpr auto scan(cref_vbyte seq) {
+    static constexpr auto scan(span_cbyte seq) {
       return seq.size() == size && prime_impact::get_id(seq) == id;
     }
 
-    static inline auto decode(cref_vbyte seq) {
+    static inline auto decode(span_cbyte seq) {
       return basic_event { prime_impact::get_index(seq) };
     }
   };

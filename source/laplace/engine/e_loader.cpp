@@ -32,7 +32,7 @@ namespace laplace::engine {
             _ul.lock();
             m_progress++;
           } else {
-            error(__FUNCTION__, "No world.");
+            error_("No world.", __FUNCTION__);
           }
         }
 

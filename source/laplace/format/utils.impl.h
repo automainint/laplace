@@ -30,7 +30,7 @@ namespace laplace::format {
   }
 
   inline auto wrap(ref_ostream out) -> fn_write {
-    return [&out](cref_vbyte data) -> size_t {
+    return [&out](span_cbyte data) -> size_t {
       if (out) {
         auto p = out.tellp();
         out.write(reinterpret_cast<const char *>(data.data()),

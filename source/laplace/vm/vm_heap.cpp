@@ -42,7 +42,7 @@ namespace laplace::vm {
     auto _sl = shared_lock(m_lock);
 
     if (n0 > n1 || n1 > m_data.size()) {
-      error(__FUNCTION__, "Invalid address.");
+      error_("Invalid address.", __FUNCTION__);
       return;
     }
 
@@ -53,7 +53,7 @@ namespace laplace::vm {
       auto _sl_block = shared_lock(i->lock);
 
       if (n1 > i->offset + i->size) {
-        error(__FUNCTION__, "Access violation.");
+        error_("Access violation.", __FUNCTION__);
         return;
       }
 
@@ -69,7 +69,7 @@ namespace laplace::vm {
     auto _sl = shared_lock(m_lock);
 
     if (n0 > n1 || n1 > m_data.size()) {
-      error(__FUNCTION__, "Invalid address.");
+      error_("Invalid address.", __FUNCTION__);
       return;
     }
 
@@ -80,7 +80,7 @@ namespace laplace::vm {
       auto _ul_block = unique_lock(i->lock);
 
       if (n1 > i->offset + i->size) {
-        error(__FUNCTION__, "Access violation.");
+        error_("Access violation.", __FUNCTION__);
         return;
       }
 
@@ -128,7 +128,7 @@ namespace laplace::vm {
         i->size = size;
       }
     } else {
-      error(__FUNCTION__, "Invalid reallocation address.");
+      error_("Invalid reallocation address.", __FUNCTION__);
       offset = invalid_address;
     }
 
@@ -144,7 +144,7 @@ namespace laplace::vm {
     if (i != m_blocks.end() && i->offset == offset) {
       m_blocks.erase(i);
     } else {
-      error(__FUNCTION__, "Invalid deallocation address.");
+      error_("Invalid deallocation address.", __FUNCTION__);
     }
   }
 

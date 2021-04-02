@@ -15,7 +15,10 @@
 
 #include "stream_cipher.h"
 
-#define WC_NO_HARDEN
+#ifndef WC_NO_HARDEN
+#define WC_NO_HARDEN 1
+#endif
+
 #include <wolfssl/wolfcrypt/rabbit.h>
 
 #ifdef min
@@ -34,11 +37,11 @@ namespace laplace::network::crypto {
     auto setup() -> bool override;
 
     auto do_encrypt(            //
-        cref_vbyte         src, //
+        span_cbyte         src, //
         std::span<uint8_t> dst) -> bool override;
 
     auto do_decrypt(            //
-        cref_vbyte         src, //
+        span_cbyte         src, //
         std::span<uint8_t> dst) -> bool override;
 
     auto rewind_decryption() -> bool override;

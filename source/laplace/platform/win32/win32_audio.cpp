@@ -60,7 +60,7 @@ namespace laplace::win32 {
     m_thread->join();
   }
 
-  void audio::write(cref_vbyte samples) {
+  void audio::write(span_cbyte samples) {
     size_t offset = adjust_offset();
     size_t size   = adjust_bytes(samples.size());
 
@@ -153,7 +153,7 @@ namespace laplace::win32 {
     }
   }
 
-  void audio::buffer_write(cref_vbyte samples, size_t size) {
+  void audio::buffer_write(span_cbyte samples, size_t size) {
     auto _ul = unique_lock(m_lock);
 
     size_t i0 = m_write;

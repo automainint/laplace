@@ -27,7 +27,7 @@ namespace laplace::render {
 
     m_data = ortho { left, right, bottom, top, near, far };
 
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void projection::set_perspective(real fovy, real aspect, real near,
@@ -35,7 +35,7 @@ namespace laplace::render {
 
     m_data = perspective { fovy, aspect, near, far };
 
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   auto projection::is_matrix() const -> bool {
@@ -53,7 +53,7 @@ namespace laplace::render {
   auto projection::get_ortho() const -> projection::ortho {
 
     if (m_data.index() != n_ortho) {
-      error(__FUNCTION__, "Not ortho projection.");
+      error_("Not ortho projection.", __FUNCTION__);
       return {};
     }
 
@@ -63,7 +63,7 @@ namespace laplace::render {
   auto projection::get_perspective() const -> projection::perspective {
 
     if (m_data.index() != n_perspective) {
-      error(__FUNCTION__, "Not perspective projection.");
+      error_("Not perspective projection.", __FUNCTION__);
       return {};
     }
 

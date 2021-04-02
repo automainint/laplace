@@ -10,10 +10,13 @@
  *  the MIT License for more details.
  */
 
+#include "../../laplace/core/serial.h"
 #include "../../laplace/core/utils.h"
 #include <gtest/gtest.h>
 
 namespace laplace::test {
+  using serial::rd, serial::wr, serial::write_bytes;
+
   TEST(core, utils_read) {
     const vbyte a { 0xff, 0x10, 0x30 };
 
@@ -61,9 +64,8 @@ namespace laplace::test {
     std::array<uint8_t, 16> data  = {};
     std::array<uint8_t, 8>  bytes = { 1, 2, 3, 4, 5, 6, 7, 8 };
 
-    write_bytes(
-        data, int32_t(123), int32_t(-1),
-        std::span<const uint8_t>(bytes.begin(), bytes.end()));
+    write_bytes(data, int32_t(123), int32_t(-1),
+                std::span<const uint8_t>(bytes.begin(), bytes.end()));
 
     EXPECT_EQ(rd<int32_t>(data, 0), 123);
     EXPECT_EQ(rd<int32_t>(data, 4), -1);

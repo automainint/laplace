@@ -49,10 +49,10 @@ namespace laplace::engine::access {
     void apply_delta(size_t index, int64_t delta) const;
     void adjust() const;
 
-    [[nodiscard]] auto request(size_t id, cref_vbyte args = {}) const
+    [[nodiscard]] auto request(size_t id, span_cbyte args = {}) const
         -> vbyte;
 
-    void modify(size_t id, cref_vbyte args = {}) const;
+    void modify(size_t id, span_cbyte args = {}) const;
 
     [[nodiscard]] auto is_changed() const -> bool;
     [[nodiscard]] auto is_dynamic() const -> bool;

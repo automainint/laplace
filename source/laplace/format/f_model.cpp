@@ -20,12 +20,12 @@ namespace laplace::format::model {
   using std::make_shared, core::family;
 
   auto extract(const_pack_type pack) -> model::data_type {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
     return make_shared<render::model>();
   }
 
   auto package(const_data_type data) -> pack_type {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
     return make_shared<family>();
   }
 

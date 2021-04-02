@@ -10,7 +10,7 @@
  *  the MIT License for more details.
  */
 
-#include "../../../laplace/core/utils.h"
+#include "../../../laplace/core/serial.h"
 #include "root.h"
 #include <algorithm>
 
@@ -47,12 +47,12 @@ namespace quadwar_app::object {
 
   void root::slot_create(entity en, size_t id_actor) {
 
-    en.modify(sets::root_slot_create, pack_to_array(id_actor));
+    en.modify(sets::root_slot_create, serial::pack_to_array(id_actor));
   }
 
   void root::slot_remove(entity en, size_t id_actor) {
 
-    en.modify(sets::root_slot_remove, pack_to_array(id_actor));
+    en.modify(sets::root_slot_remove, serial::pack_to_array(id_actor));
   }
 
   void root::loading(entity en) {
@@ -92,9 +92,9 @@ namespace quadwar_app::object {
 
     const auto result = en.request( //
         sets::root_slot_get,        //
-        pack_to_array(index));
+        serial::pack_to_array(index));
 
-    return rd<size_t>(result, 0);
+    return serial::rd<size_t>(result, 0);
   }
 
   void root::set_landscape(entity en, size_t id_landscape) {
@@ -105,28 +105,28 @@ namespace quadwar_app::object {
     return static_cast<size_t>(en.get(n_landscape, -1));
   }
 
-  auto root::do_request(size_t id, cref_vbyte args) const -> vbyte {
+  auto root::do_request(size_t id, span_cbyte args) const -> vbyte {
 
     if (id == sets::root_slot_get) {
-      const auto index = rd<size_t>(args, 0);
+      const auto index = serial::rd<size_t>(args, 0);
 
       if (index < m_slots.size()) {
-        return pack_to_bytes(m_slots[index]);
+        return serial::pack_to_bytes(m_slots[index]);
       }
     }
 
     return {};
   }
 
-  void root::do_modify(size_t id, cref_vbyte args) {
+  void root::do_modify(size_t id, span_cbyte args) {
 
     switch (id) {
       case sets::root_slot_create:
-        do_slot_create(rd<size_t>(args, 0));
+        do_slot_create(serial::rd<size_t>(args, 0));
         break;
 
       case sets::root_slot_remove:
-        do_slot_remove(rd<size_t>(args, 0));
+        do_slot_remove(serial::rd<size_t>(args, 0));
         break;
 
       case sets::root_launch: do_launch(); break;

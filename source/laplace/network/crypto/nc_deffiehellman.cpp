@@ -20,14 +20,14 @@ namespace laplace::network::crypto {
     auto status = wc_InitRng(&m_random);
 
     if (status != 0) {
-      error(__FUNCTION__, "wc_InitRng failed.");
+      error_("wc_InitRng failed.", __FUNCTION__);
       return;
     }
 
     status = wc_InitDhKey(&m_key);
 
     if (status != 0) {
-      error(__FUNCTION__, "wc_InitDhKey failed.");
+      error_("wc_InitDhKey failed.", __FUNCTION__);
       return;
     }
 
@@ -37,7 +37,7 @@ namespace laplace::network::crypto {
         generator, sizeof generator);
 
     if (status != 0) {
-      error(__FUNCTION__, "wc_DhSetKey failed.");
+      error_("wc_DhSetKey failed.", __FUNCTION__);
       return;
     }
 
@@ -53,7 +53,7 @@ namespace laplace::network::crypto {
         publ_key.data(), &publ_size);
 
     if (status != 0) {
-      error(__FUNCTION__, "wc_DhGenerateKeyPair failed.");
+      error_("wc_DhGenerateKeyPair failed.", __FUNCTION__);
       return;
     }
 
@@ -63,7 +63,7 @@ namespace laplace::network::crypto {
     m_is_ok = true;
   }
 
-  auto deffiehellman::setup_remote_key(cref_vbyte key) -> bool {
+  auto deffiehellman::setup_remote_key(span_cbyte key) -> bool {
     if (m_is_ok) {
       const auto priv_key = get_private_key();
 
@@ -82,12 +82,12 @@ namespace laplace::network::crypto {
           static_cast<uint32_t>(key.size()));
 
       if (status != 0) {
-        error(__FUNCTION__, "wc_DhAgree failed.");
+        error_("wc_DhAgree failed.", __FUNCTION__);
         return false;
       }
 
       if (mutual_key.size() < mutual_size) {
-        error(__FUNCTION__, "Invalid mutual key size.");
+        error_("Invalid mutual key size.", __FUNCTION__);
         return false;
       }
 

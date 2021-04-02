@@ -120,7 +120,7 @@ namespace laplace::engine {
       m_sets[n_is_dynamic].delta += is_dynamic ? 1 : -1;
       m_is_changed = true;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
   }
@@ -130,7 +130,7 @@ namespace laplace::engine {
       m_sets[n_is_markable].delta += is_markable ? 1 : -1;
       m_is_changed = true;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
   }
@@ -140,7 +140,7 @@ namespace laplace::engine {
       m_sets[n_is_selectable].delta += is_selectable ? 1 : -1;
       m_is_changed = true;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
   }
@@ -150,7 +150,7 @@ namespace laplace::engine {
       m_sets[n_is_vulnerable].delta += is_vulnerable ? 1 : -1;
       m_is_changed = true;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
   }
@@ -163,7 +163,7 @@ namespace laplace::engine {
 
       m_is_changed = true;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
   }
@@ -172,7 +172,7 @@ namespace laplace::engine {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       m_clock = clock_msec;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
   }
@@ -184,7 +184,7 @@ namespace laplace::engine {
 
       m_clock = period - 1;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
   }
@@ -217,7 +217,7 @@ namespace laplace::engine {
 
       m_is_changed = true;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
   }
@@ -267,7 +267,7 @@ namespace laplace::engine {
       return locked_get(index);
     }
 
-    error(__FUNCTION__, "Lock timeout.");
+    error_("Lock timeout.", __FUNCTION__);
     desync();
     return 0;
   }
@@ -279,7 +279,7 @@ namespace laplace::engine {
         m_is_changed = true;
       }
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
   }
@@ -291,7 +291,7 @@ namespace laplace::engine {
         m_is_changed = true;
       }
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
   }
@@ -318,19 +318,19 @@ namespace laplace::engine {
         m_is_changed = false;
       }
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
   }
 
   auto basic_entity::request( //
       size_t     id,          //
-      cref_vbyte args) -> vbyte {
+      span_cbyte args) -> vbyte {
 
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       return this->do_request(id, args);
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
 
@@ -339,12 +339,12 @@ namespace laplace::engine {
 
   void basic_entity::modify( //
       size_t     id,         //
-      cref_vbyte args) {
+      span_cbyte args) {
 
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       this->do_modify(id, args);
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
   }
@@ -367,7 +367,7 @@ namespace laplace::engine {
 
       return result;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
 
@@ -379,7 +379,7 @@ namespace laplace::engine {
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       return m_is_changed;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
 
@@ -391,7 +391,7 @@ namespace laplace::engine {
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       return m_sets[n_is_dynamic].value > 0;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
 
@@ -403,7 +403,7 @@ namespace laplace::engine {
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       return m_sets[n_is_markable].value > 0;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
 
@@ -415,7 +415,7 @@ namespace laplace::engine {
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       return m_sets[n_is_selectable].value > 0;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
 
@@ -427,7 +427,7 @@ namespace laplace::engine {
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       return m_sets[n_is_vulnerable].value > 0;
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
 
@@ -439,7 +439,7 @@ namespace laplace::engine {
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       return static_cast<uint64_t>(m_sets[n_tick_period].value);
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
 
@@ -455,7 +455,7 @@ namespace laplace::engine {
             { m_sets[n_bounds_max_x].value, m_sets[n_bounds_max_y].value,
               m_sets[n_bounds_max_z].value } };
     } else {
-      error(__FUNCTION__, "Lock timeout.");
+      error_("Lock timeout.", __FUNCTION__);
       desync();
     }
 
@@ -480,12 +480,12 @@ namespace laplace::engine {
     }
   }
 
-  auto basic_entity::do_request(size_t id, cref_vbyte args) const
+  auto basic_entity::do_request(size_t id, span_cbyte args) const
       -> vbyte {
     return {};
   }
 
-  void basic_entity::do_modify(size_t id, cref_vbyte args) { }
+  void basic_entity::do_modify(size_t id, span_cbyte args) { }
 
   void basic_entity::assign(cref_entity en) noexcept {
     m_is_changed = en.m_is_changed;

@@ -10,7 +10,8 @@
  *  the MIT License for more details.
  */
 
-#include "../../core/utils.h"
+#include "../../core/utf8.h"
+#include "../../core/string.h"
 #include "font.h"
 #include <algorithm>
 
@@ -34,7 +35,7 @@ namespace laplace::ui::text {
 
     char32_t code = 0;
 
-    for (size_t i = 0; utf8_decode(text, i, code);) {
+    for (size_t i = 0; utf8::decode(text, i, code);) {
       if (m_face.load_char_metrics(code)) {
         auto slot = m_face.get_glyph();
 
@@ -62,7 +63,7 @@ namespace laplace::ui::text {
   void font::print(ref_image img, int x, int y, u8string_view text) {
     char32_t code = 0;
 
-    for (size_t i = 0; utf8_decode(text, i, code);) {
+    for (size_t i = 0; utf8::decode(text, i, code);) {
       if (m_face.load_char_render(code)) {
         auto slot = m_face.get_glyph();
 

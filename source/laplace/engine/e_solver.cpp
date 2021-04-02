@@ -45,8 +45,8 @@ namespace laplace::engine {
 
           rewind_to(time);
         } else {
-          error(
-              __FUNCTION__, "Rewind is not allowed. Impact ignored.");
+          error_(
+              "Rewind is not allowed. Impact ignored.", __FUNCTION__);
         }
       } else {
         auto op = [](const ptr_impact &a, uint64_t b) -> bool {

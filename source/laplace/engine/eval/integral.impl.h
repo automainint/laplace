@@ -1,5 +1,7 @@
 /*  laplace/engine/eval/integral.impl.h
  *
+ *      Integral deterministic math features. Constexpr implementation.
+ *
  *  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
@@ -13,7 +15,7 @@
 #ifndef laplace_engine_eval_integral_impl_h
 #define laplace_engine_eval_integral_impl_h
 
-namespace laplace::engine::eval {
+namespace laplace::engine::eval::impl {
   constexpr auto constant_scale() noexcept -> intval {
     return 0x10000000;
   }
@@ -462,7 +464,8 @@ namespace laplace::engine::eval {
                precision, 1);
   }
 
-  //static_assert(pow(200, 200, 100) == 400, "2 * 2 != 4");
+  static_assert(pow(200, 200, 100) < 406, "2 * 2 != 4");
+  static_assert(pow(200, 200, 100) > 394, "2 * 2 != 4");
 
   constexpr auto sqrt(const intval x, const intval scale) noexcept
       -> intval {
@@ -526,14 +529,29 @@ namespace laplace::engine::eval {
   constexpr auto sin(const intval x, const intval scale) noexcept
       -> intval {
 
-    return div(sin_2pi(x, 2 * pi(scale)), 2 * pi(scale), scale);
+    const auto f = [](const intval x, const intval scale) {
+      return div(sin_2pi(x, 2 * pi(scale)), 2 * pi(scale), scale);
+    };
+
+    constexpr intval precision = 8;
+
+    return div(f(x * precision, scale * precision), precision, 1);
   }
 
   constexpr auto cos(const intval x, const intval scale) noexcept
       -> intval {
 
-    return sin(x + pi(scale) / 2, scale);
+    const auto f = [](const intval x, const intval scale) {
+      return div(sin_2pi(x + pi(scale) / 2, 2 * pi(scale)), 2 * pi(scale), scale);
+    };
+
+    constexpr intval precision = 8;
+
+    return div(f(x * precision, scale * precision), precision, 1);
   }
+
+  /*  cos^2(x) + sin^2(x) = 1
+   */
 
   static_assert(mul(sin(10, 100), sin(10, 100), 100) +
                     mul(cos(10, 100), cos(10, 100), 100) <

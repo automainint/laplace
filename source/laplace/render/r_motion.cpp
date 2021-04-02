@@ -15,14 +15,14 @@
 
 namespace laplace::render {
   void motion::setup(ptr_model source) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void motion::solve(timeval time) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 
   void motion::blend(cref_motion state, realmax_t factor) {
-    error(__FUNCTION__, "Not implemented.");
+    error_("Not implemented.", __FUNCTION__);
   }
 }

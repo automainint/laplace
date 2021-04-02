@@ -14,6 +14,7 @@
  *  Add bzip2 compression support.
  */
 
+#include "../core/serial.h"
 #include "../core/utils.h"
 #include "binary.h"
 #include "text.h"
@@ -22,7 +23,7 @@
 namespace laplace::format::binary {
   using std::make_shared, std::vector, std::u8string,
       std::u8string_view, core::ref_family, core::cref_family,
-      core::family;
+      core::family, serial::rd, serial::wr;
 
   const vector<u8string> table = {
     u8"_undefined",   text::s_function, text::s_arguments,
@@ -333,7 +334,7 @@ namespace laplace::format::binary {
     return write(v) == v.size();
   }
 
-  static auto write_bytes(fn_write write, cref_vbyte value) -> bool {
+  static auto write_bytes(fn_write write, span_cbyte value) -> bool {
     vbyte v(9);
     wr<uint8_t>(v, 0, ids::bytes);
     wr<uint64_t>(v, 1, value.size());

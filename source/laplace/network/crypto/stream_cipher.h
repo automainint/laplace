@@ -21,16 +21,16 @@ namespace laplace::network::crypto {
   public:
     ~stream_cipher() override = default;
 
-    [[nodiscard]] auto encrypt(cref_vbyte bytes) -> vbyte override;
-    [[nodiscard]] auto decrypt(cref_vbyte bytes) -> vbyte override;
+    [[nodiscard]] auto encrypt(span_cbyte bytes) -> vbyte override;
+    [[nodiscard]] auto decrypt(span_cbyte bytes) -> vbyte override;
 
   protected:
     [[nodiscard]] virtual auto do_encrypt( //
-        cref_vbyte         src,            //
+        span_cbyte         src,            //
         std::span<uint8_t> dst) -> bool;
 
     [[nodiscard]] virtual auto do_decrypt( //
-        cref_vbyte         src,            //
+        span_cbyte         src,            //
         std::span<uint8_t> dst) -> bool;
 
     [[nodiscard]] virtual auto rewind_decryption() -> bool;
@@ -39,7 +39,7 @@ namespace laplace::network::crypto {
         size_t offset) -> bool;
 
   private:
-    [[nodiscard]] auto scan(cref_vbyte data) const -> bool;
+    [[nodiscard]] auto scan(span_cbyte data) const -> bool;
 
     enum encoding_offset : size_t {
       n_offset = 0,

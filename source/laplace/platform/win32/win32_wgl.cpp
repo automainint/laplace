@@ -27,8 +27,9 @@
 #define LOAD(a)                                                      \
   if (a = reinterpret_cast<pfn_##a>(GetProcAddress(opengl_dll, #a)); \
       !a) {                                                          \
-    error(__FUNCTION__, "Unable to get %s function from %s.", #a,    \
-          to_string(opengl_path).c_str());                           \
+    error_(fmt("Unable to get %s function from %s.", #a,             \
+               to_string(opengl_path).c_str()),                      \
+           __FUNCTION__);                                            \
     status = false;                                                  \
   }
 
@@ -67,9 +68,10 @@ namespace laplace::win32 {
     }
 
     if (opengl_dll = LoadLibraryW(opengl_path); !opengl_dll) {
-      error(__FUNCTION__,
-            "Unable to load OpenGL dynamic-link library from %s.",
-            to_string(opengl_path).c_str());
+      error_(
+          fmt("Unable to load OpenGL dynamic-link library from %s.",
+              to_string(opengl_path).c_str()),
+          __FUNCTION__);
       return false;
     }
 
@@ -105,7 +107,7 @@ namespace laplace::win32 {
           get_proc_address("glGetIntegerv"));
 
       if (!gl::glGetIntegerv) {
-        error(__FUNCTION__, "Unable to get glGetIntegerv function.");
+        error_("Unable to get glGetIntegerv function.", __FUNCTION__);
         status = false;
       }
     }
@@ -115,7 +117,7 @@ namespace laplace::win32 {
           get_proc_address("glGetStringi"));
 
       if (!gl::glGetStringi) {
-        error(__FUNCTION__, "Unable to get glGetStringi function.");
+        error_("Unable to get glGetStringi function.", __FUNCTION__);
         status = false;
       }
     }
@@ -147,8 +149,8 @@ namespace laplace::win32 {
               get_proc_address("wglCreateContextAttribsARB"));
 
       if (!wglCreateContextAttribsARB) {
-        error(__FUNCTION__,
-              "Unable to get wglCreateContextAttribsARB function.");
+        error_("Unable to get wglCreateContextAttribsARB function.",
+               __FUNCTION__);
         status = false;
       }
     }

@@ -21,23 +21,31 @@ namespace laplace::engine::eval::astar {
     intval distance = 0;
   };
 
-  using vlink = std::vector<link>;
+  using vlink = small_vector<link>;
 
-  using fn_neighbours = std::function<vlink(const size_t node)>;
+  using fn_sight = std::function<bool(const size_t a, const size_t b)>;
+  using fn_neighbors = std::function<vlink(const size_t node)>;
   using fn_heuristic =
       std::function<intval(const size_t a, const size_t b)>;
 
-  auto exists(                        //
-      const fn_neighbours neighbours, //
-      const fn_heuristic  heuristic,  //
-      const size_t        source,     //
-      const size_t        destination) -> bool;
+  auto exists(                      //
+      const fn_neighbors neighbors, //
+      const fn_heuristic heuristic, //
+      const size_t       source,    //
+      const size_t       destination) -> bool;
 
-  auto search(                        //
-      const fn_neighbours neighbours, //
-      const fn_heuristic  heuristic,  //
-      const size_t        source,     //
-      const size_t        destination) -> vuint;
+  auto search(                      //
+      const fn_neighbors neighbors, //
+      const fn_heuristic heuristic, //
+      const size_t       source,    //
+      const size_t       destination) -> vuint;
+
+  auto search_theta(                //
+      const fn_neighbors neighbors, //
+      const fn_heuristic heuristic, //
+      const fn_sight     sight,     //
+      const size_t       source,    //
+      const size_t       destination) -> vuint;
 }
 
 #endif

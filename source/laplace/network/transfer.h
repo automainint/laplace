@@ -20,24 +20,24 @@ namespace laplace::network {
   public:
     void set_verbose(bool is_verbose) noexcept;
     void set_cipher(std::unique_ptr<crypto::basic_cipher> cipher);
-    void set_remote_key(cref_vbyte key);
+    void set_remote_key(span_cbyte key);
 
-    [[nodiscard]] auto pack(std::span<const cref_vbyte> data) -> vbyte;
-    [[nodiscard]] auto unpack(cref_vbyte data) -> std::vector<vbyte>;
+    [[nodiscard]] auto pack(std::span<const span_cbyte> data) -> vbyte;
+    [[nodiscard]] auto unpack(span_cbyte data) -> std::vector<vbyte>;
 
-    [[nodiscard]] auto encode(std::span<const cref_vbyte> data)
+    [[nodiscard]] auto encode(std::span<const span_cbyte> data)
         -> vbyte;
-    [[nodiscard]] auto decode(cref_vbyte data) -> std::vector<vbyte>;
+    [[nodiscard]] auto decode(span_cbyte data) -> std::vector<vbyte>;
 
-    [[nodiscard]] auto get_public_key() const noexcept -> cref_vbyte;
-    [[nodiscard]] auto get_mutual_key() const noexcept -> cref_vbyte;
+    [[nodiscard]] auto get_public_key() const noexcept -> span_cbyte;
+    [[nodiscard]] auto get_mutual_key() const noexcept -> span_cbyte;
 
     [[nodiscard]] auto is_encrypted() const noexcept -> bool;
 
     [[nodiscard]] auto get_loss_count() const noexcept -> size_t;
 
-    [[nodiscard]] static auto get_data_overhead() -> size_t;
-    [[nodiscard]] static auto check_sum(cref_vbyte data) -> uint64_t;
+    [[nodiscard]] static auto get_data_overhead() noexcept -> size_t;
+    [[nodiscard]] static auto check_sum(span_cbyte data) -> uint64_t;
 
     template <typename cipher_>
     void setup_cipher() {
@@ -46,15 +46,15 @@ namespace laplace::network {
 
   private:
     [[nodiscard]] auto pack_internal(     //
-        std::span<const cref_vbyte> data, //
+        std::span<const span_cbyte> data, //
         const uint16_t              mark) -> vbyte;
 
     [[nodiscard]] auto unpack_internal( //
-        cref_vbyte     data,            //
+        span_cbyte     data,            //
         const uint16_t mark) -> std::vector<vbyte>;
 
     [[nodiscard]] auto scan( //
-        cref_vbyte data,     //
+        span_cbyte data,     //
         uint16_t   mark) const noexcept -> size_t;
 
     static constexpr uint16_t mark_plain     = 0;

@@ -32,7 +32,7 @@ namespace laplace::core {
     if (!m_buffer_offset.empty()) {
       m_buffer_offset.emplace_back(m_buffer_offset.back());
     } else {
-      error(__FUNCTION__, "No buffered data.");
+      error_("No buffered data.", __FUNCTION__);
     }
   }
 
@@ -48,7 +48,7 @@ namespace laplace::core {
       m_line   = m_buffer_offset.back().line;
       m_column = m_buffer_offset.back().column;
     } else {
-      error(__FUNCTION__, "No buffered data.");
+      error_("No buffered data.", __FUNCTION__);
     }
   }
 
@@ -75,7 +75,7 @@ namespace laplace::core {
 
       m_buffer_offset.back().offset = 0;
     } else {
-      error(__FUNCTION__, "No buffered data.");
+      error_("No buffered data.", __FUNCTION__);
     }
   }
 
@@ -104,7 +104,7 @@ namespace laplace::core {
         }
       }
     } else {
-      error(__FUNCTION__, "No buffered data.");
+      error_("No buffered data.", __FUNCTION__);
     }
 
     return result;
@@ -114,7 +114,7 @@ namespace laplace::core {
     if (!m_buffer_offset.empty() && m_buffer_offset.back().offset != 0) {
       m_buffer_offset.back().offset--;
     } else {
-      error(__FUNCTION__, "No buffered data.");
+      error_("No buffered data.", __FUNCTION__);
     }
   }
 
@@ -688,8 +688,8 @@ namespace laplace::core {
             if (!is_silent) {
               auto offset = s_value.size();
 
-              if (!utf8_encode(c, s_value, offset)) {
-                error(__FUNCTION__, "UTF-8 encoding failed.");
+              if (!utf8::encode(c, s_value, offset)) {
+                error_("UTF-8 encoding failed.", __FUNCTION__);
                 is_silent = true;
               }
             }
@@ -721,8 +721,8 @@ namespace laplace::core {
             if (!is_silent) {
               auto offset = s_value.size();
 
-              if (!utf8_encode(c, s_value, offset)) {
-                error(__FUNCTION__, "UTF-8 encoding failed.");
+              if (!utf8::encode(c, s_value, offset)) {
+                error_("UTF-8 encoding failed.", __FUNCTION__);
                 is_silent = true;
               }
             }
@@ -734,8 +734,8 @@ namespace laplace::core {
               if (!is_silent) {
                 auto offset = s_value.size();
 
-                if (!utf8_encode(c, s_value, offset)) {
-                  error(__FUNCTION__, "UTF-8 encoding failed.");
+                if (!utf8::encode(c, s_value, offset)) {
+                  error_("UTF-8 encoding failed.", __FUNCTION__);
                   is_silent = true;
                 }
               }
@@ -767,8 +767,8 @@ namespace laplace::core {
             if (!is_silent) {
               auto offset = s_value.size();
 
-              if (!utf8_encode(c, s_value, offset)) {
-                error(__FUNCTION__, "UTF-8 encoding failed.");
+              if (!utf8::encode(c, s_value, offset)) {
+                error_("UTF-8 encoding failed.", __FUNCTION__);
                 is_silent = true;
               }
             }
@@ -799,8 +799,8 @@ namespace laplace::core {
             if (!is_silent) {
               auto offset = s_value.size();
 
-              if (!utf8_encode(c, s_value, offset)) {
-                error(__FUNCTION__, "UTF-8 encoding failed.");
+              if (!utf8::encode(c, s_value, offset)) {
+                error_("UTF-8 encoding failed.", __FUNCTION__);
                 is_silent = true;
               }
             }
@@ -831,8 +831,8 @@ namespace laplace::core {
             if (!is_silent) {
               auto offset = s_value.size();
 
-              if (!utf8_encode(c, s_value, offset)) {
-                error(__FUNCTION__, "UTF-8 encoding failed.");
+              if (!utf8::encode(c, s_value, offset)) {
+                error_("UTF-8 encoding failed.", __FUNCTION__);
                 is_silent = true;
               }
             }

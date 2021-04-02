@@ -29,8 +29,7 @@ namespace laplace::engine::protocol {
       set_encoded_size(size);
     }
 
-    constexpr slot_remove(size_t index, uint64_t time,
-                          size_t id_actor) {
+    constexpr slot_remove(size_t index, uint64_t time, size_t id_actor) {
       set_order({ index });
       set_time(time);
       set_actor(id_actor);
@@ -41,17 +40,16 @@ namespace laplace::engine::protocol {
       w.remove(get_actor());
     }
 
-    inline void
-    encode_to(std::span<uint8_t> bytes) const final {
-      write_bytes(bytes, id, get_index64(), get_time64(),
-                  get_actor64());
+    inline void encode_to(std::span<uint8_t> bytes) const final {
+      serial::write_bytes(
+          bytes, id, get_index64(), get_time64(), get_actor64());
     }
 
-    static constexpr auto scan(cref_vbyte seq) {
+    static constexpr auto scan(span_cbyte seq) {
       return seq.size() == size && get_id(seq) == id;
     }
 
-    static inline auto decode(cref_vbyte seq) {
+    static inline auto decode(span_cbyte seq) {
       return slot_remove { get_index(seq), get_time(seq),
                            get_actor(seq) };
     }

@@ -64,7 +64,7 @@ namespace laplace::core {
     family(const char8_t *value);
     family(const char16_t *value);
     family(const char32_t *value);
-    family(cref_vbyte value);
+    family(span_cbyte value);
 
     auto operator=(cref_vfamily value) -> ref_family;
     auto operator=(cref_composite value) -> ref_family;
@@ -89,7 +89,7 @@ namespace laplace::core {
     auto operator=(const char8_t *value) -> ref_family;
     auto operator=(const char16_t *value) -> ref_family;
     auto operator=(const char32_t *value) -> ref_family;
-    auto operator=(cref_vbyte value) -> ref_family;
+    auto operator=(span_cbyte value) -> ref_family;
 
     [[nodiscard]] auto operator==(cref_family value) const noexcept
         -> bool;
@@ -131,7 +131,7 @@ namespace laplace::core {
     auto get_real() const -> double;
     auto get_string() const -> std::u8string_view;
     auto get_uint() const -> uint64_t;
-    auto get_bytes() const -> cref_vbyte;
+    auto get_bytes() const -> span_cbyte;
 
     auto get_size() const -> size_t;
     auto has(cref_family key) const -> bool;
@@ -197,7 +197,7 @@ namespace laplace::core {
     void assign(std::u8string_view value);
     void assign(std::u16string_view value);
     void assign(std::u32string_view value);
-    void assign(cref_vbyte value);
+    void assign(span_cbyte value);
 
     static auto op_lower_bound(const std::pair<family, family> &a,
                                const family &key) -> bool;

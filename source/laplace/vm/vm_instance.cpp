@@ -5,7 +5,7 @@ namespace laplace::vm {
   instance::instance() { }
   instance::~instance() { }
 
-  void instance::new_thread(size_t adress, cref_vbyte args) {
+  void instance::new_thread(size_t adress, span_cbyte args) {
     if (adress < m_bitcode.size()) {
       execute::state s;
       s.is_active           = true;
@@ -16,7 +16,7 @@ namespace laplace::vm {
     }
   }
 
-  auto instance::perform(size_t id, cref_vbyte args) -> vbyte {
+  auto instance::perform(size_t id, span_cbyte args) -> vbyte {
     vbyte result;
     auto  i = m_exports.find(id);
 
@@ -48,11 +48,11 @@ namespace laplace::vm {
   }
 
   void instance::execute(execute::ref_state s) {
-    auto fork = [this](size_t address, cref_vbyte args) {
+    auto fork = [this](size_t address, span_cbyte args) {
       new_thread(address, args);
     };
 
-    auto call_ext = [this](size_t id, cref_vbyte args) -> vbyte {
+    auto call_ext = [this](size_t id, span_cbyte args) -> vbyte {
       if (auto e = get_env(); e) {
         return e->perform(id, args);
       }

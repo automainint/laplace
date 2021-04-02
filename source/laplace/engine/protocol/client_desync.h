@@ -28,14 +28,14 @@ namespace laplace::engine::protocol {
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
-      write_bytes(bytes, id);
+      serial::write_bytes(bytes, id);
     }
 
-    static constexpr auto scan(cref_vbyte seq) -> bool {
+    static constexpr auto scan(span_cbyte seq) -> bool {
       return seq.size() == size && get_id(seq) == id;
     }
 
-    static inline auto decode(cref_vbyte seq) {
+    static inline auto decode(span_cbyte seq) {
       return client_desync {};
     }
   };

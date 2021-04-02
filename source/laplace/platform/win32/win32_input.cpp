@@ -21,7 +21,7 @@
 #undef min
 #undef max
 
-#include "../../core/utils.h"
+#include "../../core/utf8.h"
 #include "../keys.h"
 #include "input.h"
 #include <cassert>
@@ -232,7 +232,7 @@ namespace laplace::win32 {
 
       if (!RegisterRawInputDevices(rid, sizeof rid / sizeof *rid,
                                    sizeof(RAWINPUTDEVICE))) {
-        error(__FUNCTION__, "RegisterRawInputDevices failed.");
+        error_("RegisterRawInputDevices failed.", __FUNCTION__);
       }
     }
   }
@@ -257,7 +257,7 @@ namespace laplace::win32 {
       } else if (raw.header.dwType == RIM_TYPEMOUSE) {
         process_mouse(&raw.data.mouse);
       } else {
-        error(__FUNCTION__, "Unknown input type.");
+        error_("Unknown input type.", __FUNCTION__);
       }
     }
   }
@@ -266,8 +266,8 @@ namespace laplace::win32 {
     if (m_is_char_pressed) {
       if (m_char_period_msec <= delta_msec) {
         size_t offset = m_text.length();
-        if (!utf8_encode(m_last_char, m_text, offset))
-          error(__FUNCTION__, "Unable to encode UTF-8 string.");
+        if (!utf8::encode(m_last_char, m_text, offset))
+          error_("Unable to encode UTF-8 string.", __FUNCTION__);
         m_char_period_msec += char_period_msec > delta_msec
                                   ? char_period_msec - delta_msec
                                   : char_period_msec;
@@ -532,9 +532,10 @@ namespace laplace::win32 {
       m_char_period_msec = char_predelay_msec;
 
       if (is_down) {
-        size_t offset = m_text.length();
-        if (!utf8_encode(c, m_text, offset))
-          error(__FUNCTION__, "Unable to encode UTF-8 string.");
+        auto offset = m_text.length();
+
+        if (!utf8::encode(c, m_text, offset))
+          error_("Unable to encode UTF-8 string.", __FUNCTION__);
 
         m_is_char_pressed = true;
         m_last_char_key   = key;

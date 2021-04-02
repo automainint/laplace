@@ -77,14 +77,14 @@ namespace laplace::stem::config {
 
           if (i < j) {
             if (g_argc >= argv_size) {
-              error(__FUNCTION__, "Too many command line arguments.");
+              error_("Too many command line arguments.", __FUNCTION__);
               break;
             }
 
             const auto size = j - i;
 
             if (size >= argv_string_size) {
-              error(__FUNCTION__, "Too long command line argument.");
+              error_("Too long command line argument.", __FUNCTION__);
               break;
             }
 
@@ -102,7 +102,7 @@ namespace laplace::stem::config {
   }
 
   auto get_default() -> family {
-    family cfg;
+    auto cfg = family {};
 
     cfg[k_frame][0] = window::default_frame_width;
     cfg[k_frame][1] = window::default_frame_height;
@@ -173,7 +173,7 @@ namespace laplace::stem::config {
           } else if (strcmp(name, a_frame) == 0) {
             arg += read_frame_size(arg + 1, end, cfg);
           } else {
-            log("Unknown command line argument '%s'.", tag);
+            log(fmt("Unknown command line argument '%s'.", tag));
           }
         } else {
           for (size_t i = 1; tag[i]; i++) {
@@ -191,14 +191,14 @@ namespace laplace::stem::config {
             } else if (tag[i] == f_frame) {
               arg += read_frame_size(arg + 1, end, cfg);
             } else {
-              log("Unknown command line flag '%c' in argument "
-                  "'%s'.",
-                  tag[i], tag);
+              log(fmt("Unknown command line flag '%c' in argument "
+                      "'%s'.",
+                      tag[i], tag));
             }
           }
         }
       } else {
-        log("Command line argument '%s' ignored.", tag);
+        log(fmt("Command line argument '%s' ignored.", tag));
       }
 
       return arg + 1;
@@ -226,8 +226,9 @@ namespace laplace::stem::config {
         ofstream out(file_name);
 
         if (!text::encode(wrap(out), cfg)) {
-          error(__FUNCTION__, "Unable to save config file '%s'.",
-                to_string(file_name).c_str());
+          error_(fmt("Unable to save config file '%s'.",
+                     to_string(file_name).c_str()),
+                 __FUNCTION__);
         }
       }
     }

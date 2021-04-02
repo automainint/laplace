@@ -48,7 +48,7 @@ namespace quadwar_app::view {
       for (size_t j = 0; j < height; j++) {
         for (size_t i = 0; i < width; i++) {
 
-          if (tiles[j * width + i] == object::landscape::tile_border) {
+          if (tiles[j * width + i] != object::landscape::tile_walkable) {
 
             const auto x0 = fx + static_cast<real>(i) * tail_size;
             const auto y0 = fy + static_cast<real>(j) * tail_size;

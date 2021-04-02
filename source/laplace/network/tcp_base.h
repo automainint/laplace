@@ -29,7 +29,7 @@ namespace laplace::network {
                                   io_mode mode) -> size_t;
 
     [[nodiscard]] auto receive(size_t count, io_mode mode) -> vbyte;
-    [[nodiscard]] auto send(cref_vbyte seq) -> size_t;
+    [[nodiscard]] auto send(span_cbyte seq) -> size_t;
 
     [[nodiscard]] auto is_done() const -> bool;
 

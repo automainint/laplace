@@ -65,7 +65,7 @@ namespace laplace::ui::text {
     int      width = 0;
     char32_t c     = 0;
 
-    for (size_t i = 0; utf8_decode(text, i, c);) {
+    for (size_t i = 0; utf8::decode(text, i, c);) {
       width += get_char_width(c);
     }
 
@@ -78,7 +78,7 @@ namespace laplace::ui::text {
     int x0 = x;
     int y0 = y - get_char_top();
 
-    for (size_t i = 0, n = 0; utf8_decode(text, i, code); n++) {
+    for (size_t i = 0, n = 0; utf8::decode(text, i, code); n++) {
       draw_char(img, x0, y0, code);
 
       x0 += static_cast<int>(get_char_width(code));

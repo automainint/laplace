@@ -34,7 +34,7 @@ namespace laplace::win32 {
     using cref = const audio &;
     using ptr  = std::shared_ptr<audio>;
 
-    using fn_read = std::function<void(ref_vbyte buffer)>;
+    using fn_read = std::function<void(span_byte buffer)>;
 
     struct format {
       size_t channel_count;
@@ -52,7 +52,7 @@ namespace laplace::win32 {
     audio(format request = default_format_request);
     ~audio();
 
-    void write(cref_vbyte samples);
+    void write(span_cbyte samples);
 
     void set_active(bool is_active);
     void set_thread_priority(int priority);
@@ -83,7 +83,7 @@ namespace laplace::win32 {
     auto adjust_bytes(size_t size) -> size_t;
     auto buffer_size() -> size_t;
     void buffer_adjust(size_t size_required);
-    void buffer_write(cref_vbyte samples, size_t size);
+    void buffer_write(span_cbyte samples, size_t size);
 
     void set_format(size_t channel_count, size_t sample_rate_hz,
                     size_t sample_bits);

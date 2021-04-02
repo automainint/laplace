@@ -17,7 +17,7 @@ namespace laplace::vm {
     m_env = env;
   }
 
-  auto agent::perform(size_t id, cref_vbyte args) -> vbyte {
+  auto agent::perform(size_t id, span_cbyte args) -> vbyte {
     return {};
   }
 

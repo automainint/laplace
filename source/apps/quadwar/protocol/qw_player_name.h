@@ -68,19 +68,19 @@ namespace quadwar_app::protocol {
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
 
-      write_bytes(bytes, id, get_index64(), get_time64(),
-                  get_actor64(), std::u8string_view(m_name));
+      serial::write_bytes(bytes, id, get_index64(), get_time64(),
+                          get_actor64(), std::u8string_view(m_name));
     }
 
-    static constexpr auto scan(cref_vbyte seq) -> bool {
+    static constexpr auto scan(span_cbyte seq) -> bool {
       return seq.size() >= n_name && get_id(seq) == id;
     }
 
-    static inline auto get_name(cref_vbyte seq) {
+    static inline auto get_name(span_cbyte seq) {
       return get_string(seq, n_name);
     }
 
-    static inline auto decode(cref_vbyte seq) {
+    static inline auto decode(span_cbyte seq) {
       return qw_player_name //
           { get_index(seq), get_time(seq), get_actor(seq),
             get_name(seq) };
