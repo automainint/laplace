@@ -17,21 +17,19 @@
 #include "world.h"
 
 namespace laplace::engine {
-  using std::unique_lock, std::shared_lock, std::thread, std::function;
+  using std::unique_lock, std::lock, std::adopt_lock, std::jthread,
+      std::function;
 
   scheduler::scheduler(ref_world w) : m_world(w) { }
 
   scheduler::~scheduler() {
     set_done();
-
-    for (size_t i = 0; i < m_threads.size(); i++) {
-      m_threads[i].join();
-    }
   }
 
   void scheduler::schedule(size_t delta) {
-    auto _ul_ex = unique_lock(m_extra_lock);
-    auto _ul    = unique_lock(m_lock);
+    lock(m_lock_ex, m_lock_in);
+    auto _ul_ex = unique_lock(m_lock_ex, adopt_lock);
+    auto _ul    = unique_lock(m_lock_in, adopt_lock);
 
     m_tick_count += delta;
     _ul.unlock();
@@ -40,8 +38,9 @@ namespace laplace::engine {
   }
 
   void scheduler::join() {
-    auto _ul_ex = unique_lock(m_extra_lock);
-    auto _ul    = unique_lock(m_lock);
+    lock(m_lock_ex, m_lock_in);
+    auto _ul_ex = unique_lock(m_lock_ex, adopt_lock);
+    auto _ul    = unique_lock(m_lock_in, adopt_lock);
 
     if (!m_threads.empty()) {
       m_sync.wait(_ul, [this] {
@@ -51,10 +50,11 @@ namespace laplace::engine {
   }
 
   void scheduler::set_thread_count(size_t thread_count) {
-    auto _ul_ex = unique_lock(m_extra_lock);
-    auto _ul    = unique_lock(m_lock);
+    lock(m_lock_ex, m_lock_in);
+    auto _ul_ex = unique_lock(m_lock_ex, adopt_lock);
+    auto _ul    = unique_lock(m_lock_in, adopt_lock);
 
-    const auto thread_count_limit = thread::hardware_concurrency() *
+    const auto thread_count_limit = jthread::hardware_concurrency() *
                                     overthreading_limit;
 
     if (thread_count > thread_count_limit) {
@@ -72,9 +72,7 @@ namespace laplace::engine {
 
       m_sync.notify_all();
 
-      for (size_t i = 0; i < m_threads.size(); i++) {
-        m_threads[i].join();
-      }
+      for (auto &t : m_threads) { t.join(); }
 
       _ul.lock();
       m_done = false;
@@ -85,22 +83,21 @@ namespace laplace::engine {
     }
 
     for (size_t i = n; i < m_threads.size(); i++) {
-      m_threads[i] = thread([this] {
+      m_threads[i] = jthread([this] {
         this->tick_thread();
       });
     }
   }
 
   auto scheduler::get_thread_count() -> size_t {
-    auto _ul_ex = unique_lock(m_extra_lock);
-    auto _ul    = unique_lock(m_lock);
-
+    auto _ul = unique_lock(m_lock_ex);
     return m_threads.size();
   }
 
   void scheduler::set_done() {
-    auto _ul_ex = unique_lock(m_extra_lock);
-    auto _ul    = unique_lock(m_lock);
+    lock(m_lock_ex, m_lock_in);
+    auto _ul_ex = unique_lock(m_lock_ex, adopt_lock);
+    auto _ul    = unique_lock(m_lock_in, adopt_lock);
 
     m_done = true;
     _ul.unlock();
@@ -109,7 +106,7 @@ namespace laplace::engine {
   }
 
   void scheduler::sync(function<void()> fn) {
-    auto _ul = unique_lock(m_lock);
+    auto _ul = unique_lock(m_lock_in);
 
     m_in++;
 
@@ -143,7 +140,7 @@ namespace laplace::engine {
   }
 
   void scheduler::tick_thread() {
-    auto _ul = unique_lock(m_lock);
+    auto _ul = unique_lock(m_lock_in);
 
     while (m_sync.wait(_ul,
                        [this] {

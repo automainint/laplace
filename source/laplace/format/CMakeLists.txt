@@ -1,5 +1,5 @@
 target_sources(
-  ${EXE_NAME}
+  ${LAPLACE_EXE}
     PRIVATE
       f_binary.cpp f_buffer.cpp f_image.cpp f_model.cpp
       f_text.cpp

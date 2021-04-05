@@ -17,6 +17,7 @@ namespace laplace {
   constexpr auto as_index(uint64_t value) noexcept -> size_t {
     if constexpr (sizeof(uint64_t) != sizeof(size_t)) {
       if (value > std::numeric_limits<size_t>::max()) {
+        verb("[ error ] 32-bit index value overflow.");
         return -1;
       }
     }

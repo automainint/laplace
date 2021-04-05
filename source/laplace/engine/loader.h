@@ -41,7 +41,7 @@ namespace laplace::engine {
 
     std::mutex              m_lock;
     std::condition_variable m_sync;
-    std::thread             m_thread;
+    std::jthread            m_thread;
 
     bool        m_is_ready = true;
     bool        m_is_done  = false;

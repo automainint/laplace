@@ -13,26 +13,56 @@ Official repository: [GitHub](https://github.com/automainint/laplace)
 ##  How to build
 To build the project CMake and Python 3 are required.
 
-### With CMake
+### With provided build script
 Execute `build.py`.
 
-    python3 build.py
+```shell
+python3 build.py
+```
 
 Done!
+
+### With Cmake
+Use `tools/gen-gl.py` to generate the OpenGL interface files.
+
+```shell
+cd tools
+python3 gen-gl.py
+```
+
+Use `tools/embed.py` to generate the embedded data source files.
+
+```shell
+python3 embed.py
+cd ..
+```
+
+Build the project.
+
+```shell
+cmake -D CMAKE_BUILD_TYPE=Release -B build -S .
+cmake --build build --config Release
+```  
 
 ### By hand
 Use `tools/build-deps.py` to build the dependencies.
 
-    cd tools
-    python3 build-deps.py
+```shell
+cd tools
+python3 build-deps.py
+```
 
 Use `tools/gen-gl.py` to generate the OpenGL interface files.
 
-    python3 gen-gl.py
+```shell
+python3 gen-gl.py
+```
 
 Use `tools/embed.py` to generate the embedded data source files.
 
-    python3 embed.py
-    cd ..
+```shell
+python3 embed.py
+cd ..
+```
 
 Add `source` to the project and build manually. Required headers will be in `include` folder, libraries will be in `lib` folder.

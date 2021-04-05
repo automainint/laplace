@@ -1,5 +1,5 @@
 target_sources(
-  ${EXE_NAME}
+  ${LAPLACE_EXE}
     PRIVATE
       aqui_lobby.cpp aqui_mainmenu.cpp
     PUBLIC

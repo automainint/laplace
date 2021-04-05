@@ -1,5 +1,5 @@
 target_sources(
-  ${EXE_NAME}
+  ${LAPLACE_EXE}
     PRIVATE
       aqv_camera.cpp aqv_game.cpp aqv_landscape.cpp
     PUBLIC

@@ -3,20 +3,16 @@
 import xml.etree.ElementTree
 import os, sys, shutil
 
+gl_folder = 'OpenGL-Registry'
+
 def update_repo():
-  os.chdir(os.path.join('..', 'thirdparty'))
-
-  folder = 'OpenGL-Registry'
-
-  if os.path.exists(folder):
-    os.chdir(folder)
+  if os.path.exists(gl_folder):
+    os.chdir(gl_folder)
     os.system('git pull')
     os.chdir('..')
   else:
     url = 'https://github.com/KhronosGroup/OpenGL-Registry'
-    os.system('git clone ' + url + ' ' + folder)
-
-  os.chdir(os.path.join('..', 'tools'))
+    os.system('git clone ' + url + ' ' + gl_folder)
 
 def adjust_typedef(text):
   if text != None:
@@ -88,7 +84,7 @@ def args_str(args):
 
 update_repo()
 
-gl_xml_path = os.path.join('..', 'thirdparty', 'OpenGL-Registry', 'xml', 'gl.xml')
+gl_xml_path = os.path.join(gl_folder, 'xml', 'gl.xml')
 gl_xml = xml.etree.ElementTree.parse(gl_xml_path)
 root = gl_xml.getroot()
 
@@ -193,89 +189,87 @@ for i, en in enumerate(enums_buf):
 folder = os.path.join('..', 'source', 'generated', 'gl')
 os.makedirs(folder, exist_ok=True)
 
-previous_stdout = sys.stdout
+out = open(os.path.join(folder, 'types.h'), 'w')
 
-sys.stdout = open(os.path.join(folder, 'types.h'), 'w')
-
-print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
-print('#include <cstdint>\n')
-print('#define LAPLACE_GL_API __stdcall\n')
-print('namespace laplace::gl {')
+out.write('/*  Generated with the Laplace OpenGL interface tool.\n */\n\n')
+out.write('#include <cstdint>\n\n')
+out.write('#define LAPLACE_GL_API __stdcall\n\n')
+out.write('namespace laplace::gl {\n')
 for type in types:
-  print('  ' + type)
-print('}')
+  out.write('  ' + type)
+out.write('}\n')
 
-sys.stdout = open(os.path.join(folder, 'enums.h'), 'w')
+out = open(os.path.join(folder, 'enums.h'), 'w')
 
-print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
-print('#include "types.h"\n')
-print('namespace laplace::gl {')
+out.write('/*  Generated with the Laplace OpenGL interface tool.\n */\n\n')
+out.write('#include "types.h"\n\n')
+out.write('namespace laplace::gl {\n')
 
 comma = ','
-print('  enum _glenum : GLenum {')
+out.write('  enum _glenum : GLenum {\n')
 for i, en in enumerate(enums):
   if i + 1 == len(enums):
     comma = ''
-  print('    ' + en[0] + ' = ' + en[1] + comma)
-print('  };')
+  out.write('    ' + en[0] + ' = ' + en[1] + comma + '\n')
+out.write('  };\n')
 
 comma = ','
-print('\n  enum _glenum64 : uint64_t {')
+out.write('\n  enum _glenum64 : uint64_t {\n')
 for i, en in enumerate(enums64):
   if i + 1 == len(enums64):
     comma = ''
-  print('    ' + en[0] + ' = ' + en[1] + comma)
-print('  };')
+  out.write('    ' + en[0] + ' = ' + en[1] + comma + '\n')
+out.write('  };\n')
 
 comma = ','
-print('\n  enum _glenum_int32 : int32_t {')
+out.write('\n  enum _glenum_int32 : int32_t {\n')
 for i, en in enumerate(enumsSigned):
   if i + 1 == len(enumsSigned):
     comma = ''
-  print('    ' + en[0] + ' = ' + en[1] + comma)
-print('  };')
+  out.write('    ' + en[0] + ' = ' + en[1] + comma + '\n')
+out.write('  };\n')
 
-print('}')
+out.write('}\n')
 
-sys.stdout = open(os.path.join(folder, 'decls.h'), 'w')
+out = open(os.path.join(folder, 'decls.h'), 'w')
 
-print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
-print('#include "types.h"\n')
-print('namespace laplace::gl {')
-
-for f in funcs:
-  print('  using pfn_' + f[0] + ' = ' + adjust_arg(f[1]) + '(LAPLACE_GL_API *)' + args_str(f[2]) + ';')
-
-print('')
+out.write('/*  Generated with the Laplace OpenGL interface tool.\n */\n\n')
+out.write('#include "types.h"\n\n')
+out.write('namespace laplace::gl {\n')
 
 for f in funcs:
-  print('  extern pfn_' + f[0] + ' ' + f[0] + ';')
+  out.write('  using pfn_' + f[0] + ' = ' + adjust_arg(f[1]) + '(LAPLACE_GL_API *)' + args_str(f[2]) + ';\n')
 
-print('}')
-
-sys.stdout = open(os.path.join(folder, 'funcs.impl.h'), 'w')
-
-print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
-print('#include "decls.h"\n')
-print('namespace laplace::gl {')
+out.write('\n')
 
 for f in funcs:
-  print('  pfn_' + f[0] + ' ' + f[0] + ' = nullptr;')
+  out.write('  extern pfn_' + f[0] + ' ' + f[0] + ';\n')
 
-print('}')
+out.write('}\n')
 
-sys.stdout = open(os.path.join(folder, 'loads.impl.h'), 'w')
+out = open(os.path.join(folder, 'funcs.impl.h'), 'w')
 
-print('/*  Generated with the Laplace OpenGL interface tool.\n */\n')
-print('#ifndef LAPLACE_GL_HAS\n#  define LAPLACE_GL_HAS(x) false\n#endif\n')
-print('#ifndef LAPLACE_GL_LOAD\n#  define LAPLACE_GL_LOAD(x) { }\n#endif\n')
-print('#ifndef LAPLACE_GL_LOAD_EX\n#  define LAPLACE_GL_LOAD(x) { }\n#endif\n')
-print('#ifndef LAPLACE_GL_BEGIN_EX\n#  define LAPLACE_GL_BEGIN_EX() { }\n#endif\n')
-print('#ifndef LAPLACE_GL_END_EX\n#  define LAPLACE_GL_END_EX(x) { }\n#endif\n')
+out.write('/*  Generated with the Laplace OpenGL interface tool.\n */\n\n')
+out.write('#include "decls.h"\n\n')
+out.write('namespace laplace::gl {\n')
+
+for f in funcs:
+  out.write('  pfn_' + f[0] + ' ' + f[0] + ' = nullptr;\n')
+
+out.write('}\n')
+
+out = open(os.path.join(folder, 'loads.impl.h'), 'w')
+
+out.write('/*  Generated with the Laplace OpenGL interface tool.\n */\n\n')
+out.write('#ifndef LAPLACE_GL_HAS\n#  define LAPLACE_GL_HAS(x) false\n#endif\n\n')
+out.write('#ifndef LAPLACE_GL_LOAD\n#  define LAPLACE_GL_LOAD(x) { }\n#endif\n\n')
+out.write('#ifndef LAPLACE_GL_LOAD_EX\n#  define LAPLACE_GL_LOAD(x) { }\n#endif\n\n')
+out.write('#ifndef LAPLACE_GL_BEGIN_EX\n#  define LAPLACE_GL_BEGIN_EX() { }\n#endif\n\n')
+out.write('#ifndef LAPLACE_GL_END_EX\n#  define LAPLACE_GL_END_EX(x) { }\n#endif\n\n')
 
 for f in funcs:
   if f[3] == 0:
-    print('LAPLACE_GL_LOAD(' + f[0] + ');')
+    out.write('LAPLACE_GL_LOAD(' + f[0] + ');\n')
 
 for ex in extensions:
   ex_fns = list()
@@ -283,12 +277,12 @@ for ex in extensions:
     if funcs[n][3] == 1:
       ex_fns.append(funcs[n][0])
   if len(ex_fns) > 0:
-    print('\nif (LAPLACE_GL_HAS(' + ex[0] + ')) {')
-    print('  LAPLACE_GL_BEGIN_EX();')
+    out.write('\nif (LAPLACE_GL_HAS(' + ex[0] + ')) {\n')
+    out.write('  LAPLACE_GL_BEGIN_EX();\n')
     for f in ex_fns:
-      print('  LAPLACE_GL_LOAD_EX(' + f + ');')
-    print('  LAPLACE_GL_END_EX(' + ex[0] + ')')
-    print('}')
+      out.write('  LAPLACE_GL_LOAD_EX(' + f + ');\n')
+    out.write('  LAPLACE_GL_END_EX(' + ex[0] + ')\n')
+    out.write('}\n')
 
 # Custom dictionary utility
 # with list-keys.
@@ -352,12 +346,10 @@ for ex in ex2_funcs:
     if len(reqs) > 0:
       reqs += ' && '
     reqs += 'LAPLACE_GL_HAS(' + name + ')'
-  print('\nif (' + reqs + ') {')
-  print('  LAPLACE_GL_BEGIN_EX();')
+  out.write('\nif (' + reqs + ') {\n')
+  out.write('  LAPLACE_GL_BEGIN_EX();\n')
   for f in ex[1]:
-    print('  LAPLACE_GL_LOAD_EX(' + f + ');')
+    out.write('  LAPLACE_GL_LOAD_EX(' + f + ');\n')
   for name in ex[0]:
-    print('  LAPLACE_GL_END_EX(' + name + ')')
-  print('}')
-
-sys.stdout = previous_stdout
+    out.write('  LAPLACE_GL_END_EX(' + name + ')\n')
+  out.write('}\n')

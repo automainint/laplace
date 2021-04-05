@@ -2,6 +2,8 @@
 
 import os, glob
 
+target_name = "${LAPLACE_EXE}"
+
 def get_subdirs(folder):
   dirs = list()
   for f in glob.glob(os.path.join(folder, '*', '')):
@@ -42,7 +44,7 @@ def print_sources(folder):
   srcs = get_files(folder, '*.cpp')
   hdrs = get_files(folder, '*.h')
   if len(srcs) > 0 or len(hdrs) > 0:
-    buf += 'target_sources(\n  ${EXE_NAME}'
+    buf += 'target_sources(\n  ' + target_name
     if len(srcs) > 0:
       buf += '\n    PRIVATE\n' + print_list(srcs, 6)
     if len(hdrs) > 0:
@@ -79,58 +81,5 @@ def clean_subdirs(folder):
       if file == 'CMakeLists.txt':
         os.remove(os.path.join(r, file))
 
-out = open(os.path.join('..', 'CMakeLists.txt'), 'w')
-
-out.write('cmake_minimum_required(VERSION 3.18)\n\n')
-
-out.write('set(PROJECT_NAME laplace-project)\n')
-out.write('set(EXE_NAME laplace)\n\n')
-
-out.write('project(${PROJECT_NAME} CXX)\n\n')
-
-out.write('find_package(Threads REQUIRED)\n\n')
-
-out.write('add_executable(${EXE_NAME})\n\n')
-
-out.write('add_library(Sockets INTERFACE)\n\n')
-
-out.write('set_property(\n')
-out.write('  TARGET ${EXE_NAME} PROPERTY CXX_STANDARD 20\n')
-out.write(')\n\n')
-
-out.write('if(MSVC)\n')
-out.write('  set_target_properties(\n')
-out.write('    ${EXE_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE"\n')
-out.write('  )\n')
-out.write('endif()\n\n')
-
-out.write('if(WIN32)\n')
-out.write('  add_compile_definitions(_CONSOLE UNICODE _UNICODE)\n\n')
-out.write('  target_link_libraries(\n')
-out.write('    Sockets INTERFACE ws2_32\n')
-out.write('  )\n')
-out.write('endif()\n\n')
-
-out.write('add_subdirectory(source)\n\n')
-
 clean_subdirs(os.path.join('..', 'source'))
 write_subdirs(os.path.join('..', 'source'))
-
-out.write('target_link_libraries(\n  ${EXE_NAME}\n')
-
-deps = list();
-libs = open('libs.txt', 'r')
-for line in libs:
-  deps.extend(line.split())
-libs.close()
-
-out.write(print_list(deps, 4))
-out.write('\n)\n\n')
-
-out.write('target_link_directories(\n  ${EXE_NAME}\n')
-out.write('    PUBLIC lib\n')
-out.write(')\n\n')
-
-out.write('target_include_directories(\n  ${EXE_NAME}\n')
-out.write('    PUBLIC include\n')
-out.write(')\n')

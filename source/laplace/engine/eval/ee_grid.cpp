@@ -287,7 +287,7 @@ namespace laplace::engine::eval::grid {
   auto path_search(const vec2z size, const intval scale,
                    const span_cbyte map, const fn_available available,
                    const vec2z a, const vec2z b)
-      -> small_vector<vec2z> {
+      -> sl::vector<vec2z> {
 
     if (size.x() * size.y() > map.size()) {
       error_("Invalid map size.", __FUNCTION__);
@@ -328,7 +328,7 @@ namespace laplace::engine::eval::grid {
     const auto v = astar::search_theta(
         neighbors, heuristic, sight, index_of(a), index_of(b));
 
-    auto path = small_vector<vec2z> {};
+    auto path = sl::vector<vec2z> {};
 
     if (v.size() == 1) {
       path.emplace_back(point_of(v[0]));

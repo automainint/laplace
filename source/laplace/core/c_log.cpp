@@ -28,58 +28,67 @@ namespace laplace {
   static bool         g_verbose = true;
   static shared_mutex g_verbose_lock;
 
-  void set_verbose(bool is_verbose) {
-    auto _ul  = unique_lock(g_verbose_lock);
-    g_verbose = is_verbose;
+  void set_verbose(bool is_verbose) noexcept {
+    try {
+      auto _ul  = unique_lock(g_verbose_lock);
+      g_verbose = is_verbose;
+    } catch (...) { }
   }
 
-  auto is_verbose() -> bool {
-    auto _sl = shared_lock(g_verbose_lock);
-    return g_verbose;
+  auto is_verbose() noexcept -> bool {
+    try {
+      auto _sl = shared_lock(g_verbose_lock);
+      return g_verbose;
+    } catch (...) { }
+    return false;
   }
 
-  void verb(string_view s) {
+  void verb(string_view s) noexcept {
     if (is_verbose()) {
       log(s);
     }
   }
 
-  void verb(u8string_view s) {
+  void verb(u8string_view s) noexcept {
     if (is_verbose()) {
       log(s);
     }
   }
 
 #else
-  void set_verbose(bool is_verbose) { }
+  void set_verbose(bool is_verbose) noexcept { }
 
-  auto is_verbose() -> bool {
+  auto is_verbose() noexcept -> bool {
     return false;
   }
 
-  void verb(std::string_view s) { }
-  void verb(std::u8string_view s) { }
+  void verb(std::string_view s) noexcept { }
+  void verb(std::u8string_view s) noexcept { }
 #endif
 
-  void log(string_view s) {
-    auto _ul = unique_lock(g_log_lock);
-    cerr << s << '\n';
+  void log(string_view s) noexcept {
+    try {
+      auto _ul = unique_lock(g_log_lock);
+      cerr << s << '\n';
+    } catch (...) { }
   }
 
-  void log(u8string_view s) {
+  void log(u8string_view s) noexcept {
     log(as_ascii_string(s));
   }
 
-  void error_(string_view message, string_view loc) {
-    auto _ul = unique_lock(g_log_lock);
-    if (loc.empty()) {
-      cerr << "[ error ] " << message << '\n';
-    } else {
-      cerr << "[ error in " << loc << " ] " << message << '\n';
-    }
+  void error_(string_view message, string_view loc) noexcept {
+    try {
+      auto _ul = unique_lock(g_log_lock);
+      if (loc.empty()) {
+        cerr << "[ error ] " << message << '\n';
+      } else {
+        cerr << "[ error in " << loc << " ] " << message << '\n';
+      }
+    } catch (...) { }
   }
 
-  void error_(u8string_view message, string_view loc) {
+  void error_(u8string_view message, string_view loc) noexcept {
     error_(as_ascii_string(message), loc);
   }
 }

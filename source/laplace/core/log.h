@@ -16,20 +16,22 @@
 #include <string>
 
 namespace laplace {
-  void set_verbose(bool is_verbose);
-  auto is_verbose() -> bool;
+  void set_verbose(bool is_verbose) noexcept;
+  auto is_verbose() noexcept -> bool;
 
-  void log(std::string_view s);
-  void log(std::u8string_view s);
+  void log(std::string_view s) noexcept;
+  void log(std::u8string_view s) noexcept;
 
   /*  TODO
    *  Use source_location.
    */
-  void error_(std::string_view message, std::string_view loc = {});
-  void error_(std::u8string_view message, std::string_view loc = {});
+  void error_(std::string_view message,
+              std::string_view loc = {}) noexcept;
+  void error_(std::u8string_view message,
+              std::string_view   loc = {}) noexcept;
 
-  void verb(std::string_view s);
-  void verb(std::u8string_view s);
+  void verb(std::string_view s) noexcept;
+  void verb(std::u8string_view s) noexcept;
 }
 
 #endif

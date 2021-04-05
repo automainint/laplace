@@ -1,5 +1,5 @@
 target_sources(
-  ${EXE_NAME}
+  ${LAPLACE_EXE}
     PRIVATE
       laplace_embedded.cpp
 )

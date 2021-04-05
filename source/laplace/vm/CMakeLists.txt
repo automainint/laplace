@@ -1,5 +1,5 @@
 target_sources(
-  ${EXE_NAME}
+  ${LAPLACE_EXE}
     PRIVATE
       vm_agent.cpp vm_environment.cpp vm_execute.cpp
       vm_heap.cpp vm_instance.cpp

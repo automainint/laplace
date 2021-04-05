@@ -54,11 +54,11 @@ namespace laplace {
         fmt(reinterpret_cast<const char *>(c_format), ap)));
   }
 
-  auto as_ascii_string(u8string_view s) -> string_view {
+  auto as_ascii_string(u8string_view s) noexcept -> string_view {
     return { reinterpret_cast<const char *>(s.data()), s.size() };
   }
 
-  auto as_u8string(string_view s) -> u8string_view {
+  auto as_u8string(string_view s) noexcept -> u8string_view {
     return { reinterpret_cast<const char8_t *>(s.data()), s.size() };
   }
 

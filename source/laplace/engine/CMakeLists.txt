@@ -1,5 +1,5 @@
 target_sources(
-  ${EXE_NAME}
+  ${LAPLACE_EXE}
     PRIVATE
       e_basic_entity.cpp e_basic_factory.cpp e_loader.cpp
       e_scheduler.cpp e_solver.cpp e_world.cpp

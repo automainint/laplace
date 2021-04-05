@@ -1,5 +1,5 @@
 target_sources(
-  ${EXE_NAME}
+  ${LAPLACE_EXE}
     PRIVATE
       g3_mesh_buffer.cpp g3_mesh_shader.cpp
       g3_reflect_shader.cpp g3_refract_shader.cpp g3_shadow_shader.cpp

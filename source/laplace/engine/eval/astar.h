@@ -21,7 +21,7 @@ namespace laplace::engine::eval::astar {
     intval distance = 0;
   };
 
-  using vlink = small_vector<link>;
+  using vlink = sl::vector<link>;
 
   using fn_sight = std::function<bool(const size_t a, const size_t b)>;
   using fn_neighbors = std::function<vlink(const size_t node)>;

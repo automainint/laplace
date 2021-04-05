@@ -69,7 +69,7 @@ namespace laplace::engine::eval::grid {
 
   auto path_search(const vec2z size, const intval scale,
                    const span_cbyte map, const fn_available available,
-                   const vec2z a, const vec2z b) -> small_vector<vec2z>;
+                   const vec2z a, const vec2z b) -> sl::vector<vec2z>;
 }
 
 #endif

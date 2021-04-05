@@ -13,10 +13,10 @@
 #include "loader.h"
 
 namespace laplace::engine {
-  using std::shared_lock, std::unique_lock, std::thread;
+  using std::shared_lock, std::unique_lock, std::jthread;
 
   loader::loader() {
-    m_thread = thread([this]() {
+    m_thread = jthread([this]() {
       auto _ul = unique_lock(m_lock);
 
       while (!m_is_done) {
@@ -44,10 +44,6 @@ namespace laplace::engine {
 
   loader::~loader() {
     done();
-
-    if (m_thread.joinable()) {
-      m_thread.join();
-    }
   }
 
   void loader::set_world(ptr_world w) {

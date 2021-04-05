@@ -26,52 +26,57 @@ namespace laplace::serial {
   /*  Read value of specified type from specified offset.
    */
   template <trivial type_>
-  [[nodiscard]] constexpr auto rd(span_cbyte seq, size_t offset)
+  [[nodiscard]] constexpr auto rd(span_cbyte seq, size_t offset) noexcept
       -> type_;
 
   /*  Write the value to specified offset.
    */
   template <trivial type_>
-  constexpr void wr(std::span<uint8_t> seq, size_t offset, type_ value);
+  constexpr void wr(std::span<uint8_t> seq, size_t offset,
+                    type_ value) noexcept;
 
   template <trivial type_>
-  constexpr void wr(uint8_t *seq, size_t offset, type_ value);
+  constexpr void wr(uint8_t *seq, size_t offset, type_ value) noexcept;
 
-  [[nodiscard]] constexpr auto byte_count() -> size_t;
+  [[nodiscard]] constexpr auto byte_count() noexcept -> size_t;
 
   template <typename arg0_, typename... args_>
-  [[nodiscard]] constexpr auto byte_count(arg0_ arg0, args_... args)
+  [[nodiscard]] constexpr auto byte_count(arg0_ arg0,
+                                          args_... args) noexcept
       -> size_t;
 
   template <typename char_type, typename... args_>
   [[nodiscard]] constexpr auto byte_count(
-      std::basic_string_view<char_type> arg0, args_... args) -> size_t;
+      std::basic_string_view<char_type> arg0, args_... args) noexcept
+      -> size_t;
 
   template <typename elem_type, typename... args_>
   [[nodiscard]] constexpr auto byte_count(std::span<const elem_type> arg0,
-                                          args_... args) -> size_t;
+                                          args_... args) noexcept
+      -> size_t;
 
   template <trivial char_type_>
-  constexpr void write_bytes(std::span<uint8_t>                 data,
-                             std::basic_string_view<char_type_> arg0);
+  constexpr void write_bytes(
+      std::span<uint8_t>                 data,
+      std::basic_string_view<char_type_> arg0) noexcept;
 
   template <trivial elem_type_>
   constexpr void write_bytes(std::span<uint8_t>          data,
-                             std::span<const elem_type_> arg0);
+                             std::span<const elem_type_> arg0) noexcept;
 
   template <trivial arg0_trivial_>
   constexpr void write_bytes(std::span<uint8_t> data,
-                             arg0_trivial_      arg0);
+                             arg0_trivial_      arg0) noexcept;
 
   template <typename arg0_, typename... args_>
   constexpr void write_bytes(std::span<uint8_t> data, arg0_ arg0,
-                             args_... args);
+                             args_... args) noexcept;
 
   template <trivial... args_trivial_>
-  [[nodiscard]] constexpr auto pack_to_array(args_trivial_... args);
+  [[nodiscard]] constexpr auto pack_to_array(args_trivial_... args) noexcept;
 
   template <typename... args_>
-  [[nodiscard]] constexpr auto pack_to_bytes(args_... args);
+  [[nodiscard]] constexpr auto pack_to_bytes(args_... args) noexcept;
 }
 
 #include "serial.impl.h"

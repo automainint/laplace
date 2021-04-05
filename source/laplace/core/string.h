@@ -23,22 +23,20 @@ namespace laplace {
   [[nodiscard]] constexpr auto hex_to_int(char16_t x) noexcept -> int;
   [[nodiscard]] constexpr auto hex_to_int(char32_t x) noexcept -> int;
 
-  [[nodiscard]] auto fmt(const char *c_format, ...)
-      -> std::string;
+  [[nodiscard]] auto fmt(const char *c_format, ...) -> std::string;
 
   [[nodiscard]] auto fmt(const char *c_format, va_list ap)
       -> std::string;
 
-  [[nodiscard]] auto fmt(const char8_t *c_format, ...)
-      -> std::u8string;
+  [[nodiscard]] auto fmt(const char8_t *c_format, ...) -> std::u8string;
 
   [[nodiscard]] auto fmt(const char8_t *c_format, va_list ap)
       -> std::u8string;
 
-  [[nodiscard]] auto as_ascii_string(std::u8string_view s)
+  [[nodiscard]] auto as_ascii_string(std::u8string_view s) noexcept
       -> std::string_view;
 
-  [[nodiscard]] auto as_u8string(std::string_view s)
+  [[nodiscard]] auto as_u8string(std::string_view s) noexcept
       -> std::u8string_view;
 
   [[nodiscard]] auto to_string(std::wstring_view s) -> std::string;

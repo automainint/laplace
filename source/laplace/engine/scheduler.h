@@ -21,9 +21,6 @@
 #include <thread>
 
 namespace laplace::engine {
-  /*  TODO
-   *  Atomics, jthread.
-   */
   class scheduler {
   public:
     static constexpr size_t overthreading_limit = 8;
@@ -47,10 +44,10 @@ namespace laplace::engine {
 
     std::reference_wrapper<world> m_world;
 
-    std::mutex               m_lock;
-    std::mutex               m_extra_lock;
-    std::condition_variable  m_sync;
-    std::vector<std::thread> m_threads;
+    std::mutex                m_lock_ex;
+    std::mutex                m_lock_in;
+    std::condition_variable   m_sync;
+    std::vector<std::jthread> m_threads;
 
     bool   m_done       = false;
     size_t m_in         = 0;

@@ -1,5 +1,5 @@
 target_sources(
-  ${EXE_NAME}
+  ${LAPLACE_EXE}
     PRIVATE
       s_application.cpp s_app_flat.cpp s_config.cpp
       s_native_api.cpp

@@ -34,11 +34,8 @@ if n > 0:
     s += ', '
   s += format(b, '#0x')
 
-previous_stdout = sys.stdout
-sys.stdout = open(os.path.join(folder, 'lcd.h'), 'w')
+out = open(os.path.join(folder, 'lcd.h'), 'w')
 
-print('size_t width = ' + str(width) + ';')
-print('size_t height = ' + str(height) + ';')
-print('uint64_t bits[ ] = { ' + s + ' };')
-
-sys.stdout = previous_stdout
+out.write('ptrdiff_t width = ' + str(width) + ';\n')
+out.write('ptrdiff_t height = ' + str(height) + ';\n')
+out.write('uint64_t bits[ ] = { ' + s + ' };\n')

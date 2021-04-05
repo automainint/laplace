@@ -2,7 +2,7 @@
 /lib/**
 /include/**
 /build/**
-/thirdparty/**
+/build-*/**
 
 /.vs/
 *.sln
@@ -12,3 +12,4 @@
 /data/lcd.h
 /source/generated/*.cpp
 /source/generated/gl/*.h
+/tools/OpenGL-Registry/

@@ -30,7 +30,7 @@ namespace laplace::embedded {
     if (!is_ready) {
       auto size = aliases.size();
 
-      vuint indices(size);
+      auto indices = vuint(size);
 
       for (size_t i = 0; i < size; i++) indices[i] = i;
 
@@ -39,8 +39,8 @@ namespace laplace::embedded {
              return aliases[i] < aliases[j];
            });
 
-      vector<wstring>         sorted_aliases(size);
-      vector<vector<uint8_t>> sorted_bytes(size);
+      auto sorted_aliases = vector<wstring>(size);
+      auto sorted_bytes   = vector<vector<uint8_t>>(size);
 
       if (bytes.size() != size)
         bytes.resize(size);
