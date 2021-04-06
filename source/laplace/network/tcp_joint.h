@@ -13,11 +13,11 @@
 #ifndef laplace_network_tcp_tcp_joint_h
 #define laplace_network_tcp_tcp_joint_h
 
-#include "tcp_base.h"
+#include "basic_tcp.h"
 #include <functional>
 
 namespace laplace::network {
-  class tcp_joint final : public tcp_base {
+  class tcp_joint final : public basic_tcp {
   public:
     using ref_tcp_joint = tcp_joint &;
     using event_connect = std::function<void(ref_tcp_joint j)>;

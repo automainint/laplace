@@ -31,8 +31,9 @@ namespace laplace::engine {
 
     constexpr eventorder(const eventorder &) = default;
     constexpr eventorder(eventorder &&)      = default;
-    constexpr eventorder &operator=(const eventorder &) = default;
-    constexpr eventorder &operator=(eventorder &&) = default;
+    constexpr auto operator                  =(const eventorder &)
+        -> eventorder &                      = default;
+    constexpr auto operator=(eventorder &&) -> eventorder & = default;
 
     /*  Spawn a child event.
      */

@@ -38,33 +38,9 @@ namespace laplace::engine::access {
     }
   }
 
-  void entity::set_markable(bool is_markable) const {
-    if (m_mode > read_only) {
-      m_entity->set_markable(is_markable);
-    }
-  }
-
-  void entity::set_selectable(bool is_selectable) const {
-    if (m_mode > read_only) {
-      m_entity->set_selectable(is_selectable);
-    }
-  }
-
-  void entity::set_vulnerable(bool is_vulnerable) const {
-    if (m_mode > read_only) {
-      m_entity->set_vulnerable(is_vulnerable);
-    }
-  }
-
   void entity::set_tick_period(size_t tick_period) const {
     if (m_mode > read_only) {
       m_entity->set_tick_period(tick_period);
-    }
-  }
-
-  void entity::set_bounds(eval::cref_box val) const {
-    if (m_mode > read_only) {
-      m_entity->set_bounds(val);
     }
   }
 
@@ -116,36 +92,12 @@ namespace laplace::engine::access {
     }
   }
 
-  auto entity::is_changed() const -> bool {
-    if (m_mode > forbidden) {
-      return m_entity->is_changed();
-    }
-
-    return false;
-  }
-
   auto entity::is_dynamic() const -> bool {
     return m_mode > forbidden ? m_entity->is_dynamic() : false;
   }
 
-  auto entity::is_markable() const -> bool {
-    return m_mode > forbidden ? m_entity->is_markable() : false;
-  }
-
-  auto entity::is_selectable() const -> bool {
-    return m_mode > forbidden ? m_entity->is_selectable() : false;
-  }
-
-  auto entity::is_vulnerable() const -> bool {
-    return m_mode > forbidden ? m_entity->is_vulnerable() : false;
-  }
-
   auto entity::get_tick_period() const -> size_t {
     return m_mode > forbidden ? m_entity->get_tick_period() : 0;
-  }
-
-  auto entity::get_bounds() const -> eval::box {
-    return m_mode > forbidden ? m_entity->get_bounds() : eval::box {};
   }
 
   auto entity::get_id() const -> size_t {

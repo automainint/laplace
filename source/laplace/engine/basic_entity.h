@@ -31,10 +31,13 @@ namespace laplace::engine {
    */
   class basic_entity {
   public:
+    class dummy_tag { };
+    class proto_tag { };
+
     static constexpr auto lock_timeout = std::chrono::milliseconds(100);
 
-    enum dummy_tag { dummy };
-    enum proto_tag { proto };
+    static constexpr auto dummy = dummy_tag {};
+    static constexpr auto proto = proto_tag {};
 
     static constexpr uint64_t default_tick_period = 10;
 
@@ -51,13 +54,7 @@ namespace laplace::engine {
      */
     basic_entity(dummy_tag);
 
-    basic_entity(                                           //
-        bool           is_dynamic,                          //
-        bool           is_markable   = false,               //
-        bool           is_selectable = false,               //
-        bool           is_vulnerable = false,               //
-        uint64_t       tick_period   = default_tick_period, //
-        eval::cref_box bounds        = eval::box {});
+    basic_entity(uint64_t tick_period);
 
     virtual ~basic_entity() = default;
 
@@ -65,21 +62,6 @@ namespace laplace::engine {
      *  Thread-safe.
      */
     void set_dynamic(bool is_dynamic);
-
-    /*  Set the Entity markability status.
-     *  Thread-safe.
-     */
-    void set_markable(bool is_markable);
-
-    /*  Set the Entity selectability status.
-     *  Thread-safe.
-     */
-    void set_selectable(bool is_selectable);
-
-    /*  Set the Entity vulnerability status.
-     *  Thread-safe.
-     */
-    void set_vulnerable(bool is_vulnerable);
 
     /*  Set the Entity tick period.
      *  Thread-safe.
@@ -95,11 +77,6 @@ namespace laplace::engine {
      *  Thread-safe.
      */
     void reset_clock();
-
-    /*  Set the Entity bounding box.
-     *  Thread-safe.
-     */
-    void set_bounds(eval::cref_box val);
 
     /*  Set the Entity id. Do not modify the
      *  id set by the World.
@@ -172,30 +149,10 @@ namespace laplace::engine {
      */
     [[nodiscard]] auto is_dynamic() -> bool;
 
-    /*  Returns true if the Entity is markable.
-     *  Thread-safe.
-     */
-    [[nodiscard]] auto is_markable() -> bool;
-
-    /*  Returns true if the Entity is selectable.
-     *  Thread-safe.
-     */
-    [[nodiscard]] auto is_selectable() -> bool;
-
-    /*  Returns true if the Entity is vulnerable.
-     *  Thread-safe.
-     */
-    [[nodiscard]] auto is_vulnerable() -> bool;
-
     /*  Returns the tick period.
      *  Thread-safe.
      */
     [[nodiscard]] auto get_tick_period() -> uint64_t;
-
-    /*  Returns the bounding box.
-     *  Thread-safe.
-     */
-    [[nodiscard]] auto get_bounds() -> eval::box;
 
     /*  Returns the Entity id.
      */
@@ -211,16 +168,7 @@ namespace laplace::engine {
      */
     enum indices : size_t {
       n_is_dynamic = 0,
-      n_is_markable,
-      n_is_selectable,
-      n_is_vulnerable,
       n_tick_period,
-      n_bounds_min_x,
-      n_bounds_min_y,
-      n_bounds_min_z,
-      n_bounds_max_x,
-      n_bounds_max_y,
-      n_bounds_max_z
     };
 
     struct sets_row {
@@ -283,8 +231,8 @@ namespace laplace::engine {
     vsets_row m_sets;
     uint64_t  m_clock = 0;
 
-    size_t  m_id         = id_undefined;
-    bool    m_is_changed = false;
+    size_t m_id         = id_undefined;
+    bool   m_is_changed = false;
   };
 }
 

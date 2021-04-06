@@ -15,7 +15,7 @@
 
 #include "../basic_impact.predef.h"
 #include "../world.predef.h"
-#include "ventity.h"
+#include "entity.h"
 
 namespace laplace::engine::access {
   class world {
@@ -88,17 +88,6 @@ namespace laplace::engine::access {
      *  Async.
      */
     [[nodiscard]] auto get_entity(size_t id) const -> access::entity;
-
-    /*  Select entities.
-     *  Async.
-     */
-    [[nodiscard]] auto select(condition op) const -> access::ventity;
-
-    /*  Select dynamic entities.
-     *  Async.
-     */
-    [[nodiscard]] auto select_dynamic(condition op) const
-        -> access::ventity;
 
     /*  Generate a random number.
      *  Sync.

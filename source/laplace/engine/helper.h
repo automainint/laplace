@@ -14,18 +14,15 @@
 #define laplace_engine_helper_h
 
 #include "access/entity.h"
-#include "access/ventity.h"
 #include "access/world.h"
 
 namespace laplace::engine {
   struct helper {
-    using access_entity  = access::entity;
-    using access_ventity = access::ventity;
-    using access_world   = access::world;
+    using access_entity = access::entity;
+    using access_world  = access::world;
 
-    using entity  = const access::entity &;
-    using ventity = const access::ventity &;
-    using world   = const access::world &;
+    using entity = const access::entity &;
+    using world  = const access::world &;
   };
 }
 

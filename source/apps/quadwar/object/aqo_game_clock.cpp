@@ -23,7 +23,7 @@ namespace quadwar_app::object {
   game_clock game_clock::m_proto(basic_entity::proto);
 
   game_clock::game_clock(basic_entity::proto_tag) :
-      basic_entity(true, false, false, false, tick_period) {
+      basic_entity(tick_period) {
 
     setup_sets(                             //
         { { .id    = sets::game_clock_time, //

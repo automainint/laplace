@@ -46,47 +46,18 @@ namespace laplace::engine {
   }
 
   basic_entity::basic_entity(proto_tag) {
-    setup_sets(
-        { { sets::is_dynamic, 1, 0 },
-          { sets::is_markable, 1, 0 },
-          { sets::is_selectable, 1, 0 },
-          { sets::is_vulnerable, 1, 0 },
-
-          { sets::tick_period, sets::scale_time, default_tick_period },
-
-          { sets::bounds_min_x, sets::scale_real, +safe_delta },
-          { sets::bounds_min_y, sets::scale_real, +safe_delta },
-          { sets::bounds_min_z, sets::scale_real, +safe_delta },
-          { sets::bounds_max_x, sets::scale_real, -safe_delta },
-          { sets::bounds_max_y, sets::scale_real, -safe_delta },
-          { sets::bounds_max_z, sets::scale_real, -safe_delta } });
+    setup_sets({ { sets::is_dynamic, 1, 0 },
+                 { sets::tick_period, sets::scale_time,
+                   default_tick_period } });
   }
 
   basic_entity::basic_entity(dummy_tag) { }
 
-  basic_entity::basic_entity(       //
-      bool           is_dynamic,    //
-      bool           is_markable,   //
-      bool           is_selectable, //
-      bool           is_vulnerable, //
-      uint64_t       tick_period,   //
-      eval::cref_box bounds) {
+  basic_entity::basic_entity(uint64_t tick_period) {
 
-    setup_sets(
-        { { sets::is_dynamic, 1, is_dynamic },
-          { sets::is_markable, 1, is_markable },
-          { sets::is_selectable, 1, is_selectable },
-          { sets::is_vulnerable, 1, is_vulnerable },
-
-          { sets::tick_period, sets::scale_time,
-            static_cast<int64_t>(tick_period) },
-
-          { sets::bounds_min_x, sets::scale_real, bounds.min.x() },
-          { sets::bounds_min_y, sets::scale_real, bounds.min.y() },
-          { sets::bounds_min_z, sets::scale_real, bounds.min.z() },
-          { sets::bounds_max_x, sets::scale_real, bounds.max.x() },
-          { sets::bounds_max_y, sets::scale_real, bounds.max.y() },
-          { sets::bounds_max_z, sets::scale_real, bounds.max.z() } });
+    setup_sets({ { sets::is_dynamic, 1, 1 },
+                 { sets::tick_period, sets::scale_time,
+                   static_cast<int64_t>(tick_period) } });
   }
 
   void basic_entity::setup_sets(basic_entity::cref_vsets_row sets) {
@@ -125,36 +96,6 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::set_markable(bool is_markable) {
-    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
-      m_sets[n_is_markable].delta += is_markable ? 1 : -1;
-      m_is_changed = true;
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
-    }
-  }
-
-  void basic_entity::set_selectable(bool is_selectable) {
-    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
-      m_sets[n_is_selectable].delta += is_selectable ? 1 : -1;
-      m_is_changed = true;
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
-    }
-  }
-
-  void basic_entity::set_vulnerable(bool is_vulnerable) {
-    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
-      m_sets[n_is_vulnerable].delta += is_vulnerable ? 1 : -1;
-      m_is_changed = true;
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
-    }
-  }
-
   void basic_entity::set_tick_period(uint64_t tick_period) {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       m_sets[n_tick_period].delta +=          //
@@ -183,39 +124,6 @@ namespace laplace::engine {
           m_sets[n_tick_period].value);
 
       m_clock = period - 1;
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
-    }
-  }
-
-  void basic_entity::set_bounds(eval::cref_box val) {
-    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
-      m_sets[n_bounds_min_x].delta += //
-          val.min.x() -               //
-          m_sets[n_bounds_min_x].value;
-
-      m_sets[n_bounds_min_y].delta += //
-          val.min.y() -               //
-          m_sets[n_bounds_min_y].value;
-
-      m_sets[n_bounds_min_z].delta += //
-          val.min.z() -               //
-          m_sets[n_bounds_min_z].value;
-
-      m_sets[n_bounds_max_x].delta += //
-          val.max.x() -               //
-          m_sets[n_bounds_max_x].value;
-
-      m_sets[n_bounds_max_y].delta += //
-          val.max.y() -               //
-          m_sets[n_bounds_max_y].value;
-
-      m_sets[n_bounds_max_z].delta += //
-          val.max.z() -               //
-          m_sets[n_bounds_max_z].value;
-
-      m_is_changed = true;
     } else {
       error_("Lock timeout.", __FUNCTION__);
       desync();
@@ -356,8 +264,8 @@ namespace laplace::engine {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       const bool result = m_clock == 0;
 
-      const auto period = //
-          static_cast<uint64_t>(m_sets[n_tick_period].value);
+      const auto period = static_cast<uint64_t>(
+          m_sets[n_tick_period].value);
 
       if (m_clock == 0) {
         m_clock = period - 1;
@@ -398,42 +306,6 @@ namespace laplace::engine {
     return false;
   }
 
-  auto basic_entity::is_markable() -> bool {
-
-    if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
-      return m_sets[n_is_markable].value > 0;
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
-    }
-
-    return false;
-  }
-
-  auto basic_entity::is_selectable() -> bool {
-
-    if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
-      return m_sets[n_is_selectable].value > 0;
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
-    }
-
-    return false;
-  }
-
-  auto basic_entity::is_vulnerable() -> bool {
-
-    if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
-      return m_sets[n_is_vulnerable].value > 0;
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
-    }
-
-    return false;
-  }
-
   auto basic_entity::get_tick_period() -> uint64_t {
 
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
@@ -444,22 +316,6 @@ namespace laplace::engine {
     }
 
     return false;
-  }
-
-  auto basic_entity::get_bounds() -> eval::box {
-
-    if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
-      return eval::box //
-          { { m_sets[n_bounds_min_x].value, m_sets[n_bounds_min_y].value,
-              m_sets[n_bounds_min_z].value },
-            { m_sets[n_bounds_max_x].value, m_sets[n_bounds_max_y].value,
-              m_sets[n_bounds_max_z].value } };
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
-    }
-
-    return {};
   }
 
   auto basic_entity::get_id() const -> size_t {

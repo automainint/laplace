@@ -313,38 +313,6 @@ namespace laplace::engine {
     return m_desync;
   }
 
-  auto world::select(condition op) -> vptr_entity {
-    vptr_entity result;
-
-    auto _sl = shared_lock(m_lock);
-
-    for (size_t i = 0; i < m_entities.size(); i++) {
-      auto &ent = m_entities[i];
-
-      if (ent && (!op || op(*ent))) {
-        result.emplace_back(ent);
-      }
-    }
-
-    return result;
-  }
-
-  auto world::select_dynamic(condition op) -> vptr_entity {
-    vptr_entity result;
-
-    auto _sl = shared_lock(m_lock);
-
-    for (size_t i = 0; i < m_dynamic_ids.size(); i++) {
-      auto &ent = m_entities[m_dynamic_ids[i]];
-
-      if (ent && (!op || op(*ent))) {
-        result.emplace_back(ent);
-      }
-    }
-
-    return result;
-  }
-
   void world::locked_desync() {
     m_desync = true;
     verb(" :: DESYNC");

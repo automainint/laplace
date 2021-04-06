@@ -1,4 +1,4 @@
-/*  laplace/network/n_tcp_base.cpp
+/*  laplace/network/n_basic_tcp.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -11,20 +11,20 @@
  */
 
 #include "../core/string.h"
-#include "tcp_base.h"
+#include "basic_tcp.h"
 #include "utils.h"
 
 namespace laplace::network {
-  tcp_base::tcp_base() {
+  basic_tcp::basic_tcp() {
     m_is_done = false;
     m_socket  = INVALID_SOCKET;
   }
 
-  tcp_base::~tcp_base() {
+  basic_tcp::~basic_tcp() {
     close();
   }
 
-  auto tcp_base::receive_to(uint8_t *p, size_t count, io_mode mode)
+  auto basic_tcp::receive_to(uint8_t *p, size_t count, io_mode mode)
       -> size_t {
     size_t size = 0;
 
@@ -68,7 +68,7 @@ namespace laplace::network {
     return size;
   }
 
-  auto tcp_base::receive(size_t count, io_mode mode) -> vbyte {
+  auto basic_tcp::receive(size_t count, io_mode mode) -> vbyte {
     vbyte seq;
 
     if (m_socket != INVALID_SOCKET) {
@@ -79,7 +79,7 @@ namespace laplace::network {
     return seq;
   }
 
-  auto tcp_base::send(span_cbyte seq) -> size_t {
+  auto basic_tcp::send(span_cbyte seq) -> size_t {
     size_t count = 0;
 
     if (m_socket != INVALID_SOCKET) {
@@ -121,18 +121,18 @@ namespace laplace::network {
     return count;
   }
 
-  auto tcp_base::is_done() const -> bool {
+  auto basic_tcp::is_done() const -> bool {
     return m_is_done;
   }
 
-  void tcp_base::close() {
+  void basic_tcp::close() {
     if (m_socket != INVALID_SOCKET) {
       closesocket(m_socket);
       m_socket = INVALID_SOCKET;
     }
   }
 
-  void tcp_base::done() {
+  void basic_tcp::done() {
     m_is_done = true;
   }
 }

@@ -16,8 +16,22 @@
 #define laplace_engine_eval_integral_impl_h
 
 namespace laplace::engine::eval::impl {
+  constexpr intval _constant_scale = 0x10000000;
+
+  constexpr size_t _sin_table_size  = 0x200;
+  constexpr intval _sin_table_scale = 0x100;
+  constexpr intval _sin_interations = 10;
+
+  constexpr size_t _exp_table_size  = 0x200;
+  constexpr intval _exp_table_scale = 0x100;
+  constexpr intval _exp_interations = 10;
+
+  constexpr size_t _log_table_size  = 0x200;
+  constexpr intval _log_table_scale = 0x100;
+  constexpr intval _log_interations = 10;
+
   constexpr auto constant_scale() noexcept -> intval {
-    return 0x10000000;
+    return _constant_scale;
   }
 
   constexpr auto div(const intval x, const intval y,
@@ -94,122 +108,110 @@ namespace laplace::engine::eval::impl {
 
   constexpr auto e(const intval scale) noexcept -> intval {
     constexpr auto value = div(
-        27182818285, 10000000000, constant_scale());
-    return div(value, constant_scale(), scale);
+        27182818285, 10000000000, _constant_scale);
+    return div(value, _constant_scale, scale);
   }
 
   static_assert(e(1000000) == 2718282);
 
   constexpr auto log2e(const intval scale) noexcept -> intval {
     constexpr auto value = div(
-        14426950408, 10000000000, constant_scale());
-    return div(value, constant_scale(), scale);
+        14426950408, 10000000000, _constant_scale);
+    return div(value, _constant_scale, scale);
   }
 
   static_assert(log2e(1000000) == 1442695);
 
   constexpr auto log10e(const intval scale) noexcept -> intval {
     constexpr auto value = div(
-        4342944819, 10000000000, constant_scale());
-    return div(value, constant_scale(), scale);
+        4342944819, 10000000000, _constant_scale);
+    return div(value, _constant_scale, scale);
   }
 
   static_assert(log10e(1000000) == 434294);
 
   constexpr auto pi(const intval scale) noexcept -> intval {
     constexpr auto value = div(
-        31415926535, 10000000000, constant_scale());
-    return div(value, constant_scale(), scale);
+        31415926535, 10000000000, _constant_scale);
+    return div(value, _constant_scale, scale);
   }
 
   static_assert(pi(1000000) == 3141593);
 
   constexpr auto inv_pi(const intval scale) noexcept -> intval {
     constexpr auto value = div(
-        3183098862, 10000000000, constant_scale());
-    return div(value, constant_scale(), scale);
+        3183098862, 10000000000, _constant_scale);
+    return div(value, _constant_scale, scale);
   }
 
   static_assert(inv_pi(1000000) == 318310);
 
   constexpr auto invsqrt_pi(const intval scale) noexcept -> intval {
     constexpr auto value = div(
-        5641895835, 10000000000, constant_scale());
-    return div(value, constant_scale(), scale);
+        5641895835, 10000000000, _constant_scale);
+    return div(value, _constant_scale, scale);
   }
 
   static_assert(invsqrt_pi(1000000) == 564190);
 
   constexpr auto ln2(const intval scale) noexcept -> intval {
     constexpr auto value = div(
-        6931471806, 10000000000, constant_scale());
-    return div(value, constant_scale(), scale);
+        6931471806, 10000000000, _constant_scale);
+    return div(value, _constant_scale, scale);
   }
 
   static_assert(ln2(1000000) == 693147);
 
   constexpr auto ln10(const intval scale) noexcept -> intval {
     constexpr auto value = div(
-        23025850930, 10000000000, constant_scale());
-    return div(value, constant_scale(), scale);
+        23025850930, 10000000000, _constant_scale);
+    return div(value, _constant_scale, scale);
   }
 
   static_assert(ln10(1000000) == 2302585);
 
   constexpr auto sqrt2(const intval scale) noexcept -> intval {
     constexpr auto value = div(
-        14142135624, 10000000000, constant_scale());
-    return div(value, constant_scale(), scale);
+        14142135624, 10000000000, _constant_scale);
+    return div(value, _constant_scale, scale);
   }
 
   static_assert(sqrt2(1000000) == 1414214);
 
   constexpr auto sqrt3(const intval scale) noexcept -> intval {
     constexpr auto value = div(
-        17320508076, 10000000000, constant_scale());
-    return div(value, constant_scale(), scale);
+        17320508076, 10000000000, _constant_scale);
+    return div(value, _constant_scale, scale);
   }
 
   static_assert(sqrt3(1000000) == 1732051);
 
   constexpr auto inv_sqrt3(const intval scale) noexcept -> intval {
     constexpr auto value = div(
-        5773502692, 10000000000, constant_scale());
-    return div(value, constant_scale(), scale);
+        5773502692, 10000000000, _constant_scale);
+    return div(value, _constant_scale, scale);
   }
 
   static_assert(inv_sqrt3(1000000) == 577350);
 
   constexpr auto egamma(const intval scale) noexcept -> intval {
     constexpr auto value = div(
-        5772156649, 10000000000, constant_scale());
-    return div(value, constant_scale(), scale);
+        5772156649, 10000000000, _constant_scale);
+    return div(value, _constant_scale, scale);
   }
 
   static_assert(egamma(1000000) == 577216);
 
   constexpr auto phi(const intval scale) noexcept -> intval {
     constexpr auto value = div(
-        16180339887, 10000000000, constant_scale());
-    return div(value, constant_scale(), scale);
+        16180339887, 10000000000, _constant_scale);
+    return div(value, _constant_scale, scale);
   }
 
   static_assert(phi(1000000) == 1618034);
 
-  constexpr auto sin_table_size() noexcept -> size_t {
-    return 0x200;
-  }
-
-  constexpr auto sin_table_scale() noexcept -> intval {
-    return 0x100;
-  }
-
-  constexpr auto sin_interations() noexcept -> intval {
-    return 10;
-  }
-
   constexpr auto _generate_sin()
-      -> std::array<intval, sin_table_size()> {
+      -> std::array<intval, _sin_table_size> {
 
     constexpr auto approx = [](const intval x, const intval scale,
                                const intval limit) {
@@ -231,32 +233,20 @@ namespace laplace::engine::eval::impl {
       return value;
     };
 
-    auto v = std::array<intval, sin_table_size()> {};
+    auto v = std::array<intval, _sin_table_size> {};
 
     for (size_t i = 0; i < v.size(); i++) {
-      const intval x = div(static_cast<intval>(i), sin_table_size(),
-                           2 * pi(sin_table_scale()));
+      const intval x = div(static_cast<intval>(i), _sin_table_size,
+                           2 * pi(_sin_table_scale));
 
-      v[i] = approx(x, sin_table_scale(), sin_interations());
+      v[i] = approx(x, _sin_table_scale, _sin_interations);
     }
 
     return v;
   }
 
-  constexpr auto exp_table_size() noexcept -> size_t {
-    return 0x200;
-  }
-
-  constexpr auto exp_table_scale() noexcept -> intval {
-    return 0x100;
-  }
-
-  constexpr auto exp_interations() noexcept -> intval {
-    return 10;
-  }
-
   constexpr auto _generate_exp()
-      -> std::array<intval, exp_table_size()> {
+      -> std::array<intval, _exp_table_size> {
 
     constexpr auto approx = [](const intval x, const intval scale,
                                const intval limit) {
@@ -273,32 +263,20 @@ namespace laplace::engine::eval::impl {
       return value;
     };
 
-    auto v = std::array<intval, exp_table_size()> {};
+    auto v = std::array<intval, _exp_table_size> {};
 
     for (size_t i = 0; i < v.size(); i++) {
       const intval x = div(static_cast<intval>(i) * 2,
-                           exp_table_size(), exp_table_scale());
+                           _exp_table_size, _exp_table_scale);
 
-      v[i] = approx(x, exp_table_scale(), exp_interations());
+      v[i] = approx(x, _exp_table_scale, _exp_interations);
     }
 
     return v;
   }
 
-  constexpr auto log_table_size() noexcept -> size_t {
-    return 0x200;
-  }
-
-  constexpr auto log_table_scale() noexcept -> intval {
-    return 0x100;
-  }
-
-  constexpr auto log_interations() noexcept -> intval {
-    return 10;
-  }
-
   constexpr auto _generate_log()
-      -> std::array<intval, log_table_size()> {
+      -> std::array<intval, _log_table_size> {
 
     constexpr auto approx = [](const intval x, const intval scale,
                                const intval limit) {
@@ -320,13 +298,13 @@ namespace laplace::engine::eval::impl {
       return 2 * value;
     };
 
-    auto v = std::array<intval, log_table_size()> {};
+    auto v = std::array<intval, _log_table_size> {};
 
     for (size_t i = 0; i < v.size(); i++) {
       const intval x = div(static_cast<intval>(i + 1) * 2,
-                           log_table_size(), log_table_scale());
+                           _log_table_size, _log_table_scale);
 
-      v[i] = approx(x, log_table_scale(), log_interations());
+      v[i] = approx(x, _log_table_scale, _log_interations);
     }
 
     return v;
@@ -403,19 +381,19 @@ namespace laplace::engine::eval::impl {
 
     const auto delta = scale * 2;
 
-    intval value = exp_table_scale();
+    intval value = _exp_table_scale;
     intval z     = x;
 
     while (z > 0) {
       const auto part  = z % delta;
-      const auto index = div(part, delta, exp_table_size());
+      const auto index = div(part, delta, _exp_table_size);
 
-      value = mul(value, exp_table(index), exp_table_scale());
+      value = mul(value, exp_table(index), _exp_table_scale);
 
       z -= delta;
     }
 
-    return div(value, exp_table_scale(), scale);
+    return div(value, _exp_table_scale, scale);
   }
 
   static_assert(exp(0, 100) == 100);
@@ -434,15 +412,15 @@ namespace laplace::engine::eval::impl {
     intval z     = x;
 
     while (z > delta) {
-      value += ln2(log_table_scale());
+      value += ln2(_log_table_scale);
       z = div(z, delta, scale);
     }
 
     if (z > 0) {
-      value += log_table(div(z, delta, log_table_size()));
+      value += log_table(div(z, delta, _log_table_size));
     }
 
-    return div(value, log_table_scale(), scale);
+    return div(value, _log_table_scale, scale);
   }
 
   static_assert(log(e(100), 100) == 100);
@@ -520,10 +498,10 @@ namespace laplace::engine::eval::impl {
       return sin_2pi(x % scale, scale);
     }
 
-    const auto index = div(x, scale, sin_table_size());
+    const auto index = div(x, scale, _sin_table_size);
     const auto value = sin_table(index);
 
-    return div(value, sin_table_scale(), scale);
+    return div(value, _sin_table_scale, scale);
   }
 
   constexpr auto sin(const intval x, const intval scale) noexcept
@@ -542,7 +520,8 @@ namespace laplace::engine::eval::impl {
       -> intval {
 
     const auto f = [](const intval x, const intval scale) {
-      return div(sin_2pi(x + pi(scale) / 2, 2 * pi(scale)), 2 * pi(scale), scale);
+      return div(sin_2pi(x + pi(scale) / 2, 2 * pi(scale)),
+                 2 * pi(scale), scale);
     };
 
     constexpr intval precision = 8;

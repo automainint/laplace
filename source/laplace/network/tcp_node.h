@@ -13,11 +13,11 @@
 #ifndef laplace_network_tcp_node_h
 #define laplace_network_tcp_node_h
 
-#include "tcp_base.h"
+#include "basic_tcp.h"
 #include <functional>
 
 namespace laplace::network {
-  class tcp_node final : public tcp_base {
+  class tcp_node final : public basic_tcp {
   public:
     using ref_tcp_node = tcp_node &;
     using event_accept = std::function<void(ref_tcp_node n)>;

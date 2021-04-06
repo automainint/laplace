@@ -27,7 +27,6 @@ namespace laplace::engine {
   using ref_world  = world &;
   using cref_world = const world &;
   using ptr_world  = std::shared_ptr<world>;
-  using condition  = std::function<bool(cref_entity)>;
 }
 
 #endif

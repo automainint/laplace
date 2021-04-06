@@ -111,14 +111,6 @@ namespace laplace::engine::access {
     return { m_world.get().get_entity(id), m_mode };
   }
 
-  auto world::select(condition op) const -> access::ventity {
-    return { m_world.get().select(op), m_mode };
-  }
-
-  auto world::select_dynamic(condition op) const -> access::ventity {
-    return { m_world.get().select_dynamic(op), m_mode };
-  }
-
   auto world::get_random_engine() const -> ref_rand {
     return m_world.get().get_random();
   }

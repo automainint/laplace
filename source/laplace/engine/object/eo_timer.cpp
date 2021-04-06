@@ -16,8 +16,7 @@
 namespace laplace::engine::object {
   timer timer::m_proto(timer::proto);
 
-  timer::timer(proto_tag) :
-      basic_entity(true, false, false, false) { }
+  timer::timer(proto_tag) : basic_entity(default_tick_period) { }
 
   timer::timer(impact_gen gen, uint64_t period, size_t count) {
     *this = m_proto;

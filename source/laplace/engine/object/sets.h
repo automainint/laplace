@@ -44,16 +44,7 @@ namespace laplace::engine::object::sets {
     undefined = 0,
 
     is_dynamic,
-    is_markable,
-    is_selectable,
-    is_vulnerable,
     tick_period,
-    bounds_min_x,
-    bounds_min_y,
-    bounds_min_z,
-    bounds_max_x,
-    bounds_max_y,
-    bounds_max_z,
 
     debug_value,
     is_local,

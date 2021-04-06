@@ -74,9 +74,6 @@ namespace laplace::engine {
 
     auto is_desync() -> bool;
 
-    auto select(condition op) -> vptr_entity;
-    auto select_dynamic(condition op) -> vptr_entity;
-
     void clean_sync_queue();
     void clean_async_queue();
     void reset_index();
