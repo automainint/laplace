@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${LAPLACE_OBJ}
     PRIVATE
       ep_debug.cpp
     PUBLIC

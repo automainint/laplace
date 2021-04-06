@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${QUADWAR_EXE}
     PRIVATE
       aq_main.cpp aq_quadwar.cpp aq_qw_factory.cpp
       aq_session.cpp

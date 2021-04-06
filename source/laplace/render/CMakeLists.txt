@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${LAPLACE_OBJ}
     PRIVATE
       r_context.cpp r_material.cpp r_mesh.cpp r_model.cpp
       r_motion.cpp r_projection.cpp

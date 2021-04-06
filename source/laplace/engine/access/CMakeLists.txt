@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${LAPLACE_OBJ}
     PRIVATE
       ex_entity.cpp ex_world.cpp
     PUBLIC

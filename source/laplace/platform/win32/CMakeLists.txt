@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${LAPLACE_OBJ}
     PRIVATE
       win32_audio.cpp win32_glcontext.cpp win32_input.cpp
       win32_thread.cpp win32_wgl.cpp win32_window.cpp

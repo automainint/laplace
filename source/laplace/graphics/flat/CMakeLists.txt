@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${LAPLACE_OBJ}
     PRIVATE
       g2_framebuffer.cpp g2_solid_buffer.cpp
       g2_solid_shader.cpp g2_sprite_buffer.cpp g2_sprite_shader.cpp

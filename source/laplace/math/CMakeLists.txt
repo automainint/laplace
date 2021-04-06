@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${LAPLACE_OBJ}
     PUBLIC
       basic.h basic.impl.h complex.h complex.impl.h defs.h
       matrix.h matrix.impl.h quaternion.h quaternion.impl.h shortnames.h

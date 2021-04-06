@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${LAPLACE_OBJ}
     PRIVATE
       c_element.test.cpp c_family.test.cpp c_parser.test.cpp
       c_pool.test.cpp c_utils.test.cpp ee_astar.test.cpp ee_maze.test.cpp

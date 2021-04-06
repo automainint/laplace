@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${LAPLACE_OBJ}
     PRIVATE
       uie_button.cpp uie_canvas.cpp uie_console.cpp
       uie_panel.cpp uie_slider.cpp uie_sprite.cpp uie_textarea.cpp

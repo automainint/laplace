@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${QUADWAR_EXE}
     PRIVATE
       aqv_camera.cpp aqv_game.cpp aqv_landscape.cpp
     PUBLIC

@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${LAPLACE_OBJ}
     PRIVATE
       n_host.cpp n_remote.cpp n_server.cpp n_tcp_base.cpp
       n_tcp_joint.cpp n_tcp_node.cpp n_transfer.cpp n_udp_node.cpp

@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${LAPLACE_OBJ}
     PRIVATE
       ui_context.cpp ui_frame.cpp ui_layout.cpp ui_rect.cpp
       ui_widget.cpp

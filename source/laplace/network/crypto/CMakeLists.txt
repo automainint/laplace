@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${LAPLACE_OBJ}
     PRIVATE
       nc_basic_cipher.cpp nc_deffiehellman.cpp
       nc_dh_rabbit.cpp nc_rabbit.cpp nc_stream_cipher.cpp

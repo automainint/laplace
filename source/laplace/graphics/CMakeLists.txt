@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_EXE}
+  ${LAPLACE_OBJ}
     PRIVATE
       g_color.cpp g_image.cpp g_program.cpp g_texture.cpp
       g_utils.cpp
