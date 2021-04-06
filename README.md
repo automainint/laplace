@@ -21,21 +21,21 @@ To build the project CMake and Python 3 are required.
 ### With Cmake
 - Use `tools/gen-gl.py` to generate the OpenGL interface files.
   - `cd tools`
-    `python3 gen-gl.py`
+  - `python3 gen-gl.py`
 - Use `tools/embed.py` to generate the embedded data source files.
   - `python3 embed.py`
-    `cd ..`
+  - `cd ..`
 - Build the project.
   - `cmake -D CMAKE_BUILD_TYPE=Release -B build -S .`
-    `cmake --build build --config Release`
+  - `cmake --build build --config Release`
 
 ### By hand
 - Use `tools/build-deps.py` to build the dependencies.
   - `cd tools`
-    `python3 build-deps.py`
+  - `python3 build-deps.py`
 - Use `tools/gen-gl.py` to generate the OpenGL interface files.
   - `python3 gen-gl.py`
 - Use `tools/embed.py` to generate the embedded data source files.
   - `python3 embed.py`
-    `cd ..`
+  - `cd ..`
 - Add `source` to the project and build manually. Required headers will be in `include` folder, libraries will be in `lib` folder.
