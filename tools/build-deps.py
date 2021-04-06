@@ -3,8 +3,6 @@
 import os, shutil
 
 def build_deps(folder: str, config: str, msvc_runtime: str, install_headers: bool):
-  build_folder = '_build-deps'
-
   if install_headers:
     os.system(
         'cmake' +
