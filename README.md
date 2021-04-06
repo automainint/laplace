@@ -18,7 +18,7 @@ To build the project CMake and Python 3 are required.
   - ```shell
     python3 build.py
     ```
--Done!
+- Done!
 
 ### With Cmake
 - Use `tools/gen-gl.py` to generate the OpenGL interface files.
