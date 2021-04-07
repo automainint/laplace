@@ -62,7 +62,7 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
 
   if(LAPLACE_ENABLE_EXE)
     add_executable(${QUADWAR_EXE})
-    target_link_libraries(${QUADWAR_EXE} PRIVATE ${QUADWAR_OBJ} ${LAPLACE_OBJ})
+    target_link_libraries(${QUADWAR_EXE} PUBLIC ${QUADWAR_OBJ} ${LAPLACE_OBJ})
 
     if(MSVC)
       target_link_options(${QUADWAR_EXE} PRIVATE "/SUBSYSTEM:CONSOLE")
