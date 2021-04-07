@@ -52,6 +52,8 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
         gtest benchmark wolfssl bz2_static freetype
   )
 
+  target_link_libraries(${QUADWAR_OBJ} PUBLIC ${LAPLACE_OBJ})
+
   target_compile_features(${LAPLACE_OBJ} PRIVATE cxx_std_20)
   target_compile_features(${QUADWAR_OBJ} PRIVATE cxx_std_20)
 
