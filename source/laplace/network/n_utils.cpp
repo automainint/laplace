@@ -36,14 +36,14 @@ namespace laplace::network {
   auto set_mode(socket_t &s, network::io_mode m) noexcept -> bool {
     if (m == sync) {
       if (socket_set_blocking(s) != 0) {
-        ::closesocket(s);
+        socket_close(s);
         s = -1;
 
         return false;
       }
     } else if (m == async) {
       if (socket_set_nonblocking(s) != 0) {
-        ::closesocket(s);
+        socket_close(s);
         s = -1;
 
         return false;

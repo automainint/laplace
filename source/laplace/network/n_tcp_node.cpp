@@ -36,7 +36,7 @@ namespace laplace::network {
 
     if (::inet_pton(AF_INET, localhost, &name.sin_addr.s_addr) != 1) {
       verb(fmt("TCP: inet_pton failed (code %d).", socket_error()));
-      closesocket(m_listen);
+      socket_close(m_listen);
       m_listen = -1;
       done();
       return;
@@ -45,7 +45,7 @@ namespace laplace::network {
     if (::bind(m_listen, reinterpret_cast<const sockaddr *>(&name),
                sizeof name) == -1) {
       verb(fmt("TCP: bind failed (code %d).", socket_error()));
-      ::closesocket(m_listen);
+      socket_close(m_listen);
       m_listen = -1;
       done();
       return;
@@ -57,7 +57,7 @@ namespace laplace::network {
       if (::getsockname(m_listen, reinterpret_cast<sockaddr *>(&name),
                         &len) == -1) {
         verb(fmt("TCP: getsockname failed (code %d).", socket_error()));
-        ::closesocket(m_listen);
+        socket_close(m_listen);
         m_listen = -1;
         done();
         return;
@@ -70,7 +70,7 @@ namespace laplace::network {
 
     if (::listen(m_listen, SOMAXCONN) == -1) {
       verb(fmt("TCP: listen failed (code %d).", socket_error()));
-      ::closesocket(m_listen);
+      socket_close(m_listen);
       m_listen = -1;
       done();
       return;
@@ -84,7 +84,7 @@ namespace laplace::network {
 
   tcp_node::~tcp_node() {
     if (m_listen != -1) {
-      closesocket(m_listen);
+      socket_close(m_listen);
       m_listen = -1;
       done();
     }

@@ -29,7 +29,7 @@ namespace laplace::network {
 
   udp_node::~udp_node() {
     if (m_socket != -1) {
-      ::closesocket(m_socket);
+      socket_close(m_socket);
       m_socket = -1;
     }
   }
@@ -57,7 +57,7 @@ namespace laplace::network {
       if (::getsockname(m_socket, reinterpret_cast<::sockaddr *>(&name),
                         &len) == -1) {
         verb(fmt("UDP: getsockname failed (code %d).", socket_error()));
-        ::closesocket(m_socket);
+        socket_close(m_socket);
         m_socket = -1;
         return;
       }
