@@ -23,12 +23,12 @@ Official repository: [GitHub][laplace-link]
 To build the project CMake and Python 3 are required.
 
 ### With provided build script
-- Execute the build script.
+Execute the build script.
 
 ```shell
 python3 build.py
 ```
-- Done!
+Done!
 
 ### With Cmake
 - Use `tools/gen-gl.py` to generate the OpenGL interface files.
@@ -40,6 +40,7 @@ cd tools
 python3 gen-gl.py
 python3 embed.py
 cd ..
+
 cmake -D CMAKE_BUILD_TYPE=Release -B build -S .
 cmake --build build --config Release
 ```
@@ -57,7 +58,7 @@ python3 embed.py
 cd ..
 ```
 
-- Add `source` to the project and build manually. Required headers will be in `include` folder, libraries will be in `lib` folder.
+Add `source` to the project and build manually. Required headers will be in `include` folder, libraries will be in `lib` folder.
 
 [laplace-link]:     https://github.com/automainint/laplace
 [msvc-link]:        https://visualstudio.microsoft.com/vs/features/cplusplus
