@@ -18,7 +18,12 @@ if(LAPLACE_ENABLE_COVERAGE)
           -fsanitize=undefined,address
     )
 
-    target_link_options(${LAPLACE_CONFIG} INTERFACE --coverage)
+    target_link_options(
+      ${LAPLACE_CONFIG}
+        INTERFACE
+           --coverage
+           -fsanitize=undefined,address
+    )
   endif()
 elseif(LAPLACE_ENABLE_TESTING)
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -26,6 +31,12 @@ elseif(LAPLACE_ENABLE_TESTING)
       ${LAPLACE_CONFIG}
         INTERFACE
           -O0 -fsanitize=undefined,address
+    )
+
+    target_link_options(
+      ${LAPLACE_CONFIG}
+        INTERFACE
+           -fsanitize=undefined,address
     )
   elseif(MSVC)
     target_compile_options(${LAPLACE_CONFIG} INTERFACE /Od)
