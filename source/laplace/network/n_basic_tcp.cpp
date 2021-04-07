@@ -40,14 +40,14 @@ namespace laplace::network {
         if (n != -1) {
           size += n;
         } else if (socket_error() != socket_wouldblock() || is_done()) {
-          verb(fmt("TCP: recv failed (code %d).", socket_error()));
+          verb(fmt("TCP: recv failed (code: %d).", socket_error()));
           close();
           break;
         } else if (mode == sync) {
           is_sync = set_mode(m_socket, sync);
 
           if (!is_sync) {
-            verb(fmt("TCP: ioctlsocket failed (code %d).",
+            verb(fmt("TCP: ioctlsocket failed (code: %d).",
                      socket_error()));
             close();
             break;
@@ -94,14 +94,14 @@ namespace laplace::network {
         if (n != -1) {
           count += n;
         } else if (socket_error() != socket_wouldblock() || is_done()) {
-          verb(fmt("TCP: send failed (code %d).", socket_error()));
+          verb(fmt("TCP: send failed (code: %d).", socket_error()));
           close();
           break;
         } else {
           is_sync = set_mode(m_socket, sync);
 
           if (!is_sync) {
-            verb(fmt("TCP: ioctlsocket failed (code %d).",
+            verb(fmt("TCP: ioctlsocket failed (code: %d).",
                      socket_error()));
             close();
             break;
@@ -112,7 +112,7 @@ namespace laplace::network {
       if (is_sync) {
         if (!set_mode(m_socket, async)) {
           verb(fmt(
-              "TCP: ioctlsocket failed (code %d).", socket_error()));
+              "TCP: ioctlsocket failed (code: %d).", socket_error()));
           close();
         }
       }

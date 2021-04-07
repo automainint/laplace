@@ -27,7 +27,7 @@ namespace laplace::test {
     vbyte seq;
 
     server.on_accept([&msg](ref_tcp_node n) {
-      static_cast<void>(n.send(msg));
+      std::ignore = n.send(msg);
       n.close_node();
     });
 
@@ -61,7 +61,7 @@ namespace laplace::test {
     });
 
     client.on_connect([&msg](ref_tcp_joint j) {
-      static_cast<void>(j.send(msg));
+      std::ignore = j.send(msg);
       j.close();
     });
 

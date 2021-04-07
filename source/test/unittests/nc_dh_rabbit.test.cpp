@@ -41,8 +41,12 @@ namespace laplace::test {
       const auto akey = alice.get_mutual_key();
       const auto bkey = bob.get_mutual_key();
 
+      EXPECT_NE(akey.size(), 0u);
       EXPECT_EQ(akey.size(), bkey.size());
-      EXPECT_EQ(memcmp(akey.data(), bkey.data(), akey.size()), 0);
+
+      if (!akey.empty() && !bkey.empty() && akey.size() == bkey.size()) {
+        EXPECT_EQ(memcmp(akey.data(), bkey.data(), akey.size()), 0);
+      }
     }
   }
 
@@ -104,7 +108,7 @@ namespace laplace::test {
       auto enc2 = alice.encrypt(msg2);
 
       EXPECT_TRUE(msg0 == bob.decrypt(enc0));
-      static_cast<void>(bob.decrypt(baaad));
+      std::ignore = bob.decrypt(baaad);
       EXPECT_TRUE(msg2 == bob.decrypt(enc2));
     }
   }
