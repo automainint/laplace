@@ -60,15 +60,15 @@ cd ..
 - Add `source` to the project and build manually. Required headers will be in `include` folder, libraries will be in `lib` folder.
 
 [laplace-link]:     https://github.com/automainint/laplace
-[msvc-link]:        https://visualstudio.microsoft.com/vs/features/cplusplus/
-[clang-link]:       https://clang.llvm.org/)/[GCC](https://gcc.gnu.org/
-[python-link]:      https://www.python.org/
-[cmake-link]:       https://cmake.org/
-[git-link]:         https://git-scm.com/
+[msvc-link]:        https://visualstudio.microsoft.com/vs/features/cplusplus
+[clang-link]:       https://clang.llvm.org/)/[GCC](https://gcc.gnu.org
+[python-link]:      https://www.python.org
+[cmake-link]:       https://cmake.org
+[git-link]:         https://git-scm.com
 [opengl-link]:      https://www.khronos.org/registry/OpenGL/index_gl.php
 [wolfssl-link]:     https://github.com/wolfSSL/wolfssl
 [freetype-link]:    https://gitlab.freedesktop.org/freetype/freetype
 [bzip2-link]:       https://gitlab.com/federicomenaquintero/bzip2
 [googletest-link]:  https://github.com/google/googletest
 [benchmark-link]:   https://github.com/google/benchmark
-[blender-link]:     https://www.blender.org/
+[blender-link]:     https://www.blender.org
