@@ -17,12 +17,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-
-    - name: Set up GCC 10
-      run: |
-        sudo apt-get update
-        sudo apt-get install gcc-10
-
     - name: Set up CMake 3.18
       uses: jwlawson/actions-setup-cmake@v1.8
       with:
@@ -32,3 +26,6 @@ jobs:
       run: |
           cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -B build -S .
           cmake --build build --config $BUILD_TYPE
+      env:
+        CC: gcc-10
+        CXX: g++-10
