@@ -31,16 +31,9 @@ python3 build.py
 Done!
 
 ### With Cmake
-- Use `tools/gen-gl.py` to generate the OpenGL interface files.
-- Use `tools/embed.py` to generate the embedded data source files.
-- Build the project.
+- Configure and build the project.
 
 ```shell
-cd tools
-python3 gen-gl.py
-python3 embed.py
-cd ..
-
 cmake -D CMAKE_BUILD_TYPE=Release -B build -S .
 cmake --build build --config Release
 ```
