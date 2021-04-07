@@ -29,27 +29,6 @@
 #include <variant>
 #include <vector>
 
-#ifdef __cpp_exceptions
-#  define laplace_try() try {
-#  define laplace_catch()                                  \
-    }                                                      \
-    catch (std::exception & e) {                           \
-      laplace::error_(e.what(), __FUNCTION__);             \
-    }                                                      \
-    catch (...) {                                          \
-      laplace::error_("Unknown exception.", __FUNCTION__); \
-    }
-#  define laplace_catch_unreachable() \
-    }                                 \
-    catch (...) {                     \
-      laplace::sl::_unreachable();    \
-    }
-#else
-#  define laplace_try() {
-#  define laplace_catch() }
-#  define laplace_catch_unreachable() }
-#endif
-
 namespace laplace::sl {
   /*  TODO
    *  Small vector optimization.
@@ -57,9 +36,13 @@ namespace laplace::sl {
   template <typename type_, typename alloc_ = std::allocator<type_>>
   using vector = std::vector<type_, alloc_>;
 
+  /*  For indexing integer values.
+   */
   using index = ptrdiff_t;
 
-  [[noreturn]] inline void _unreachable() noexcept { }
+  /*  Integer value that shall not be negative.
+   */
+  using whole = ptrdiff_t;
 }
 
 #endif

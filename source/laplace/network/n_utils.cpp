@@ -16,16 +16,15 @@
 namespace laplace::network {
   using std::min, std::string;
 
-  auto clamp_chunk(size_t size) -> int {
+  auto clamp_chunk(size_t size) noexcept -> int {
     return static_cast<int>(min(size, max_chunk_size));
   }
 
-  auto to_string(const sockaddr &a) -> string {
-    char buf[64];
+  auto to_string(const sockaddr &a) noexcept -> string {
+    char buf[64] = {};
 
     if (a.sa_family == AF_INET) {
-      const sockaddr_in &ip4 =
-          reinterpret_cast<const sockaddr_in &>(a);
+      const auto &ip4 = reinterpret_cast<const sockaddr_in &>(a);
       ::inet_ntop(AF_INET, &ip4.sin_addr, buf, sizeof buf);
     } else {
       buf[0] = '\0';
@@ -34,16 +33,23 @@ namespace laplace::network {
     return buf;
   }
 
-  auto set_mode(SOCKET &s, network::io_mode m) -> bool {
-    if (s == INVALID_SOCKET)
-      return true;
+  auto set_mode(socket_t &s, network::io_mode m) noexcept -> bool {
+    if (m == sync) {
+      if (socket_set_blocking(s) != 0) {
+        ::closesocket(s);
+        s = -1;
 
-    u_long flag = (m == network::sync ? 0u : 1u);
+        return false;
+      }
+    } else if (m == async) {
+      if (socket_set_nonblocking(s) != 0) {
+        ::closesocket(s);
+        s = -1;
 
-    if (::ioctlsocket(s, FIONBIO, &flag) == SOCKET_ERROR) {
-      ::closesocket(s);
-      s = INVALID_SOCKET;
-
+        return false;
+      }
+    } else {
+      error_("Invalid IO mode.", __FUNCTION__);
       return false;
     }
 

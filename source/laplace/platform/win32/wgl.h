@@ -22,7 +22,7 @@ namespace laplace::win32 {
   auto gl_init() -> bool;
   auto gl_preload() -> bool;
   void gl_cleanup();
-  auto get_proc_address(const char *name) -> gl::ptr_function;
+  auto gl_get_proc_address(const char *name) -> gl::ptr_function;
 
   enum _hwgl_enum : uint32_t {
     WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB = 0x0002,

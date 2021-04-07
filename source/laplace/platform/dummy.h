@@ -25,7 +25,7 @@ namespace laplace::platform::dummy {
 
   inline void gl_cleanup() { }
 
-  inline auto get_proc_address(const char *s) -> gl::ptr_function {
+  inline auto gl_get_proc_address(const char *s) -> gl::ptr_function {
     return nullptr;
   }
 

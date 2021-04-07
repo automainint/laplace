@@ -53,7 +53,7 @@ namespace laplace::network {
         const sockaddr_in &name,      //
         span_cbyte         seq) -> size_t;
 
-    SOCKET      m_socket;
+    socket_t      m_socket;
     uint16_t    m_port = 0;
     sockaddr_in m_remote;
     bool        m_is_msgsize   = false;

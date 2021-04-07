@@ -17,7 +17,7 @@
 namespace laplace::network {
   basic_tcp::basic_tcp() {
     m_is_done = false;
-    m_socket  = INVALID_SOCKET;
+    m_socket  = -1;
   }
 
   basic_tcp::~basic_tcp() {
@@ -28,7 +28,7 @@ namespace laplace::network {
       -> size_t {
     size_t size = 0;
 
-    if (m_socket != INVALID_SOCKET && (p != nullptr || count == 0)) {
+    if (m_socket != -1 && (p != nullptr || count == 0)) {
       auto buf     = reinterpret_cast<char *>(p);
       bool is_sync = false;
 
@@ -37,7 +37,7 @@ namespace laplace::network {
 
         auto n = ::recv(m_socket, buf + size, part, 0);
 
-        if (n != SOCKET_ERROR) {
+        if (n != -1) {
           size += n;
         } else if (socket_error() != socket_wouldblock() || is_done()) {
           verb(fmt("TCP: recv failed (code %d).", socket_error()));
@@ -71,7 +71,7 @@ namespace laplace::network {
   auto basic_tcp::receive(size_t count, io_mode mode) -> vbyte {
     vbyte seq;
 
-    if (m_socket != INVALID_SOCKET) {
+    if (m_socket != -1) {
       seq.resize(count);
       seq.resize(receive_to(seq.data(), count, mode));
     }
@@ -82,7 +82,7 @@ namespace laplace::network {
   auto basic_tcp::send(span_cbyte seq) -> size_t {
     size_t count = 0;
 
-    if (m_socket != INVALID_SOCKET) {
+    if (m_socket != -1) {
       auto buf     = reinterpret_cast<const char *>(seq.data());
       bool is_sync = false;
 
@@ -91,7 +91,7 @@ namespace laplace::network {
 
         auto n = ::send(m_socket, buf + count, part, 0);
 
-        if (n != SOCKET_ERROR) {
+        if (n != -1) {
           count += n;
         } else if (socket_error() != socket_wouldblock() || is_done()) {
           verb(fmt("TCP: send failed (code %d).", socket_error()));
@@ -126,9 +126,9 @@ namespace laplace::network {
   }
 
   void basic_tcp::close() {
-    if (m_socket != INVALID_SOCKET) {
+    if (m_socket != -1) {
       ::closesocket(m_socket);
-      m_socket = INVALID_SOCKET;
+      m_socket = -1;
     }
   }
 

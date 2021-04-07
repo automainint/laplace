@@ -1,5 +1,5 @@
 target_sources(
-  ${QUADWAR_EXE}
+  ${QUADWAR_OBJ}
     PRIVATE
       aqo_game_clock.cpp aqo_landscape.cpp aqo_player.cpp
       aqo_root.cpp

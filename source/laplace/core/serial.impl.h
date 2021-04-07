@@ -22,9 +22,7 @@ namespace laplace::serial {
       auto dst = &value;
       auto src = seq.data() + offset;
 
-      laplace_try();
       std::memcpy(dst, src, sizeof value);
-      laplace_catch();
     }
 
     return value;
@@ -37,9 +35,7 @@ namespace laplace::serial {
       auto dst = seq.data() + offset;
       auto src = &value;
 
-      laplace_try();
       std::memcpy(dst, src, sizeof value);
-      laplace_catch();
     }
   }
 
@@ -48,9 +44,7 @@ namespace laplace::serial {
     auto dst = seq + offset;
     auto src = &value;
 
-    laplace_try();
     std::memcpy(dst, src, sizeof value);
-    laplace_catch();
   }
 
   constexpr auto byte_count() noexcept -> size_t {
@@ -81,9 +75,7 @@ namespace laplace::serial {
     const auto size = sizeof(char_type_) * arg0.size();
 
     if (data.size() >= size) {
-      laplace_try();
       std::memcpy(data.data(), arg0.data(), size);
-      laplace_catch();
     } else {
       error_(fmt("Invalid size %zd. %zd bytes required.", data.size(),
                  size),
@@ -97,9 +89,7 @@ namespace laplace::serial {
     const auto size = sizeof(elem_type_) * arg0.size();
 
     if (data.size() >= size) {
-      laplace_try();
       std::memcpy(data.data(), arg0.data(), size);
-      laplace_catch();
     } else {
       error_(fmt("Invalid size %zd. %zd bytes required.", data.size(),
                  size),
@@ -113,9 +103,7 @@ namespace laplace::serial {
     constexpr auto size = sizeof arg0;
 
     if (data.size() >= size) {
-      laplace_try();
       std::memcpy(data.data(), &arg0, size);
-      laplace_catch();
     } else {
       error_(fmt("Invalid size %zd. %zd bytes required.", data.size(),
                  size),

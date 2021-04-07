@@ -47,46 +47,46 @@ namespace laplace::graphics {
   }
 
   void program::compute_shader(string_view code) {
-    string        s(code);
-    istringstream in(s);
+    auto s  = string(code);
+    auto in = istringstream(s);
     compute_shader(in);
   }
 
   void program::vertex_shader(string_view code) {
-    string        s(code);
-    istringstream in(s);
+    auto s  = string(code);
+    auto in = istringstream(s);
     vertex_shader(in);
   }
 
   void program::geometry_shader(string_view code) {
-    string        s(code);
-    istringstream in(s);
+    auto s  = string(code);
+    auto in = istringstream(s);
     geometry_shader(in);
   }
 
   void program::fragment_shader(string_view code) {
-    string        s(code);
-    istringstream in(s);
+    auto s  = string(code);
+    auto in = istringstream(s);
     fragment_shader(in);
   }
 
-  void program::compute_shader(ref_istream in) {
-    uint32_t shader = glCreateShader(GL_COMPUTE_SHADER);
+  void program::compute_shader(std::istream &in) {
+    auto shader = glCreateShader(GL_COMPUTE_SHADER);
     shader_source(shader, in);
   }
 
-  void program::vertex_shader(ref_istream in) {
-    uint32_t shader = glCreateShader(GL_VERTEX_SHADER);
+  void program::vertex_shader(std::istream &in) {
+    auto shader = glCreateShader(GL_VERTEX_SHADER);
     shader_source(shader, in);
   }
 
-  void program::geometry_shader(ref_istream in) {
-    uint32_t shader = glCreateShader(GL_GEOMETRY_SHADER);
+  void program::geometry_shader(std::istream &in) {
+    auto shader = glCreateShader(GL_GEOMETRY_SHADER);
     shader_source(shader, in);
   }
 
-  void program::fragment_shader(ref_istream in) {
-    uint32_t shader = glCreateShader(GL_FRAGMENT_SHADER);
+  void program::fragment_shader(std::istream &in) {
+    auto shader = glCreateShader(GL_FRAGMENT_SHADER);
     shader_source(shader, in);
   }
 
@@ -109,19 +109,19 @@ namespace laplace::graphics {
     return m_id;
   }
 
-  void program::shader_source(uint32_t shader, ref_istream in) {
-    vector<string> source;
+  void program::shader_source(uint32_t shader, std::istream &in) {
+    auto source = vector<string> {};
 
     if (in) {
       while (!in.eof()) {
-        string line;
+        auto line = string {};
         getline(in, line);
         line.append("\n");
         source.emplace_back(line);
       }
     }
 
-    vector<const char *> p;
+    auto p = vector<const char *> {};
 
     for (size_t i = 0; i < source.size(); i++) {
       p.emplace_back(source[i].c_str());

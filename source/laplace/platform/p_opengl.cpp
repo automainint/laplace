@@ -21,18 +21,18 @@
 
 #include "../../generated/gl/funcs.impl.h"
 
-#define LAPLACE_GL_LOAD(a)                                         \
-  if (!a) {                                                        \
-    if (a = reinterpret_cast<pfn_##a>(get_proc_address(#a)); !a) { \
-      ok = false;                                                  \
-    }                                                              \
+#define LAPLACE_GL_LOAD(a)                                            \
+  if (!a) {                                                           \
+    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a)); !a) { \
+      ok = false;                                                     \
+    }                                                                 \
   }
 
-#define LAPLACE_GL_LOAD_EX(a)                                      \
-  if (!a) {                                                        \
-    if (a = reinterpret_cast<pfn_##a>(get_proc_address(#a)); !a) { \
-      status = false;                                              \
-    }                                                              \
+#define LAPLACE_GL_LOAD_EX(a)                                         \
+  if (!a) {                                                           \
+    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a)); !a) { \
+      status = false;                                                 \
+    }                                                                 \
   }
 
 #define LAPLACE_GL_HAS(a) has(#a)
@@ -62,16 +62,14 @@ namespace laplace::gl {
     return ok;
   }
 
-  auto get_proc_address(const char *name) -> ptr_function {
-    return platform::get_proc_address(name);
-  }
-
   void require_extensions(vector<string_view> exts) {
     has_extensions_required = true;
     extensions_required.assign(exts.begin(), exts.end());
   }
 
   auto init() -> bool {
+    using platform::gl_get_proc_address;
+
     ok = true;
 
     if (has_extensions_required) {

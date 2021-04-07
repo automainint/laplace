@@ -44,7 +44,7 @@ namespace laplace::network::crypto {
     return { m_mutual_key.data(), m_mutual_key.size() };
   }
 
-  auto basic_cipher::get_loss_count() const noexcept -> size_t {
+  auto basic_cipher::get_loss_count() const noexcept -> sl::whole {
     return m_loss_count;
   }
 
@@ -86,7 +86,12 @@ namespace laplace::network::crypto {
     m_loss_count = 0;
   }
 
-  void basic_cipher::add_bytes_lost(size_t count) noexcept {
+  void basic_cipher::add_bytes_lost(sl::whole count) noexcept {
+    if (count < 0) {
+      error_("Invalid byte count.", __FUNCTION__);
+      return;
+    }
+
     m_loss_count += count;
   }
 

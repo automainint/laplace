@@ -1,5 +1,5 @@
 target_sources(
-  ${QUADWAR_EXE}
+  ${QUADWAR_OBJ}
     PRIVATE
       aqui_lobby.cpp aqui_mainmenu.cpp
     PUBLIC

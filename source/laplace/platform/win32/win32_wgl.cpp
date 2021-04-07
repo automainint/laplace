@@ -104,7 +104,7 @@ namespace laplace::win32 {
 
     if (!gl::glGetIntegerv) {
       gl::glGetIntegerv = reinterpret_cast<gl::pfn_glGetIntegerv>(
-          get_proc_address("glGetIntegerv"));
+          gl_get_proc_address("glGetIntegerv"));
 
       if (!gl::glGetIntegerv) {
         error_("Unable to get glGetIntegerv function.", __FUNCTION__);
@@ -114,7 +114,7 @@ namespace laplace::win32 {
 
     if (!gl::glGetStringi) {
       gl::glGetStringi = reinterpret_cast<gl::pfn_glGetStringi>(
-          get_proc_address("glGetStringi"));
+          gl_get_proc_address("glGetStringi"));
 
       if (!gl::glGetStringi) {
         error_("Unable to get glGetStringi function.", __FUNCTION__);
@@ -146,7 +146,7 @@ namespace laplace::win32 {
     if (gl::has("WGL_ARB_create_context")) {
       wglCreateContextAttribsARB =
           reinterpret_cast<pfn_wglCreateContextAttribsARB>(
-              get_proc_address("wglCreateContextAttribsARB"));
+              gl_get_proc_address("wglCreateContextAttribsARB"));
 
       if (!wglCreateContextAttribsARB) {
         error_("Unable to get wglCreateContextAttribsARB function.",
@@ -165,7 +165,7 @@ namespace laplace::win32 {
     }
   }
 
-  auto get_proc_address(const char *name) -> gl::ptr_function {
+  auto gl_get_proc_address(const char *name) -> gl::ptr_function {
     if (wglGetProcAddress) {
       if (auto p = wglGetProcAddress(name); p)
         return p;

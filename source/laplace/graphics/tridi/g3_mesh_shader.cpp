@@ -4,7 +4,7 @@
 namespace laplace::graphics::tridi {
   using namespace gl;
 
-  mesh_shader::mesh_shader(ref_istream vert, ref_istream frag) {
+  mesh_shader::mesh_shader(std::istream &vert, std::istream &frag) {
     m_program.vertex_shader(vert);
     m_program.fragment_shader(frag);
 
@@ -49,28 +49,25 @@ namespace laplace::graphics::tridi {
   }
 
   void mesh_shader::set_object(mesh_shader::cref_object obj) {
-    glUniformMatrix3fv(
-        n_object_rotation, 1, false, obj.rotation.v);
-    glUniformMatrix4fv(
-        n_object_transform, 1, false, obj.transform.v);
+    glUniformMatrix3fv(n_object_rotation, 1, false, obj.rotation.v);
+    glUniformMatrix4fv(n_object_transform, 1, false, obj.transform.v);
   }
 
   void mesh_shader::set_view(mesh_shader::cref_view view) {
-    glUniformMatrix4fv(
-        n_view_transform, 1, false, view.transform.v);
+    glUniformMatrix4fv(n_view_transform, 1, false, view.transform.v);
     glUniform3fv(n_eye_position, 1, view.eye_position.v);
   }
 
   void mesh_shader::set_material(mesh_shader::cref_material mat) {
-    glUniform1i(n_material_colormap,
-                static_cast<int32_t>(mat.colormap_id));
+    glUniform1i(
+        n_material_colormap, static_cast<int32_t>(mat.colormap_id));
     glUniform1f(n_material_diffsue, mat.diffuse);
     glUniform1f(n_material_specular, mat.specular);
   }
 
   void mesh_shader::set_light(mesh_shader::cref_light light) {
-    glUniform1i(n_light_shadowmap,
-                static_cast<int32_t>(light.shadowmap_id));
+    glUniform1i(
+        n_light_shadowmap, static_cast<int32_t>(light.shadowmap_id));
     glUniform3fv(n_light_position, 1, light.position.v);
     glUniform3fv(n_light_color, 1, light.color.v);
     glUniform1f(n_light_ambient, light.ambient);

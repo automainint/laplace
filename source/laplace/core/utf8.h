@@ -16,13 +16,12 @@
 #include "defs.h"
 
 namespace laplace::utf8 {
-  [[nodiscard]] auto length(std::u8string_view bytes) -> size_t;
-
+  [[nodiscard]] auto length(std::u8string_view bytes) noexcept
+      -> size_t;
   [[nodiscard]] auto decode(std::u8string_view bytes, ref_uint offset,
-                            ref_char32 code) -> bool;
-
+                            ref_char32 code) noexcept -> bool;
   [[nodiscard]] auto encode(char32_t code, std::u8string &bytes,
-                            ref_uint offset) -> bool;
+                            ref_uint offset) noexcept -> bool;
 }
 
 #endif

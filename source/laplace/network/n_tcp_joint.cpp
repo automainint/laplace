@@ -30,7 +30,7 @@ namespace laplace::network {
 
     m_socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-    if (m_socket == INVALID_SOCKET) {
+    if (m_socket == -1) {
       verb(fmt("TCP: socket failed (code %d).", socket_error()));
       done();
       return;
@@ -50,7 +50,7 @@ namespace laplace::network {
 
   void tcp_joint::tick() {
     if (!is_done()) {
-      if (m_socket == INVALID_SOCKET) {
+      if (m_socket == -1) {
         done();
       } else if (m_is_ready) {
         if (m_on_connect) {
@@ -69,7 +69,7 @@ namespace laplace::network {
           done();
         } else if (::connect(m_socket,
                              reinterpret_cast<const sockaddr *>(&name),
-                             sizeof name) != SOCKET_ERROR ||
+                             sizeof name) != -1 ||
                    socket_error() == socket_isconn()) {
           m_is_ready = true;
 

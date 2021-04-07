@@ -39,7 +39,7 @@ namespace laplace::network::crypto {
     [[nodiscard]] auto get_public_key() const noexcept -> span_cbyte;
     [[nodiscard]] auto get_mutual_key() const noexcept -> span_cbyte;
 
-    [[nodiscard]] auto get_loss_count() const noexcept -> size_t;
+    [[nodiscard]] auto get_loss_count() const noexcept -> sl::whole;
 
   protected:
     void verb_error(std::string_view sender,
@@ -55,14 +55,14 @@ namespace laplace::network::crypto {
     void set_mutual_key(span_cbyte key) noexcept;
 
     void reset_loss_count() noexcept;
-    void add_bytes_lost(size_t count) noexcept;
+    void add_bytes_lost(sl::whole count) noexcept;
 
     [[nodiscard]] auto get_private_key() const noexcept -> span_cbyte;
 
   private:
-    bool   m_is_ready   = false;
-    bool   m_is_verbose = default_verbose;
-    size_t m_loss_count = 0;
+    bool      m_is_ready   = false;
+    bool      m_is_verbose = default_verbose;
+    sl::whole m_loss_count = 0;
 
     vbyte m_private_key;
     vbyte m_public_key;

@@ -25,11 +25,6 @@ namespace laplace::gl {
 
   auto is_ok() -> bool;
 
-  /*  Platform-specific function to get specified
-   *  function address.
-   */
-  auto get_proc_address(const char *name) -> ptr_function;
-
   /*  Set required extensions.
    */
   void require_extensions(std::vector<std::string_view> extensions);

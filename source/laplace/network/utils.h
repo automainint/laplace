@@ -16,9 +16,9 @@
 #include "defs.h"
 
 namespace laplace::network {
-  auto clamp_chunk(size_t size) -> int;
-  auto to_string(const ::sockaddr &a) -> std::string;
-  auto set_mode(SOCKET &s, io_mode m) -> bool;
+  auto clamp_chunk(size_t size) noexcept -> int;
+  auto to_string(const ::sockaddr &a) noexcept -> std::string;
+  auto set_mode(socket_t &s, io_mode m) noexcept -> bool;
 }
 
 #endif

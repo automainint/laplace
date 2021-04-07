@@ -38,8 +38,8 @@ namespace laplace::network {
   protected:
     void done();
 
-    bool   m_is_done;
-    SOCKET m_socket;
+    bool     m_is_done;
+    socket_t m_socket;
   };
 }
 

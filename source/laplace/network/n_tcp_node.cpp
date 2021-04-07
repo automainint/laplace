@@ -22,7 +22,7 @@ namespace laplace::network {
 
     m_listen = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-    if (m_listen == INVALID_SOCKET) {
+    if (m_listen == -1) {
       done();
       verb(fmt("TCP: socket failed (code %d).", socket_error()));
       return;
@@ -37,16 +37,16 @@ namespace laplace::network {
     if (::inet_pton(AF_INET, localhost, &name.sin_addr.s_addr) != 1) {
       verb(fmt("TCP: inet_pton failed (code %d).", socket_error()));
       closesocket(m_listen);
-      m_listen = INVALID_SOCKET;
+      m_listen = -1;
       done();
       return;
     }
 
     if (::bind(m_listen, reinterpret_cast<const sockaddr *>(&name),
-               sizeof name) == SOCKET_ERROR) {
+               sizeof name) == -1) {
       verb(fmt("TCP: bind failed (code %d).", socket_error()));
       ::closesocket(m_listen);
-      m_listen = INVALID_SOCKET;
+      m_listen = -1;
       done();
       return;
     }
@@ -55,10 +55,10 @@ namespace laplace::network {
       ::socklen_t len = sizeof name;
 
       if (::getsockname(m_listen, reinterpret_cast<sockaddr *>(&name),
-                        &len) == SOCKET_ERROR) {
+                        &len) == -1) {
         verb(fmt("TCP: getsockname failed (code %d).", socket_error()));
         ::closesocket(m_listen);
-        m_listen = INVALID_SOCKET;
+        m_listen = -1;
         done();
         return;
       }
@@ -68,10 +68,10 @@ namespace laplace::network {
       m_port = port;
     }
 
-    if (::listen(m_listen, SOMAXCONN) == SOCKET_ERROR) {
+    if (::listen(m_listen, SOMAXCONN) == -1) {
       verb(fmt("TCP: listen failed (code %d).", socket_error()));
       ::closesocket(m_listen);
-      m_listen = INVALID_SOCKET;
+      m_listen = -1;
       done();
       return;
     }
@@ -83,9 +83,9 @@ namespace laplace::network {
   }
 
   tcp_node::~tcp_node() {
-    if (m_listen != INVALID_SOCKET) {
+    if (m_listen != -1) {
       closesocket(m_listen);
-      m_listen = INVALID_SOCKET;
+      m_listen = -1;
       done();
     }
   }
@@ -96,7 +96,7 @@ namespace laplace::network {
 
   void tcp_node::tick() {
     if (!is_done()) {
-      if (m_socket != INVALID_SOCKET) {
+      if (m_socket != -1) {
         if (m_on_accept) {
           m_on_accept(*this);
         }
@@ -107,7 +107,7 @@ namespace laplace::network {
         m_socket = ::accept(
             m_listen, reinterpret_cast<sockaddr *>(&m_remote), &len);
 
-        if (m_socket != INVALID_SOCKET) {
+        if (m_socket != -1) {
           if (!set_mode(m_socket, async)) {
             verb(fmt("TCP: ioctlsocket failed (code %d).", socket_error()));
             done();
@@ -127,7 +127,7 @@ namespace laplace::network {
   }
 
   auto tcp_node::is_connected() const -> bool {
-    return m_socket != INVALID_SOCKET && !is_done();
+    return m_socket != -1 && !is_done();
   }
 
   auto tcp_node::get_port() const -> uint16_t {

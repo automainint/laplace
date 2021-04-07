@@ -16,7 +16,7 @@
 namespace laplace::graphics::flat {
   using namespace gl;
 
-  sprite_shader::sprite_shader(ref_istream vert, ref_istream frag) {
+  sprite_shader::sprite_shader(std::istream &vert, std::istream &frag) {
     m_program.vertex_shader(vert);
     m_program.fragment_shader(frag);
 
@@ -44,7 +44,7 @@ namespace laplace::graphics::flat {
         m_program.get_id(),           //
         "mesh_texture");
   }
-  
+
   void sprite_shader::use() {
     m_program.use(true);
   }

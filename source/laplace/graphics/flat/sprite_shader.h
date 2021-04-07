@@ -27,7 +27,7 @@ namespace laplace::graphics::flat {
     sprite_shader(const sprite_shader &) = delete;
     auto operator=(const sprite_shader &) -> sprite_shader & = delete;
 
-    sprite_shader(ref_istream vert, ref_istream frag);
+    sprite_shader(std::istream &vert, std::istream &frag);
 
     void use();
 

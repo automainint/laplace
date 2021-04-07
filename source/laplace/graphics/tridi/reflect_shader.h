@@ -26,7 +26,7 @@ namespace laplace::graphics::tridi {
     reflect_shader(const reflect_shader &) = delete;
     auto operator=(const reflect_shader &) -> reflect_shader & = delete;
 
-    reflect_shader(ref_istream vert, ref_istream frag);
+    reflect_shader(std::istream &vert, std::istream &frag);
     ~reflect_shader();
 
     void use();

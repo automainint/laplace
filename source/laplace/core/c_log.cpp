@@ -29,18 +29,13 @@ namespace laplace {
   static shared_mutex g_verbose_lock;
 
   void set_verbose(bool is_verbose) noexcept {
-    try {
-      auto _ul  = unique_lock(g_verbose_lock);
-      g_verbose = is_verbose;
-    } catch (...) { }
+    auto _ul  = unique_lock(g_verbose_lock);
+    g_verbose = is_verbose;
   }
 
   auto is_verbose() noexcept -> bool {
-    try {
-      auto _sl = shared_lock(g_verbose_lock);
-      return g_verbose;
-    } catch (...) { }
-    return false;
+    auto _sl = shared_lock(g_verbose_lock);
+    return g_verbose;
   }
 
   void verb(string_view s) noexcept {
@@ -78,14 +73,12 @@ namespace laplace {
   }
 
   void error_(string_view message, string_view loc) noexcept {
-    try {
-      auto _ul = unique_lock(g_log_lock);
-      if (loc.empty()) {
-        cerr << "[ error ] " << message << '\n';
-      } else {
-        cerr << "[ error in " << loc << " ] " << message << '\n';
-      }
-    } catch (...) { }
+    auto _ul = unique_lock(g_log_lock);
+    if (loc.empty()) {
+      cerr << "[ error ] " << message << '\n';
+    } else {
+      cerr << "[ error in " << loc << " ] " << message << '\n';
+    }
   }
 
   void error_(u8string_view message, string_view loc) noexcept {

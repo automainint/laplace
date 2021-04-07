@@ -44,9 +44,6 @@ namespace laplace {
   using span_cuint   = std::span<const size_t>;
   using span_cuint16 = std::span<const uint16_t>;
   using span_cuint32 = std::span<const uint32_t>;
-
-  using ref_istream = std::istream &;
-  using ref_ostream = std::ostream &;
 }
 
 #endif

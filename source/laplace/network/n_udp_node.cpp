@@ -28,9 +28,9 @@ namespace laplace::network {
   }
 
   udp_node::~udp_node() {
-    if (m_socket != INVALID_SOCKET) {
+    if (m_socket != -1) {
       ::closesocket(m_socket);
-      m_socket = INVALID_SOCKET;
+      m_socket = -1;
     }
   }
 
@@ -46,7 +46,7 @@ namespace laplace::network {
                          reinterpret_cast<const ::sockaddr *>(&name),
                          sizeof name);
 
-    if (status == SOCKET_ERROR) {
+    if (status == -1) {
       verb(fmt("UDP: bind failed (code %d).", socket_error()));
       return;
     }
@@ -55,10 +55,10 @@ namespace laplace::network {
       ::socklen_t len = sizeof name;
 
       if (::getsockname(m_socket, reinterpret_cast<::sockaddr *>(&name),
-                        &len) == SOCKET_ERROR) {
+                        &len) == -1) {
         verb(fmt("UDP: getsockname failed (code %d).", socket_error()));
         ::closesocket(m_socket);
-        m_socket = INVALID_SOCKET;
+        m_socket = -1;
         return;
       }
 
@@ -75,7 +75,7 @@ namespace laplace::network {
     m_is_msgsize   = false;
     m_is_connreset = false;
 
-    if (m_socket != INVALID_SOCKET && (p != nullptr || count == 0)) {
+    if (m_socket != -1 && (p != nullptr || count == 0)) {
       ::socklen_t len = sizeof m_remote;
       memset(&m_remote, 0, sizeof m_remote);
 
@@ -88,7 +88,7 @@ namespace laplace::network {
 
         auto n = ::recvfrom(m_socket, buf + size, part, 0, addr, &len);
 
-        if (n != SOCKET_ERROR) {
+        if (n != -1) {
           size += n;
         } else if (socket_error() == socket_msgsize()) {
           m_is_msgsize = true;
@@ -125,7 +125,7 @@ namespace laplace::network {
   auto udp_node::receive(size_t count, io_mode mode) -> vbyte {
     vbyte seq;
 
-    if (m_socket != INVALID_SOCKET) {
+    if (m_socket != -1) {
       seq.resize(count);
       seq.resize(receive_to(seq.data(), count, mode));
     }
@@ -180,7 +180,7 @@ namespace laplace::network {
 
     m_socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
-    if (m_socket == INVALID_SOCKET) {
+    if (m_socket == -1) {
       verb(fmt("UDP: socket failed (code %d).", socket_error()));
       return;
     }
@@ -194,7 +194,7 @@ namespace laplace::network {
       -> size_t {
     size_t count = 0;
 
-    if (m_socket != INVALID_SOCKET) {
+    if (m_socket != -1) {
       auto buf     = reinterpret_cast<const char *>(seq.data());
       auto addr    = reinterpret_cast<const ::sockaddr *>(&name);
       bool is_sync = false;
@@ -205,7 +205,7 @@ namespace laplace::network {
         auto n = ::sendto(
             m_socket, buf + count, part, 0, addr, sizeof name);
 
-        if (n != SOCKET_ERROR) {
+        if (n != -1) {
           if (n <= 0) {
             verb("UDP: 0 bytes sent.");
             break;

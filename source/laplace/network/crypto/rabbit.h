@@ -15,9 +15,7 @@
 
 #include "stream_cipher.h"
 
-#ifndef WC_NO_HARDEN
-#define WC_NO_HARDEN 1
-#endif
+#include <wolfssl/options.h>
 
 #include <wolfssl/wolfcrypt/rabbit.h>
 

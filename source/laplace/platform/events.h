@@ -13,6 +13,7 @@
 #ifndef laplace_platform_events_h
 #define laplace_platform_events_h
 
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 

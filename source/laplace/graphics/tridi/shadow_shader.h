@@ -30,7 +30,7 @@ namespace laplace::graphics::tridi {
     shadow_shader(const shadow_shader &) = delete;
     auto operator=(const shadow_shader &) -> shadow_shader & = delete;
 
-    shadow_shader(ref_istream vert, ref_istream frag);
+    shadow_shader(std::istream &vert, std::istream &frag);
     ~shadow_shader();
 
     void use();

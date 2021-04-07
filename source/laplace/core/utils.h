@@ -25,6 +25,9 @@ namespace laplace {
    *  All indices are size_t values.
    *
    *  Returns -1 for invalid index.
+   * 
+   *  TODO
+   *  Use sl::index values for indices.
    */
   [[nodiscard]] constexpr auto as_index(uint64_t value) noexcept -> size_t;
 

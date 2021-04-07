@@ -26,7 +26,7 @@ namespace laplace::embedded {
   extern vector<wstring>         aliases;
   extern vector<vector<uint8_t>> bytes;
 
-  void init() {
+  void init() noexcept {
     if (!is_ready) {
       auto size = aliases.size();
 
@@ -63,7 +63,7 @@ namespace laplace::embedded {
     return !file_name.empty() && file_name[0] == L':';
   }
 
-  auto exists(wstring_view file_name) -> bool {
+  auto exists(wstring_view file_name) noexcept -> bool {
     auto _sl = shared_lock(g_lock);
 
     init();
@@ -72,7 +72,7 @@ namespace laplace::embedded {
     return i != aliases.end() && *i == file_name;
   }
 
-  auto open(wstring_view file_name) -> span_cbyte {
+  auto open(wstring_view file_name) noexcept -> span_cbyte {
     auto _ul = unique_lock(g_lock);
 
     init();

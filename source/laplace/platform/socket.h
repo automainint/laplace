@@ -13,14 +13,41 @@
 #ifndef laplace_platform_socket_h
 #define laplace_platform_socket_h
 
+#if !defined(LAPLACE_POSIX_socket_tS) && \
+    (defined(_WIN32) || defined(_WINDOWS))
+#  include <winsock2.h>
+#  include <ws2tcpip.h>
+
+#  undef min
+#  undef max
+
+namespace laplace {
+  static constexpr int winsock_version_major = 2;
+  static constexpr int winsock_version_minor = 2;
+}
+
+using socket_t  = SOCKET;
+using socklen_t = int;
+#else
+#  include <arpa/inet.h>
+#  include <fcntl.h>
+#  include <netinet/in.h>
+#  include <sys/ioctl.h>
+#  include <sys/socket.h>
+#  include <sys/types.h>
+#  include <unistd.h>
+
+using socket_t = int;
+#endif
+
 namespace laplace {
   class socket_library {
   public:
     socket_library(const socket_library &) = delete;
     auto operator=(const socket_library &) -> socket_library & = delete;
 
-    socket_library();
-    ~socket_library();
+    socket_library() noexcept;
+    ~socket_library() noexcept;
 
   private:
     bool m_is_ok;
@@ -28,63 +55,16 @@ namespace laplace {
 
   /*  Equivalent for errno or WSAGetLastError().
    */
-  auto socket_error() -> int;
+  auto socket_error() noexcept -> int;
+
+  auto socket_close(socket_t s) noexcept -> int;
+  auto socket_set_blocking(socket_t s) noexcept -> int;
+  auto socket_set_nonblocking(socket_t s) noexcept -> int;
 
   auto socket_wouldblock() noexcept -> int;
   auto socket_msgsize() noexcept -> int;
   auto socket_isconn() noexcept -> int;
   auto socket_connreset() noexcept -> int;
 }
-
-#if !defined(LAPLACE_POSIX_SOCKETS) && \
-    (defined(_WIN32) || defined(_WINDOWS))
-#  include <winsock2.h>
-#  include <ws2tcpip.h>
-
-namespace laplace {
-  static constexpr int winsock_version_major = 2;
-  static constexpr int winsock_version_minor = 2;
-}
-
-using socklen_t = int;
-#else
-#  include <unistd.h>
-#  include <fcntl.h>
-#  include <netinet/in.h>
-#  include <sys/socket.h>
-#  include <sys/types.h>
-#  include <sys/ioctl.h>
-#  include <arpa/inet.h>
-
-using SOCKET = int;
-
-static constexpr auto INVALID_SOCKET = -1;
-static constexpr auto SOCKET_ERROR   = -1;
-
-inline auto closesocket(int s) {
-  return ::close(s);
-}
-
-/*  TODO
- *  Create mutual functions for Unix/Windows.
- */
-inline auto ioctlsocket(int s, int cmd, u_long *arg) -> int {
-  if (arg && cmd == FIONBIO) {
-    auto flags = ::fcntl(s, F_GETFL, 0);
-    if (*arg) flags |= O_NONBLOCK;
-    return ::fcntl(s, F_SETFL, flags);
-  }
-
-  return -1;
-}
-#endif
-
-#ifdef min
-#  undef min
-#endif
-
-#ifdef max
-#  undef max
-#endif
 
 #endif

@@ -16,7 +16,7 @@
 namespace laplace::graphics::flat {
   using namespace gl;
 
-  solid_shader::solid_shader(ref_istream vert, ref_istream frag) {
+  solid_shader::solid_shader(std::istream &vert, std::istream &frag) {
     m_program.vertex_shader(vert);
     m_program.fragment_shader(frag);
 

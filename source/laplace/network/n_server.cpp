@@ -21,11 +21,11 @@ namespace laplace::network {
 
   server::~server() {
     if (is_verbose()) {
-      verb(fmt("Total bytes sent:     %zu", m_total_sent));
-      verb(fmt("Total bytes received: %zu", m_total_received));
+      verb(fmt("Total bytes sent:      %zu", m_total_sent));
+      verb(fmt("Total bytes received:  %zu", m_total_received));
 
       if (m_total_received > 0) {
-        verb(fmt("Corruption: %zu bytes (%zu%%)", m_total_loss,
+        verb(fmt("Corruption:  %zu bytes (%zu%%)", m_total_loss,
                  (m_total_loss * 100 + m_total_received / 2) /
                      m_total_received));
       }

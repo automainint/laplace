@@ -570,68 +570,46 @@ namespace laplace::core {
     }
 
     if (m_data.index() == n_uint) {
-      laplace_try();
-
       if (get<n_uint>(m_data) == get<n_uint>(value.m_data))
         return 0;
       else if (get<n_uint>(m_data) < get<n_uint>(value.m_data))
         return -1;
       return 1;
-
-      laplace_catch_unreachable();
     }
 
     if (m_data.index() == n_int) {
-      laplace_try();
-
       if (get<n_int>(m_data) == get<n_int>(value.m_data))
         return 0;
       else if (get<n_int>(m_data) < get<n_int>(value.m_data))
         return -1;
       return 1;
-
-      laplace_catch_unreachable();
     }
 
     if (m_data.index() == n_bool) {
-      laplace_try();
-
       if (get<n_bool>(m_data) == get<n_bool>(value.m_data))
         return 0;
       else if (get<n_bool>(m_data) == true)
         return 1;
       return -1;
-
-      laplace_catch_unreachable();
     }
 
     if (m_data.index() == n_real) {
-      laplace_try();
-
       if (get<n_real>(m_data) == get<n_real>(value.m_data))
         return 0;
       else if (get<n_real>(m_data) < get<n_real>(value.m_data))
         return -1;
       return 1;
-
-      laplace_catch_unreachable();
     }
 
     if (m_data.index() == n_string) {
-      laplace_try();
-
       return get<n_string>(m_data).compare(get<n_string>(value.m_data));
-
-      laplace_catch_unreachable();
     }
 
     if (m_data.index() == n_bytes) {
-      laplace_try();
+      auto na = get<n_bytes>(m_data).size();
+      auto nb = get<n_bytes>(value.m_data).size();
 
-      size_t na = get<n_bytes>(m_data).size();
-      size_t nb = get<n_bytes>(value.m_data).size();
-
-      size_t n = min(na, nb);
+      auto n = min(na, nb);
 
       for (size_t i = 0; i < n; i++) {
         if (get<n_bytes>(m_data)[i] < get<n_bytes>(value.m_data)[i])
@@ -645,17 +623,13 @@ namespace laplace::core {
       if (na > nb)
         return 1;
       return 0;
-
-      laplace_catch_unreachable();
     }
 
     if (m_data.index() == n_vector) {
-      laplace_try();
+      auto na = get<n_vector>(m_data).size();
+      auto nb = get<n_vector>(value.m_data).size();
 
-      size_t na = get<n_vector>(m_data).size();
-      size_t nb = get<n_vector>(value.m_data).size();
-
-      size_t n = min(na, nb);
+      auto n = min(na, nb);
 
       for (size_t i = 0; i < n; i++) {
         auto x = get<n_vector>(m_data)[i].compare(
@@ -672,17 +646,13 @@ namespace laplace::core {
       if (na > nb)
         return 1;
       return 0;
-
-      laplace_catch_unreachable();
     }
 
     if (m_data.index() == n_composite) {
-      laplace_try();
+      auto na = get<n_composite>(m_data).size();
+      auto nb = get<n_composite>(value.m_data).size();
 
-      size_t na = get<n_composite>(m_data).size();
-      size_t nb = get<n_composite>(value.m_data).size();
-
-      size_t n = min(na, nb);
+      auto n = min(na, nb);
 
       for (size_t i = 0; i < n; i++) {
         auto x = get<n_composite>(m_data)[i].first.compare(
@@ -707,8 +677,6 @@ namespace laplace::core {
       if (na > nb)
         return 1;
       return 0;
-
-      laplace_catch_unreachable();
     }
 
     return 0;

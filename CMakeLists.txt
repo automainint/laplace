@@ -4,10 +4,10 @@ set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
 
-option(LAPLACE_ENABLE_EXE       "Enable executable"     ON)
-option(LAPLACE_ENABLE_LIB       "Enable static library" OFF)
-option(LAPLACE_ENABLE_TESTING   "Enable testing"        OFF)
-option(LAPLACE_ENABLE_COVERAGE  "Enable coverage"       OFF)
+option(LAPLACE_ENABLE_EXE       "Enable building executable" ON)
+option(LAPLACE_ENABLE_LIB       "Enable building static library" OFF)
+option(LAPLACE_ENABLE_TESTING   "Enable testing" OFF)
+option(LAPLACE_ENABLE_COVERAGE  "Enable coverage reporting" OFF)
 
 set(LAPLACE_PROJECT   laplace)
 set(LAPLACE_OBJ       laplace-obj)
@@ -15,6 +15,7 @@ set(LAPLACE_LIB       laplace)
 set(LAPLACE_CONFIG    laplace-config)
 set(LAPLACE_SOCKETS   laplace-sockets)
 set(LAPLACE_UNITTESTS laplace-unittests)
+set(QUADWAR_OBJ       quadwar-obj)
 set(QUADWAR_EXE       quadwar)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -26,20 +27,23 @@ project(
     LANGUAGES CXX
 )
 
-find_package(Python3 REQUIRED)
-
 include(cmake/fetch-deps.cmake)
 
 if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
+
+  find_package(Python3 REQUIRED)
+
   execute_process(
     COMMAND ${Python3_EXECUTABLE} embed.py
     COMMAND ${Python3_EXECUTABLE} gen-gl.py
     WORKING_DIRECTORY tools
   )
 
-  include(cmake/config.cmake)
-
   add_library(${LAPLACE_OBJ} OBJECT)
+  add_library(${QUADWAR_OBJ} OBJECT)
+  add_subdirectory(source)
+
+  include(cmake/config.cmake)
 
   target_link_libraries(
     ${LAPLACE_OBJ}
@@ -48,7 +52,10 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
         gtest benchmark wolfssl bz2_static freetype
   )
 
+  target_link_libraries(${QUADWAR_OBJ} PUBLIC ${LAPLACE_OBJ})
+
   target_compile_features(${LAPLACE_OBJ} PRIVATE cxx_std_20)
+  target_compile_features(${QUADWAR_OBJ} PRIVATE cxx_std_20)
 
   if(LAPLACE_ENABLE_LIB)
     add_library(${LAPLACE_LIB} STATIC)
@@ -57,9 +64,7 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
 
   if(LAPLACE_ENABLE_EXE)
     add_executable(${QUADWAR_EXE})
-    target_link_libraries(${QUADWAR_EXE} ${LAPLACE_OBJ})
-
-    target_compile_features(${QUADWAR_EXE} PRIVATE cxx_std_20)
+    target_link_libraries(${QUADWAR_EXE} ${QUADWAR_OBJ})
 
     if(MSVC)
       target_link_options(${QUADWAR_EXE} PRIVATE "/SUBSYSTEM:CONSOLE")
@@ -74,9 +79,8 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
       )
     endif()
   endif()
-endif()
 
-add_subdirectory(source)
+endif()
 
 include(GNUInstallDirs)
 include(cmake/hotfix-ft2.cmake)

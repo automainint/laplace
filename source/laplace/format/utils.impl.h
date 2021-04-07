@@ -14,11 +14,11 @@
 #define laplace_format_utils_impl_h
 
 namespace laplace::format {
-  inline auto wrap(ref_istream in) -> fn_read {
+  inline auto wrap(std::istream &in) -> fn_read {
     return [&in](size_t n) -> vbyte {
       if (in) {
-        vbyte v(n);
-        auto  p = in.tellg();
+        auto v = vbyte(n);
+        auto p = in.tellg();
         in.read(reinterpret_cast<char *>(v.data()),
                 static_cast<ptrdiff_t>(n));
         v.resize(static_cast<size_t>(in.tellg() - p));
@@ -29,7 +29,7 @@ namespace laplace::format {
     };
   }
 
-  inline auto wrap(ref_ostream out) -> fn_write {
+  inline auto wrap(std::ostream &out) -> fn_write {
     return [&out](span_cbyte data) -> size_t {
       if (out) {
         auto p = out.tellp();

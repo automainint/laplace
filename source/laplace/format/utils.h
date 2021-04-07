@@ -16,8 +16,8 @@
 #include "defs.h"
 
 namespace laplace::format {
-  auto wrap(ref_istream in) -> fn_read;
-  auto wrap(ref_ostream out) -> fn_write;
+  auto wrap(std::istream &in) -> fn_read;
+  auto wrap(std::ostream &out) -> fn_write;
 }
 
 #include "utils.impl.h"

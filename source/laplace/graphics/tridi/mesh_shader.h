@@ -60,7 +60,7 @@ namespace laplace::graphics::tridi {
     mesh_shader(const mesh_shader &) = delete;
     auto operator=(const mesh_shader &) -> mesh_shader & = delete;
 
-    mesh_shader(ref_istream vert, ref_istream frag);
+    mesh_shader(std::istream &vert, std::istream &frag);
     ~mesh_shader();
 
     void use();

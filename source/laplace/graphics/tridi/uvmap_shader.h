@@ -33,7 +33,7 @@ namespace laplace::graphics::tridi {
     uvmap_shader(const uvmap_shader &) = delete;
     auto operator=(const uvmap_shader &) -> uvmap_shader & = delete;
 
-    uvmap_shader(ref_istream vert, ref_istream frag);
+    uvmap_shader(std::istream &vert, std::istream &frag);
     ~uvmap_shader();
 
     void use();

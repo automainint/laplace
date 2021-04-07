@@ -35,10 +35,10 @@ namespace laplace::graphics {
     void geometry_shader(std::string_view code);
     void fragment_shader(std::string_view code);
 
-    void compute_shader(ref_istream in);
-    void vertex_shader(ref_istream in);
-    void geometry_shader(ref_istream in);
-    void fragment_shader(ref_istream in);
+    void compute_shader(std::istream &in);
+    void vertex_shader(std::istream &in);
+    void geometry_shader(std::istream &in);
+    void fragment_shader(std::istream &in);
 
     void link();
     void use(bool flag) const;
@@ -49,7 +49,7 @@ namespace laplace::graphics {
     auto operator=(cref_program) -> ref_program = delete;
 
   private:
-    void shader_source(uint32_t shader, ref_istream in);
+    void shader_source(uint32_t shader, std::istream &in);
     void log_program();
     void log_shader(uint32_t shader);
 

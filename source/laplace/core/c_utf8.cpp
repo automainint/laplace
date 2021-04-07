@@ -15,7 +15,7 @@
 namespace laplace::utf8 {
   using std::u8string_view, std::u8string, std::vector;
 
-  auto length(u8string_view bytes) -> size_t {
+  auto length(u8string_view bytes) noexcept -> size_t {
     size_t   n = 0, i = 0;
     char32_t code = 0;
 
@@ -24,8 +24,8 @@ namespace laplace::utf8 {
     return n;
   }
 
-  auto decode(u8string_view bytes, ref_uint offset, ref_char32 code)
-      -> bool {
+  auto decode(u8string_view bytes, ref_uint offset,
+              ref_char32 code) noexcept -> bool {
     if (offset >= bytes.size() || bytes[offset] == 0xFF) {
       return false;
     } else if ((bytes[offset] & 0x80) == 0x00) {
@@ -84,7 +84,8 @@ namespace laplace::utf8 {
     return true;
   }
 
-  auto encode(char32_t code, u8string &bytes, ref_uint offset) -> bool {
+  auto encode(char32_t code, u8string &bytes, ref_uint offset) noexcept
+      -> bool {
     if (offset > bytes.size()) {
       return false;
     }
