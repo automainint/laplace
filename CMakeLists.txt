@@ -17,6 +17,8 @@ set(LAPLACE_SOCKETS   laplace-sockets)
 set(LAPLACE_UNITTESTS laplace-unittests)
 set(QUADWAR_EXE       quadwar)
 
+set(CMAKE_CXX_STANDARD 20)
+
 project(
   ${LAPLACE_PROJECT}
     VERSION 0.1.1

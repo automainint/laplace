@@ -5,6 +5,8 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/google/googletest.git
 )
 
+set(BUILD_GMOCK OFF)
+
 FetchContent_Declare(
   benchmark
   GIT_REPOSITORY https://github.com/google/benchmark.git
@@ -20,12 +22,17 @@ FetchContent_Declare(
 
 set(WOLFSSL_RABBIT yes)
 set(WOLFSSL_ECC yes)
+set(WOLFSSL_EXAMPLES no)
+set(WOLFSSL_CRYPT_TESTS no)
 
 FetchContent_Declare(
   bzip2
-  GIT_REPOSITORY https://gitlab.com/federicomenaquintero/bzip2.git
+  #GIT_REPOSITORY https://gitlab.com/federicomenaquintero/bzip2.git
+  GIT_REPOSITORY https://gitlab.com/dkargin/bzip2.git
+  GIT_TAG skip_tests_if_no_app
 )
 
+set(ENABLE_LIB_ONLY ON)
 set(ENABLE_SHARED_LIB OFF)
 set(ENABLE_STATIC_LIB ON)
 
