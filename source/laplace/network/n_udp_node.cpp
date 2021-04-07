@@ -43,7 +43,7 @@ namespace laplace::network {
     name.sin_addr.s_addr = ::htonl(INADDR_ANY);
 
     auto status = ::bind(m_socket,
-                         reinterpret_cast<const SOCKADDR *>(&name),
+                         reinterpret_cast<const ::sockaddr *>(&name),
                          sizeof name);
 
     if (status == SOCKET_ERROR) {
@@ -52,9 +52,9 @@ namespace laplace::network {
     }
 
     if (port == any_port) {
-      int len = sizeof name;
+      ::socklen_t len = sizeof name;
 
-      if (::getsockname(m_socket, reinterpret_cast<sockaddr *>(&name),
+      if (::getsockname(m_socket, reinterpret_cast<::sockaddr *>(&name),
                         &len) == SOCKET_ERROR) {
         verb(fmt("UDP: getsockname failed (code %d).", socket_error()));
         ::closesocket(m_socket);
@@ -76,10 +76,10 @@ namespace laplace::network {
     m_is_connreset = false;
 
     if (m_socket != INVALID_SOCKET && (p != nullptr || count == 0)) {
-      int len = sizeof m_remote;
+      ::socklen_t len = sizeof m_remote;
       memset(&m_remote, 0, sizeof m_remote);
 
-      auto addr    = reinterpret_cast<SOCKADDR *>(&m_remote);
+      auto addr    = reinterpret_cast<::sockaddr *>(&m_remote);
       auto buf     = reinterpret_cast<char *>(p);
       bool is_sync = false;
 
@@ -160,7 +160,7 @@ namespace laplace::network {
   }
 
   auto udp_node::get_remote_address() const -> string {
-    return to_string(reinterpret_cast<const sockaddr &>(m_remote));
+    return to_string(reinterpret_cast<const ::sockaddr &>(m_remote));
   }
 
   auto udp_node::get_remote_port() const -> uint16_t {
@@ -196,7 +196,7 @@ namespace laplace::network {
 
     if (m_socket != INVALID_SOCKET) {
       auto buf     = reinterpret_cast<const char *>(seq.data());
-      auto addr    = reinterpret_cast<const SOCKADDR *>(&name);
+      auto addr    = reinterpret_cast<const ::sockaddr *>(&name);
       bool is_sync = false;
 
       for (; count < seq.size();) {

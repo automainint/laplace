@@ -18,8 +18,10 @@
 #include <string>
 #include <vector>
 
+#include "../../generated/gl/types.h"
+
 namespace laplace::gl {
-  using ptr_function = void(__stdcall *)();
+  using ptr_function = void(LAPLACE_GL_API *)();
 
   auto is_ok() -> bool;
 

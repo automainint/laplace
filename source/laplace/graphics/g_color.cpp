@@ -1,6 +1,7 @@
 #include "color.h"
 #include <algorithm>
 #include <numeric>
+#include <cmath>
 
 #undef min
 #undef max
@@ -59,7 +60,7 @@ void laplace::graphics::hsl_to_rgb(const float *hsl, float *rgb)
         float lightness = hsl[2];
 
         auto f = [hue12, lightness, alpha](float n) -> float {
-            float k = fmodf(n + hue12, 12.f);
+            float k = fmod(n + hue12, 12.f);
             return lightness - alpha * max(-1.f, min(min(k - 3.f, 9.f - k), 1.f));
         };
 

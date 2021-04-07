@@ -13,6 +13,7 @@
 #ifndef laplace_engine_object_sets_h
 #define laplace_engine_object_sets_h
 
+#include <cstddef>
 #include <cstdint>
 
 namespace laplace::engine::object::sets {

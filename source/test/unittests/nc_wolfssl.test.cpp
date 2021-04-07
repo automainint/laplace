@@ -12,6 +12,7 @@
 
 #include "../../laplace/network/crypto/prime.h"
 #include <array>
+#include <iostream>
 #include <gtest/gtest.h>
 #include <random>
 
@@ -54,33 +55,60 @@ namespace laplace::test {
       uint8_t bob_private[key_size] = { 0 };
       uint8_t bob_mutual[key_size]  = { 0 };
 
-      wc_InitRng(&alice_random);
-      wc_InitDhKey(&alice_key);
+      if (wc_InitRng(&alice_random) != 0)
+        std::cerr << "wc_InitRng failed.\n";
 
-      wc_DhSetKey( //
-          &alice_key, prime, sizeof prime, generator, sizeof generator);
+      if (wc_InitDhKey(&alice_key) != 0)
+        std::cerr << "wc_InitDhKey failed.\n";
 
-      wc_DhGenerateKeyPair( //
+      if (wc_DhSetKey(
+          &alice_key, prime, sizeof prime, generator, sizeof generator) != 0)
+        std::cerr << "wc_DhSetKey failed.\n";
+
+      if (wc_DhGenerateKeyPair(
           &alice_key, &alice_random, alice_private,
-          &alice_private_size, alice_public, &alice_public_size);
+          &alice_private_size, alice_public, &alice_public_size) != 0)
+        std::cerr << "wc_DhGenerateKeyPair failed.\n";
 
-      wc_InitRng(&bob_random);
-      wc_InitDhKey(&bob_key);
+      if (alice_private_size > key_size)
+        alice_private_size = 0;
+      if (alice_public_size > key_size)
+        alice_public_size = 0;
 
-      wc_DhSetKey( //
-          &bob_key, prime, sizeof prime, generator, sizeof generator);
+      if (wc_InitRng(&bob_random) != 0)
+        std::cerr << "wc_InitRng failed.\n";
 
-      wc_DhGenerateKeyPair( //
+      if (wc_InitDhKey(&bob_key) != 0)
+        std::cerr << "wc_InitDhKey failed.\n";
+
+      if (wc_DhSetKey(
+          &bob_key, prime, sizeof prime, generator, sizeof generator) != 0)
+        std::cerr << "wc_DhSetKey failed.\n";
+
+      if (wc_DhGenerateKeyPair(
           &bob_key, &bob_random, bob_private, &bob_private_size,
-          bob_public, &bob_public_size);
+          bob_public, &bob_public_size) != 0)
+        std::cerr << "wc_DhGenerateKeyPair failed.\n";
 
-      wc_DhAgree( //
+      if (bob_private_size > key_size)
+        bob_private_size = 0;
+      if (bob_public_size > key_size)
+        bob_public_size = 0;
+
+      if (wc_DhAgree(
           &alice_key, alice_mutual, &alice_mutual_size, alice_private,
-          alice_private_size, bob_public, bob_public_size);
+          alice_private_size, bob_public, bob_public_size) != 0)
+        std::cerr << "wc_DhAgree failed.\n";
 
-      wc_DhAgree( //
+      if (wc_DhAgree(
           &bob_key, bob_mutual, &bob_mutual_size, bob_private,
-          bob_private_size, alice_public, alice_public_size);
+          bob_private_size, alice_public, alice_public_size) != 0)
+        std::cerr << "wc_DhAgree failed.\n";
+
+      if (alice_mutual_size > key_size)
+        alice_mutual_size = 0;
+      if (bob_mutual_size > key_size)
+        bob_mutual_size = 0;
 
       EXPECT_EQ(alice_mutual_size, bob_mutual_size);
       EXPECT_EQ(memcmp(alice_mutual, bob_mutual, alice_mutual_size), 0);
@@ -137,7 +165,6 @@ namespace laplace::test {
 
       wc_ecc_shared_secret(&bob_private, &alice_public,
                            bob_mutual.data(), &bob_mutual_size);
-
       EXPECT_EQ(alice_mutual_size, bob_mutual_size);
 
       EXPECT_TRUE(alice_mutual == bob_mutual);

@@ -45,10 +45,38 @@ namespace laplace {
   static constexpr int winsock_version_major = 2;
   static constexpr int winsock_version_minor = 2;
 }
+
+using socklen_t = int;
 #else
+#  include <unistd.h>
+#  include <fcntl.h>
 #  include <netinet/in.h>
 #  include <sys/socket.h>
 #  include <sys/types.h>
+#  include <sys/ioctl.h>
+#  include <arpa/inet.h>
+
+using SOCKET = int;
+
+static constexpr auto INVALID_SOCKET = -1;
+static constexpr auto SOCKET_ERROR   = -1;
+
+inline auto closesocket(int s) {
+  return ::close(s);
+}
+
+/*  TODO
+ *  Create mutual functions for Unix/Windows.
+ */
+inline auto ioctlsocket(int s, int cmd, u_long *arg) -> int {
+  if (arg && cmd == FIONBIO) {
+    auto flags = ::fcntl(s, F_GETFL, 0);
+    if (*arg) flags |= O_NONBLOCK;
+    return ::fcntl(s, F_SETFL, flags);
+  }
+
+  return -1;
+}
 #endif
 
 #ifdef min

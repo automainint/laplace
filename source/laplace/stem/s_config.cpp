@@ -16,9 +16,11 @@
 #include "../format/utils.h"
 #include "config.h"
 #include <fstream>
+#include <filesystem>
 
 namespace laplace::stem::config {
   namespace text = format::text;
+  namespace fs   = std::filesystem;
 
   using std::string_view, std::string, std::pair, std::ifstream,
       std::ofstream, core::family, core::ref_family,
@@ -223,9 +225,10 @@ namespace laplace::stem::config {
       auto file_name = to_wstring(cfg[k_file].get_string());
 
       if (!embedded::scan(file_name)) {
-        ofstream out(file_name);
+        auto out = ofstream(fs::path(file_name));
+        auto w   = wrap(out);
 
-        if (!text::encode(wrap(out), cfg)) {
+        if (!text::encode(w, cfg)) {
           error_(fmt("Unable to save config file '%s'.",
                      to_string(file_name).c_str()),
                  __FUNCTION__);

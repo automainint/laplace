@@ -10,7 +10,6 @@
  *  the MIT License for more details.
  */
 
-#include "../platform/wrap.h"
 #include "basic_impact.h"
 #include "world.h"
 #include <algorithm>

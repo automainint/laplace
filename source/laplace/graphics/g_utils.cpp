@@ -16,13 +16,13 @@
 namespace laplace::graphics {
   using namespace gl;
 
-  void graphics::init() {
+  void init() {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glFrontFace(GL_CCW);
   }
 
-  void graphics::viewport(int x, int y, size_t width,
+  void viewport(int x, int y, size_t width,
                           size_t height) {
 
     auto x0 = static_cast<GLint>(x);
@@ -33,19 +33,19 @@ namespace laplace::graphics {
     glViewport(x0, y0, w, h);
   }
 
-  void graphics::clear(cref_vec4 color) {
+  void clear(cref_vec4 color) {
     glClearColor(color[0], color[1], color[2], color[3]);
     glClearDepth(1.0);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
-  void graphics::clear_color_buffer(cref_vec4 color) {
+  void clear_color_buffer(cref_vec4 color) {
     glClearColor(color[0], color[1], color[2], color[3]);
     glClear(GL_COLOR_BUFFER_BIT);
   }
 
-  void graphics::prepare_ui() {
+  void prepare_ui() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glDisable(GL_DEPTH_TEST);
@@ -53,7 +53,7 @@ namespace laplace::graphics {
     glEnable(GL_BLEND);
   }
 
-  void graphics::prepare_render() {
+  void prepare_render() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glCullFace(GL_BACK);
 
@@ -61,7 +61,7 @@ namespace laplace::graphics {
     glEnable(GL_CULL_FACE);
   }
 
-  void graphics::set_blend_enabled(bool is_enabled) {
+  void set_blend_enabled(bool is_enabled) {
     if (is_enabled) {
       glEnable(GL_BLEND);
     } else {

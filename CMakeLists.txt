@@ -17,8 +17,6 @@ set(LAPLACE_SOCKETS   laplace-sockets)
 set(LAPLACE_UNITTESTS laplace-unittests)
 set(QUADWAR_EXE       quadwar)
 
-set(CMAKE_CXX_STANDARD 20)
-
 project(
   ${LAPLACE_PROJECT}
     VERSION 0.1.1
@@ -58,6 +56,8 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
   if(LAPLACE_ENABLE_EXE)
     add_executable(${QUADWAR_EXE})
     target_link_libraries(${QUADWAR_EXE} ${LAPLACE_OBJ})
+
+    target_compile_features(${QUADWAR_EXE} PRIVATE cxx_std_20)
 
     if(MSVC)
       target_link_options(${QUADWAR_EXE} PRIVATE "/SUBSYSTEM:CONSOLE")

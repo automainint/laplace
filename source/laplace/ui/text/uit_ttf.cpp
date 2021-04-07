@@ -13,10 +13,13 @@
 #include "../../core/utils.h"
 #include "ttf.h"
 #include <fstream>
+#include <filesystem>
 #include <iostream>
 #include <vector>
 
 namespace laplace::ui::text {
+  namespace fs = std::filesystem;
+
   using std::make_shared, std::string, std::string_view,
       std::wstring_view, std::weak_ptr, std::ifstream, std::ios;
 
@@ -98,8 +101,8 @@ namespace laplace::ui::text {
   }
 
   void ttf::open(wstring_view file_name) {
-    string asci(file_name.size(), 0);
-    bool   is_asci = true;
+    auto asci    = string(file_name.size(), 0);
+    auto is_asci = true;
 
     for (size_t i = 0; i < file_name.size(); i++) {
       if (file_name[i] > 0xFF) {
@@ -112,15 +115,16 @@ namespace laplace::ui::text {
 
     if (is_asci) {
       open(asci);
+
     } else {
-      ifstream in(file_name.data());
+      auto in = ifstream(fs::path(file_name));
 
       if (!in) {
         error_("Can't open file.", __FUNCTION__);
         return;
       }
 
-      vbyte buffer;
+      auto buffer = vbyte {};
 
       in.seekg(ios::end);
       buffer.resize(as_index(in.tellg()));

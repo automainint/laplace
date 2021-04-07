@@ -127,7 +127,7 @@ namespace laplace::network {
 
   void basic_tcp::close() {
     if (m_socket != INVALID_SOCKET) {
-      closesocket(m_socket);
+      ::closesocket(m_socket);
       m_socket = INVALID_SOCKET;
     }
   }

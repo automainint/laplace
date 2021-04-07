@@ -15,6 +15,7 @@
 #include "basic_impact.h"
 #include "scheduler.h"
 #include "world.h"
+#include <mutex>
 
 namespace laplace::engine {
   using std::unique_lock, std::lock, std::adopt_lock, std::jthread,

@@ -14,6 +14,7 @@
 #define laplace_math_defs_h
 
 #include <cstdint>
+#include <cstddef>
 
 namespace laplace::math {
   using realmax_t = long double;

@@ -25,8 +25,15 @@ namespace laplace::test {
 
   class my_counter : public basic_entity {
   public:
-    my_counter(bool is_dynamic) : basic_entity(is_dynamic) {
+    class dynamic_tag {};
+    static constexpr auto dynamic = dynamic_tag {};
 
+    my_counter() : basic_entity(proto) {
+      setup_sets({ { sets::debug_value, 0, 0 } });
+      n_value = index_of(sets::debug_value);
+    }
+
+    my_counter(dynamic_tag) : basic_entity(default_tick_period) {
       setup_sets({ { sets::debug_value, 0, 0 } });
       n_value = index_of(sets::debug_value);
     }
@@ -62,7 +69,7 @@ namespace laplace::test {
 
   TEST(engine, world_single_thread) {
     auto a = make_shared<world>();
-    auto e = make_shared<my_counter>(true);
+    auto e = make_shared<my_counter>(my_counter::dynamic);
 
     a->set_thread_count(0);
 
@@ -76,7 +83,7 @@ namespace laplace::test {
 
   TEST(engine, world_multithreading) {
     auto a = make_shared<world>();
-    auto e = make_shared<my_counter>(true);
+    auto e = make_shared<my_counter>(my_counter::dynamic);
 
     a->set_thread_count(32);
 
@@ -90,7 +97,7 @@ namespace laplace::test {
 
   TEST(engine, world_async_impacts) {
     auto a = make_shared<world>();
-    auto e = make_shared<my_counter>(false);
+    auto e = make_shared<my_counter>();
 
     a->set_thread_count(32);
 

@@ -38,8 +38,6 @@ namespace laplace::render {
     };
 
     auto solve_uniform = [this](timeval t) -> type_ {
-      assert(this->m_delta != 0);
-
       auto index = static_cast<size_t>(floor(t / this->m_delta));
 
       return this->solve(index, t);
@@ -107,9 +105,9 @@ namespace laplace::render {
 
         curve_t = p[1];
 
-        if (p[0] + numeric_limits<realmax_t>::epsilon() < t) {
+        if (p[0] + std::numeric_limits<realmax_t>::epsilon() < t) {
           param += delta;
-        } else if (p[0] - numeric_limits<realmax_t>::epsilon() > t) {
+        } else if (p[0] - std::numeric_limits<realmax_t>::epsilon() > t) {
           param -= delta;
         } else {
           break;

@@ -14,6 +14,7 @@
 #define laplace_engine_loader_h
 
 #include "basic_impact.h"
+#include <thread>
 
 namespace laplace::engine {
   /*  Queued background loading.

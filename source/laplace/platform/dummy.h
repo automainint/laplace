@@ -14,15 +14,20 @@
 #define laplace_platform_dummy_h
 
 #include "events.h"
+#include "opengl.h"
 #include <cstdint>
 #include <string>
 
 namespace laplace::platform::dummy {
-  auto gl_init() -> bool {
+  inline auto gl_init() -> bool {
     return false;
   }
 
-  void gl_cleanup() { }
+  inline void gl_cleanup() { }
+
+  inline auto get_proc_address(const char *s) -> gl::ptr_function {
+    return nullptr;
+  }
 
   class input {
   public:
@@ -128,6 +133,10 @@ namespace laplace::platform::dummy {
   class window {
   public:
     using native_handle = std::nullptr_t;
+
+    static constexpr size_t default_frame_width  = 0;
+    static constexpr size_t default_frame_height = 0;
+    static constexpr size_t default_frame_rate   = 0;
 
     window() { }
     window(native_handle) { }

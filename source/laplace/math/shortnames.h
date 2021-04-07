@@ -13,6 +13,7 @@
 #ifndef laplace_math_shortnames_h
 #define laplace_math_shortnames_h
 
+#include <cstddef>
 #include <cstdint>
 
 namespace laplace::math {

@@ -15,6 +15,7 @@ set(BENCHMARK_ENABLE_TESTING OFF)
 FetchContent_Declare(
   wolfssl
   GIT_REPOSITORY https://github.com/wolfSSL/wolfssl.git
+  GIT_TAG v4.7.0-stable
 )
 
 set(WOLFSSL_RABBIT yes)

@@ -20,6 +20,7 @@
 #include "application.h"
 #include "config.h"
 #include <fstream>
+#include <filesystem>
 
 namespace laplace::stem {
   using std::make_shared, std::make_unique, config::load,
@@ -30,7 +31,7 @@ namespace laplace::stem {
       platform::ref_input, platform::ref_glcontext,
       graphics::flat::solid_shader, graphics::flat::sprite_shader,
       core::cref_family, std::wstring, std::wstring_view,
-      std::unique_ptr, std::istream, std::ifstream;
+      std::unique_ptr, std::istream, std::ifstream, std::filesystem::path;
 
   application::application(int argc, char **argv, cref_family def_cfg) {
     m_config = load(argc, argv, def_cfg);
@@ -178,6 +179,6 @@ namespace laplace::stem {
       return make_unique<ibytestream>(embedded::open(file_name));
     }
 
-    return make_unique<ifstream>(file_name.data());
+    return make_unique<ifstream>(path(file_name));
   }
 }

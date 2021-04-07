@@ -16,11 +16,11 @@
 namespace laplace::network {
   using std::min, std::string;
 
-  auto network::clamp_chunk(size_t size) -> int {
+  auto clamp_chunk(size_t size) -> int {
     return static_cast<int>(min(size, max_chunk_size));
   }
 
-  auto network::to_string(const sockaddr &a) -> string {
+  auto to_string(const sockaddr &a) -> string {
     char buf[64];
 
     if (a.sa_family == AF_INET) {
@@ -34,7 +34,7 @@ namespace laplace::network {
     return buf;
   }
 
-  auto network::set_mode(SOCKET &s, network::io_mode m) -> bool {
+  auto set_mode(SOCKET &s, network::io_mode m) -> bool {
     if (s == INVALID_SOCKET)
       return true;
 

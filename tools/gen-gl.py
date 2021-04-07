@@ -8,7 +8,7 @@ gl_folder = 'OpenGL-Registry'
 def update_repo():
   if os.path.exists(gl_folder):
     os.chdir(gl_folder)
-    os.system('git pull')
+    os.system('git pull --ff-only')
     os.chdir('..')
   else:
     url = 'https://github.com/KhronosGroup/OpenGL-Registry'
@@ -192,11 +192,16 @@ os.makedirs(folder, exist_ok=True)
 out = open(os.path.join(folder, 'types.h'), 'w')
 
 out.write('/*  Generated with the Laplace OpenGL interface tool.\n */\n\n')
+out.write('#include <cstddef>\n')
 out.write('#include <cstdint>\n\n')
-out.write('#define LAPLACE_GL_API __stdcall\n\n')
+out.write('#ifdef __GNUC__\n')
+out.write('#  define LAPLACE_GL_API\n')
+out.write('#else\n')
+out.write('#  define LAPLACE_GL_API __stdcall\n')
+out.write('#endif\n\n')
 out.write('namespace laplace::gl {\n')
 for type in types:
-  out.write('  ' + type)
+  out.write('  ' + type + '\n')
 out.write('}\n')
 
 out = open(os.path.join(folder, 'enums.h'), 'w')

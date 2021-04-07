@@ -164,7 +164,7 @@ namespace laplace::format::text {
     return result;
   }
 
-  auto text::decode(fn_read read) -> pack_type {
+  auto decode(fn_read read) -> pack_type {
     pack_type result;
 
     if (read) {
@@ -251,7 +251,7 @@ namespace laplace::format::text {
     return print("{ }");
   }
 
-  auto text::encode(fn_write write, const_pack_type data) -> bool {
+  auto encode(fn_write write, const_pack_type data) -> bool {
     bool result = false;
 
     if (data) {

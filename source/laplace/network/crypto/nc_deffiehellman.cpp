@@ -41,8 +41,8 @@ namespace laplace::network::crypto {
       return;
     }
 
-    vbyte priv_key(key_size);
-    vbyte publ_key(key_size);
+    auto priv_key = vbyte(key_size);
+    auto publ_key = vbyte(key_size);
 
     uint32_t priv_size = static_cast<uint32_t>(key_size);
     uint32_t publ_size = static_cast<uint32_t>(key_size);

@@ -52,7 +52,7 @@ namespace laplace::network {
     }
 
     if (port == any_port) {
-      int len = sizeof name;
+      ::socklen_t len = sizeof name;
 
       if (::getsockname(m_listen, reinterpret_cast<sockaddr *>(&name),
                         &len) == SOCKET_ERROR) {
@@ -101,7 +101,7 @@ namespace laplace::network {
           m_on_accept(*this);
         }
       } else {
-        int len = sizeof m_remote;
+        ::socklen_t len = sizeof m_remote;
         memset(&m_remote, 0, static_cast<size_t>(len));
 
         m_socket = ::accept(

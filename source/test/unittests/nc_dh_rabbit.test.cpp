@@ -24,7 +24,7 @@ namespace laplace::test {
       std::string, serial::wr;
 
   TEST(network, dh_key_generation) {
-    constexpr size_t test_count = 4;
+    constexpr size_t test_count = 1;
 
     for (size_t i = 0; i < test_count; i++) {
       dh_rabbit alice, bob;
@@ -47,7 +47,7 @@ namespace laplace::test {
   }
 
   TEST(network, rabbit_encryption) {
-    constexpr size_t test_count = 4;
+    constexpr size_t test_count = 1;
 
     for (size_t i = 0; i < test_count; i++) {
       dh_rabbit alice, bob;
@@ -78,7 +78,7 @@ namespace laplace::test {
   }
 
   TEST(network, rabbit_packet_loss) {
-    constexpr size_t test_count = 4;
+    constexpr size_t test_count = 1;
 
     std::random_device rdev;
 
