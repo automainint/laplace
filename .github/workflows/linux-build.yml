@@ -20,8 +20,8 @@ jobs:
 
     - name: Set up GCC 9
       run: |
-        apt-get update
-        apt-get install gcc-9
+        sudo apt-get update
+        sudo apt-get install gcc-9
 
     - name: Set up CMake 3.18
       uses: jwlawson/actions-setup-cmake@v1.8
