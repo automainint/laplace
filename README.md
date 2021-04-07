@@ -23,7 +23,7 @@ Official repository: [GitHub][laplace-link]
 To build the project CMake and Python 3 are required.
 
 ### With provided build script
-Execute the build script.
+- Execute the build script.
 
 ```shell
 python3 build.py
