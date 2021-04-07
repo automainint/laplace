@@ -9,7 +9,7 @@ Official repository: [GitHub][laplace-link]
     The project is far from complete.
 
 **Dependencies:**
-- C++20 [MSVC][msvc-link]/[Clang][clang-link] for the compilation;
+- C++20 [MSVC][msvc-link]/[Clang][clang-link]/[GCC][gcc-link] for the compilation;
 - [Python3][python-link], [Cmake][cmake-link], [Git][git-link] for the building and tools;
 - [OpenGL][opengl-link] for all the graphics;
 - [wolfSSL][wolfssl-link] for encryption algorithms (ECC/Rabbit);
@@ -61,7 +61,8 @@ cd ..
 
 [laplace-link]:     https://github.com/automainint/laplace
 [msvc-link]:        https://visualstudio.microsoft.com/vs/features/cplusplus
-[clang-link]:       https://clang.llvm.org/)/[GCC](https://gcc.gnu.org
+[clang-link]:       https://clang.llvm.org
+[gcc-link]:         https://gcc.gnu.org
 [python-link]:      https://www.python.org
 [cmake-link]:       https://cmake.org
 [git-link]:         https://git-scm.com
