@@ -52,19 +52,17 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
         gtest benchmark wolfssl bz2_static freetype
   )
 
-  target_link_libraries(${QUADWAR_OBJ} PUBLIC ${LAPLACE_OBJ})
-
   target_compile_features(${LAPLACE_OBJ} PRIVATE cxx_std_20)
   target_compile_features(${QUADWAR_OBJ} PRIVATE cxx_std_20)
 
   if(LAPLACE_ENABLE_LIB)
     add_library(${LAPLACE_LIB} STATIC)
-    target_link_libraries(${LAPLACE_LIB} ${LAPLACE_OBJ})
+    target_link_libraries(${LAPLACE_LIB} PUBLIC ${LAPLACE_OBJ})
   endif()
 
   if(LAPLACE_ENABLE_EXE)
     add_executable(${QUADWAR_EXE})
-    target_link_libraries(${QUADWAR_EXE} PRIVATE ${QUADWAR_OBJ})
+    target_link_libraries(${QUADWAR_EXE} PRIVATE ${QUADWAR_OBJ} ${LAPLACE_OBJ})
 
     if(MSVC)
       target_link_options(${QUADWAR_EXE} PRIVATE "/SUBSYSTEM:CONSOLE")
