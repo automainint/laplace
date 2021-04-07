@@ -8,7 +8,7 @@ Official repository: [GitHub][laplace-link]
     Work in progress...
     The project is far from complete.
 
-**Dependencies:**
+### Dependencies
 - C++20 [MSVC][msvc-link]/[Clang][clang-link]/[GCC][gcc-link] for the compilation;
 - [Python3][python-link], [Cmake][cmake-link], [Git][git-link] for the building and tools;
 - [OpenGL][opengl-link] for all the graphics;
