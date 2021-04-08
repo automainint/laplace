@@ -30,7 +30,7 @@ namespace laplace::test {
 
   TEST(network, wolfssl_dh) {
     constexpr size_t test_count = 1;
-    constexpr size_t key_size   = 256;
+    constexpr size_t key_size   = 32;
     constexpr size_t buf_size   = 0x1000;
 
     for (size_t i = 0; i < test_count; i++) {

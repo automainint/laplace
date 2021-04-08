@@ -28,7 +28,7 @@
 //#define LAPLACE_PLATFORM_DUMMY
 
 #ifdef _MSC_VER
-#  pragma warning(disable : 4245 4100 4250)
+#  pragma warning(disable : 4245 4100 4250 4018)
 #endif
 
 #endif

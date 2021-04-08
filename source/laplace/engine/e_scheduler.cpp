@@ -58,13 +58,17 @@ namespace laplace::engine {
     const auto thread_count_limit = []() -> sl::whole {
       const auto limit = thread::hardware_concurrency() *
                          overthreading_limit;
-      return limit < 0 ? 0 : limit;
+      if (limit < 0)
+        return 0;
+      if (limit > concurrency_limit)
+        return concurrency_limit;
+      return limit;
     }();
 
     auto count = thread_count;
 
     if (count < 0) {
-      verb(fmt("Scheduler: Invalid thread count %zd.", count));
+      verb(fmt("Scheduler: Invalid thread count %zd (set to 0).", count));
 
       count = 0;
     }
@@ -202,9 +206,7 @@ namespace laplace::engine {
         /*  Adjust all the entities.
          */
 
-        while (auto en = m_world.next_entity()) {
-          en->adjust();
-        }
+        while (auto en = m_world.next_entity()) { en->adjust(); }
 
         sync([this] {
           m_world.reset_index();
