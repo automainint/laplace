@@ -22,6 +22,7 @@ FetchContent_Declare(
 
 set(WOLFSSL_RABBIT yes)
 set(WOLFSSL_ECC yes)
+set(WOLFSSL_KEY_GEN yes)
 set(WOLFSSL_EXAMPLES no)
 set(WOLFSSL_CRYPT_TESTS no)
 

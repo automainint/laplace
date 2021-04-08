@@ -10,7 +10,6 @@
  *  the MIT License for more details.
  */
 
-#include "../../laplace/network/crypto/prime.h"
 #include <array>
 #include <gtest/gtest.h>
 #include <iostream>
@@ -24,15 +23,15 @@
 #include <wolfssl/wolfcrypt/random.h>
 
 namespace laplace::test {
-  namespace crypto = network::crypto;
-
-  using crypto::prime, crypto::generator, std::string, std::array,
-      std::vector;
+  using std::string, std::array, std::vector;
 
   TEST(network, wolfssl_dh) {
     constexpr size_t test_count = 1;
     constexpr size_t key_size   = 512;
     constexpr size_t buf_size   = 0x1000;
+
+    constexpr size_t dh_params_size = 256;
+    constexpr size_t dh_bits        = 2048;
 
     for (size_t i = 0; i < test_count; i++) {
       WC_RNG alice_random = {};
@@ -42,9 +41,9 @@ namespace laplace::test {
       uint32_t alice_private_size = key_size;
       uint32_t alice_mutual_size  = 0;
 
-      uint8_t alice_public[key_size]  = { 0 };
-      uint8_t alice_private[key_size] = { 0 };
-      uint8_t alice_mutual[buf_size]  = { 0 };
+      uint8_t alice_public[key_size]  = {};
+      uint8_t alice_private[key_size] = {};
+      uint8_t alice_mutual[buf_size]  = {};
 
       WC_RNG bob_random = {};
       DhKey  bob_key    = {};
@@ -53,9 +52,25 @@ namespace laplace::test {
       uint32_t bob_private_size = key_size;
       uint32_t bob_mutual_size  = 0;
 
-      uint8_t bob_public[key_size]  = { 0 };
-      uint8_t bob_private[key_size] = { 0 };
-      uint8_t bob_mutual[buf_size]  = { 0 };
+      uint8_t bob_public[key_size]  = {};
+      uint8_t bob_private[key_size] = {};
+      uint8_t bob_mutual[buf_size]  = {};
+
+      uint8_t alice_p[dh_params_size] = {};
+      uint8_t alice_g[dh_params_size] = {};
+      uint8_t alice_q[dh_params_size] = {};
+
+      uint32_t alice_p_size = 0;
+      uint32_t alice_g_size = 0;
+      uint32_t alice_q_size = 0;
+
+      uint8_t bob_p[dh_params_size] = {};
+      uint8_t bob_g[dh_params_size] = {};
+      uint8_t bob_q[dh_params_size] = {};
+
+      uint32_t bob_p_size = 0;
+      uint32_t bob_g_size = 0;
+      uint32_t bob_q_size = 0;
 
       if (auto _n = wc_InitRng(&alice_random); _n != 0)
         std::cerr << "wc_InitRng failed (code: " << _n << ").\n";
@@ -63,8 +78,22 @@ namespace laplace::test {
       if (auto _n = wc_InitDhKey(&alice_key); _n != 0)
         std::cerr << "wc_InitDhKey failed (code: " << _n << ").\n";
 
-      if (auto _n = wc_DhSetKey(&alice_key, prime, sizeof prime,
-                                generator, sizeof generator);
+      if (auto _n = wc_DhGenerateParams(
+              &alice_random, dh_bits, &alice_key);
+          _n != 0)
+        std::cerr << "wc_DhGenerateParams failed (code: " << _n
+                  << ").\n";
+
+      if (auto _n = wc_DhExportParamsRaw(
+              &alice_key, alice_p, &alice_p_size, alice_q,
+              &alice_q_size, alice_g, &alice_g_size);
+          _n != 0)
+        std::cerr << "wc_DhExportParamsRaw failed (code: " << _n
+                  << ").\n";
+
+      if (auto _n = wc_DhSetKey_ex(&alice_key, alice_p, alice_p_size,
+                                   alice_g, alice_g_size, alice_q,
+                                   alice_q_size);
           _n != 0)
         std::cerr << "wc_DhSetKey failed (code: " << _n << ").\n";
 
@@ -94,8 +123,20 @@ namespace laplace::test {
       if (auto _n = wc_InitDhKey(&bob_key); _n != 0)
         std::cerr << "wc_InitDhKey failed (code: " << _n << ").\n";
 
-      if (auto _n = wc_DhSetKey(&bob_key, prime, sizeof prime,
-                                generator, sizeof generator);
+      if (auto _n = wc_DhGenerateParams(&bob_random, dh_bits, &bob_key);
+          _n != 0)
+        std::cerr << "wc_DhGenerateParams failed (code: " << _n
+                  << ").\n";
+
+      if (auto _n = wc_DhExportParamsRaw(&bob_key, bob_p, &bob_p_size,
+                                         bob_q, &bob_q_size, bob_g,
+                                         &bob_g_size);
+          _n != 0)
+        std::cerr << "wc_DhExportParamsRaw failed (code: " << _n
+                  << ").\n";
+
+      if (auto _n = wc_DhSetKey_ex(&bob_key, bob_p, bob_p_size, bob_g,
+                                   bob_g_size, bob_q, bob_q_size);
           _n != 0)
         std::cerr << "wc_DhSetKey failed (code: " << _n << ").\n";
 
