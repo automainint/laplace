@@ -16,10 +16,11 @@
 #include "scheduler.h"
 #include "world.h"
 #include <mutex>
+#include <sstream>
 
 namespace laplace::engine {
   using std::unique_lock, std::lock, std::adopt_lock, std::jthread,
-      std::thread, std::function;
+      std::thread, std::function, std::ostringstream;
 
   scheduler::scheduler(world &w) : m_world(w) { }
 
@@ -68,15 +69,18 @@ namespace laplace::engine {
     auto count = thread_count;
 
     if (count < 0) {
-      verb(fmt("Scheduler: Invalid thread count %lld (set to 0).",
-               static_cast<long long>(count)));
+      auto s = ostringstream {};
+      s << "Scheduler: Invalid thread count " << count
+        << " (set to 0).";
+      verb(s.str());
       count = 0;
     }
 
     if (count > thread_count_limit) {
-      verb(fmt("Scheduler: Invalid thread count %lld (max %lld).",
-               static_cast<long long>(count),
-               static_cast<long long>(thread_count_limit)));
+      auto s = ostringstream {};
+      s << "Scheduler: Invalid thread count " << count << " (max "
+        << thread_count_limit << ").";
+      verb(s.str());
       count = thread_count_limit;
     }
 
