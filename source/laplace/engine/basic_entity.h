@@ -173,7 +173,7 @@ namespace laplace::engine {
 
     struct sets_row {
       size_t  id    = id_undefined;
-      size_t  scale = 0;
+      int64_t scale = 0;
       int64_t value = 0;
       int64_t delta = 0;
     };
