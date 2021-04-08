@@ -20,9 +20,7 @@ namespace laplace::network {
   tcp_joint::tcp_joint(string_view address, uint16_t port) {
     const auto size = min(address.size(), sizeof m_address - 1);
 
-    copy(address.begin(),                                //
-         address.begin() + static_cast<ptrdiff_t>(size), //
-         m_address);
+    copy(address.begin(), address.begin() + size, m_address);
 
     m_address[size] = '\0';
 
@@ -63,14 +61,19 @@ namespace laplace::network {
         name.sin_family = AF_INET;
         name.sin_port   = ::htons(m_port);
 
-        if (::inet_pton(AF_INET, m_address, &name.sin_addr.s_addr) !=
-            1) {
+        const auto *p = m_address;
+        verb(fmt("TCP: connect to %s.", p));
+
+        if (::inet_pton(AF_INET, p, &name.sin_addr.s_addr) != 1) {
           verb(fmt("TCP: inet_pton failed (code: %d).", socket_error()));
           done();
-        } else if (::connect(m_socket,
-                             reinterpret_cast<const sockaddr *>(&name),
-                             sizeof name) != -1 ||
-                   socket_error() == socket_isconn()) {
+          return;
+        }
+
+        if (::connect(m_socket,
+                      reinterpret_cast<const sockaddr *>(&name),
+                      sizeof name) != -1 ||
+            socket_error() == socket_isconn()) {
           m_is_ready = true;
 
           if (m_on_connect) {
