@@ -17,15 +17,16 @@
 #include <thread>
 
 namespace laplace::test {
-  using std::make_shared, engine::basic_entity,
-      engine::basic_impact, engine::world, engine::id_undefined;
+  using std::make_shared, std::thread, engine::basic_entity,
+      engine::basic_impact, engine::world, engine::scheduler,
+      engine::id_undefined;
 
   namespace access = engine::access;
   namespace sets   = engine::object::sets;
 
   class my_counter : public basic_entity {
   public:
-    class dynamic_tag {};
+    class dynamic_tag { };
     static constexpr auto dynamic = dynamic_tag {};
 
     my_counter() : basic_entity(proto) {
@@ -85,7 +86,10 @@ namespace laplace::test {
     auto a = make_shared<world>();
     auto e = make_shared<my_counter>(my_counter::dynamic);
 
-    a->set_thread_count(32);
+    const auto max_threads = scheduler::overthreading_limit *
+                             thread::hardware_concurrency();
+
+    a->set_thread_count(max_threads);
 
     a->spawn(e, id_undefined);
     a->tick(100);
@@ -99,7 +103,10 @@ namespace laplace::test {
     auto a = make_shared<world>();
     auto e = make_shared<my_counter>();
 
-    a->set_thread_count(32);
+    const auto max_threads = scheduler::overthreading_limit *
+                             thread::hardware_concurrency();
+
+    a->set_thread_count(max_threads);
 
     const auto id = a->spawn(e, id_undefined);
 

@@ -61,6 +61,7 @@ namespace laplace {
   auto socket_set_blocking(socket_t s) noexcept -> int;
   auto socket_set_nonblocking(socket_t s) noexcept -> int;
 
+  auto socket_inprogress() noexcept -> int;
   auto socket_wouldblock() noexcept -> int;
   auto socket_msgsize() noexcept -> int;
   auto socket_isconn() noexcept -> int;

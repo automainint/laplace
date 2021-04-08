@@ -14,12 +14,14 @@
 #include "../../laplace/network/tcp_node.h"
 #include <chrono>
 #include <gtest/gtest.h>
+#include <thread>
 
 namespace laplace::test {
   using network::tcp_node, network::tcp_joint, network::localhost,
       network::ref_tcp_node, network::ref_tcp_joint, network::async,
       std::chrono::steady_clock, std::chrono::duration_cast,
-      std::chrono::seconds;
+      std::chrono::seconds, std::chrono::milliseconds,
+      std::this_thread::sleep_for;
 
   TEST(network, tcp_server_to_client) {
     constexpr auto timeout_sec = 2;
@@ -47,6 +49,8 @@ namespace laplace::test {
     while (!server.is_done() || !client.is_done()) {
       server.tick();
       client.tick();
+
+      sleep_for(milliseconds(10));
 
       if (duration_cast<seconds>(steady_clock::now() - t0).count() >=
           timeout_sec)
@@ -82,6 +86,8 @@ namespace laplace::test {
     while (!server.is_done() || !client.is_done()) {
       server.tick();
       client.tick();
+
+      sleep_for(milliseconds(10));
 
       if (duration_cast<seconds>(steady_clock::now() - t0).count() >=
           timeout_sec)

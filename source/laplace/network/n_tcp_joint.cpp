@@ -74,10 +74,17 @@ namespace laplace::network {
           if (m_on_connect) {
             m_on_connect(*this);
           }
-        } else if (socket_error() != socket_wouldblock()) {
-          verb(fmt("TCP: connect failed (code: %d).", socket_error()));
-          done();
+
+          return;
         }
+
+        if (socket_error() == socket_inprogress() ||
+            socket_error() == socket_wouldblock()) {
+          return;
+        }
+
+        verb(fmt("TCP: connect failed (code: %d).", socket_error()));
+        done();
       }
     }
   }
