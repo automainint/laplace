@@ -82,7 +82,7 @@ namespace laplace::test {
   }
 
   TEST(engine, world_multithreading) {
-    verb(fmt("Hardware concurrency:  %d", std::thread::hardware_concurrency()));
+    verb(fmt("Hardware concurrency:  %u.", std::thread::hardware_concurrency()));
 
     auto a = make_shared<world>();
     auto e = make_shared<my_counter>(my_counter::dynamic);

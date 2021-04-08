@@ -68,15 +68,13 @@ namespace laplace::engine {
     auto count = thread_count;
 
     if (count < 0) {
-      verb(fmt("Scheduler: Invalid thread count %zd (set to 0).", count));
-
+      verb(fmt("Scheduler: Invalid thread count %td (set to 0).", count));
       count = 0;
     }
 
     if (count > thread_count_limit) {
-      verb(fmt("Scheduler: Invalid thread count %zd (max %zd).",
+      verb(fmt("Scheduler: Invalid thread count %td (max %td).",
                count, thread_count_limit));
-
       count = thread_count_limit;
     }
 

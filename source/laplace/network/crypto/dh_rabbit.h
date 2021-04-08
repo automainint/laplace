@@ -19,7 +19,7 @@
 namespace laplace::network::crypto {
   class dh_rabbit : public deffiehellman, public rabbit {
   public:
-    static constexpr sl::whole key_size = 32;
+    static constexpr sl::whole key_size = 512;
 
     dh_rabbit();
     ~dh_rabbit() override = default;

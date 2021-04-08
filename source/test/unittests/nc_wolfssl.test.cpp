@@ -26,11 +26,12 @@
 namespace laplace::test {
   namespace crypto = network::crypto;
 
-  using crypto::prime, crypto::generator, std::string, std::array, std::vector;
+  using crypto::prime, crypto::generator, std::string, std::array,
+      std::vector;
 
   TEST(network, wolfssl_dh) {
     constexpr size_t test_count = 1;
-    constexpr size_t key_size   = 32;
+    constexpr size_t key_size   = 512;
     constexpr size_t buf_size   = 0x1000;
 
     for (size_t i = 0; i < test_count; i++) {
@@ -70,9 +71,12 @@ namespace laplace::test {
       if (auto _n = wc_DhGenerateKeyPair(
               &alice_key, &alice_random, alice_private,
               &alice_private_size, alice_public, &alice_public_size);
-          _n != 0)
+          _n != 0) {
+        alice_private_size = 0;
+        alice_public_size  = 0;
         std::cerr << "wc_DhGenerateKeyPair failed (code: " << _n
                   << ").\n";
+      }
 
       if (alice_private_size > key_size) {
         alice_private_size = 0;
@@ -98,9 +102,12 @@ namespace laplace::test {
       if (auto _n = wc_DhGenerateKeyPair(
               &bob_key, &bob_random, bob_private, &bob_private_size,
               bob_public, &bob_public_size);
-          _n != 0)
+          _n != 0) {
+        bob_private_size = 0;
+        bob_public_size  = 0;
         std::cerr << "wc_DhGenerateKeyPair failed (code: " << _n
                   << ").\n";
+      }
 
       if (bob_private_size > key_size) {
         bob_private_size = 0;
@@ -189,15 +196,14 @@ namespace laplace::test {
       if (auto _n = wc_ecc_init(&bob_public); _n != 0)
         std::cerr << "wc_ecc_init failed (code: " << _n << ").\n";
 
-      #ifdef ECC_TIMING_RESISTANT
+#ifdef ECC_TIMING_RESISTANT
       if (auto _n = wc_ecc_set_rng(&alice_private, &alice_random);
           _n != 0)
         std::cerr << "wc_ecc_set_rng failed (code: " << _n << ").\n";
 
-      if (auto _n = wc_ecc_set_rng(&bob_private, &bob_random);
-          _n != 0)
+      if (auto _n = wc_ecc_set_rng(&bob_private, &bob_random); _n != 0)
         std::cerr << "wc_ecc_set_rng failed (code: " << _n << ").\n";
-      #endif
+#endif
 
       if (auto _n = wc_ecc_make_key(
               &alice_random, key_size, &alice_private);
