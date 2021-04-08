@@ -11,8 +11,7 @@
  */
 
 #include "../../laplace/core/serial.h"
-#include "../../laplace/network/crypto/dh_rabbit.h"
-#include "../../laplace/network/crypto/prime.h"
+#include "../../laplace/network/crypto/ecc_rabbit.h"
 #include <gtest/gtest.h>
 #include <random>
 #include <string>
@@ -20,14 +19,13 @@
 namespace laplace::test {
   namespace crypto = network::crypto;
 
-  using crypto::dh_rabbit, crypto::prime, crypto::generator,
-      std::string, serial::wr;
+  using crypto::ecc_rabbit, std::string, serial::wr;
 
-  TEST(network, dh_key_generation) {
+  TEST(network, ecc_key_generation) {
     constexpr size_t test_count = 1;
 
     for (size_t i = 0; i < test_count; i++) {
-      dh_rabbit alice, bob;
+      ecc_rabbit alice, bob;
 
       EXPECT_NE(alice.get_public_key().size(), 0u);
       EXPECT_NE(bob.get_public_key().size(), 0u);
@@ -54,7 +52,7 @@ namespace laplace::test {
     constexpr size_t test_count = 1;
 
     for (size_t i = 0; i < test_count; i++) {
-      dh_rabbit alice, bob;
+      ecc_rabbit alice, bob;
 
       alice.set_remote_key(bob.get_public_key());
       bob.set_remote_key(alice.get_public_key());
@@ -87,7 +85,7 @@ namespace laplace::test {
     std::random_device rdev;
 
     for (size_t i = 0; i < test_count; i++) {
-      dh_rabbit alice, bob;
+      ecc_rabbit alice, bob;
       alice.set_verbose(true);
       bob.set_verbose(true);
 

@@ -50,21 +50,17 @@ namespace laplace::network::crypto {
 
     void set_ready(bool is_ready) noexcept;
 
-    void set_private_key(span_cbyte key) noexcept;
     void set_public_key(span_cbyte key) noexcept;
     void set_mutual_key(span_cbyte key) noexcept;
 
     void reset_loss_count() noexcept;
     void add_bytes_lost(sl::whole count) noexcept;
 
-    [[nodiscard]] auto get_private_key() const noexcept -> span_cbyte;
-
   private:
     bool      m_is_ready   = false;
     bool      m_is_verbose = default_verbose;
     sl::whole m_loss_count = 0;
-
-    vbyte m_private_key;
+    
     vbyte m_public_key;
     vbyte m_mutual_key;
   };

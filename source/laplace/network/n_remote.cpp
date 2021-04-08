@@ -17,7 +17,7 @@
 #include "../engine/protocol/server_clock.h"
 #include "../engine/protocol/server_idle.h"
 #include "../engine/protocol/server_seed.h"
-#include "crypto/dh_rabbit.h"
+#include "crypto/ecc_rabbit.h"
 #include "remote.h"
 
 namespace laplace::network {
@@ -25,7 +25,7 @@ namespace laplace::network {
   using namespace engine::protocol;
   using std::min, std::make_unique, std::string, std::string_view,
       engine::encode, engine::prime_impact, engine::time_undefined,
-      crypto::dh_rabbit;
+      crypto::ecc_rabbit;
 
   remote::remote() {
     setup_world();
@@ -53,9 +53,9 @@ namespace laplace::network {
     auto slot = add_slot(m_host_address, m_host_port);
 
     if (is_encryption_enabled()) {
-      m_slots[slot].tran.setup_cipher<dh_rabbit>();
+      m_slots[slot].tran.setup_cipher<ecc_rabbit>();
       const auto key = m_slots[slot].tran.get_public_key();
-      send_event(encode<public_key>(ids::cipher_dh_rabbit, key));
+      send_event(encode<public_key>(ids::cipher_ecc_rabbit, key));
     }
 
     emit<client_enter>();

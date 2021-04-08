@@ -22,7 +22,7 @@
 #include "../engine/protocol/server_seed.h"
 #include "../engine/protocol/slot_create.h"
 #include "../engine/protocol/slot_remove.h"
-#include "crypto/dh_rabbit.h"
+#include "crypto/ecc_rabbit.h"
 #include "udp_server.h"
 #include <algorithm>
 #include <chrono>
@@ -43,7 +43,7 @@ namespace laplace::network {
       pro::public_key, pro::server_action, pro::server_pause,
       pro::server_clock, pro::server_seed, pro::server_quit,
       pro::client_leave, engine::time_undefined, engine::id_undefined,
-      engine::encode, crypto::dh_rabbit;
+      engine::encode, crypto::ecc_rabbit;
 
   udp_server::~udp_server() {
     cleanup();
@@ -192,19 +192,19 @@ namespace laplace::network {
     if (public_key::scan(seq) && slot != slot_host) {
       const auto cipher_id = public_key::get_cipher(seq);
 
-      if (cipher_id == ids::cipher_dh_rabbit) {
+      if (cipher_id == ids::cipher_ecc_rabbit) {
 
         if (slot < m_slots.size()) {
           if (is_master()) {
 
             if (!m_slots[slot].tran.is_encrypted()) {
-              m_slots[slot].tran.setup_cipher<dh_rabbit>();
+              m_slots[slot].tran.setup_cipher<ecc_rabbit>();
             }
 
-            send_event_to(                 //
-                slot,                      //
-                encode<public_key>(        //
-                    ids::cipher_dh_rabbit, //
+            send_event_to(                  //
+                slot,                       //
+                encode<public_key>(         //
+                    ids::cipher_ecc_rabbit, //
                     m_slots[slot].tran.get_public_key()));
           }
 
@@ -461,10 +461,10 @@ namespace laplace::network {
         const auto key = m_slots[slot].tran.get_public_key();
 
         if (!key.empty()) {
-          send_event_to(                 //
-              slot,                      //
-              encode<public_key>(        //
-                  ids::cipher_dh_rabbit, //
+          send_event_to(                  //
+              slot,                       //
+              encode<public_key>(         //
+                  ids::cipher_ecc_rabbit, //
                   key));
         }
       }
