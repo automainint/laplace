@@ -70,10 +70,6 @@ namespace laplace::network::crypto {
     m_is_ready = is_ready;
   }
 
-  void basic_cipher::set_private_key(span_cbyte key) noexcept {
-    m_private_key = vbyte { key.begin(), key.end() };
-  }
-
   void basic_cipher::set_public_key(span_cbyte key) noexcept {
     m_public_key = vbyte { key.begin(), key.end() };
   }
@@ -93,9 +89,5 @@ namespace laplace::network::crypto {
     }
 
     m_loss_count += count;
-  }
-
-  auto basic_cipher::get_private_key() const noexcept -> span_cbyte {
-    return { m_private_key.data(), m_private_key.size() };
   }
 }

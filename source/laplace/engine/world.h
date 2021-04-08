@@ -60,8 +60,9 @@ namespace laplace::engine {
      */
     void join();
 
-    void set_thread_count(size_t thread_count);
-    auto get_thread_count() -> size_t;
+    void set_thread_count(const sl::whole thread_count);
+
+    [[nodiscard]] auto get_thread_count() -> sl::whole;
 
     void set_root(size_t id_root);
     auto get_root() -> size_t;
@@ -84,6 +85,8 @@ namespace laplace::engine {
     auto next_entity() -> ptr_entity;
 
   private:
+    [[nodiscard]] auto check_scheduler() -> bool;
+
     void locked_desync();
     void locked_add_dynamic(size_t id);
     void locked_erase_dynamic(size_t id);

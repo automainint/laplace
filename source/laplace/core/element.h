@@ -44,7 +44,7 @@ namespace laplace::core {
     private:
       static std::atomic_size_t m_count;
 
-      size_t m_id;
+      size_t m_id = 0;
     };
 
   private:

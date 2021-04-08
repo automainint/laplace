@@ -18,26 +18,19 @@ namespace laplace::network {
   using std::min, std::copy, std::string_view;
 
   tcp_joint::tcp_joint(string_view address, uint16_t port) {
-    const auto size = min(address.size(), sizeof m_address - 1);
-
-    copy(address.begin(),                                //
-         address.begin() + static_cast<ptrdiff_t>(size), //
-         m_address);
-
-    m_address[size] = '\0';
-
-    m_port = port;
+    m_address = address.empty() ? "" : address;
+    m_port    = port;
 
     m_socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (m_socket == -1) {
-      verb(fmt("TCP: socket failed (code %d).", socket_error()));
+      verb(fmt("TCP: socket failed (code: %d).", socket_error()));
       done();
       return;
     }
 
     if (!set_mode(m_socket, async)) {
-      verb(fmt("TCP: ioctlsocket failed (code %d).", socket_error()));
+      verb(fmt("TCP: ioctlsocket failed (code: %d).", socket_error()));
       done();
     }
   }
@@ -63,21 +56,29 @@ namespace laplace::network {
         name.sin_family = AF_INET;
         name.sin_port   = ::htons(m_port);
 
-        if (::inet_pton(AF_INET, m_address, &name.sin_addr.s_addr) !=
-            1) {
-          verb(fmt("TCP: inet_pton failed (code %d).", socket_error()));
+        if (::inet_pton(AF_INET, m_address.c_str(),
+                        &name.sin_addr.s_addr) != 1) {
+          verb(fmt("TCP: inet_pton failed (code: %d).", socket_error()));
           done();
-        } else if (::connect(m_socket,
-                             reinterpret_cast<const sockaddr *>(&name),
-                             sizeof name) != -1 ||
-                   socket_error() == socket_isconn()) {
+          return;
+        }
+
+        if (::connect(m_socket,
+                      reinterpret_cast<const sockaddr *>(&name),
+                      sizeof name) != -1 ||
+            socket_error() == socket_isconn()) {
           m_is_ready = true;
 
           if (m_on_connect) {
             m_on_connect(*this);
           }
-        } else if (socket_error() != socket_wouldblock()) {
-          verb(fmt("TCP: connect failed (code %d).", socket_error()));
+
+          return;
+        }
+
+        if (socket_error() != socket_inprogress() &&
+            socket_error() != socket_wouldblock()) {
+          verb(fmt("TCP: connect failed (code: %d).", socket_error()));
           done();
         }
       }

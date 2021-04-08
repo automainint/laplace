@@ -16,12 +16,13 @@
 #include "scheduler.h"
 #include "world.h"
 #include <mutex>
+#include <sstream>
 
 namespace laplace::engine {
   using std::unique_lock, std::lock, std::adopt_lock, std::jthread,
-      std::function;
+      std::thread, std::function, std::ostringstream;
 
-  scheduler::scheduler(ref_world w) : m_world(w) { }
+  scheduler::scheduler(world &w) : m_world(w) { }
 
   scheduler::~scheduler() {
     set_done();
@@ -50,24 +51,42 @@ namespace laplace::engine {
     }
   }
 
-  void scheduler::set_thread_count(size_t thread_count) {
+  void scheduler::set_thread_count(const sl::whole thread_count) {
     lock(m_lock_ex, m_lock_in);
     auto _ul_ex = unique_lock(m_lock_ex, adopt_lock);
     auto _ul    = unique_lock(m_lock_in, adopt_lock);
 
-    const auto thread_count_limit = jthread::hardware_concurrency() *
-                                    overthreading_limit;
+    const auto thread_count_limit = []() -> sl::whole {
+      const auto limit = thread::hardware_concurrency() *
+                         overthreading_limit;
+      if (limit < 0)
+        return 0;
+      if (limit > concurrency_limit)
+        return concurrency_limit;
+      return limit;
+    }();
 
-    if (thread_count > thread_count_limit) {
-      verb(fmt("Scheduler: Invalid thread count %zu (max %zu).",
-               thread_count, thread_count_limit));
+    auto count = thread_count;
 
-      thread_count = thread_count_limit;
+    if (count < 0) {
+      auto s = ostringstream {};
+      s << "Scheduler: Invalid thread count " << count
+        << " (set to 0).";
+      verb(s.str());
+      count = 0;
     }
 
-    size_t n = m_threads.size();
+    if (count > thread_count_limit) {
+      auto s = ostringstream {};
+      s << "Scheduler: Invalid thread count " << count << " (max "
+        << thread_count_limit << ").";
+      verb(s.str());
+      count = thread_count_limit;
+    }
 
-    if (thread_count < n) {
+    auto n = m_threads.size();
+
+    if (count < n) {
       m_done = true;
       _ul.unlock();
 
@@ -79,18 +98,18 @@ namespace laplace::engine {
       m_done = false;
 
       n = 0;
-    } else if (thread_count > n) {
-      m_threads.resize(thread_count);
+    } else if (count > n) {
+      m_threads.resize(count);
     }
 
-    for (size_t i = n; i < m_threads.size(); i++) {
+    for (auto i = n; i < m_threads.size(); i++) {
       m_threads[i] = jthread([this] {
         this->tick_thread();
       });
     }
   }
 
-  auto scheduler::get_thread_count() -> size_t {
+  auto scheduler::get_thread_count() -> sl::whole {
     auto _ul = unique_lock(m_lock_ex);
     return m_threads.size();
   }
@@ -151,52 +170,50 @@ namespace laplace::engine {
       while (m_tick_count > 0) {
         _ul.unlock();
 
-        while (!m_world.get().no_queue()) {
+        while (!m_world.no_queue()) {
           /*  Execute the sync queue.
            */
 
           sync([this] {
-            while (auto ev = m_world.get().next_sync_impact()) {
+            while (auto ev = m_world.next_sync_impact()) {
               ev->perform({ m_world, access::sync });
             }
 
-            m_world.get().clean_sync_queue();
+            m_world.clean_sync_queue();
           });
 
           /*  Execute the async queue.
            */
 
-          while (auto ev = m_world.get().next_async_impact()) {
+          while (auto ev = m_world.next_async_impact()) {
             ev->perform({ m_world, access::async });
           }
 
           sync([this] {
-            m_world.get().clean_async_queue();
+            m_world.clean_async_queue();
           });
         }
 
         /*  Update the dynamic entities.
          */
 
-        while (auto en = m_world.get().next_dynamic_entity()) {
+        while (auto en = m_world.next_dynamic_entity()) {
           if (en->clock()) {
             en->tick({ m_world, access::async });
           }
         }
 
         sync([this] {
-          m_world.get().reset_index();
+          m_world.reset_index();
         });
 
         /*  Adjust all the entities.
          */
 
-        while (auto en = m_world.get().next_entity()) {
-          en->adjust();
-        }
+        while (auto en = m_world.next_entity()) { en->adjust(); }
 
         sync([this] {
-          m_world.get().reset_index();
+          m_world.reset_index();
 
           m_tick_count--;
         });

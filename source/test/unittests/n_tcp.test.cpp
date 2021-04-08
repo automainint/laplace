@@ -12,14 +12,20 @@
 
 #include "../../laplace/network/tcp_joint.h"
 #include "../../laplace/network/tcp_node.h"
+#include <chrono>
 #include <gtest/gtest.h>
+#include <thread>
 
 namespace laplace::test {
-  using network::tcp_node, network::tcp_joint,
-      network::localhost, network::ref_tcp_node,
-      network::ref_tcp_joint, network::async;
+  using network::tcp_node, network::tcp_joint, network::localhost,
+      network::ref_tcp_node, network::ref_tcp_joint, network::async,
+      std::chrono::steady_clock, std::chrono::duration_cast,
+      std::chrono::seconds, std::chrono::milliseconds,
+      std::this_thread::sleep_for;
 
   TEST(network, tcp_server_to_client) {
+    constexpr auto timeout_sec = 2;
+
     tcp_node  server;
     tcp_joint client(localhost, server.get_port());
 
@@ -27,7 +33,7 @@ namespace laplace::test {
     vbyte seq;
 
     server.on_accept([&msg](ref_tcp_node n) {
-      static_cast<void>(n.send(msg));
+      std::ignore = n.send(msg);
       n.close_node();
     });
 
@@ -38,15 +44,25 @@ namespace laplace::test {
         j.close();
     });
 
+    const auto t0 = steady_clock::now();
+
     while (!server.is_done() || !client.is_done()) {
       server.tick();
       client.tick();
+
+      sleep_for(milliseconds(10));
+
+      if (duration_cast<seconds>(steady_clock::now() - t0).count() >=
+          timeout_sec)
+        break;
     }
 
     EXPECT_EQ(seq, msg);
   }
 
   TEST(network, tcp_client_to_server) {
+    constexpr auto timeout_sec = 2;
+
     tcp_node  server;
     tcp_joint client(localhost, server.get_port());
 
@@ -61,13 +77,21 @@ namespace laplace::test {
     });
 
     client.on_connect([&msg](ref_tcp_joint j) {
-      static_cast<void>(j.send(msg));
+      std::ignore = j.send(msg);
       j.close();
     });
+
+    const auto t0 = steady_clock::now();
 
     while (!server.is_done() || !client.is_done()) {
       server.tick();
       client.tick();
+
+      sleep_for(milliseconds(10));
+
+      if (duration_cast<seconds>(steady_clock::now() - t0).count() >=
+          timeout_sec)
+        break;
     }
 
     EXPECT_EQ(seq, msg);

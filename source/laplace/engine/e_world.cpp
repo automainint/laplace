@@ -198,7 +198,7 @@ namespace laplace::engine {
 
   void world::schedule(uint64_t delta) {
     if (m_scheduler) {
-      if (m_scheduler->get_thread_count() == 0) {
+      if (m_scheduler->get_thread_count() <= 0) {
         auto _ul = unique_lock(m_lock);
 
         for (uint64_t t = 0; t < delta; t++) {
@@ -253,15 +253,16 @@ namespace laplace::engine {
     }
   }
 
-  void world::set_thread_count(size_t thread_count) {
-    auto _ul = unique_lock(m_lock);
-    if (m_scheduler) {
+  void world::set_thread_count(const sl::whole thread_count) {
+    if (check_scheduler()) {
       m_scheduler->set_thread_count(thread_count);
     }
   }
 
-  auto world::get_thread_count() -> size_t {
-    auto _sl = shared_lock(m_lock);
+  auto world::get_thread_count() -> sl::whole {
+    if (check_scheduler()) {
+      return m_scheduler->get_thread_count();
+    }
     return 0;
   }
 
@@ -293,13 +294,11 @@ namespace laplace::engine {
   auto world::get_entity(size_t id) -> ptr_entity {
     auto _sl = shared_lock(m_lock);
 
-    ptr_entity result;
-
     if (id < m_entities.size()) {
-      result = m_entities[id];
+      return m_entities[id];
     }
 
-    return result;
+    return {};
   }
 
   void world::desync() {
@@ -310,6 +309,11 @@ namespace laplace::engine {
   auto world::is_desync() -> bool {
     auto _sl = shared_lock(m_lock);
     return m_desync;
+  }
+
+  auto world::check_scheduler() -> bool {
+    auto _sl = shared_lock(m_lock);
+    return m_scheduler ? true : false;
   }
 
   void world::locked_desync() {

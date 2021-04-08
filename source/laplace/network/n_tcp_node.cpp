@@ -24,7 +24,7 @@ namespace laplace::network {
 
     if (m_listen == -1) {
       done();
-      verb(fmt("TCP: socket failed (code %d).", socket_error()));
+      verb(fmt("TCP: socket failed (code: %d).", socket_error()));
       return;
     }
 
@@ -35,7 +35,7 @@ namespace laplace::network {
     name.sin_port   = ::htons(port);
 
     if (::inet_pton(AF_INET, localhost, &name.sin_addr.s_addr) != 1) {
-      verb(fmt("TCP: inet_pton failed (code %d).", socket_error()));
+      verb(fmt("TCP: inet_pton failed (code: %d).", socket_error()));
       socket_close(m_listen);
       m_listen = -1;
       done();
@@ -44,7 +44,7 @@ namespace laplace::network {
 
     if (::bind(m_listen, reinterpret_cast<const sockaddr *>(&name),
                sizeof name) == -1) {
-      verb(fmt("TCP: bind failed (code %d).", socket_error()));
+      verb(fmt("TCP: bind failed (code: %d).", socket_error()));
       socket_close(m_listen);
       m_listen = -1;
       done();
@@ -56,7 +56,7 @@ namespace laplace::network {
 
       if (::getsockname(m_listen, reinterpret_cast<sockaddr *>(&name),
                         &len) == -1) {
-        verb(fmt("TCP: getsockname failed (code %d).", socket_error()));
+        verb(fmt("TCP: getsockname failed (code: %d).", socket_error()));
         socket_close(m_listen);
         m_listen = -1;
         done();
@@ -69,7 +69,7 @@ namespace laplace::network {
     }
 
     if (::listen(m_listen, SOMAXCONN) == -1) {
-      verb(fmt("TCP: listen failed (code %d).", socket_error()));
+      verb(fmt("TCP: listen failed (code: %d).", socket_error()));
       socket_close(m_listen);
       m_listen = -1;
       done();
@@ -77,7 +77,7 @@ namespace laplace::network {
     }
 
     if (!set_mode(m_listen, async)) {
-      verb(fmt("TCP: ioctlsocket failed (code %d).", socket_error()));
+      verb(fmt("TCP: ioctlsocket failed (code: %d).", socket_error()));
       done();
     }
   }
@@ -109,13 +109,18 @@ namespace laplace::network {
 
         if (m_socket != -1) {
           if (!set_mode(m_socket, async)) {
-            verb(fmt("TCP: ioctlsocket failed (code %d).", socket_error()));
+            verb(fmt("TCP: ioctlsocket failed (code: %d).",
+                     socket_error()));
             done();
           } else if (m_on_accept) {
             m_on_accept(*this);
           }
-        } else if (socket_error() != socket_wouldblock()) {
-          verb(fmt("TCP: accept failed (code %d).", socket_error()));
+          return;
+        }
+
+        if (socket_error() != socket_inprogress() &&
+            socket_error() != socket_wouldblock()) {
+          verb(fmt("TCP: accept failed (code: %d).", socket_error()));
           done();
         }
       }

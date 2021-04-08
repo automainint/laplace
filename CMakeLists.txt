@@ -8,6 +8,7 @@ option(LAPLACE_ENABLE_EXE       "Enable building executable" ON)
 option(LAPLACE_ENABLE_LIB       "Enable building static library" OFF)
 option(LAPLACE_ENABLE_TESTING   "Enable testing" OFF)
 option(LAPLACE_ENABLE_COVERAGE  "Enable coverage reporting" OFF)
+option(LAPLACE_VERBOSE          "Enable verbose logging" ON)
 
 set(LAPLACE_PROJECT   laplace)
 set(LAPLACE_OBJ       laplace-obj)
@@ -38,6 +39,10 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
     COMMAND ${Python3_EXECUTABLE} gen-gl.py
     WORKING_DIRECTORY tools
   )
+
+  if(LAPLACE_VERBOSE)
+    add_compile_definitions(LAPLACE_VERBOSE)
+  endif()
 
   add_library(${LAPLACE_OBJ} OBJECT)
   add_library(${QUADWAR_OBJ} OBJECT)

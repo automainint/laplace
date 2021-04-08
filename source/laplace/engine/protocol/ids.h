@@ -43,7 +43,7 @@ namespace laplace::engine::protocol::ids {
 
   enum cipher_id : uint16_t { //
     cipher_plain,             //
-    cipher_dh_rabbit
+    cipher_ecc_rabbit
   };
 
   enum command_id : uint16_t {

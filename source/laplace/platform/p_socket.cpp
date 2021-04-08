@@ -77,6 +77,10 @@ namespace laplace {
     return 0;
   }
 
+  auto socket_inprogress() noexcept -> int {
+    return WSAEINPROGRESS;
+  }
+
   auto socket_wouldblock() noexcept -> int {
     return WSAEWOULDBLOCK;
   }
@@ -117,6 +121,10 @@ namespace laplace {
     auto flags = ::fcntl(s, F_GETFL, 0);
     flags |= O_NONBLOCK;
     return ::fcntl(s, F_SETFL, flags);
+  }
+
+  auto socket_inprogress() noexcept -> int {
+    return EINPROGRESS;
   }
 
   auto socket_wouldblock() noexcept -> int {

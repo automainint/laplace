@@ -29,13 +29,13 @@ namespace laplace {
   }
 
   auto fmt(const char *c_format, va_list ap) -> string {
-    if (c_format) {
-      const auto size = static_cast<size_t>(
-          vsnprintf(nullptr, 0u, c_format, ap));
+    if (c_format && ap) {
+      auto buf = std::array<char, 0x1000> {};
 
-      auto result = string(size, '\0');
-      vsnprintf(result.data(), size + 1u, c_format, ap);
-      return result;
+      if (vsnprintf(buf.data(), buf.size() - 1, c_format, ap) < 0)
+        return {};
+
+      return string(buf.data());
     }
 
     return {};

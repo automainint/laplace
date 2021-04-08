@@ -1,4 +1,4 @@
-/*  laplace/network/crypto/nc_dh_rabbit.cpp
+/*  laplace/network/crypto/ecc_rabbit.h
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -10,8 +10,20 @@
  *  the MIT License for more details.
  */
 
-#include "dh_rabbit.h"
+#ifndef laplace_network_crypto_ecc_rabbit_h
+#define laplace_network_crypto_ecc_rabbit_h
+
+#include "ecc.h"
+#include "rabbit.h"
 
 namespace laplace::network::crypto {
-  dh_rabbit::dh_rabbit() : deffiehellman(key_size) { }
+  class ecc_rabbit : public ecc, public rabbit {
+  public:
+    static constexpr sl::whole key_size = 32;
+
+    ecc_rabbit();
+    ~ecc_rabbit() override = default;
+  };
 }
+
+#endif
