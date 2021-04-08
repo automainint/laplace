@@ -33,9 +33,10 @@ namespace laplace {
       const auto size = static_cast<size_t>(
           vsnprintf(nullptr, 0u, c_format, ap));
 
-      auto result = string(size, '\0');
-      vsnprintf(result.data(), size + 1u, c_format, ap);
-      return result;
+      auto result = std::vector<char>(size + 1, '\0');
+      vsnprintf(result.data(), size, c_format, ap);
+      result.back() = '\0';
+      return result.data();
     }
 
     return {};
