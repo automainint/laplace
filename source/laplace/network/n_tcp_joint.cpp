@@ -56,8 +56,6 @@ namespace laplace::network {
         name.sin_family = AF_INET;
         name.sin_port   = ::htons(m_port);
 
-        verb(fmt("TCP: connect to %s.", m_address.c_str()));
-
         if (::inet_pton(AF_INET, m_address.c_str(),
                         &name.sin_addr.s_addr) != 1) {
           verb(fmt("TCP: inet_pton failed (code: %d).", socket_error()));
@@ -78,13 +76,11 @@ namespace laplace::network {
           return;
         }
 
-        if (socket_error() == socket_inprogress() ||
-            socket_error() == socket_wouldblock()) {
-          return;
+        if (socket_error() != socket_inprogress() &&
+            socket_error() != socket_wouldblock()) {
+          verb(fmt("TCP: connect failed (code: %d).", socket_error()));
+          done();
         }
-
-        verb(fmt("TCP: connect failed (code: %d).", socket_error()));
-        done();
       }
     }
   }

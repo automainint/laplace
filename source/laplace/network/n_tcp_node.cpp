@@ -109,12 +109,17 @@ namespace laplace::network {
 
         if (m_socket != -1) {
           if (!set_mode(m_socket, async)) {
-            verb(fmt("TCP: ioctlsocket failed (code: %d).", socket_error()));
+            verb(fmt("TCP: ioctlsocket failed (code: %d).",
+                     socket_error()));
             done();
           } else if (m_on_accept) {
             m_on_accept(*this);
           }
-        } else if (socket_error() != socket_wouldblock()) {
+          return;
+        }
+
+        if (socket_error() != socket_inprogress() &&
+            socket_error() != socket_wouldblock()) {
           verb(fmt("TCP: accept failed (code: %d).", socket_error()));
           done();
         }
