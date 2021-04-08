@@ -31,9 +31,9 @@ namespace laplace::network {
 
   private:
     event_connect m_on_connect;
-    char          m_address[address_size] = "";
-    uint16_t      m_port                  = 0;
-    bool          m_is_ready              = false;
+    std::string   m_address  = "";
+    uint16_t      m_port     = 0;
+    bool          m_is_ready = false;
   };
 
   using ref_tcp_joint = tcp_joint::ref_tcp_joint;

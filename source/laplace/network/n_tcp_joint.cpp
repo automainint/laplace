@@ -18,13 +18,8 @@ namespace laplace::network {
   using std::min, std::copy, std::string_view;
 
   tcp_joint::tcp_joint(string_view address, uint16_t port) {
-    const auto size = min(address.size(), sizeof m_address - 1);
-
-    copy(address.begin(), address.begin() + size, m_address);
-
-    m_address[size] = '\0';
-
-    m_port = port;
+    m_address = address.empty() ? "" : address;
+    m_port    = port;
 
     m_socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -61,10 +56,10 @@ namespace laplace::network {
         name.sin_family = AF_INET;
         name.sin_port   = ::htons(m_port);
 
-        const auto *p = m_address;
-        verb(fmt("TCP: connect to %s.", p));
+        verb(fmt("TCP: connect to %s.", m_address.c_str()));
 
-        if (::inet_pton(AF_INET, p, &name.sin_addr.s_addr) != 1) {
+        if (::inet_pton(AF_INET, m_address.c_str(),
+                        &name.sin_addr.s_addr) != 1) {
           verb(fmt("TCP: inet_pton failed (code: %d).", socket_error()));
           done();
           return;

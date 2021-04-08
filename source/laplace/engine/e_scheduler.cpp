@@ -59,12 +59,6 @@ namespace laplace::engine {
     const auto thread_count_limit = []() -> sl::whole {
       const auto limit = thread::hardware_concurrency() *
                          overthreading_limit;
-      auto s = ostringstream {};
-      s << "  Hardware concurrency:  "
-        << thread::hardware_concurrency() << '\n'
-        << "  Overthreading limit:   " << overthreading_limit << '\n'
-        << "  Max thread count:      " << limit;
-      verb(s.str());
       if (limit < 0)
         return 0;
       if (limit > concurrency_limit)
