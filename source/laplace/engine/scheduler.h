@@ -23,26 +23,27 @@
 namespace laplace::engine {
   class scheduler {
   public:
-    static constexpr size_t overthreading_limit = 8;
+    static constexpr sl::whole overthreading_limit = 8;
 
     scheduler(const scheduler &) = delete;
     auto operator=(const scheduler &) -> scheduler & = delete;
 
-    scheduler(ref_world w);
+    scheduler(world &w);
     ~scheduler();
 
     void schedule(size_t delta);
     void join();
 
-    void               set_thread_count(size_t thread_count);
-    [[nodiscard]] auto get_thread_count() -> size_t;
+    void set_thread_count(const sl::whole thread_count);
+
+    [[nodiscard]] auto get_thread_count() -> sl::whole;
 
   private:
     void set_done();
     void sync(std::function<void()> fn);
     void tick_thread();
 
-    std::reference_wrapper<world> m_world;
+    world &m_world;
 
     std::mutex                m_lock_ex;
     std::mutex                m_lock_in;
