@@ -32,13 +32,24 @@ python3 build.py
 ```
 Done!
 
-### With Cmake
+### With CMake
 - Configure and build the project.
 
 ```shell
 cmake -D CMAKE_BUILD_TYPE=Release -B build -S .
 cmake --build build --config Release
 ```
+
+Laplace CMake configuration options:
+- `LAPLACE_ENABLE_EXE` - build the executable. `ON` by default.
+- `LAPLACE_ENABLE_LIB` - build the static library. `OFF` by default.
+- `LAPLACE_ENABLE_TESTING` - enable testing. `OFF` by default.
+- `LAPLACE_ENABLE_COVERAGE` - enable coverage reporting. `OFF` by default.
+- `LAPLACE_VERBOSE` - enable verbose logging of Laplace. `ON` by default.
+
+Tests will be created if `LAPLACE_ENABLE_TESTING` or `LAPLACE_ENABLE_COVERAGE` is `ON`.
+
+To build only the dependencies set `LAPLACE_ENABLE_EXE` to `OFF`.
 
 ### By hand
 - Use `tools/build-deps.py` to build the dependencies.
