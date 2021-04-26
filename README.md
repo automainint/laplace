@@ -22,7 +22,7 @@ Official repository: [GitHub][laplace-link]
 - [Blender][blender-link] for the content creating.
 
 ##  How to build
-To build the project CMake and Python 3 are required.
+To build the project CMake 3.18 and Python 3 are required.
 
 ### With provided build script
 - Execute the build script.
@@ -72,28 +72,31 @@ If you change the source code files structure, use `tools/gen-cmake.py` to gener
 ##  Contribution
 To contribute, follow these steps:
 1.  Find an applicable issue or create a new one with feature proposal or bug spotting.
+    - `git clone -b dev https://github.com/automainint/laplace.git`
 2.  Fork the repository.
 3.  Write tests for the issue.
 4.  Implement your solution for the issue.
-    - Follow C++ Core Guidelines.
-    - Use Clang-format.
+    - Follow [C++ Core Guidelines][guidelines-link].
+    - Use [ClangFormat][clang-format-link].
 5.  Make sure all tests pass and cover your code.
 6.  Make a pull-request to the `dev` branch or to the corresponding feature branch if there is any.
 
 [linux-build-badge]:    https://github.com/automainint/laplace/workflows/linux-build/badge.svg
 [linux-build-link]:     https://github.com/automainint/laplace/actions?query=workflow%3Alinux-build
 
-[laplace-link]:     https://github.com/automainint/laplace
-[msvc-link]:        https://visualstudio.microsoft.com/vs/features/cplusplus
-[clang-link]:       https://clang.llvm.org
-[gcc-link]:         https://gcc.gnu.org
-[python-link]:      https://www.python.org
-[cmake-link]:       https://cmake.org
-[git-link]:         https://git-scm.com
-[opengl-link]:      https://www.khronos.org/registry/OpenGL/index_gl.php
-[wolfssl-link]:     https://github.com/wolfSSL/wolfssl
-[freetype-link]:    https://gitlab.freedesktop.org/freetype/freetype
-[bzip2-link]:       https://gitlab.com/federicomenaquintero/bzip2
-[googletest-link]:  https://github.com/google/googletest
-[benchmark-link]:   https://github.com/google/benchmark
-[blender-link]:     https://www.blender.org
+[laplace-link]:       https://github.com/automainint/laplace
+[msvc-link]:          https://visualstudio.microsoft.com/vs/features/cplusplus
+[clang-link]:         https://clang.llvm.org
+[gcc-link]:           https://gcc.gnu.org
+[python-link]:        https://www.python.org
+[cmake-link]:         https://cmake.org
+[git-link]:           https://git-scm.com
+[opengl-link]:        https://www.khronos.org/registry/OpenGL/index_gl.php
+[wolfssl-link]:       https://github.com/wolfSSL/wolfssl
+[freetype-link]:      https://gitlab.freedesktop.org/freetype/freetype
+[bzip2-link]:         https://gitlab.com/federicomenaquintero/bzip2
+[googletest-link]:    https://github.com/google/googletest
+[benchmark-link]:     https://github.com/google/benchmark
+[blender-link]:       https://www.blender.org
+[clang-format-link]:  https://clang.llvm.org/docs/ClangFormat.html
+[guidelines-link]:    https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines
