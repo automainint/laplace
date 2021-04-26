@@ -75,8 +75,8 @@ To contribute, follow these steps:
 2.  Fork the repository.
 3.  Write tests for the issue.
 4.  Implement your solution for the issue.
-4.1.  Follow C++ Core Guidelines.
-4.2.  Use Clang-format.
+  4.1.  Follow C++ Core Guidelines.
+  4.2.  Use Clang-format.
 5.  Make sure all tests pass and cover your code.
 6.  Make a pull-request to the `dev` branch or to the corresponding feature branch if there is any.
 
