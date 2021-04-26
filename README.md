@@ -51,7 +51,8 @@ Tests will be created if `LAPLACE_ENABLE_TESTING` or `LAPLACE_ENABLE_COVERAGE` i
 
 To build only the dependencies set `LAPLACE_ENABLE_EXE` to `OFF`.
 
-### By hand
+##  Hacking
+If you want to build the source code by hand, follow the instructions below:
 - Use `tools/build-deps.py` to build the dependencies.
 - Use `tools/gen-gl.py` to generate the OpenGL interface files.
 - Use `tools/embed.py` to generate the embedded data source files.
@@ -65,6 +66,19 @@ cd ..
 ```
 
 Add `source` to the project and build manually. Required headers will be in `include` folder, libraries will be in `lib` folder.
+
+If you change the source code files structure, use `tools/gen-cmake.py` to generate the `CMakeLists.txt` files.
+
+##  Contribution
+To contribute, follow these steps:
+1.  Find an applicable issue or create a new one with feature proposal or bug spotting.
+2.  Fork the repository.
+3.  Write tests for the issue.
+4.  Implement your solution for the issue.
+4.1.  Follow C++ Core Guidelines.
+4.2.  Use Clang-format.
+5.  Make sure all tests pass and cover your code.
+6.  Make a pull-request to the `dev` branch or to the corresponding feature branch if there is any.
 
 [linux-build-badge]:    https://github.com/automainint/laplace/workflows/linux-build/badge.svg
 [linux-build-link]:     https://github.com/automainint/laplace/actions?query=workflow%3Alinux-build

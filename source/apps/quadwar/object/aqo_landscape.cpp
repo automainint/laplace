@@ -44,7 +44,7 @@ namespace quadwar_app::object {
   }
 
   auto landscape::gen_maze(world w, size_t width, size_t height,
-                           size_t player_count) noexcept
+                           span<const vec2z> start_locs) noexcept
       -> vector<uint8_t> {
 
     const auto cols = ((width + cave_size / 2) / cave_size) | 1;
@@ -57,6 +57,21 @@ namespace quadwar_app::object {
       return w.random(uni);
     });
 
+    for (const auto &p : start_locs) {
+      const auto x = (p.x() * cols) / width;
+      const auto y = (p.y() * rows) / height;
+
+      map[(y - 1) * rows + x - 1] = tile_walkable;
+      map[(y + 1) * rows + x - 1] = tile_walkable;
+      map[(y - 1) * rows + x + 1] = tile_walkable;
+      map[(y + 1) * rows + x + 1] = tile_walkable;
+      map[(y - 1) * rows + x]     = tile_walkable;
+      map[(y + 1) * rows + x]     = tile_walkable;
+      map[y * rows + x - 1]       = tile_walkable;
+      map[y * rows + x + 1]       = tile_walkable;
+      map[y * rows + x]           = tile_walkable;
+    }
+
     auto big = vector<uint8_t>(width * height);
 
     maze::stretch({ width, height }, big, { cols, rows }, map,
@@ -65,14 +80,99 @@ namespace quadwar_app::object {
     return big;
   }
 
+  auto landscape::gen_start_locs(sl::whole width, sl::whole height,
+                                 sl::whole edge,
+                                 sl::whole player_count) noexcept
+      -> vector<vec2z> {
+
+    if (player_count == 0)
+      return {};
+
+    auto delta = ((width - edge * 2) * 2 + (height - edge * 2) * 2) /
+                 player_count;
+
+    if (delta <= 0)
+      return {};
+
+    auto locs = vector<vec2z> {};
+
+    auto x = edge;
+    auto y = edge;
+    auto p = sl::index {};
+
+    while (p < player_count && x + delta + edge <= width) {
+      auto v = vec2z {};
+      v.x()  = x;
+      v.y()  = y;
+
+      locs.emplace_back(v);
+
+      x += delta;
+      p++;
+    }
+
+    x = width - edge - 1;
+
+    while (p < player_count && y + delta + edge <= height) {
+      auto v = vec2z {};
+      v.x()  = x;
+      v.y()  = y;
+
+      locs.emplace_back(v);
+
+      y += delta;
+      p++;
+    }
+
+    x = edge;
+    y = edge + delta;
+
+    while (p < player_count && y + delta + edge <= height) {
+      auto v = vec2z {};
+      v.x()  = x;
+      v.y()  = y;
+
+      locs.emplace_back(v);
+
+      y += delta;
+      p++;
+    }
+
+    y = height - edge - 1;
+
+    while (p < player_count && x + delta + edge <= width) {
+      auto v = vec2z {};
+      v.x()  = x;
+      v.y()  = y;
+
+      locs.emplace_back(v);
+
+      x += delta;
+      p++;
+    }
+
+    if (p < player_count) {
+      auto v = vec2z {};
+      v.x()  = width - edge - 1;
+      v.y()  = height - edge - 1;
+
+      locs.emplace_back(v);
+    }
+
+    return locs;
+  }
+
   void landscape::create_maze(world w, size_t width, size_t height,
                               size_t player_count) {
     auto r    = w.get_entity(w.get_root());
     auto land = std::make_shared<object::landscape>();
 
+    auto locs = gen_start_locs(
+        width, height, cave_size * 2, player_count);
+
     set_size({ land, access::sync }, width, height);
-    set_tiles({ land, access::sync },
-              gen_maze(w, width, height, player_count));
+    set_tiles({ land, access::sync }, gen_maze(w, width, height, locs));
+    set_start_locs({ land, access::sync }, locs);
     inc_version({ land, access::async });
 
     object::root::set_landscape(r, w.spawn(land, engine::id_undefined));

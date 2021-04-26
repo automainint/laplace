@@ -24,6 +24,8 @@ namespace quadwar_app::object {
 
     static void slot_create(entity en, size_t id_actor);
     static void slot_remove(entity en, size_t id_actor);
+    static void unit_create(entity en, size_t id_unit);
+    static void unit_remove(entity en, size_t id_unit);
     static void loading(entity en);
     static void launch(entity en);
     static void status_changed(entity en);
@@ -34,6 +36,10 @@ namespace quadwar_app::object {
     [[nodiscard]] static auto get_slot_count(entity en) -> size_t;
     [[nodiscard]] static auto get_slot(entity en, size_t index)
         -> size_t;
+    [[nodiscard]] static auto get_unit_count(entity en) -> size_t;
+    [[nodiscard]] static auto get_unit(entity en, size_t index)
+        -> size_t;
+    [[nodiscard]] static auto get_all_units(entity en) -> vuint;
 
     static void set_landscape(entity en, size_t id_landscape);
     [[nodiscard]] static auto get_landscape(entity en) -> size_t;
@@ -44,20 +50,24 @@ namespace quadwar_app::object {
     auto do_request(size_t id, span_cbyte args) const -> vbyte override;
     void do_modify(size_t id, span_cbyte args) override;
 
+  private:
     void do_slot_create(const size_t id_actor);
     void do_slot_remove(const size_t id_actor);
+    void do_unit_create(const size_t id_unit);
+    void do_unit_remove(const size_t id_unit);
     void do_launch();
 
-  private:
     static size_t n_version;
     static size_t n_is_loading;
     static size_t n_is_launched;
     static size_t n_slot_count;
+    static size_t n_unit_count;
     static size_t n_landscape;
 
     static root m_proto;
 
-    vuint  m_slots;
+    vuint m_slots;
+    vuint m_units;
   };
 
   using ptr_root = std::shared_ptr<root>;

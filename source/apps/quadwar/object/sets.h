@@ -29,6 +29,11 @@ namespace quadwar_app::object::sets {
     root_slot_get,
     root_slot_create,
     root_slot_remove,
+    root_unit_count,
+    root_unit_get,
+    root_unit_get_all,
+    root_unit_create,
+    root_unit_remove,
     root_launch,
     root_landscape,
 
@@ -45,6 +50,11 @@ namespace quadwar_app::object::sets {
     land_set_start_loc,
     land_get_start_locs,
     land_set_start_locs,
+
+    unit_actor,
+    unit_x,
+    unit_y,
+    unit_health,
 
     _count
   };
