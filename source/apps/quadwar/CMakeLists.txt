@@ -6,6 +6,7 @@ target_sources(
     PUBLIC
       defs.h quadwar.h qw_factory.h session.h
 )
+add_subdirectory(action)
 add_subdirectory(object)
 add_subdirectory(protocol)
 add_subdirectory(ui)
