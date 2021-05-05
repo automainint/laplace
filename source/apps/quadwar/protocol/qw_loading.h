@@ -16,6 +16,7 @@
 #include "../object/game_clock.h"
 #include "../object/landscape.h"
 #include "../object/root.h"
+#include "../object/unit.h"
 #include "defs.h"
 
 namespace quadwar_app::protocol {
@@ -65,12 +66,15 @@ namespace quadwar_app::protocol {
 
       object::root::loading(r);
 
-      w.spawn(                                    //
-          std::make_shared<object::game_clock>(), //
-          engine::id_undefined);
+      w.spawn(std::make_shared<object::game_clock>(),
+              engine::id_undefined);
 
       object::landscape::create_maze(
           w, m_map_size, m_map_size, m_player_count);
+
+      r.adjust();
+
+      object::unit::spawn_start_units(w, m_unit_count);
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {

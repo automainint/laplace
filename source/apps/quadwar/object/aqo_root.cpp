@@ -49,19 +49,41 @@ namespace quadwar_app::object {
 
   void root::slot_create(entity en, size_t id_actor) {
 
+    if (id_actor == id_undefined) {
+      error_("Invalid actor id.", __FUNCTION__);
+      return;
+    }
+
     en.modify(sets::root_slot_create, serial::pack_to_array(id_actor));
   }
 
   void root::slot_remove(entity en, size_t id_actor) {
 
+    if (id_actor == id_undefined) {
+      error_("Invalid actor id.", __FUNCTION__);
+      return;
+    }
+
     en.modify(sets::root_slot_remove, serial::pack_to_array(id_actor));
   }
 
   void root::unit_create(entity en, size_t id_unit) {
+
+    if (id_unit == id_undefined) {
+      error_("Invalid unit id.", __FUNCTION__);
+      return;
+    }
+
     en.modify(sets::root_unit_create, serial::pack_to_array(id_unit));
   }
 
   void root::unit_remove(entity en, size_t id_unit) {
+
+    if (id_unit == id_undefined) {
+      error_("Invalid unit id.", __FUNCTION__);
+      return;
+    }
+
     en.modify(sets::root_unit_remove, serial::pack_to_array(id_unit));
   }
 

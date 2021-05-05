@@ -167,13 +167,14 @@ namespace quadwar_app::object {
     auto r    = w.get_entity(w.get_root());
     auto land = std::make_shared<object::landscape>();
 
-    auto locs = gen_start_locs(
+    land->m_start_locs = gen_start_locs(
         width, height, cave_size * 2, player_count);
 
-    set_size({ land, access::sync }, width, height);
-    set_tiles({ land, access::sync }, gen_maze(w, width, height, locs));
-    set_start_locs({ land, access::sync }, locs);
-    inc_version({ land, access::async });
+    land->m_tiles = gen_maze(w, width, height, land->m_start_locs);
+
+    land->init(n_width, width);
+    land->init(n_height, height);
+    land->init(n_version, land->get(n_version) + 1);
 
     object::root::set_landscape(r, w.spawn(land, engine::id_undefined));
   }

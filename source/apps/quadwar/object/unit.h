@@ -14,25 +14,35 @@
 #define quadwar_object_unit_h
 
 #include "../../../laplace/engine/basic_entity.h"
+#include "../view/defs.h"
 #include "defs.h"
 
 namespace quadwar_app::object {
   class unit : public engine::basic_entity, helper {
   public:
+    static constexpr engine::intval default_health = 100;
+
     unit();
     ~unit() override = default;
 
     void tick(engine::access::world w) override;
 
+    static void spawn_start_units(world w, sl::whole unit_count);
+
+    static void set_actor(entity en, size_t id_actor);
     static void set_x(entity en, engine::intval x);
     static void set_y(entity en, engine::intval y);
     static void set_position(entity en, engine::vec2i p);
     static void set_health(entity en, engine::intval health);
 
+    [[nodiscard]] static auto get_actor(entity en) -> size_t;
     [[nodiscard]] static auto get_x(entity en) -> engine::intval;
     [[nodiscard]] static auto get_y(entity en) -> engine::intval;
     [[nodiscard]] static auto get_position(entity en) -> engine::vec2i;
     [[nodiscard]] static auto get_health(entity en) -> engine::intval;
+
+    [[nodiscard]] static auto get_position_scaled(entity en)
+        -> view::vec2;
 
   protected:
     unit(proto_tag);

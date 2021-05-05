@@ -27,6 +27,13 @@ namespace quadwar_app::view {
     [[nodiscard]] auto get_frame() const noexcept -> vec2;
     [[nodiscard]] auto get_scale() const noexcept -> real;
 
+    struct transform {
+      vec2 position;
+      vec2 scale;
+    };
+
+    [[nodiscard]] auto get_transform() const noexcept -> transform;
+
   private:
     real m_scale = 1.f;
     vec2 m_position;

@@ -1,7 +1,7 @@
 #   The Laplace engine
 [![linux-build][linux-build-badge]][linux-build-link]
 
-The quality of the real-time strategy game depends on low-latency responsiveness and vertical scalability. Vertical scalability requires parallelism on the local instance and lockstep networking. Lockstep systems require a totally deterministic engine. In addition, extensibility is a useful feature.
+The quality of the real-time strategy game relies on low-latency responsiveness and vertical scalability. Vertical scalability requires parallelism on the local instance and lockstep networking. Lockstep systems require a totally deterministic engine. In addition, extensibility is a useful feature.
 
 Laplace is an interactive multimedia framework that provides the deterministic and extensible engine with concurrency support and lockstep synchronization.
 
@@ -72,7 +72,6 @@ If you change the source code files structure, use `tools/gen-cmake.py` to gener
 ##  Contribution
 To contribute, follow these steps:
 1.  Find an applicable issue or create a new one with feature proposal or bug spotting.
-    - `git clone -b dev https://github.com/automainint/laplace.git`
 2.  Fork the repository.
 3.  Write tests for the issue.
 4.  Implement your solution for the issue.

@@ -15,6 +15,7 @@
 
 #include "camera.h"
 #include "landscape.h"
+#include "units.h"
 
 namespace quadwar_app::view {
   class game : engine::helper {
@@ -33,9 +34,10 @@ namespace quadwar_app::view {
 
     void update_bounds(world w);
 
-    real      m_scale_ln     = 0.f;
+    real      m_scale_ln = 0.f;
     camera    m_camera;
     landscape m_landscape;
+    units     m_units;
   };
 }
 
