@@ -15,7 +15,7 @@
 
 namespace laplace::test {
   using engine::encode, engine::prime_impact,
-      engine::protocol::slot_create;
+      engine::protocol::slot_create, engine::eventorder;
 
   TEST(engine, protocol_slot_create) {
     constexpr size_t   index    = 1;

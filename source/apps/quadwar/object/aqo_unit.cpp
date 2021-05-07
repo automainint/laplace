@@ -10,20 +10,23 @@
  *  the MIT License for more details.
  */
 
+#include "unit.h"
+
 #include "../action/unit_move.h"
 #include "landscape.h"
+#include "pathmap.h"
 #include "root.h"
-#include "unit.h"
 
 namespace quadwar_app::object {
   namespace access = engine::access;
 
-  using engine::intval, engine::vec2i, std::make_shared,
-      action::unit_move;
+  using std::vector, engine::intval, engine::vec2i,
+      engine::id_undefined, std::make_shared, action::unit_move;
 
   size_t unit::n_actor  = {};
   size_t unit::n_x      = {};
   size_t unit::n_y      = {};
+  size_t unit::n_radius = {};
   size_t unit::n_health = {};
 
   unit unit::m_proto(unit::proto);
@@ -33,11 +36,13 @@ namespace quadwar_app::object {
         { { .id = sets::unit_actor, .scale = 1 },
           { .id = sets::unit_x, .scale = sets::scale_real },
           { .id = sets::unit_y, .scale = sets::scale_real },
+          { .id = sets::unit_radius, .scale = pathmap::resolution },
           { .id = sets::unit_health, .scale = sets::scale_points } });
 
     n_actor  = index_of(sets::unit_actor);
     n_x      = index_of(sets::unit_x);
     n_y      = index_of(sets::unit_y);
+    n_radius = index_of(sets::unit_radius);
     n_health = index_of(sets::unit_health);
   }
 
@@ -45,11 +50,12 @@ namespace quadwar_app::object {
     *this = m_proto;
   }
 
-  void unit::tick(access::world w) {
-    w.queue(make_shared<unit_move>(get_id()));
-  }
+  void unit::tick(access::world w) { }
 
-  void unit::spawn_start_units(world w, sl::whole unit_count) {
+  auto unit::spawn_start_units(world w, sl::whole unit_count)
+      -> vector<size_t> {
+
+    auto ids = vector<size_t> {};
 
     auto r    = w.get_entity(w.get_root());
     auto land = w.get_entity(root::get_landscape(r));
@@ -57,7 +63,7 @@ namespace quadwar_app::object {
 
     if (!land.exist()) {
       error_("No landscape.", __FUNCTION__);
-      return;
+      return {};
     }
 
     auto player_count = root::get_slot_count(r);
@@ -67,31 +73,43 @@ namespace quadwar_app::object {
         error_("No start locations.", __FUNCTION__);
       else
         error_("Invalid start locations.", __FUNCTION__);
-      return;
+      return {};
     }
+
+    ids.reserve(unit_count * player_count);
 
     for (sl::index i = 0; i < player_count; i++) {
       const auto u = [&r, &locs, &i]() -> unit {
         auto u = unit {};
 
         const auto id_actor = root::get_slot(r, i);
-        const auto x        = locs[i].x();
-        const auto y        = locs[i].y();
-        const auto health   = default_health;
+
+        const auto x      = locs[i].x();
+        const auto y      = locs[i].y();
+        const auto radius = default_radius;
+        const auto health = default_health;
+
+        const auto sx = u.scale_of(n_x);
+        const auto sy = u.scale_of(n_y);
+        const auto sh = u.scale_of(n_health);
 
         u.init(n_actor, id_actor);
-        u.init(n_x, x * u.scale_of(n_x));
-        u.init(n_y, y * u.scale_of(n_y));
-        u.init(n_health, health * u.scale_of(n_health));
+        u.init(n_x, x * sx);
+        u.init(n_y, y * sy);
+        u.init(n_radius, radius);
+        u.init(n_health, health * sh);
 
         return u;
       }();
 
       for (sl::index j = 0; j < unit_count; j++) {
-        root::unit_create(
-            r, w.spawn(make_shared<unit>(u), engine::id_undefined));
+        const auto id = w.spawn(make_shared<unit>(u), id_undefined);
+        root::unit_create(r, id);
+        ids.emplace_back(id);
       }
     }
+
+    return ids;
   }
 
   void unit::set_actor(entity en, size_t id_actor) {
@@ -109,6 +127,10 @@ namespace quadwar_app::object {
   void unit::set_position(entity en, vec2i p) {
     set_x(en, p.x());
     set_y(en, p.y());
+  }
+
+  void unit::set_radius(entity en, intval radius) {
+    en.set(n_radius, radius);
   }
 
   void unit::set_health(entity en, intval health) {
@@ -131,8 +153,24 @@ namespace quadwar_app::object {
     return vec2i { get_x(en), get_y(en) };
   }
 
+  auto unit::get_radius(entity en) -> intval {
+    return en.get(n_radius);
+  }
+
   auto unit::get_health(entity en) -> intval {
     return en.get(n_health);
+  }
+
+  auto unit::scale_of_x(entity en) -> engine::intval {
+    return en.scale_of(n_x);
+  }
+
+  auto unit::scale_of_y(entity en) -> engine::intval {
+    return en.scale_of(n_y);
+  }
+
+  auto unit::scale_of_radius(entity en) -> engine::intval {
+    return en.scale_of(n_radius);
   }
 
   auto unit::get_position_scaled(entity en) -> view::vec2 {
@@ -144,5 +182,13 @@ namespace quadwar_app::object {
 
     return { static_cast<view::real>(get_x(en)) / sx,
              static_cast<view::real>(get_y(en)) / sy };
+  }
+  auto unit::get_radius_scaled(entity en) -> view::real {
+    const auto s = en.scale_of(n_radius);
+
+    if (s == 0)
+      return {};
+
+    return static_cast<view::real>(get_radius(en)) / s;
   }
 }

@@ -48,7 +48,7 @@ namespace quadwar_app::protocol {
         size_t             id_actor, //
         std::u8string_view name) {
 
-      set_order({ index });
+      set_index(index);
       set_time(time);
       set_actor(id_actor);
       set_encoded_size(n_name + name.size());

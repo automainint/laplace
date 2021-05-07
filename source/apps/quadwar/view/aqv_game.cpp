@@ -69,8 +69,8 @@ namespace quadwar_app::view {
       const auto fx = m_camera.get_frame().x() / s;
       const auto fy = m_camera.get_frame().y() / s;
 
-      const auto dx = landscape::tile_size * width;
-      const auto dy = landscape::tile_size * height;
+      const auto dx = m_camera.get_grid_scale() * width;
+      const auto dy = m_camera.get_grid_scale() * height;
 
       const auto hx = min(dx / 2.f, fx / 2.f);
       const auto hy = min(dy / 2.f, fy / 2.f);

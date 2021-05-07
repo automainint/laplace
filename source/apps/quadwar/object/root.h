@@ -29,6 +29,8 @@ namespace quadwar_app::object {
     static void loading(entity en);
     static void launch(entity en);
     static void status_changed(entity en);
+    static void set_landscape(entity en, size_t id_landscape);
+    static void set_pathmap(entity en, size_t id_pathmap);
 
     [[nodiscard]] static auto get_version(entity en) -> size_t;
     [[nodiscard]] static auto is_loading(entity en) -> bool;
@@ -40,9 +42,8 @@ namespace quadwar_app::object {
     [[nodiscard]] static auto get_unit(entity en, size_t index)
         -> size_t;
     [[nodiscard]] static auto get_all_units(entity en) -> vuint;
-
-    static void set_landscape(entity en, size_t id_landscape);
     [[nodiscard]] static auto get_landscape(entity en) -> size_t;
+    [[nodiscard]] static auto get_pathmap(entity en) -> size_t;
 
   protected:
     root(proto_tag);
@@ -63,6 +64,7 @@ namespace quadwar_app::object {
     static size_t n_slot_count;
     static size_t n_unit_count;
     static size_t n_landscape;
+    static size_t n_pathmap;
 
     static root m_proto;
 

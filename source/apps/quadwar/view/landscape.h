@@ -20,8 +20,7 @@
 namespace quadwar_app::view {
   class landscape : engine::helper {
   public:
-    static constexpr auto tile_size   = 50.f;
-    static constexpr auto tile_border = 10.f;
+    static constexpr auto tile_border = .2f;
 
     void render(const camera &cam, world w);
 

@@ -39,11 +39,14 @@ namespace quadwar_app::view {
       const auto fw = static_cast<real>(width);
       const auto fh = static_cast<real>(height);
 
+      const auto tile_size   = cam.get_grid_scale();
+      const auto border_size = tile_size * tile_border;
+
       m_vertices.reserve(12 * width * height);
       m_vertices.clear();
 
-      for (size_t j = 0; j < height; j++) {
-        for (size_t i = 0; i < width; i++) {
+      for (sl::index j = 0; j < height; j++) {
+        for (sl::index i = 0; i < width; i++) {
 
           if (tiles[j * width + i] != object::landscape::tile_walkable) {
 
@@ -53,11 +56,11 @@ namespace quadwar_app::view {
             const auto x1 = x0 + tile_size;
             const auto y1 = y0 + tile_size;
 
-            const auto x2 = x0 + tile_border;
-            const auto y2 = y0 + tile_border;
+            const auto x2 = x0 + border_size;
+            const auto y2 = y0 + border_size;
 
-            const auto x3 = x1 - tile_border;
-            const auto y3 = y1 - tile_border;
+            const auto x3 = x1 - border_size;
+            const auto y3 = y1 - border_size;
 
             m_vertices.emplace_back(
                 vertex { .position = { x0, y0 }, .color = c_border });

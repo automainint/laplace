@@ -13,7 +13,6 @@
 #include "../../../laplace/render/context.h"
 #include "../object/root.h"
 #include "../object/unit.h"
-#include "landscape.h"
 #include "units.h"
 
 namespace quadwar_app::view {
@@ -28,13 +27,15 @@ namespace quadwar_app::view {
 
     for (sl::index i = 0; i < units.size(); i++) {
       const auto u = w.get_entity(units[i]);
-      const auto p = unit::get_position_scaled(u);
 
-      const auto p0 = p * landscape::tile_size -
-                      vec2 { unit_size / 2, unit_size / 2 };
-      const auto d  = vec2 { unit_size, unit_size };
-      const auto dx = vec2 { unit_size, 0 };
-      const auto dy = vec2 { 0, unit_size };
+      const auto p = unit::get_position_scaled(u) *
+                     cam.get_grid_scale();
+      const auto s = unit::get_radius_scaled(u) * cam.get_grid_scale();
+
+      const auto p0 = p - vec2 { s, s };
+      const auto d  = vec2 { s * 2, s * 2 };
+      const auto dx = vec2 { s * 2, 0 };
+      const auto dy = vec2 { 0, s * 2 };
 
       m_vertices[i * 6].position     = p0;
       m_vertices[i * 6 + 1].position = p0 + dx;

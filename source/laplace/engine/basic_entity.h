@@ -54,6 +54,8 @@ namespace laplace::engine {
      */
     basic_entity(dummy_tag);
 
+    /*  Initialize dynamic entity.
+     */
     basic_entity(uint64_t tick_period);
 
     virtual ~basic_entity() = default;

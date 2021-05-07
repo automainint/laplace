@@ -30,7 +30,7 @@ namespace laplace::engine::protocol {
     }
 
     constexpr slot_remove(size_t index, uint64_t time, size_t id_actor) {
-      set_order({ index });
+      set_index(index);
       set_time(time);
       set_actor(id_actor);
       set_encoded_size(size);

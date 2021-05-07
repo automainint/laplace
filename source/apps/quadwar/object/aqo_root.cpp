@@ -18,12 +18,13 @@ namespace quadwar_app::object {
   using std::lower_bound, std::unique_lock, std::shared_lock,
       engine::id_undefined;
 
-  size_t root::n_version     = 0;
-  size_t root::n_is_loading  = 0;
-  size_t root::n_is_launched = 0;
-  size_t root::n_slot_count  = 0;
-  size_t root::n_unit_count  = 0;
-  size_t root::n_landscape   = 0;
+  size_t root::n_version     = {};
+  size_t root::n_is_loading  = {};
+  size_t root::n_is_launched = {};
+  size_t root::n_slot_count  = {};
+  size_t root::n_unit_count  = {};
+  size_t root::n_landscape   = {};
+  size_t root::n_pathmap     = {};
 
   root root::m_proto(root::proto);
 
@@ -33,7 +34,8 @@ namespace quadwar_app::object {
                  { .id = sets::root_is_launched, .scale = 1 },
                  { .id = sets::root_slot_count, .scale = 1 },
                  { .id = sets::root_unit_count, .scale = 1 },
-                 { .id = sets::root_landscape, .value = -1 } });
+                 { .id = sets::root_landscape, .value = -1 },
+                 { .id = sets::root_pathmap, .value = -1 } });
 
     n_version     = index_of(sets::state_version);
     n_is_loading  = index_of(sets::root_is_loading);
@@ -41,6 +43,7 @@ namespace quadwar_app::object {
     n_slot_count  = index_of(sets::root_slot_count);
     n_unit_count  = index_of(sets::root_unit_count);
     n_landscape   = index_of(sets::root_landscape);
+    n_pathmap     = index_of(sets::root_pathmap);
   }
 
   root::root() : basic_entity(dummy) {
@@ -102,6 +105,14 @@ namespace quadwar_app::object {
     en.adjust();
   }
 
+  void root::set_landscape(entity en, size_t id_landscape) {
+    en.set(n_landscape, static_cast<int64_t>(id_landscape));
+  }
+
+  void root::set_pathmap(entity en, size_t id_pathmap) {
+    en.set(n_pathmap, static_cast<int64_t>(id_pathmap));
+  }
+
   auto root::get_version(entity en) -> size_t {
     return static_cast<size_t>(en.get(n_version));
   }
@@ -148,12 +159,12 @@ namespace quadwar_app::object {
     return units;
   }
 
-  void root::set_landscape(entity en, size_t id_landscape) {
-    en.set(n_landscape, static_cast<int64_t>(id_landscape));
-  }
-
   auto root::get_landscape(entity en) -> size_t {
     return static_cast<size_t>(en.get(n_landscape, -1));
+  }
+
+  auto root::get_pathmap(entity en) -> size_t {
+    return static_cast<size_t>(en.get(n_pathmap, -1));
   }
 
   auto root::do_request(size_t id, span_cbyte args) const -> vbyte {

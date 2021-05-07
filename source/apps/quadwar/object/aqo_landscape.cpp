@@ -177,6 +177,8 @@ namespace quadwar_app::object {
     land->init(n_version, land->get(n_version) + 1);
 
     object::root::set_landscape(r, w.spawn(land, engine::id_undefined));
+
+    r.adjust();
   }
 
   auto landscape::get_version(entity en) -> size_t {

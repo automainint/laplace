@@ -42,7 +42,7 @@ namespace laplace::engine::protocol {
     }
 
     constexpr basic_event(size_t index) {
-      this->set_order({ index });
+      this->set_index(index);
       this->set_encoded_size(size);
     }
 
@@ -80,7 +80,7 @@ namespace laplace::engine::protocol {
     }
 
     constexpr basic_event(size_t index) {
-      this->set_order({ index });
+      this->set_index(index);
       this->set_encoded_size(size);
     }
 

@@ -17,7 +17,7 @@
 #include "../defs.h"
 
 namespace quadwar_app::action {
-  class unit_move : public engine::basic_impact {
+  class unit_move : public engine::sync_impact {
   public:
     unit_move(size_t id_unit);
     ~unit_move() override = default;

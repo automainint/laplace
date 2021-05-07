@@ -36,6 +36,7 @@ namespace quadwar_app::object::sets {
     root_unit_remove,
     root_launch,
     root_landscape,
+    root_pathmap,
 
     game_clock_time,
 
@@ -54,7 +55,16 @@ namespace quadwar_app::object::sets {
     unit_actor,
     unit_x,
     unit_y,
+    unit_radius,
     unit_health,
+
+    pathmap_width,
+    pathmap_height,
+    pathmap_set_tiles,
+    pathmap_get_tiles,
+    pathmap_add,
+    pathmap_subtract,
+    pathmap_check,
 
     _count
   };
