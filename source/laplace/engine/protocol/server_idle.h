@@ -28,7 +28,7 @@ namespace laplace::engine::protocol {
     }
 
     constexpr server_idle(uint64_t index, uint64_t time_msec) {
-      set_order({ index });
+      set_index(index);
       set_time(time_msec);
       set_encoded_size(size);
     }

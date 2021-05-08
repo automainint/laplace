@@ -36,7 +36,7 @@ namespace laplace::engine::protocol {
     }
 
     constexpr server_clock(size_t index, uint64_t tick_duration_msec) {
-      set_order({ index });
+      set_index(index);
       set_encoded_size(size);
 
       m_tick_duration_msec = tick_duration_msec;

@@ -47,7 +47,7 @@ namespace laplace::engine {
   }
 
   constexpr eventorder::eventorder(const eventorder &parent,
-                                   size_t            index) {
+                                   size_t            child_index) {
     if (parent.m_size == eventorder::max_depth) {
       this->m_size = 0;
       return;
@@ -57,7 +57,7 @@ namespace laplace::engine {
               parent.m_indices.begin() + parent.m_size,
               this->m_indices.begin());
 
-    this->m_indices[parent.m_size] = index;
+    this->m_indices[parent.m_size] = child_index;
 
     this->m_size = static_cast<uint8_t>(parent.m_size + 1);
   }

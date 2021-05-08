@@ -45,6 +45,7 @@ namespace quadwar_app::view {
   void game::render(engine::access::world w) {
     update_bounds(w);
     m_landscape.render(m_camera, w);
+    m_units.render(m_camera, w);
   }
 
   auto game::get_scale() const -> real {
@@ -68,14 +69,14 @@ namespace quadwar_app::view {
       const auto fx = m_camera.get_frame().x() / s;
       const auto fy = m_camera.get_frame().y() / s;
 
-      const auto dx = landscape::tail_size * width / 2.f;
-      const auto dy = landscape::tail_size * height / 2.f;
+      const auto dx = m_camera.get_grid_scale() * width;
+      const auto dy = m_camera.get_grid_scale() * height;
 
-      const auto hx = min(dx, fx / 2.f);
-      const auto hy = min(dy, fy / 2.f);
+      const auto hx = min(dx / 2.f, fx / 2.f);
+      const auto hy = min(dy / 2.f, fy / 2.f);
 
-      const auto x0 = hx - dx;
-      const auto y0 = hy - dy;
+      const auto x0 = hx;
+      const auto y0 = hy;
       const auto x1 = dx - hx;
       const auto y1 = dy - hy;
 

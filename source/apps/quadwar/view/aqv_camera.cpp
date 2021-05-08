@@ -15,6 +15,10 @@
 namespace quadwar_app::view {
   using std::min, std::max;
 
+  void camera::set_grid_scale(const real scale) noexcept {
+    m_grid_scale = scale;
+  }
+
   void camera::set_frame(const vec2 size) noexcept {
     m_frame = size;
   }
@@ -35,6 +39,10 @@ namespace quadwar_app::view {
     m_position.y() = max(m_min.y(), min(v.y(), m_max.y()));
   }
 
+  auto camera::get_grid_scale() const noexcept -> real {
+    return m_grid_scale;
+  }
+
   auto camera::get_position() const noexcept -> vec2 {
     return m_position;
   }
@@ -45,5 +53,13 @@ namespace quadwar_app::view {
 
   auto camera::get_scale() const noexcept -> real {
     return m_scale;
+  }
+
+  auto camera::get_transform() const noexcept -> camera::transform {
+    const auto s = get_scale();
+    const auto f = get_frame() / 2.f;
+    const auto p = -get_position();
+
+    return { f + p * s, { s, s } };
   }
 }

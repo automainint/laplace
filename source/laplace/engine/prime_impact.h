@@ -28,6 +28,7 @@ namespace laplace::engine {
       n_actor = 18
     };
 
+    using basic_impact::set_index;
     using basic_impact::get_actor;
     using basic_impact::get_index;
     using basic_impact::get_time;

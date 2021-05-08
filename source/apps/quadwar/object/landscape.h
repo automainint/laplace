@@ -26,10 +26,16 @@ namespace quadwar_app::object {
     static constexpr size_t gate_size   = 2;
 
     landscape();
+    ~landscape() override = default;
 
     static auto gen_maze(world w, size_t width, size_t height,
-                         size_t player_count) noexcept
+                         std::span<const engine::vec2z> start_locs) noexcept
         -> std::vector<uint8_t>;
+
+    static auto gen_start_locs(sl::whole width, sl::whole height,
+                               sl::whole edge,
+                               sl::whole player_count) noexcept
+        -> std::vector<engine::vec2z>;
 
     static void create_maze(world w, size_t width, size_t height,
                             size_t player_count);

@@ -36,7 +36,7 @@ namespace laplace::engine::protocol {
         uint64_t time,     //
         uint64_t seed) {
 
-      set_order({ index });
+      set_index(index);
       set_time(time);
       set_encoded_size(size);
 

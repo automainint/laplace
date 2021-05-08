@@ -67,6 +67,8 @@ namespace laplace::engine {
      */
     virtual ~basic_impact() = default;
 
+    constexpr void set_index(size_t index);
+
     /*  Set the order index sequence. Required for the sync
      *  Impacts to be sequentially consistent.
      */
@@ -97,8 +99,7 @@ namespace laplace::engine {
 
   protected:
     constexpr void set_async(bool is_async);
-    constexpr auto order_of_child(ref_uint count) const
-        -> eventorder;
+    constexpr auto order_of_child(ref_uint count) const -> eventorder;
 
   private:
     eventorder m_order;

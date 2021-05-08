@@ -16,6 +16,10 @@
 #define laplace_engine_basic_impact_impl_h
 
 namespace laplace::engine {
+  constexpr void basic_impact::set_index(size_t index) {
+    set_order({ eventorder::root + index });
+  }
+
   constexpr void basic_impact::set_order(cref_eventorder order) {
     this->m_order = order;
   }
@@ -31,11 +35,10 @@ namespace laplace::engine {
   inline void basic_impact::perform(access::world) const { }
 
   constexpr auto basic_impact::get_index() const -> size_t {
-    return this->m_order.get_index();
+    return this->m_order.get_index() - eventorder::root;
   }
 
-  constexpr auto basic_impact::get_order() const
-      -> cref_eventorder {
+  constexpr auto basic_impact::get_order() const -> cref_eventorder {
     return this->m_order;
   }
 

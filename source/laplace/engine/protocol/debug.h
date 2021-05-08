@@ -36,7 +36,7 @@ namespace laplace::engine::protocol {
     }
 
     constexpr debug(size_t index, uint64_t time, int64_t value) {
-      set_order({ index });
+      set_index(index);
       set_time(time);
       set_encoded_size(size);
 

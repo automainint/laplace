@@ -39,28 +39,28 @@ namespace quadwar_app::view {
       const auto fw = static_cast<real>(width);
       const auto fh = static_cast<real>(height);
 
-      const auto fx = (tail_size * fw) / -2.f;
-      const auto fy = (tail_size * fh) / -2.f;
+      const auto tile_size   = cam.get_grid_scale();
+      const auto border_size = tile_size * tile_border;
 
       m_vertices.reserve(12 * width * height);
       m_vertices.clear();
 
-      for (size_t j = 0; j < height; j++) {
-        for (size_t i = 0; i < width; i++) {
+      for (sl::index j = 0; j < height; j++) {
+        for (sl::index i = 0; i < width; i++) {
 
           if (tiles[j * width + i] != object::landscape::tile_walkable) {
 
-            const auto x0 = fx + static_cast<real>(i) * tail_size;
-            const auto y0 = fy + static_cast<real>(j) * tail_size;
+            const auto x0 = static_cast<real>(i) * tile_size;
+            const auto y0 = static_cast<real>(j) * tile_size;
 
-            const auto x1 = x0 + tail_size;
-            const auto y1 = y0 + tail_size;
+            const auto x1 = x0 + tile_size;
+            const auto y1 = y0 + tile_size;
 
-            const auto x2 = x0 + tail_border;
-            const auto y2 = y0 + tail_border;
+            const auto x2 = x0 + border_size;
+            const auto y2 = y0 + border_size;
 
-            const auto x3 = x1 - tail_border;
-            const auto y3 = y1 - tail_border;
+            const auto x3 = x1 - border_size;
+            const auto y3 = y1 - border_size;
 
             m_vertices.emplace_back(
                 vertex { .position = { x0, y0 }, .color = c_border });
@@ -99,11 +99,8 @@ namespace quadwar_app::view {
     auto cont = render::context::get_default();
 
     if (cont) {
-      const auto s = cam.get_scale();
-      const auto f = cam.get_frame() / 2.f;
-      const auto p = -cam.get_position();
-
-      cont->render(m_vertices, f + p * s, vec2 { s, s });
+      const auto [p, s] = cam.get_transform();
+      cont->render(m_vertices, p, s);
     }
   }
 }

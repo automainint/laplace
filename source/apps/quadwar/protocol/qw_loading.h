@@ -13,9 +13,6 @@
 #ifndef quadwar_protocol_qw_loading_h
 #define quadwar_protocol_qw_loading_h
 
-#include "../object/game_clock.h"
-#include "../object/landscape.h"
-#include "../object/root.h"
 #include "defs.h"
 
 namespace quadwar_app::protocol {
@@ -32,10 +29,8 @@ namespace quadwar_app::protocol {
 
     ~qw_loading() final = default;
 
-    inline qw_loading(       //
-        size_t map_size,     //
-        size_t player_count, //
-        size_t unit_count) {
+    inline qw_loading(size_t map_size, size_t player_count,
+                      size_t unit_count) {
 
       set_encoded_size(size);
 
@@ -44,13 +39,10 @@ namespace quadwar_app::protocol {
       m_unit_count   = unit_count;
     }
 
-    inline qw_loading(       //
-        size_t index,        //
-        size_t map_size,     //
-        size_t player_count, //
-        size_t unit_count) {
+    inline qw_loading(size_t index, size_t map_size,
+                      size_t player_count, size_t unit_count) {
 
-      set_order({ index });
+      set_index(index);
       set_encoded_size(size);
 
       m_map_size     = map_size;
@@ -58,29 +50,13 @@ namespace quadwar_app::protocol {
       m_unit_count   = unit_count;
     }
 
-    inline void perform(world w) const final {
-      verb(" :: event  Quadwar/loading");
-
-      auto r = w.get_entity(w.get_root());
-
-      object::root::loading(r);
-
-      w.spawn(                                    //
-          std::make_shared<object::game_clock>(), //
-          engine::id_undefined);
-
-      object::landscape::create_maze(
-          w, m_map_size, m_map_size, m_player_count);
-    }
+    void perform(world w) const final;
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
-      serial::write_bytes(                       //
-          bytes,                                 //
-          id,                                    //
-          get_index64(),                         //
-          static_cast<uint64_t>(m_map_size),     //
-          static_cast<uint64_t>(m_player_count), //
-          static_cast<uint64_t>(m_unit_count));
+      serial::write_bytes(bytes, id, get_index64(),
+                          static_cast<uint64_t>(m_map_size),
+                          static_cast<uint64_t>(m_player_count),
+                          static_cast<uint64_t>(m_unit_count));
     }
 
     static constexpr auto scan(span_cbyte seq) -> bool {
@@ -100,11 +76,8 @@ namespace quadwar_app::protocol {
     }
 
     static inline auto decode(span_cbyte seq) {
-      return qw_loading            //
-          { get_index(seq),        //
-            get_map_size(seq),     //
-            get_player_count(seq), //
-            get_unit_count(seq) };
+      return qw_loading { get_index(seq), get_map_size(seq),
+                          get_player_count(seq), get_unit_count(seq) };
     }
 
   private:

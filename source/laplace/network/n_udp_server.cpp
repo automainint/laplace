@@ -10,6 +10,8 @@
  *  the MIT License for more details.
  */
 
+#include "udp_server.h"
+
 #include "../core/utils.h"
 #include "../engine/prime_impact.h"
 #include "../engine/protocol/basic_event.h"
@@ -23,7 +25,6 @@
 #include "../engine/protocol/slot_create.h"
 #include "../engine/protocol/slot_remove.h"
 #include "crypto/ecc_rabbit.h"
-#include "udp_server.h"
 #include <algorithm>
 #include <chrono>
 #include <thread>
@@ -530,9 +531,7 @@ namespace laplace::network {
       if (slot != slot_host)
         ev->set_actor(m_slots[slot].id_actor);
 
-      /*  Set the event index.
-       */
-      ev->set_order({ m_queue.events.size() });
+      ev->set_index(m_queue.events.size());
 
       if (is_verbose()) {
         const auto id    = prime_impact::get_id(seq);

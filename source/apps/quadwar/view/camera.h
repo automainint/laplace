@@ -18,17 +18,30 @@
 namespace quadwar_app::view {
   class camera {
   public:
+    static constexpr real default_grid_scale = 50.f;
+    static constexpr real default_scale      = 1.f;
+
+    void set_grid_scale(const real scale) noexcept;
     void set_frame(const vec2 size) noexcept;
     void set_bounds(const vec2 v0, const vec2 v1) noexcept;
     void set_scale(const real scale) noexcept;
     void set_position(const vec2 v) noexcept;
 
+    [[nodiscard]] auto get_grid_scale() const noexcept -> real;
     [[nodiscard]] auto get_position() const noexcept -> vec2;
     [[nodiscard]] auto get_frame() const noexcept -> vec2;
     [[nodiscard]] auto get_scale() const noexcept -> real;
 
+    struct transform {
+      vec2 position;
+      vec2 scale;
+    };
+
+    [[nodiscard]] auto get_transform() const noexcept -> transform;
+
   private:
-    real m_scale = 1.f;
+    real m_grid_scale = default_grid_scale;
+    real m_scale      = default_scale;
     vec2 m_position;
     vec2 m_frame;
     vec2 m_min;

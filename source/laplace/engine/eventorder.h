@@ -25,6 +25,9 @@ namespace laplace::engine {
      */
     static constexpr uint8_t max_depth = 16;
 
+    static constexpr size_t tick = 0;
+    static constexpr size_t root = 1;
+
     constexpr eventorder() = default;
     constexpr eventorder(size_t index);
     ~eventorder() = default;
@@ -46,7 +49,7 @@ namespace laplace::engine {
     [[nodiscard]] constexpr auto get_index() const -> size_t;
 
   private:
-    constexpr eventorder(const eventorder &parent, size_t index);
+    constexpr eventorder(const eventorder &parent, size_t child_index);
 
     std::array<size_t, max_depth> m_indices = { 0 };
     uint8_t                       m_size    = 0;

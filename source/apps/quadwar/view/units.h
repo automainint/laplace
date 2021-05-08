@@ -1,4 +1,4 @@
-/*  apps/quadwar/view/landscape.h
+/*  apps/quadwar/view/units.h
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -10,26 +10,22 @@
  *  the MIT License for more details.
  */
 
-#ifndef quadwar_view_landscape_h
-#define quadwar_view_landscape_h
+#ifndef quadwar_view_units_h
+#define quadwar_view_units_h
 
 #include "../../../laplace/graphics/flat/solid_shader.h"
 #include "camera.h"
 #include "defs.h"
 
 namespace quadwar_app::view {
-  class landscape : engine::helper {
+  class units : engine::helper {
   public:
-    static constexpr auto tile_border = .2f;
+    static constexpr auto default_color = vec4 { .8f, .1f, .1f, 1.f };
 
     void render(const camera &cam, world w);
 
   private:
     using vertex = graphics::flat::solid_shader::vertex;
-
-    size_t m_state_version = 0;
-    size_t m_width         = 0;
-    size_t m_height        = 0;
 
     std::vector<vertex> m_vertices;
   };
