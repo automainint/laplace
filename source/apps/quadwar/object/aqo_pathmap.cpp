@@ -38,7 +38,7 @@ namespace quadwar_app::object {
     *this = m_proto;
   }
 
-  auto pathmap::create(world w) -> size_t {
+  auto pathmap::create(world w) -> sl::index {
     auto r  = w.get_entity(w.get_root());
     auto id = w.spawn(make_shared<pathmap>(), id_undefined);
 
@@ -121,7 +121,7 @@ namespace quadwar_app::object {
                0) != 0;
   }
 
-  auto pathmap::do_request(size_t id, span_cbyte args) const -> vbyte {
+  auto pathmap::do_request(sl::index id, span_cbyte args) const -> vbyte {
     switch (id) {
       case sets::pathmap_get_tiles: return m_tiles;
 
@@ -179,7 +179,7 @@ namespace quadwar_app::object {
     return {};
   }
 
-  void pathmap::do_modify(size_t id, span_cbyte args) {
+  void pathmap::do_modify(sl::index id, span_cbyte args) {
     switch (id) {
       case sets::pathmap_set_tiles: {
         const auto width  = serial::rd<sl::whole>(args, args_x);

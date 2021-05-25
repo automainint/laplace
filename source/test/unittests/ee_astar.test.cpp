@@ -37,7 +37,7 @@ namespace laplace::test {
       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1  //
     };
 
-    auto neighbours = [&](const size_t node) -> vlink {
+    auto neighbours = [&](const sl::index node) -> vlink {
       if (node >= map.size())
         return {};
 
@@ -60,7 +60,7 @@ namespace laplace::test {
       return max(abs(x1 - x0), abs(y1 - y0));
     };
 
-    auto node_index = [&](const size_t x, const size_t y) -> size_t {
+    auto node_index = [&](const sl::index x, const sl::index y) -> sl::index {
       return y * width + x;
     };
 
@@ -88,7 +88,7 @@ namespace laplace::test {
       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //
     };
 
-    auto neighbours = [&](const size_t node) -> vlink {
+    auto neighbours = [&](const sl::index node) -> vlink {
       if (node >= map.size())
         return {};
 
@@ -101,7 +101,7 @@ namespace laplace::test {
                link { .node = node + width, .distance = 10 } };
     };
 
-    auto heuristic = [&](const size_t a, const size_t b) -> intval {
+    auto heuristic = [&](const sl::index a, const sl::index b) -> intval {
       const intval x0 = static_cast<intval>(a % width);
       const intval y0 = static_cast<intval>(a / width);
 
@@ -111,7 +111,7 @@ namespace laplace::test {
       return ((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)) * 10;
     };
 
-    auto node_index = [&](const size_t x, const size_t y) -> size_t {
+    auto node_index = [&](const sl::index x, const sl::index y) -> sl::index {
       return y * width + x;
     };
 
@@ -122,7 +122,7 @@ namespace laplace::test {
 
     for (auto n : path) { path_map[n] = 2; }
 
-    auto s = std::string{};
+    auto s = std::string {};
 
     s.append(1, '\n');
 

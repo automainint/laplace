@@ -18,10 +18,10 @@
 namespace laplace::engine::protocol {
   class server_seed final : public prime_impact {
   public:
-    enum encoding_offset : size_t { n_seed = 18 };
+    enum encoding_offset : sl::index { n_seed = 18 };
 
-    static constexpr uint16_t id   = ids::server_seed;
-    static constexpr size_t   size = 26;
+    static constexpr uint16_t  id   = ids::server_seed;
+    static constexpr sl::whole size = 26;
 
     ~server_seed() final = default;
 
@@ -31,12 +31,8 @@ namespace laplace::engine::protocol {
       m_seed = seed;
     }
 
-    constexpr server_seed( //
-        size_t   index,    //
-        uint64_t time,     //
-        uint64_t seed) {
-
-      set_index(index);
+    constexpr server_seed(sl::index n, uint64_t time, uint64_t seed) {
+      set_index(n);
       set_time(time);
       set_encoded_size(size);
 
@@ -48,7 +44,8 @@ namespace laplace::engine::protocol {
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
-      serial::write_bytes(bytes, id, get_index64(), get_time64(), m_seed);
+      serial::write_bytes(
+          bytes, id, get_index64(), get_time64(), m_seed);
     }
 
     static constexpr auto scan(span_cbyte seq) {
@@ -56,10 +53,8 @@ namespace laplace::engine::protocol {
     }
 
     static inline auto decode(span_cbyte seq) {
-      return server_seed    //
-          { get_index(seq), //
-            get_time(seq),  //
-            get_seed(seq) };
+      return server_seed { get_index(seq), get_time(seq),
+                           get_seed(seq) };
     }
 
   private:

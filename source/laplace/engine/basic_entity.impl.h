@@ -16,12 +16,12 @@
 #define laplace_engine_basic_entity_impl_h
 
 namespace laplace::engine {
-  inline auto basic_entity::get_by_id(size_t id) -> int64_t {
+  inline auto basic_entity::get_by_id(sl::index id) -> intval {
     return this->get(this->index_of(id));
   }
 
-  inline auto basic_entity::locked_get_by_id(size_t id) const
-      -> int64_t {
+  inline auto basic_entity::locked_get_by_id(sl::index id) const
+      -> intval {
     return this->locked_get(this->index_of(id));
   }
 }

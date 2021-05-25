@@ -24,7 +24,7 @@ namespace quadwar_app::object {
     pathmap();
     ~pathmap() override = default;
 
-    static auto create(world w) -> size_t;
+    static auto create(world w) -> sl::index;
 
     static void set_tiles(entity en, const sl::whole width,
                           const sl::whole                height,
@@ -50,8 +50,8 @@ namespace quadwar_app::object {
         const std::span<const uint8_t> tiles) -> bool;
 
   protected:
-    auto do_request(size_t id, span_cbyte args) const -> vbyte override;
-    void do_modify(size_t id, span_cbyte args) override;
+    auto do_request(sl::index id, span_cbyte args) const -> vbyte override;
+    void do_modify(sl::index id, span_cbyte args) override;
 
   private:
     enum args_offset : sl::index {

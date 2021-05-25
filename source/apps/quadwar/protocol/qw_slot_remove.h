@@ -23,12 +23,9 @@ namespace quadwar_app::protocol {
   public:
     ~qw_slot_remove() override = default;
 
-    constexpr qw_slot_remove( //
-        size_t   index,       //
-        uint64_t time,        //
-        size_t   id_actor     //
-        ) :
-        slot_remove(index, time, id_actor) { }
+    constexpr qw_slot_remove(sl::index n, uint64_t time,
+                             sl::index id_actor) :
+        slot_remove(n, time, id_actor) { }
 
     inline void perform(world w) const override {
       verb(fmt(" :: event  Quadwar/slot_remove: %zu", get_actor()));

@@ -25,10 +25,8 @@ namespace laplace::engine::protocol {
   }
   || std::is_same<perform_, _non_inheritable>::value;
 
-  template <                                      //
-      uint16_t       id_,                         //
-      perform_method perform_ = _non_inheritable, //
-      typename base_class_    = prime_impact>
+  template <uint16_t id_, perform_method perform_ = _non_inheritable,
+            typename base_class_ = prime_impact>
 
   class basic_event : public base_class_ {
   public:
@@ -41,8 +39,8 @@ namespace laplace::engine::protocol {
       this->set_encoded_size(size);
     }
 
-    constexpr basic_event(size_t index) {
-      this->set_index(index);
+    constexpr basic_event(sl::index n) {
+      this->set_index(n);
       this->set_encoded_size(size);
     }
 
@@ -63,15 +61,13 @@ namespace laplace::engine::protocol {
     }
   };
 
-  template <        //
-      uint16_t id_, //
-      typename base_class_>
+  template <uint16_t id_, typename base_class_>
 
   class basic_event<id_, _non_inheritable, base_class_> final
       : public base_class_ {
   public:
-    static constexpr uint16_t id   = id_;
-    static constexpr size_t   size = 10;
+    static constexpr uint16_t  id   = id_;
+    static constexpr sl::whole size = 10;
 
     ~basic_event() final = default;
 
@@ -79,8 +75,8 @@ namespace laplace::engine::protocol {
       this->set_encoded_size(size);
     }
 
-    constexpr basic_event(size_t index) {
-      this->set_index(index);
+    constexpr basic_event(sl::index n) {
+      this->set_index(n);
       this->set_encoded_size(size);
     }
 

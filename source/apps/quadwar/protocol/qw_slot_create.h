@@ -23,17 +23,13 @@ namespace quadwar_app::protocol {
   public:
     ~qw_slot_create() override = default;
 
-    constexpr qw_slot_create( //
-        size_t   index,       //
-        uint64_t time,        //
-        size_t   id_actor,    //
-        bool     is_local     //
-        ) :
+    constexpr qw_slot_create(sl::index index, uint64_t time,
+                             sl::index id_actor, bool is_local) :
         slot_create(index, time, id_actor, is_local) { }
 
     inline void perform(world w) const override {
       verb(fmt(" :: event  Quadwar/slot_create: %zu %s", get_actor(),
-           is_local() ? "local" : "remote"));
+               is_local() ? "local" : "remote"));
 
       w.emplace(
           std::make_shared<object::player>(is_local()), get_actor());

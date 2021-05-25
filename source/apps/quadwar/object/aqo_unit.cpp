@@ -23,11 +23,11 @@ namespace quadwar_app::object {
   using std::vector, engine::intval, engine::vec2i,
       engine::id_undefined, std::make_shared, action::unit_move;
 
-  size_t unit::n_actor  = {};
-  size_t unit::n_x      = {};
-  size_t unit::n_y      = {};
-  size_t unit::n_radius = {};
-  size_t unit::n_health = {};
+  sl::index unit::n_actor  = {};
+  sl::index unit::n_x      = {};
+  sl::index unit::n_y      = {};
+  sl::index unit::n_radius = {};
+  sl::index unit::n_health = {};
 
   unit unit::m_proto(unit::proto);
 
@@ -53,9 +53,9 @@ namespace quadwar_app::object {
   void unit::tick(access::world w) { }
 
   auto unit::spawn_start_units(world w, sl::whole unit_count)
-      -> vector<size_t> {
+      -> vector<sl::index> {
 
-    auto ids = vector<size_t> {};
+    auto ids = vector<sl::index> {};
 
     auto r    = w.get_entity(w.get_root());
     auto land = w.get_entity(root::get_landscape(r));
@@ -112,7 +112,7 @@ namespace quadwar_app::object {
     return ids;
   }
 
-  void unit::set_actor(entity en, size_t id_actor) {
+  void unit::set_actor(entity en, sl::index id_actor) {
     en.set(n_actor, static_cast<int64_t>(id_actor));
   }
 
@@ -137,7 +137,7 @@ namespace quadwar_app::object {
     en.set(n_health, health);
   }
 
-  auto unit::get_actor(entity en) -> size_t {
+  auto unit::get_actor(entity en) -> sl::index {
     return as_index(en.get(n_actor));
   }
 

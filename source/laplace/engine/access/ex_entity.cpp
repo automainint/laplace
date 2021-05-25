@@ -38,39 +38,39 @@ namespace laplace::engine::access {
     }
   }
 
-  void entity::set_tick_period(size_t tick_period) const {
+  void entity::set_tick_period(sl::index tick_period) const {
     if (m_mode > read_only) {
       m_entity->set_tick_period(tick_period);
     }
   }
 
-  auto entity::index_of(size_t id) const -> size_t {
+  auto entity::index_of(sl::index id) const -> sl::index {
     return m_mode > forbidden ? m_entity->index_of(id) : id_undefined;
   }
 
-  auto entity::get_count() const -> size_t {
+  auto entity::get_count() const -> sl::whole {
     return m_mode > forbidden ? m_entity->get_count() : 0;
   }
 
-  auto entity::id_of(size_t index) const -> size_t {
+  auto entity::id_of(sl::index index) const -> sl::index {
     return m_mode > forbidden ? m_entity->id_of(index) : id_undefined;
   }
 
-  auto entity::scale_of(size_t index) const -> size_t {
+  auto entity::scale_of(sl::index index) const -> sl::index {
     return m_mode > forbidden ? m_entity->scale_of(index) : 0;
   }
 
-  auto entity::get(size_t index, int64_t defval) const -> int64_t {
+  auto entity::get(sl::index index, intval defval) const -> intval {
     return m_mode > forbidden ? m_entity->get(index) : defval;
   }
 
-  void entity::set(size_t index, int64_t value) const {
+  void entity::set(sl::index index, intval value) const {
     if (m_mode > read_only) {
       m_entity->set(index, value);
     }
   }
 
-  void entity::apply_delta(size_t index, int64_t delta) const {
+  void entity::apply_delta(sl::index index, intval delta) const {
     if (m_mode > read_only) {
       m_entity->apply_delta(index, delta);
     }
@@ -82,11 +82,11 @@ namespace laplace::engine::access {
     }
   }
 
-  auto entity::request(size_t id, span_cbyte args) const -> vbyte {
+  auto entity::request(sl::index id, span_cbyte args) const -> vbyte {
     return m_mode > forbidden ? m_entity->request(id, args) : vbyte {};
   }
 
-  void entity::modify(size_t id, span_cbyte args) const {
+  void entity::modify(sl::index id, span_cbyte args) const {
     if (m_mode > async) {
       m_entity->modify(id, args);
     }
@@ -96,11 +96,11 @@ namespace laplace::engine::access {
     return m_mode > forbidden ? m_entity->is_dynamic() : false;
   }
 
-  auto entity::get_tick_period() const -> size_t {
+  auto entity::get_tick_period() const -> sl::index {
     return m_mode > forbidden ? m_entity->get_tick_period() : 0;
   }
 
-  auto entity::get_id() const -> size_t {
+  auto entity::get_id() const -> sl::index {
     return m_mode > forbidden ? m_entity->get_id() : id_undefined;
   }
 }

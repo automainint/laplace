@@ -26,8 +26,8 @@ namespace laplace::engine::eval::maze {
 
   void stretch(const vec2z dst_size, const span_byte dst,
                const vec2z src_size, const span_cbyte src,
-               const size_t tunnel_size,
-               const size_t gate_size) noexcept;
+               const sl::index tunnel_size,
+               const sl::index gate_size) noexcept;
 }
 
 #endif

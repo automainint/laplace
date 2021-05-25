@@ -35,8 +35,8 @@ namespace laplace::engine::access {
     }
   }
 
-  auto world::reserve(size_t id) const -> size_t {
-    size_t result = id_undefined;
+  auto world::reserve(sl::index id) const -> sl::index {
+    sl::index result = id_undefined;
 
     if (m_mode > async) {
       result = m_world.get().reserve(id);
@@ -45,14 +45,14 @@ namespace laplace::engine::access {
     return result;
   }
 
-  void world::emplace(ptr_entity ent, size_t id) const {
+  void world::emplace(ptr_entity ent, sl::index id) const {
     if (m_mode > async) {
       m_world.get().emplace(ent, id);
     }
   }
 
-  auto world::spawn(ptr_entity ent, size_t id) const -> size_t {
-    size_t result = id_undefined;
+  auto world::spawn(ptr_entity ent, sl::index id) const -> sl::index {
+    sl::index result = id_undefined;
 
     if (m_mode > async) {
       result = m_world.get().spawn(ent, id);
@@ -61,13 +61,13 @@ namespace laplace::engine::access {
     return result;
   }
 
-  void world::remove(size_t id) const {
+  void world::remove(sl::index id) const {
     if (m_mode > async) {
       m_world.get().remove(id);
     }
   }
 
-  void world::respawn(size_t id) const {
+  void world::respawn(sl::index id) const {
     if (m_mode > async) {
       m_world.get().respawn(id);
     }
@@ -85,13 +85,13 @@ namespace laplace::engine::access {
     }
   }
 
-  void world::set_root(size_t id_root) const {
+  void world::set_root(sl::index id_root) const {
     if (m_mode > async) {
       m_world.get().set_root(id_root);
     }
   }
 
-  auto world::get_root() const -> size_t {
+  auto world::get_root() const -> sl::index {
     if (m_mode > forbidden) {
       return m_world.get().get_root();
     }
@@ -99,7 +99,7 @@ namespace laplace::engine::access {
     return id_undefined;
   }
 
-  auto world::has_entity(size_t id) const -> bool {
+  auto world::has_entity(sl::index id) const -> bool {
     if (m_mode > forbidden) {
       return m_world.get().get_entity(id) ? true : false;
     }
@@ -107,7 +107,7 @@ namespace laplace::engine::access {
     return false;
   }
 
-  auto world::get_entity(size_t id) const -> access::entity {
+  auto world::get_entity(sl::index id) const -> access::entity {
     return { m_world.get().get_entity(id), m_mode };
   }
 

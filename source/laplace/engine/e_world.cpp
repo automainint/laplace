@@ -21,11 +21,11 @@ namespace laplace::engine {
     m_scheduler = make_unique<scheduler>(*this);
   }
 
-  auto world::reserve(size_t id) -> size_t {
+  auto world::reserve(sl::index id) -> sl::index {
     return spawn(make_shared<basic_entity>(), id);
   }
 
-  void world::emplace(ptr_entity ent, size_t id) {
+  void world::emplace(ptr_entity ent, sl::index id) {
     auto _ul = unique_lock(m_lock);
 
     if (ent) {
@@ -62,7 +62,7 @@ namespace laplace::engine {
     }
   }
 
-  auto world::spawn(ptr_entity ent, size_t id) -> size_t {
+  auto world::spawn(ptr_entity ent, sl::index id) -> sl::index {
     auto _ul = unique_lock(m_lock);
 
     if (ent) {
@@ -110,7 +110,7 @@ namespace laplace::engine {
     return id_undefined;
   }
 
-  void world::remove(size_t id) {
+  void world::remove(sl::index id) {
     auto _ul = unique_lock(m_lock);
 
     if (id < m_entities.size()) {
@@ -137,7 +137,7 @@ namespace laplace::engine {
     }
   }
 
-  void world::respawn(size_t id) {
+  void world::respawn(sl::index id) {
     auto _ul = unique_lock(m_lock);
 
     if (id < m_entities.size()) {
@@ -203,7 +203,7 @@ namespace laplace::engine {
 
         for (uint64_t t = 0; t < delta; t++) {
           while (!m_sync_queue.empty() || !m_queue.empty()) {
-            for (size_t i = 0; i < m_sync_queue.size(); i++) {
+            for (sl::index i = 0; i < m_sync_queue.size(); i++) {
               _ul.unlock();
 
               m_sync_queue[i]->perform({ *this, access::sync });
@@ -213,7 +213,7 @@ namespace laplace::engine {
 
             m_sync_queue.clear();
 
-            for (size_t i = 0; i < m_queue.size(); i++) {
+            for (sl::index i = 0; i < m_queue.size(); i++) {
               _ul.unlock();
 
               m_queue[i]->perform({ *this, access::async });
@@ -224,7 +224,7 @@ namespace laplace::engine {
             m_queue.clear();
           }
 
-          for (size_t i = 0; i < m_dynamic_ids.size(); i++) {
+          for (sl::index i = 0; i < m_dynamic_ids.size(); i++) {
             _ul.unlock();
 
             auto &en = m_entities[m_dynamic_ids[i]];
@@ -266,12 +266,12 @@ namespace laplace::engine {
     return 0;
   }
 
-  void world::set_root(size_t id_root) {
+  void world::set_root(sl::index id_root) {
     auto _ul = unique_lock(m_lock);
     m_root   = id_root;
   }
 
-  auto world::get_root() -> size_t {
+  auto world::get_root() -> sl::index {
     auto _sl = shared_lock(m_lock);
     return m_root;
   }
@@ -291,7 +291,7 @@ namespace laplace::engine {
     return m_rand;
   }
 
-  auto world::get_entity(size_t id) -> ptr_entity {
+  auto world::get_entity(sl::index id) -> ptr_entity {
     auto _sl = shared_lock(m_lock);
 
     if (id < m_entities.size()) {
@@ -321,14 +321,14 @@ namespace laplace::engine {
     verb(" :: DESYNC");
   }
 
-  void world::locked_add_dynamic(size_t id) {
+  void world::locked_add_dynamic(sl::index id) {
     auto it = lower_bound(
         m_dynamic_ids.begin(), m_dynamic_ids.end(), id);
 
     m_dynamic_ids.emplace(it, id);
   }
 
-  void world::locked_erase_dynamic(size_t id) {
+  void world::locked_erase_dynamic(sl::index id) {
     auto it = lower_bound(
         m_dynamic_ids.begin(), m_dynamic_ids.end(), id);
 

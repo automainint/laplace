@@ -18,8 +18,8 @@
 namespace laplace::engine::protocol {
   class server_idle final : public prime_impact {
   public:
-    static constexpr uint16_t id   = ids::server_idle;
-    static constexpr size_t   size = 18;
+    static constexpr uint16_t  id   = ids::server_idle;
+    static constexpr sl::whole size = 18;
 
     ~server_idle() final = default;
 
@@ -27,8 +27,8 @@ namespace laplace::engine::protocol {
       set_encoded_size(size);
     }
 
-    constexpr server_idle(uint64_t index, uint64_t time_msec) {
-      set_index(index);
+    constexpr server_idle(sl::index n, uint64_t time_msec) {
+      set_index(n);
       set_time(time_msec);
       set_encoded_size(size);
     }

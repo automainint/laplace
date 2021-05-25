@@ -43,6 +43,9 @@ namespace laplace::sl {
   /*  Integer value that shall not be negative.
    */
   using whole = ptrdiff_t;
+
+  using index64 = int64_t;
+  using whole64 = int64_t;
 }
 
 #endif

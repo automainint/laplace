@@ -21,7 +21,7 @@ namespace laplace::engine {
    */
   class prime_impact : public basic_impact {
   public:
-    enum encoding_offset : size_t {
+    enum encoding_offset : sl::index {
       n_id    = 0,
       n_index = 2,
       n_time  = 10,
@@ -35,7 +35,7 @@ namespace laplace::engine {
 
     /*  Max encoded impact size.
      */
-    static constexpr size_t max_size =
+    static constexpr sl::whole max_size =
         std::numeric_limits<uint16_t>::max();
 
     ~prime_impact() override = default;
@@ -52,27 +52,27 @@ namespace laplace::engine {
      */
     virtual void encode_to(std::span<uint8_t> bytes) const;
 
-    [[nodiscard]] constexpr auto get_encoded_size() const -> size_t;
+    [[nodiscard]] constexpr auto get_encoded_size() const -> sl::whole;
 
-    static constexpr void set_index(span_byte seq, size_t index);
+    static constexpr void set_index(span_byte seq, sl::index n);
 
     [[nodiscard]] static constexpr auto get_id_unsafe(span_cbyte seq)
         -> uint16_t;
     [[nodiscard]] static constexpr auto get_index_unsafe(span_cbyte seq)
-        -> size_t;
+        -> sl::index;
     [[nodiscard]] static constexpr auto get_time_unsafe(span_cbyte seq)
         -> uint64_t;
     [[nodiscard]] static constexpr auto get_actor_unsafe(span_cbyte seq)
-        -> size_t;
+        -> sl::index;
 
     [[nodiscard]] static constexpr auto get_id(span_cbyte seq)
         -> uint16_t;
     [[nodiscard]] static constexpr auto get_index(span_cbyte seq)
-        -> size_t;
+        -> sl::index;
     [[nodiscard]] static constexpr auto get_time(span_cbyte seq)
         -> uint64_t;
     [[nodiscard]] static constexpr auto get_actor(span_cbyte seq)
-        -> size_t;
+        -> sl::index;
 
     [[nodiscard]] static inline auto get_string(span_cbyte seq,
                                                 size_t     offset)
@@ -84,10 +84,10 @@ namespace laplace::engine {
         -> std::u8string_view;
 
   protected:
-    constexpr void set_encoded_size(size_t size);
+    constexpr void set_encoded_size(sl::whole size);
 
   private:
-    size_t m_encoded_size = 0;
+    sl::whole m_encoded_size = 0;
   };
 
   /*  Sequentially consistent prime impact.

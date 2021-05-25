@@ -32,28 +32,28 @@ namespace laplace::engine::access {
     [[nodiscard]] auto exist() const -> bool;
 
     void set_dynamic(bool is_dynamic) const;
-    void set_tick_period(size_t tick_period) const;
+    void set_tick_period(sl::index tick_period) const;
 
-    [[nodiscard]] auto index_of(size_t id) const -> size_t;
-    [[nodiscard]] auto get_count() const -> size_t;
+    [[nodiscard]] auto index_of(sl::index id) const -> sl::index;
+    [[nodiscard]] auto get_count() const -> sl::whole;
 
-    [[nodiscard]] auto id_of(size_t index) const -> size_t;
-    [[nodiscard]] auto scale_of(size_t index) const -> size_t;
-    [[nodiscard]] auto get(size_t index, int64_t defval = 0) const
-        -> int64_t;
+    [[nodiscard]] auto id_of(sl::index index) const -> sl::index;
+    [[nodiscard]] auto scale_of(sl::index index) const -> sl::index;
+    [[nodiscard]] auto get(sl::index index, intval defval = {}) const
+        -> intval;
 
-    void set(size_t index, int64_t value) const;
-    void apply_delta(size_t index, int64_t delta) const;
+    void set(sl::index index, intval value) const;
+    void apply_delta(sl::index index, intval delta) const;
     void adjust() const;
 
-    [[nodiscard]] auto request(size_t id, span_cbyte args = {}) const
-        -> vbyte;
+    [[nodiscard]] auto request(sl::index  id,
+                               span_cbyte args = {}) const -> vbyte;
 
-    void modify(size_t id, span_cbyte args = {}) const;
+    void modify(sl::index id, span_cbyte args = {}) const;
 
     [[nodiscard]] auto is_dynamic() const -> bool;
-    [[nodiscard]] auto get_tick_period() const -> size_t;
-    [[nodiscard]] auto get_id() const -> size_t;
+    [[nodiscard]] auto get_tick_period() const -> sl::index;
+    [[nodiscard]] auto get_id() const -> sl::index;
 
   private:
     ptr_entity m_entity;

@@ -60,7 +60,7 @@ namespace laplace::engine {
                    static_cast<int64_t>(tick_period) } });
   }
 
-  void basic_entity::setup_sets(basic_entity::cref_vsets_row sets) {
+  void basic_entity::setup_sets(const basic_entity::vsets_row &sets) {
 
     m_sets.insert(m_sets.end(), sets.begin(), sets.end());
 
@@ -70,7 +70,7 @@ namespace laplace::engine {
 
     sort(m_sets.begin(), m_sets.end(), op);
 
-    for (size_t i = 1; i < m_sets.size();) {
+    for (sl::index i = 1; i < m_sets.size();) {
       if (m_sets[i - 1].id == m_sets[i].id) {
         m_sets.erase(m_sets.begin() + static_cast<ptrdiff_t>(i));
       } else {
@@ -79,10 +79,10 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::init(size_t index, int64_t value) {
-    if (index < m_sets.size()) {
-      m_sets[index].value = value;
-      m_sets[index].delta = 0;
+  void basic_entity::init(sl::index n, intval value) {
+    if (n < m_sets.size()) {
+      m_sets[n].value = value;
+      m_sets[n].delta = 0;
     }
   }
 
@@ -98,9 +98,8 @@ namespace laplace::engine {
 
   void basic_entity::set_tick_period(uint64_t tick_period) {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
-      m_sets[n_tick_period].delta +=          //
-          static_cast<int64_t>(tick_period) - //
-          m_sets[n_tick_period].value;
+      m_sets[n_tick_period].delta += static_cast<int64_t>(tick_period) -
+                                     m_sets[n_tick_period].value;
 
       m_is_changed = true;
     } else {
@@ -130,7 +129,7 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::set_id(size_t id) {
+  void basic_entity::set_id(sl::index id) {
     m_id = id;
   }
 
@@ -142,10 +141,10 @@ namespace laplace::engine {
     m_world.reset();
   }
 
-  auto basic_entity::index_of(size_t id) const -> size_t {
-    size_t index = m_sets.size();
+  auto basic_entity::index_of(sl::index id) const -> sl::index {
+    sl::index index = m_sets.size();
 
-    auto op = [](const sets_row &row, size_t id) {
+    auto op = [](const sets_row &row, sl::index id) {
       return row.id < id;
     };
 
@@ -158,19 +157,19 @@ namespace laplace::engine {
     return index;
   }
 
-  auto basic_entity::get_count() const -> size_t {
+  auto basic_entity::get_count() const -> sl::whole {
     return m_sets.size();
   }
 
-  auto basic_entity::id_of(size_t index) const -> size_t {
+  auto basic_entity::id_of(sl::index index) const -> sl::index {
     return index < m_sets.size() ? m_sets[index].id : id_undefined;
   }
 
-  auto basic_entity::scale_of(size_t index) const -> size_t {
+  auto basic_entity::scale_of(sl::index index) const -> sl::index {
     return index < m_sets.size() ? m_sets[index].scale : 0;
   }
 
-  auto basic_entity::get(size_t index) -> int64_t {
+  auto basic_entity::get(sl::index index) -> intval {
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       return locked_get(index);
     }
@@ -180,7 +179,7 @@ namespace laplace::engine {
     return 0;
   }
 
-  void basic_entity::set(size_t index, int64_t value) {
+  void basic_entity::set(sl::index index, intval value) {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       if (index < m_sets.size()) {
         m_sets[index].delta += value - m_sets[index].value;
@@ -192,7 +191,7 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::apply_delta(size_t index, int64_t delta) {
+  void basic_entity::apply_delta(sl::index index, intval delta) {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       if (index < m_sets.size()) {
         m_sets[index].delta += delta;
@@ -232,7 +231,7 @@ namespace laplace::engine {
   }
 
   auto basic_entity::request( //
-      size_t     id,          //
+      sl::index  id,          //
       span_cbyte args) -> vbyte {
 
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
@@ -246,7 +245,7 @@ namespace laplace::engine {
   }
 
   void basic_entity::modify( //
-      size_t     id,         //
+      sl::index  id,         //
       span_cbyte args) {
 
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
@@ -318,11 +317,11 @@ namespace laplace::engine {
     return false;
   }
 
-  auto basic_entity::get_id() const -> size_t {
+  auto basic_entity::get_id() const -> sl::index {
     return m_id;
   }
 
-  auto basic_entity::locked_get(size_t index) const -> int64_t {
+  auto basic_entity::locked_get(sl::index index) const -> intval {
     return index < m_sets.size() ? m_sets[index].value : 0;
   }
 
@@ -336,12 +335,12 @@ namespace laplace::engine {
     }
   }
 
-  auto basic_entity::do_request(size_t id, span_cbyte args) const
+  auto basic_entity::do_request(sl::index id, span_cbyte args) const
       -> vbyte {
     return {};
   }
 
-  void basic_entity::do_modify(size_t id, span_cbyte args) { }
+  void basic_entity::do_modify(sl::index id, span_cbyte args) { }
 
   void basic_entity::assign(cref_entity en) noexcept {
     m_is_changed = en.m_is_changed;

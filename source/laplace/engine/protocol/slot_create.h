@@ -18,10 +18,10 @@
 namespace laplace::engine::protocol {
   class slot_create : public sync_prime_impact {
   public:
-    enum encoding_offset : size_t { n_local_flag = 26 };
+    enum encoding_offset : sl::index { n_local_flag = 26 };
 
-    static constexpr uint16_t id   = ids::slot_create;
-    static constexpr size_t   size = 27;
+    static constexpr uint16_t  id   = ids::slot_create;
+    static constexpr sl::whole size = 27;
 
     ~slot_create() override = default;
 
@@ -35,16 +35,16 @@ namespace laplace::engine::protocol {
       m_is_local = is_local;
     }
 
-    constexpr slot_create(size_t id_host_actor) {
+    constexpr slot_create(sl::index id_host_actor) {
       set_actor(id_host_actor);
       set_encoded_size(size);
 
       m_is_local = true;
     }
 
-    constexpr slot_create(size_t index, uint64_t time,
-                          size_t id_actor, bool is_local) {
-      set_index(index);
+    constexpr slot_create(sl::index n, uint64_t time,
+                          sl::index id_actor, bool is_local) {
+      set_index(n);
       set_time(time);
       set_actor(id_actor);
       set_encoded_size(size);
@@ -86,7 +86,7 @@ namespace laplace::engine::protocol {
      *  actor is equal to the impact actor.
      */
     static constexpr void alter(std::span<uint8_t> seq,
-                                size_t             id_slot_actor) {
+                                sl::index          id_slot_actor) {
       serial::wr<uint8_t>(
           seq, n_local_flag, (get_actor(seq) == id_slot_actor));
     }

@@ -34,11 +34,11 @@ namespace laplace::engine {
     world();
     ~world() = default;
 
-    auto reserve(size_t id) -> size_t;
-    void emplace(ptr_entity ent, size_t id);
-    auto spawn(ptr_entity ent, size_t id) -> size_t;
-    void remove(size_t id);
-    void respawn(size_t id);
+    auto reserve(sl::index id) -> sl::index;
+    void emplace(ptr_entity ent, sl::index id);
+    auto spawn(ptr_entity ent, sl::index id) -> sl::index;
+    void remove(sl::index id);
+    void respawn(sl::index id);
     void clear();
 
     void desync();
@@ -64,14 +64,14 @@ namespace laplace::engine {
 
     [[nodiscard]] auto get_thread_count() -> sl::whole;
 
-    void set_root(size_t id_root);
-    auto get_root() -> size_t;
+    void set_root(sl::index id_root);
+    auto get_root() -> sl::index;
 
     void allow_relaxed_spawn(bool is_allowed);
     auto is_relaxed_spawn_allowed() -> bool;
 
     auto get_random() -> ref_rand;
-    auto get_entity(size_t id) -> ptr_entity;
+    auto get_entity(sl::index id) -> ptr_entity;
 
     auto is_desync() -> bool;
 
@@ -88,23 +88,23 @@ namespace laplace::engine {
     [[nodiscard]] auto check_scheduler() -> bool;
 
     void locked_desync();
-    void locked_add_dynamic(size_t id);
-    void locked_erase_dynamic(size_t id);
+    void locked_add_dynamic(sl::index id);
+    void locked_erase_dynamic(sl::index id);
 
     std::shared_mutex          m_lock;
     std::unique_ptr<scheduler> m_scheduler;
 
-    bool   m_allow_relaxed_spawn = default_allow_relaxed_spawn;
-    bool   m_desync              = false;
-    size_t m_root                = id_undefined;
-    size_t m_next_id             = 0;
-    size_t m_index               = 0;
+    bool      m_allow_relaxed_spawn = default_allow_relaxed_spawn;
+    bool      m_desync              = false;
+    sl::index m_root                = id_undefined;
+    sl::index m_next_id             = 0;
+    sl::index m_index               = 0;
 
-    eval::random m_rand;
-    vuint        m_dynamic_ids;
-    vptr_entity  m_entities;
-    vptr_impact  m_queue;
-    vptr_impact  m_sync_queue;
+    eval::random          m_rand;
+    sl::vector<sl::index> m_dynamic_ids;
+    vptr_entity           m_entities;
+    vptr_impact           m_queue;
+    vptr_impact           m_sync_queue;
   };
 }
 

@@ -16,15 +16,15 @@
 
 namespace quadwar_app::object {
   using std::lower_bound, std::unique_lock, std::shared_lock,
-      engine::id_undefined;
+      std::span, engine::id_undefined;
 
-  size_t root::n_version     = {};
-  size_t root::n_is_loading  = {};
-  size_t root::n_is_launched = {};
-  size_t root::n_slot_count  = {};
-  size_t root::n_unit_count  = {};
-  size_t root::n_landscape   = {};
-  size_t root::n_pathmap     = {};
+  sl::index root::n_version     = {};
+  sl::index root::n_is_loading  = {};
+  sl::index root::n_is_launched = {};
+  sl::index root::n_slot_count  = {};
+  sl::index root::n_unit_count  = {};
+  sl::index root::n_landscape   = {};
+  sl::index root::n_pathmap     = {};
 
   root root::m_proto(root::proto);
 
@@ -50,7 +50,7 @@ namespace quadwar_app::object {
     *this = m_proto;
   }
 
-  void root::slot_create(entity en, size_t id_actor) {
+  void root::slot_create(entity en, sl::index id_actor) {
 
     if (id_actor == id_undefined) {
       error_("Invalid actor id.", __FUNCTION__);
@@ -60,7 +60,7 @@ namespace quadwar_app::object {
     en.modify(sets::root_slot_create, serial::pack_to_array(id_actor));
   }
 
-  void root::slot_remove(entity en, size_t id_actor) {
+  void root::slot_remove(entity en, sl::index id_actor) {
 
     if (id_actor == id_undefined) {
       error_("Invalid actor id.", __FUNCTION__);
@@ -70,7 +70,7 @@ namespace quadwar_app::object {
     en.modify(sets::root_slot_remove, serial::pack_to_array(id_actor));
   }
 
-  void root::unit_create(entity en, size_t id_unit) {
+  void root::unit_create(entity en, sl::index id_unit) {
 
     if (id_unit == id_undefined) {
       error_("Invalid unit id.", __FUNCTION__);
@@ -80,7 +80,7 @@ namespace quadwar_app::object {
     en.modify(sets::root_unit_create, serial::pack_to_array(id_unit));
   }
 
-  void root::unit_remove(entity en, size_t id_unit) {
+  void root::unit_remove(entity en, sl::index id_unit) {
 
     if (id_unit == id_undefined) {
       error_("Invalid unit id.", __FUNCTION__);
@@ -105,16 +105,16 @@ namespace quadwar_app::object {
     en.adjust();
   }
 
-  void root::set_landscape(entity en, size_t id_landscape) {
+  void root::set_landscape(entity en, sl::index id_landscape) {
     en.set(n_landscape, static_cast<int64_t>(id_landscape));
   }
 
-  void root::set_pathmap(entity en, size_t id_pathmap) {
+  void root::set_pathmap(entity en, sl::index id_pathmap) {
     en.set(n_pathmap, static_cast<int64_t>(id_pathmap));
   }
 
-  auto root::get_version(entity en) -> size_t {
-    return static_cast<size_t>(en.get(n_version));
+  auto root::get_version(entity en) -> sl::index {
+    return static_cast<sl::index>(en.get(n_version));
   }
 
   auto root::is_loading(entity en) -> bool {
@@ -125,53 +125,55 @@ namespace quadwar_app::object {
     return en.get(n_is_launched) > 0;
   }
 
-  auto root::get_slot_count(entity en) -> size_t {
-    return static_cast<size_t>(en.get(n_slot_count));
+  auto root::get_slot_count(entity en) -> sl::whole {
+    return static_cast<sl::index>(en.get(n_slot_count));
   }
 
-  auto root::get_slot(entity en, size_t index) -> size_t {
+  auto root::get_slot(entity en, sl::index index) -> sl::index {
 
     const auto result = en.request(
         sets::root_slot_get, serial::pack_to_array(index));
 
-    return serial::rd<size_t>(result, 0);
+    return serial::rd<sl::index>(result, 0);
   }
 
-  auto root::get_unit_count(entity en) -> size_t {
-    return static_cast<size_t>(en.get(n_unit_count));
+  auto root::get_unit_count(entity en) -> sl::whole {
+    return static_cast<sl::index>(en.get(n_unit_count));
   }
 
-  auto root::get_unit(entity en, size_t index) -> size_t {
+  auto root::get_unit(entity en, sl::index index) -> sl::index {
     const auto result = en.request(
         sets::root_unit_get, serial::pack_to_array(index));
 
-    return serial::rd<size_t>(result, 0);
+    return serial::rd<sl::index>(result, 0);
   }
 
-  auto root::get_all_units(entity en) -> vuint {
+  auto root::get_all_units(entity en) -> sl::vector<sl::index> {
     const auto result = en.request(sets::root_unit_get_all);
-    auto       units  = vuint(result.size() / sizeof(size_t));
+
+    auto units = sl::vector<sl::index>(result.size() /
+                                       sizeof(sl::index));
 
     for (auto i = sl::index {}; i < units.size(); i++) {
-      units[i] = serial::rd<size_t>(result, i * sizeof(size_t));
+      units[i] = serial::rd<sl::index>(result, i * sizeof(sl::index));
     }
 
     return units;
   }
 
-  auto root::get_landscape(entity en) -> size_t {
-    return static_cast<size_t>(en.get(n_landscape, -1));
+  auto root::get_landscape(entity en) -> sl::index {
+    return static_cast<sl::index>(en.get(n_landscape, -1));
   }
 
-  auto root::get_pathmap(entity en) -> size_t {
-    return static_cast<size_t>(en.get(n_pathmap, -1));
+  auto root::get_pathmap(entity en) -> sl::index {
+    return static_cast<sl::index>(en.get(n_pathmap, -1));
   }
 
-  auto root::do_request(size_t id, span_cbyte args) const -> vbyte {
+  auto root::do_request(sl::index id, span_cbyte args) const -> vbyte {
 
     switch (id) {
       case sets::root_slot_get: {
-        const auto index = serial::rd<size_t>(args, 0);
+        const auto index = serial::rd<sl::index>(args, 0);
 
         if (index < m_slots.size()) {
           return serial::pack_to_bytes(m_slots[index]);
@@ -179,7 +181,7 @@ namespace quadwar_app::object {
       } break;
 
       case sets::root_unit_get: {
-        const auto index = serial::rd<size_t>(args, 0);
+        const auto index = serial::rd<sl::index>(args, 0);
 
         if (index < m_units.size()) {
           return serial::pack_to_bytes(m_units[index]);
@@ -187,37 +189,37 @@ namespace quadwar_app::object {
       } break;
 
       case sets::root_unit_get_all: {
-        return serial::pack_to_bytes(span_cuint(m_units));
+        return serial::pack_to_bytes(span<const sl::index>(m_units));
       } break;
     }
 
     return {};
   }
 
-  void root::do_modify(size_t id, span_cbyte args) {
+  void root::do_modify(sl::index id, span_cbyte args) {
 
     switch (id) {
       case sets::root_slot_create:
-        do_slot_create(serial::rd<size_t>(args, 0));
+        do_slot_create(serial::rd<sl::index>(args, 0));
         break;
 
       case sets::root_slot_remove:
-        do_slot_remove(serial::rd<size_t>(args, 0));
+        do_slot_remove(serial::rd<sl::index>(args, 0));
         break;
 
       case sets::root_unit_create:
-        do_unit_create(serial::rd<size_t>(args, 0));
+        do_unit_create(serial::rd<sl::index>(args, 0));
         break;
 
       case sets::root_unit_remove:
-        do_unit_remove(serial::rd<size_t>(args, 0));
+        do_unit_remove(serial::rd<sl::index>(args, 0));
         break;
 
       case sets::root_launch: do_launch(); break;
     }
   }
 
-  void root::do_slot_create(const size_t id_actor) {
+  void root::do_slot_create(const sl::index id_actor) {
     const auto it = lower_bound(
         m_slots.begin(), m_slots.end(), id_actor);
 
@@ -227,7 +229,7 @@ namespace quadwar_app::object {
     init(n_slot_count, static_cast<int64_t>(m_slots.size()));
   }
 
-  void root::do_slot_remove(const size_t id_actor) {
+  void root::do_slot_remove(const sl::index id_actor) {
     const auto it = lower_bound(
         m_slots.begin(), m_slots.end(), id_actor);
 
@@ -238,14 +240,14 @@ namespace quadwar_app::object {
     init(n_slot_count, static_cast<int64_t>(m_slots.size()));
   }
 
-  void root::do_unit_create(const size_t id_unit) {
+  void root::do_unit_create(const sl::index id_unit) {
     const auto it = lower_bound(
         m_units.begin(), m_units.end(), id_unit);
     m_units.emplace(it, id_unit);
     init(n_unit_count, static_cast<int64_t>(m_units.size()));
   }
 
-  void root::do_unit_remove(const size_t id_unit) {
+  void root::do_unit_remove(const sl::index id_unit) {
     const auto it = lower_bound(
         m_units.begin(), m_units.end(), id_unit);
     if (it != m_units.end() && *it == id_unit)

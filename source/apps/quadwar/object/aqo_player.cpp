@@ -39,7 +39,7 @@ namespace quadwar_app::object {
     return result;
   }
 
-  auto player::do_request(size_t id, span_cbyte args) const -> vbyte {
+  auto player::do_request(sl::index id, span_cbyte args) const -> vbyte {
     if (id == sets::player_name && args.empty()) {
       return serial::pack_to_bytes(u8string_view { m_name });
     }
@@ -47,7 +47,7 @@ namespace quadwar_app::object {
     return {};
   }
 
-  void player::do_modify(size_t id, span_cbyte args) {
+  void player::do_modify(sl::index id, span_cbyte args) {
     if (id == sets::player_name) {
       m_name.resize(args.size(), ' ');
       memcpy(m_name.data(), args.data(), args.size());

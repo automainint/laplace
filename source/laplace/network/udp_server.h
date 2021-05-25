@@ -56,12 +56,12 @@ namespace laplace::network {
       std::string address = localhost;
       uint16_t    port    = any_port;
 
-      size_t   id_actor     = engine::id_undefined;
-      bool     is_connected = true;
-      bool     is_encrypted = false;
-      bool     request_flag = true;
-      uint64_t outdate      = 0;
-      uint64_t wait         = 0;
+      sl::index id_actor     = engine::id_undefined;
+      bool      is_connected = true;
+      bool      is_encrypted = false;
+      bool      request_flag = true;
+      uint64_t  outdate      = 0;
+      uint64_t  wait         = 0;
 
       std::vector<vbyte> in;
       std::vector<vbyte> out;

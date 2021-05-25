@@ -18,10 +18,10 @@
 namespace laplace::engine::protocol {
   class debug final : public sync_prime_impact {
   public:
-    enum encoding_offset { n_value = 18 };
+    enum encoding_offset : sl::index { n_value = 18 };
 
-    static constexpr uint16_t id   = ids::debug;
-    static constexpr size_t   size = 26;
+    static constexpr uint16_t  id   = ids::debug;
+    static constexpr sl::whole size = 26;
 
     ~debug() final = default;
 
@@ -35,8 +35,8 @@ namespace laplace::engine::protocol {
       m_value = value;
     }
 
-    constexpr debug(size_t index, uint64_t time, int64_t value) {
-      set_index(index);
+    constexpr debug(sl::index n, uint64_t time, int64_t value) {
+      set_index(n);
       set_time(time);
       set_encoded_size(size);
 

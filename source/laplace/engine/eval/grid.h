@@ -46,24 +46,24 @@ namespace laplace::engine::eval::grid {
   auto trace_line(const vec2z size, const vec2z a, const vec2z b,
                   const fn_point point) -> bool;
 
-  auto neighbors4(const size_t width, const intval scale,
+  auto neighbors4(const sl::index width, const intval scale,
                   const span_cbyte map, const fn_available available,
-                  const size_t p) -> astar::vlink;
+                  const sl::index p) -> astar::vlink;
 
-  auto neighbors8(const size_t width, const intval scale,
+  auto neighbors8(const sl::index width, const intval scale,
                   const span_cbyte map, const fn_available available,
-                  const size_t p) -> astar::vlink;
+                  const sl::index p) -> astar::vlink;
 
-  auto manhattan(const size_t width, const intval scale,
-                 const size_t a, const size_t b) -> intval;
+  auto manhattan(const sl::index width, const intval scale,
+                 const sl::index a, const sl::index b) -> intval;
 
-  auto diagonal(const size_t width, const intval scale,
-                const size_t a, const size_t b) -> intval;
+  auto diagonal(const sl::index width, const intval scale,
+                const sl::index a, const sl::index b) -> intval;
 
-  auto euclidean(const size_t width, const intval scale,
-                 const size_t a, const size_t b) -> intval;
+  auto euclidean(const sl::index width, const intval scale,
+                 const sl::index a, const sl::index b) -> intval;
 
-  auto path_exists(const size_t width, const span_cbyte map,
+  auto path_exists(const sl::index width, const span_cbyte map,
                    const fn_available available, const vec2z a,
                    const vec2z b) -> bool;
 
