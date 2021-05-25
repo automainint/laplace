@@ -3,6 +3,7 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG release-1.10.0
 )
 
 set(BUILD_GMOCK OFF)
@@ -10,6 +11,7 @@ set(BUILD_GMOCK OFF)
 FetchContent_Declare(
   benchmark
   GIT_REPOSITORY https://github.com/google/benchmark.git
+  GIT_TAG v1.5.3
 )
 
 set(BENCHMARK_ENABLE_TESTING OFF)
@@ -27,9 +29,7 @@ set(WOLFSSL_CRYPT_TESTS no)
 
 FetchContent_Declare(
   bzip2
-  #GIT_REPOSITORY https://gitlab.com/federicomenaquintero/bzip2.git
-  GIT_REPOSITORY https://gitlab.com/dkargin/bzip2.git
-  GIT_TAG skip_tests_if_no_app
+  GIT_REPOSITORY https://gitlab.com/federicomenaquintero/bzip2.git
 )
 
 set(ENABLE_LIB_ONLY ON)
@@ -39,6 +39,7 @@ set(ENABLE_STATIC_LIB ON)
 FetchContent_Declare(
   freetype
   GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
+  GIT_TAG VER-2-10-4
 )
 
 set(CMAKE_DISABLE_FIND_PACKAGE_ZLIB ON)

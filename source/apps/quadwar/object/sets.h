@@ -65,6 +65,7 @@ namespace quadwar_app::object::sets {
     pathmap_add,
     pathmap_subtract,
     pathmap_check,
+    pathmap_place,
 
     _count
   };
