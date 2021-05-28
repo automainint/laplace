@@ -52,27 +52,71 @@ namespace laplace::engine::access {
     return m_mode > forbidden ? m_entity->get_count() : 0;
   }
 
-  auto entity::id_of(sl::index index) const -> sl::index {
-    return m_mode > forbidden ? m_entity->id_of(index) : id_undefined;
+  auto entity::id_of(sl::index n) const -> sl::index {
+    return m_mode > forbidden ? m_entity->id_of(n) : id_undefined;
   }
 
-  auto entity::scale_of(sl::index index) const -> sl::index {
-    return m_mode > forbidden ? m_entity->scale_of(index) : 0;
+  auto entity::scale_of(sl::index n) const -> sl::index {
+    return m_mode > forbidden ? m_entity->scale_of(n) : 0;
   }
 
-  auto entity::get(sl::index index, intval defval) const -> intval {
-    return m_mode > forbidden ? m_entity->get(index) : defval;
+  auto entity::get(sl::index n, intval defval) const -> intval {
+    return m_mode > forbidden ? m_entity->get(n) : defval;
   }
 
-  void entity::set(sl::index index, intval value) const {
+  void entity::set(sl::index n, intval value) const {
     if (m_mode > read_only) {
-      m_entity->set(index, value);
+      m_entity->set(n, value);
     }
   }
 
-  void entity::apply_delta(sl::index index, intval delta) const {
+  void entity::apply_delta(sl::index n, intval delta) const {
     if (m_mode > read_only) {
-      m_entity->apply_delta(index, delta);
+      m_entity->apply_delta(n, delta);
+    }
+  }
+
+  auto entity::bytes_get(sl::index n, int8_t defval) const -> int8_t {
+    return m_mode > forbidden ? m_entity->bytes_get(n) : defval;
+  }
+
+  void entity::bytes_set(sl::index n, int8_t value) const {
+    if (m_mode > read_only) {
+      m_entity->bytes_set(n, value);
+    }
+  }
+
+  void entity::bytes_apply_delta(sl::index n, int8_t delta) const {
+    if (m_mode > read_only) {
+      m_entity->bytes_apply_delta(n, delta);
+    }
+  }
+
+  void entity::bytes_resize(sl::whole size) const {
+    if (m_mode > async) {
+      m_entity->bytes_resize(size);
+    }
+  }
+
+  auto entity::vec_get(sl::index n, intval defval) const -> intval {
+    return m_mode > forbidden ? m_entity->vec_get(n) : defval;
+  }
+
+  void entity::vec_set(sl::index n, intval value) const {
+    if (m_mode > read_only) {
+      m_entity->vec_set(n, value);
+    }
+  }
+
+  void entity::vec_apply_delta(sl::index n, intval delta) const {
+    if (m_mode > read_only) {
+      m_entity->vec_apply_delta(n, delta);
+    }
+  }
+
+  void entity::vec_resize(sl::whole size) const {
+    if (m_mode > async) {
+      m_entity->vec_resize(size);
     }
   }
 
@@ -96,7 +140,7 @@ namespace laplace::engine::access {
     return m_mode > forbidden ? m_entity->is_dynamic() : false;
   }
 
-  auto entity::get_tick_period() const -> sl::index {
+  auto entity::get_tick_period() const -> uint64_t {
     return m_mode > forbidden ? m_entity->get_tick_period() : 0;
   }
 

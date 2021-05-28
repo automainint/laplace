@@ -37,13 +37,28 @@ namespace laplace::engine::access {
     [[nodiscard]] auto index_of(sl::index id) const -> sl::index;
     [[nodiscard]] auto get_count() const -> sl::whole;
 
-    [[nodiscard]] auto id_of(sl::index index) const -> sl::index;
-    [[nodiscard]] auto scale_of(sl::index index) const -> sl::index;
-    [[nodiscard]] auto get(sl::index index, intval defval = {}) const
+    [[nodiscard]] auto id_of(sl::index n) const -> sl::index;
+    [[nodiscard]] auto scale_of(sl::index n) const -> sl::index;
+    [[nodiscard]] auto get(sl::index n, intval defval = {}) const
         -> intval;
 
-    void set(sl::index index, intval value) const;
-    void apply_delta(sl::index index, intval delta) const;
+    void set(sl::index n, intval value) const;
+    void apply_delta(sl::index n, intval delta) const;
+
+    [[nodiscard]] auto bytes_get(sl::index n, int8_t defval = {}) const
+        -> int8_t;
+
+    void bytes_set(sl::index n, int8_t value) const;
+    void bytes_apply_delta(sl::index n, int8_t delta) const;
+    void bytes_resize(sl::whole size) const;
+
+    [[nodiscard]] auto vec_get(sl::index n, intval defval = {}) const
+        -> intval;
+
+    void vec_set(sl::index n, intval value) const;
+    void vec_apply_delta(sl::index n, intval delta) const;
+    void vec_resize(sl::whole size) const;
+
     void adjust() const;
 
     [[nodiscard]] auto request(sl::index  id,
@@ -52,7 +67,7 @@ namespace laplace::engine::access {
     void modify(sl::index id, span_cbyte args = {}) const;
 
     [[nodiscard]] auto is_dynamic() const -> bool;
-    [[nodiscard]] auto get_tick_period() const -> sl::index;
+    [[nodiscard]] auto get_tick_period() const -> uint64_t;
     [[nodiscard]] auto get_id() const -> sl::index;
 
   private:

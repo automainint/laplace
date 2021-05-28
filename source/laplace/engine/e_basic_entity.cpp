@@ -57,7 +57,7 @@ namespace laplace::engine {
 
     setup_sets({ { sets::is_dynamic, 1, 1 },
                  { sets::tick_period, sets::scale_time,
-                   static_cast<int64_t>(tick_period) } });
+                   static_cast<intval>(tick_period) } });
   }
 
   void basic_entity::setup_sets(const basic_entity::vsets_row &sets) {
@@ -80,9 +80,23 @@ namespace laplace::engine {
   }
 
   void basic_entity::init(sl::index n, intval value) {
-    if (n < m_sets.size()) {
+    if (n >= 0 && n < m_sets.size()) {
       m_sets[n].value = value;
       m_sets[n].delta = 0;
+    }
+  }
+
+  void basic_entity::bytes_init(sl::index n, int8_t value) {
+    if (n >= 0 && n < m_bytes.size()) {
+      m_bytes[n].value = value;
+      m_bytes[n].delta = 0;
+    }
+  }
+
+  void basic_entity::vec_init(sl::index n, intval value) {
+    if (n >= 0 && n < m_vec.size()) {
+      m_vec[n].value = value;
+      m_vec[n].delta = 0;
     }
   }
 
@@ -142,7 +156,7 @@ namespace laplace::engine {
   }
 
   auto basic_entity::index_of(sl::index id) const -> sl::index {
-    sl::index index = m_sets.size();
+    sl::index n = m_sets.size();
 
     auto op = [](const sets_row &row, sl::index id) {
       return row.id < id;
@@ -151,27 +165,27 @@ namespace laplace::engine {
     auto it = lower_bound(m_sets.begin(), m_sets.end(), id, op);
 
     if (it != m_sets.end() && it->id == id) {
-      index = as_index(it - m_sets.begin());
+      n = as_index(it - m_sets.begin());
     }
 
-    return index;
+    return n;
   }
 
   auto basic_entity::get_count() const -> sl::whole {
     return m_sets.size();
   }
 
-  auto basic_entity::id_of(sl::index index) const -> sl::index {
-    return index < m_sets.size() ? m_sets[index].id : id_undefined;
+  auto basic_entity::id_of(sl::index n) const -> sl::index {
+    return n >= 0 && n < m_sets.size() ? m_sets[n].id : id_undefined;
   }
 
-  auto basic_entity::scale_of(sl::index index) const -> sl::index {
-    return index < m_sets.size() ? m_sets[index].scale : 0;
+  auto basic_entity::scale_of(sl::index n) const -> sl::index {
+    return n >= 0 && n < m_sets.size() ? m_sets[n].scale : 0;
   }
 
-  auto basic_entity::get(sl::index index) -> intval {
+  auto basic_entity::get(sl::index n) -> intval {
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
-      return locked_get(index);
+      return locked_get(n);
     }
 
     error_("Lock timeout.", __FUNCTION__);
@@ -179,10 +193,10 @@ namespace laplace::engine {
     return 0;
   }
 
-  void basic_entity::set(sl::index index, intval value) {
+  void basic_entity::set(sl::index n, intval value) {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
-      if (index < m_sets.size()) {
-        m_sets[index].delta += value - m_sets[index].value;
+      if (n < m_sets.size()) {
+        m_sets[n].delta += value - m_sets[n].value;
         m_is_changed = true;
       }
     } else {
@@ -191,12 +205,152 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::apply_delta(sl::index index, intval delta) {
+  void basic_entity::apply_delta(sl::index n, intval delta) {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
-      if (index < m_sets.size()) {
-        m_sets[index].delta += delta;
+      if (n < m_sets.size()) {
+        m_sets[n].delta += delta;
         m_is_changed = true;
       }
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
+  auto basic_entity::bytes_get_size() -> sl::whole {
+    if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
+      return locked_bytes_get_size();
+    }
+
+    error_("Lock timeout.", __FUNCTION__);
+    desync();
+    return {};
+  }
+
+  auto basic_entity::bytes_get(sl::index n) -> int8_t {
+    if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
+      return locked_bytes_get(n);
+    }
+
+    error_("Lock timeout.", __FUNCTION__);
+    desync();
+    return {};
+  }
+
+  void basic_entity::bytes_set(sl::index n, int8_t value) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+      if (n < 0 || n >= m_bytes.size()) {
+        error_("Invalid index.", __FUNCTION__);
+        desync();
+        return;
+      }
+
+      m_bytes[n].delta += value - m_bytes[n].value;
+      m_is_bytes_changed = true;
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
+  void basic_entity::bytes_apply_delta(sl::index n, int8_t delta) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+      if (n < 0 || n >= m_bytes.size()) {
+        error_("Invalid index.", __FUNCTION__);
+        desync();
+        return;
+      }
+
+      m_bytes[n].delta += delta;
+      m_is_bytes_changed = true;
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
+  void basic_entity::bytes_resize(sl::whole size) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+      if (size < 0) {
+        error_("Invalid size.", __FUNCTION__);
+        desync();
+        return;
+      }
+
+      m_bytes.resize(size);
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
+  auto basic_entity::vec_get_size() -> sl::whole {
+    if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
+      return locked_vec_get_size();
+    }
+
+    error_("Lock timeout.", __FUNCTION__);
+    desync();
+    return {};
+  }
+
+  auto basic_entity::vec_get(sl::index n) -> intval {
+    if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
+      return locked_vec_get(n);
+    }
+
+    error_("Lock timeout.", __FUNCTION__);
+    desync();
+    return {};
+  }
+
+  void basic_entity::vec_set(sl::index n, intval value) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+      if (n < 0 || n >= m_vec.size()) {
+        error_("Invalid index.", __FUNCTION__);
+        desync();
+        return;
+      }
+
+      m_vec[n].delta += value - m_vec[n].value;
+      m_is_vec_changed = true;
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
+  void basic_entity::vec_apply_delta(sl::index n, intval delta) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+      if (n < 0 || n >= m_vec.size()) {
+        error_("Invalid index.", __FUNCTION__);
+        desync();
+        return;
+      }
+
+      m_vec[n].delta += delta;
+      m_is_vec_changed = true;
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
+  void basic_entity::vec_resize(sl::whole size) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+      if (size < 0) {
+        error_("Invalid size.", __FUNCTION__);
+        desync();
+        return;
+      }
+
+      m_vec.resize(size);
+
     } else {
       error_("Lock timeout.", __FUNCTION__);
       desync();
@@ -224,15 +378,31 @@ namespace laplace::engine {
 
         m_is_changed = false;
       }
+
+      if (m_is_bytes_changed) {
+        for (auto &x : m_bytes) {
+          x.value += x.delta;
+          x.delta = 0;
+        }
+
+        m_is_bytes_changed = false;
+      }
+
+      if (m_is_vec_changed) {
+        for (auto &x : m_vec) {
+          x.value += x.value;
+          x.delta = 0;
+        }
+
+        m_is_vec_changed = false;
+      }
     } else {
       error_("Lock timeout.", __FUNCTION__);
       desync();
     }
   }
 
-  auto basic_entity::request( //
-      sl::index  id,          //
-      span_cbyte args) -> vbyte {
+  auto basic_entity::request(sl::index id, span_cbyte args) -> vbyte {
 
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       return this->do_request(id, args);
@@ -244,9 +414,7 @@ namespace laplace::engine {
     return {};
   }
 
-  void basic_entity::modify( //
-      sl::index  id,         //
-      span_cbyte args) {
+  void basic_entity::modify(sl::index id, span_cbyte args) {
 
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       this->do_modify(id, args);
@@ -273,18 +441,7 @@ namespace laplace::engine {
       }
 
       return result;
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
-    }
 
-    return false;
-  }
-
-  auto basic_entity::is_changed() -> bool {
-
-    if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
-      return m_is_changed;
     } else {
       error_("Lock timeout.", __FUNCTION__);
       desync();
@@ -321,8 +478,24 @@ namespace laplace::engine {
     return m_id;
   }
 
-  auto basic_entity::locked_get(sl::index index) const -> intval {
-    return index < m_sets.size() ? m_sets[index].value : 0;
+  auto basic_entity::locked_get(sl::index n) const -> intval {
+    return n >= 0 && n < m_sets.size() ? m_sets[n].value : 0;
+  }
+
+  auto basic_entity::locked_bytes_get_size() const -> sl::whole {
+    return m_bytes.size();
+  }
+
+  auto basic_entity::locked_bytes_get(sl::index n) const -> int8_t {
+    return n >= 0 && n < m_bytes.size() ? m_bytes[n].value : 0;
+  }
+
+  auto basic_entity::locked_vec_get_size() const -> sl::whole {
+    return m_vec.size();
+  }
+
+  auto basic_entity::locked_vec_get(sl::index n) const -> intval {
+    return n >= 0 && n < m_vec.size() ? m_vec[n].value : 0;
   }
 
   void basic_entity::self_destruct(const access::world &w) {
@@ -343,19 +516,27 @@ namespace laplace::engine {
   void basic_entity::do_modify(sl::index id, span_cbyte args) { }
 
   void basic_entity::assign(cref_entity en) noexcept {
-    m_is_changed = en.m_is_changed;
-    m_id         = en.m_id;
+    m_is_changed       = en.m_is_changed;
+    m_is_bytes_changed = en.m_is_bytes_changed;
+    m_is_vec_changed   = en.m_is_vec_changed;
+    m_id               = en.m_id;
 
     m_sets  = en.m_sets;
+    m_bytes = en.m_bytes;
+    m_vec   = en.m_vec;
     m_clock = en.m_clock;
     m_world = en.m_world;
   }
 
   void basic_entity::assign(basic_entity &&en) noexcept {
-    m_is_changed = move(en.m_is_changed);
-    m_id         = move(en.m_id);
+    m_is_changed       = move(en.m_is_changed);
+    m_is_bytes_changed = move(en.m_is_bytes_changed);
+    m_is_vec_changed   = move(en.m_is_vec_changed);
+    m_id               = move(en.m_id);
 
     m_sets  = move(en.m_sets);
+    m_bytes = move(en.m_bytes);
+    m_vec   = move(en.m_vec);
     m_clock = move(en.m_clock);
     m_world = move(en.m_world);
   }

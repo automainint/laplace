@@ -94,19 +94,39 @@ namespace laplace::engine {
     /*  Get a state value.
      *  Thread-safe.
      */
-    [[nodiscard]] auto get(sl::index index) -> intval;
+    [[nodiscard]] auto get(sl::index n) -> intval;
 
     /*  Change a state value. It will apply
      *  calculated delta for the value. The actual
      *  value will change due adjusting.
      *  Thread-safe.
      */
-    void set(sl::index index, intval value);
+    void set(sl::index n, intval value);
 
     /*  Apply a state value delta.
      *  Thread-safe.
      */
-    void apply_delta(sl::index index, intval delta);
+    void apply_delta(sl::index n, intval delta);
+
+    [[nodiscard]] auto bytes_get_size() -> sl::whole;
+
+    [[nodiscard]] auto bytes_get(sl::index n) -> int8_t;
+
+    void bytes_set(sl::index n, int8_t value);
+
+    void bytes_apply_delta(sl::index n, int8_t delta);
+
+    void bytes_resize(sl::whole size);
+
+    [[nodiscard]] auto vec_get_size() -> sl::whole;
+
+    [[nodiscard]] auto vec_get(sl::index n) -> intval;
+
+    void vec_set(sl::index n, intval value);
+
+    void vec_apply_delta(sl::index n, intval delta);
+
+    void vec_resize(sl::whole size);
 
     /*  Adjust Entity new state.
      *  Thread-safe.
@@ -134,11 +154,6 @@ namespace laplace::engine {
      *  Thread-safe.
      */
     auto clock() -> bool;
-
-    /*  Returns true if the Entity was changed.
-     *  Thread-safe.
-     */
-    [[nodiscard]] auto is_changed() -> bool;
 
     /*  Returns true if the Entity is dynamic.
      *  Thread-safe.
@@ -174,6 +189,16 @@ namespace laplace::engine {
       intval    delta = {};
     };
 
+    struct bytes_row {
+      int8_t value = {};
+      int8_t delta = {};
+    };
+
+    struct vec_row {
+      intval value = {};
+      intval delta = {};
+    };
+
     using vsets_row = std::vector<sets_row>;
 
     /*  Setup state values.
@@ -184,15 +209,27 @@ namespace laplace::engine {
      */
     void init(sl::index n, intval value);
 
+    void bytes_init(sl::index n, int8_t value);
+    
+    void vec_init(sl::index n, intval value);
+
     /*  Get a state value without
      *  locking.
      */
-    [[nodiscard]] auto locked_get(sl::index index) const -> intval;
+    [[nodiscard]] auto locked_get(sl::index n) const -> intval;
 
     /*  Get a state value by id
      *  without locking.
      */
     [[nodiscard]] auto locked_get_by_id(sl::index id) const -> intval;
+
+    [[nodiscard]] auto locked_bytes_get_size() const -> sl::whole;
+
+    [[nodiscard]] auto locked_bytes_get(sl::index n) const -> int8_t;
+
+    [[nodiscard]] auto locked_vec_get_size() const -> sl::whole;
+
+    [[nodiscard]] auto locked_vec_get(sl::index n) const -> intval;
 
     void self_destruct(const access::world &w);
     void desync();
@@ -220,9 +257,13 @@ namespace laplace::engine {
     std::shared_timed_mutex m_lock;
     std::weak_ptr<world>    m_world;
     vsets_row               m_sets;
-    uint64_t                m_clock      = {};
-    sl::index               m_id         = id_undefined;
-    bool                    m_is_changed = false;
+    sl::vector<bytes_row>   m_bytes;
+    sl::vector<vec_row>     m_vec;
+    uint64_t                m_clock            = {};
+    sl::index               m_id               = id_undefined;
+    bool                    m_is_changed       = false;
+    bool                    m_is_bytes_changed = false;
+    bool                    m_is_vec_changed   = false;
   };
 }
 
