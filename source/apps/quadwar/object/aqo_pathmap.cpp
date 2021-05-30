@@ -18,7 +18,8 @@
 namespace quadwar_app::object {
   namespace access = engine::access;
 
-  using std::make_shared, std::span, engine::id_undefined;
+  using std::make_shared, std::min, std::max, std::span,
+      engine::id_undefined;
 
   sl::index pathmap::n_width  = {};
   sl::index pathmap::n_height = {};
@@ -49,52 +50,102 @@ namespace quadwar_app::object {
   }
 
   void pathmap::set_tiles(entity en, const sl::whole width,
-                          const sl::whole                height,
-                          const std::span<const uint8_t> tiles) {
+                          const sl::whole               height,
+                          const std::span<const int8_t> tiles) {
 
-    if (width < 0 || height < 0)
+    if (width < 0 || height < 0) {
+      error_("Invalid size.", __FUNCTION__);
       return;
+    }
 
     if (tiles.size() != width * height) {
       error_("Invalid tiles.", __FUNCTION__);
       return;
     }
 
-    en.modify(sets::pathmap_set_tiles,
-              serial::pack_to_bytes(width, height, tiles));
+    en.bytes_resize(tiles.size());
+
+    for (sl::index i = 0; i < tiles.size(); i++) {
+      en.bytes_set(i, tiles[i]);
+    }
+
+    en.set(n_width, width);
+    en.set(n_height, height);
+
+    en.adjust();
   }
 
-  void pathmap::add(entity en, const sl::whole x, const sl::whole y,
+  void pathmap::add(entity en, const sl::whole x0, const sl::whole y0,
                     const sl::whole width, const sl::whole height,
-                    const span<const uint8_t> tiles) {
+                    const span<const int8_t> tiles) {
 
-    if (x < 0 || y < 0 || width <= 0 || height <= 0)
+    if (width <= 0 || height <= 0) {
+      error_("Invalid size.", __FUNCTION__);
       return;
+    }
 
     if (tiles.size() != width * height) {
       error_("Invalid tiles.", __FUNCTION__);
       return;
     }
 
-    en.modify(sets::pathmap_add,
-              serial::pack_to_bytes(x, y, width, height, tiles));
+    const auto dst_width  = en.get(n_width);
+    const auto dst_height = en.get(n_height);
+
+    for (sl::index j = 0; j < height; j++) {
+      const auto y = y0 + j;
+
+      if (y < 0 || y >= dst_height)
+        continue;
+
+      for (sl::index i = 0; i < width; i++) {
+        const auto x = x0 + i;
+
+        if (x < 0 || x >= dst_width)
+          continue;
+
+        const auto n = y * dst_width + x;
+
+        en.bytes_apply_delta(n, tiles[j * width + i]);
+      }
+    }
   }
 
-  void pathmap::subtract(entity en, const sl::whole x,
-                         const sl::whole y, const sl::whole width,
-                         const sl::whole           height,
-                         const span<const uint8_t> tiles) {
+  void pathmap::subtract(entity en, const sl::whole x0,
+                         const sl::whole y0, const sl::whole width,
+                         const sl::whole          height,
+                         const span<const int8_t> tiles) {
 
-    if (x < 0 || y < 0 || width <= 0 || height <= 0)
+    if (width <= 0 || height <= 0) {
+      error_("Invalid size.", __FUNCTION__);
       return;
+    }
 
     if (tiles.size() != width * height) {
       error_("Invalid tiles.", __FUNCTION__);
       return;
     }
 
-    en.modify(sets::pathmap_subtract,
-              serial::pack_to_bytes(x, y, width, height, tiles));
+    const auto dst_width  = en.get(n_width);
+    const auto dst_height = en.get(n_height);
+
+    for (sl::index j = 0; j < height; j++) {
+      const auto y = y0 + j;
+
+      if (y < 0 || y >= dst_height)
+        continue;
+
+      for (sl::index i = 0; i < width; i++) {
+        const auto x = x0 + i;
+
+        if (x < 0 || x >= dst_width)
+          continue;
+
+        const auto n = y * dst_width + x;
+
+        en.bytes_apply_delta(n, -tiles[j * width + i]);
+      }
+    }
   }
 
   auto pathmap::get_width(entity en) -> sl::whole {
@@ -105,137 +156,57 @@ namespace quadwar_app::object {
     return en.get(n_height);
   }
 
-  auto pathmap::get_tiles(entity en) -> sl::vector<uint8_t> {
+  auto pathmap::get_tiles(entity en) -> sl::vector<int8_t> {
+    auto v = sl::vector<int8_t> {};
 
-    return en.request(sets::pathmap_get_tiles);
+    v.resize(en.bytes_get_size());
+
+    for (sl::index i = 0; i < v.size(); i++) {
+      v[i] = en.bytes_get(i);
+    }
+
+    return v;
   }
 
-  auto pathmap::check(entity en, const sl::whole x, const sl::whole y,
+  auto pathmap::check(entity en, const sl::whole x0, const sl::whole y0,
                       const sl::whole width, const sl::whole height,
-                      const span<const uint8_t> tiles) -> bool {
+                      const span<const int8_t> tiles) -> bool {
 
-    return serial::rd<uint8_t>(
-               en.request(
-                   sets::pathmap_check,
-                   serial::pack_to_bytes(x, y, width, height, tiles)),
-               0) != 0;
-  }
+    if (width <= 0 || height <= 0) {
+      error_("Invalid size.", __FUNCTION__);
+      return false;
+    }
 
-  auto pathmap::do_request(sl::index id, span_cbyte args) const -> vbyte {
-    switch (id) {
-      case sets::pathmap_get_tiles: return m_tiles;
+    if (tiles.size() != width * height) {
+      error_("Invalid tiles.", __FUNCTION__);
+      return false;
+    }
 
-      case sets::pathmap_check: {
-        const auto x      = serial::rd<sl::whole>(args, args_x);
-        const auto y      = serial::rd<sl::whole>(args, args_y);
-        const auto width  = serial::rd<sl::whole>(args, args_width);
-        const auto height = serial::rd<sl::whole>(args, args_height);
+    const auto dst_width  = en.get(n_width);
+    const auto dst_height = en.get(n_height);
 
-        const auto dst_width  = locked_get(n_width);
-        const auto dst_height = locked_get(n_height);
+    for (sl::index j = 0; j < height; j++) {
+      const auto y = y0 + j;
 
-        constexpr auto v_true = []() -> vbyte {
-          auto v = vbyte(1);
-          v[0]   = 1;
-          return v;
-        };
+      if (y < 0 || y >= dst_height)
+        return false;
 
-        constexpr auto v_false = []() -> vbyte {
-          auto v = vbyte(1);
-          v[0]   = 0;
-          return v;
-        };
+      for (sl::index i = 0; i < width; i++) {
+        const auto x = x0 + i;
 
-        for (sl::index j = 0, k = 0; j < height; j++)
-          for (sl::index i = 0; i < width; i++, k++) {
-            const auto tile = serial::rd<uint8_t>(
-                args, args_src_tiles + k);
+        if (x < 0 || x >= dst_width)
+          return false;
 
-            if (x + i < 0 || y + j < 0 || x + i >= dst_width ||
-                y + j >= dst_height) {
-              if (tile)
-                return v_false();
-              continue;
-            }
+        if (tiles[j * width + i] <= 0)
+          continue;
 
-            const auto n = (y + j) * dst_width + (x + i);
+        const auto n = y * dst_width + x;
 
-            if (n < 0 || n >= m_tiles.size()) {
-              if (tile)
-                return v_false();
-              continue;
-            }
-
-            if (m_tiles[n] != 0 && tile != 0)
-              return v_false();
-          }
-
-        return v_true();
+        if (en.bytes_get(n) > 0)
+          return false;
       }
-
-      default: error_("Invalid request id.", __FUNCTION__);
     }
 
-    return {};
-  }
-
-  void pathmap::do_modify(sl::index id, span_cbyte args) {
-    switch (id) {
-      case sets::pathmap_set_tiles: {
-        const auto width  = serial::rd<sl::whole>(args, args_x);
-        const auto height = serial::rd<sl::whole>(args, args_y);
-
-        if (width < 0 || height < 0)
-          return;
-
-        m_tiles.resize(width * height);
-
-        for (sl::index i = 0; i < m_tiles.size(); i++) {
-          m_tiles[i] = serial::rd<uint8_t>(args, args_tiles + i);
-        }
-
-        init(n_width, width);
-        init(n_height, height);
-
-      } break;
-
-      case sets::pathmap_add:
-      case sets::pathmap_subtract: {
-        const auto x      = serial::rd<sl::whole>(args, args_x);
-        const auto y      = serial::rd<sl::whole>(args, args_y);
-        const auto width  = serial::rd<sl::whole>(args, args_width);
-        const auto height = serial::rd<sl::whole>(args, args_height);
-
-        const auto dst_width  = locked_get(n_width);
-        const auto dst_height = locked_get(n_height);
-
-        for (sl::index j = 0, k = 0; j < height; j++)
-          for (sl::index i = 0; i < width; i++, k++) {
-
-            if (x + i < 0 || y + j < 0 || x + i >= dst_width ||
-                y + j >= dst_height)
-              continue;
-            const auto n = (y + j) * dst_width + (x + i);
-            if (n < 0 || n >= m_tiles.size())
-              continue;
-
-            const auto tile = serial::rd<uint8_t>(
-                args, args_src_tiles + k);
-
-            if (id == sets::pathmap_add) {
-              m_tiles[n] += tile;
-            } else {
-              if (m_tiles[n] <= tile) {
-                m_tiles[n] = 0;
-              } else {
-                m_tiles[n] -= tile;
-              }
-            }
-          }
-
-      } break;
-
-      default: error_("Invalid request id.", __FUNCTION__);
-    }
+    return true;
   }
 }

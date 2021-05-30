@@ -16,8 +16,8 @@
 namespace laplace::engine::eval::grid {
   using std::span, std::min, std::function, astar::vlink;
 
-  void merge(const vec2z size, const span_byte dst,
-             const span_cbyte src, const op merge_op) noexcept {
+  void merge(const vec2z size, const span<int8_t> dst,
+             const span<const int8_t> src, const op merge_op) noexcept {
 
     const auto count = size.x() * size.y();
 
@@ -36,9 +36,9 @@ namespace laplace::engine::eval::grid {
     }
   }
 
-  void merge(const vec2z dst_size, const span_byte dst,
+  void merge(const vec2z dst_size, const span<int8_t> dst,
              const vec2z src_size, const vec2i src_offset,
-             const span_cbyte src, const op merge_op) noexcept {
+             const span<const int8_t> src, const op merge_op) noexcept {
 
     if (dst_size.x() * dst_size.y() > dst.size()) {
       error_("Invalid destination size.", __FUNCTION__);
@@ -151,7 +151,7 @@ namespace laplace::engine::eval::grid {
   }
 
   auto neighbors4(const sl::index width, const intval scale,
-                  const span_cbyte map, const fn_available available,
+                  const span<const int8_t> map, const fn_available available,
                   const sl::index p) -> vlink {
 
     if (p < 0 || p >= map.size())
@@ -173,7 +173,7 @@ namespace laplace::engine::eval::grid {
   }
 
   auto neighbors8(const sl::index width, const intval scale,
-                  const span_cbyte map, const fn_available available,
+                  const span<const int8_t> map, const fn_available available,
                   const sl::index p) -> vlink {
 
     if (p < 0 || p >= map.size())
@@ -258,7 +258,7 @@ namespace laplace::engine::eval::grid {
     return eval::sqrt((dx * dx + dy * dy) * scale, scale);
   }
 
-  auto path_exists(const sl::index width, const span_cbyte map,
+  auto path_exists(const sl::index width, const span<const int8_t> map,
                    const fn_available available, const vec2z a,
                    const vec2z b) -> bool {
 
@@ -285,7 +285,7 @@ namespace laplace::engine::eval::grid {
   }
 
   auto path_search(const vec2z size, const intval scale,
-                   const span_cbyte map, const fn_available available,
+                   const span<const int8_t> map, const fn_available available,
                    const vec2z a, const vec2z b) -> sl::vector<vec2z> {
 
     if (size.x() * size.y() > map.size()) {

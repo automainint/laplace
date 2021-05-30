@@ -17,15 +17,15 @@
 #include "../defs.h"
 
 namespace quadwar_app::action {
-  class unit_move : public engine::sync_impact {
+  class unit_move : public engine::basic_impact {
   public:
-    unit_move(size_t id_unit);
+    unit_move(sl::index id_unit);
     ~unit_move() override = default;
 
     void perform(engine::access::world w) const override;
 
   private:
-    size_t m_id_unit = {};
+    sl::index m_id_unit = {};
   };
 }
 

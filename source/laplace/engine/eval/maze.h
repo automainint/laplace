@@ -16,16 +16,16 @@
 #include "../defs.h"
 
 namespace laplace::engine::eval::maze {
-  static constexpr uint8_t walkable = 0;
-  static constexpr uint8_t wall     = 1;
+  static constexpr int8_t walkable = 0;
+  static constexpr int8_t wall     = 1;
 
   using fn_random = std::function<uint64_t()>;
 
-  void generate(const vec2z size, const span_byte map,
+  void generate(const vec2z size, const std::span<int8_t> map,
                 const fn_random random);
 
-  void stretch(const vec2z dst_size, const span_byte dst,
-               const vec2z src_size, const span_cbyte src,
+  void stretch(const vec2z dst_size, const std::span<int8_t> dst,
+               const vec2z src_size, const std::span<const int8_t> src,
                const sl::index tunnel_size,
                const sl::index gate_size) noexcept;
 }

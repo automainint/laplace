@@ -76,6 +76,10 @@ namespace laplace::engine::access {
     }
   }
 
+  auto entity::bytes_get_size() const -> sl::whole {
+    return m_mode > forbidden ? m_entity->bytes_get_size() : 0;
+  }
+
   auto entity::bytes_get(sl::index n, int8_t defval) const -> int8_t {
     return m_mode > forbidden ? m_entity->bytes_get(n) : defval;
   }
@@ -96,6 +100,10 @@ namespace laplace::engine::access {
     if (m_mode > async) {
       m_entity->bytes_resize(size);
     }
+  }
+
+  auto entity::vec_get_size() const -> sl::whole {
+    return m_mode > forbidden ? m_entity->vec_get_size() : 0;
   }
 
   auto entity::vec_get(sl::index n, intval defval) const -> intval {

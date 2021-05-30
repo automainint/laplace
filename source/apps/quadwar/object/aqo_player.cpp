@@ -27,30 +27,22 @@ namespace quadwar_app::object {
   }
 
   void player::set_name(entity en, u8string_view name) {
-    en.modify(sets::player_name, serial::pack_to_bytes(name));
+    en.bytes_resize(name.size());
+
+    for (sl::index i = 0; i < name.size(); i++) {
+      en.bytes_set(i, name[i]);
+    }
+
+    en.adjust();
   }
 
   auto player::get_name(entity en) -> u8string {
-    const auto data = en.request(sets::player_name);
+    auto name = u8string {};
 
-    u8string result(data.size(), ' ');
-    memcpy(result.data(), data.data(), data.size());
-
-    return result;
-  }
-
-  auto player::do_request(sl::index id, span_cbyte args) const -> vbyte {
-    if (id == sets::player_name && args.empty()) {
-      return serial::pack_to_bytes(u8string_view { m_name });
+    for (sl::index i = 0, i1 = en.bytes_get_size(); i < i1; i++) {
+      name.append(1, static_cast<char8_t>(en.bytes_get(i)));
     }
 
-    return {};
-  }
-
-  void player::do_modify(sl::index id, span_cbyte args) {
-    if (id == sets::player_name) {
-      m_name.resize(args.size(), ' ');
-      memcpy(m_name.data(), args.data(), args.size());
-    }
+    return name;
   }
 }

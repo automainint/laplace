@@ -22,10 +22,10 @@ namespace quadwar_app::action {
   namespace access = engine::access;
   namespace sets   = object::sets;
 
-  using std::vector, object::root, object::pathmap, object::unit,
-      engine::intval, engine::vec2i;
+  using object::root, object::pathmap, object::unit, engine::intval,
+      engine::vec2i;
 
-  unit_place::unit_place(size_t id_unit) {
+  unit_place::unit_place(sl::index id_unit) {
     m_id_unit = id_unit;
   }
 
@@ -55,8 +55,9 @@ namespace quadwar_app::action {
 
     constexpr sl::whole distance = 20;
 
-    auto gen_order = [distance]() -> vector<vec2i> {
-      auto v = vector<vec2i>((distance * 2 + 1) * (distance * 2 + 1));
+    auto gen_order = [distance]() -> sl::vector<vec2i> {
+      auto v = sl::vector<vec2i>((distance * 2 + 1) *
+                                 (distance * 2 + 1));
 
       for (sl::index i = -distance, k = 0; i <= distance; i++) {
         for (sl::index j = -distance; j <= distance; j++, k++)
@@ -64,7 +65,20 @@ namespace quadwar_app::action {
       }
 
       constexpr auto cmp = [](const vec2i a, const vec2i b) -> bool {
-        return math::square_length(a) < math::square_length(b);
+        const auto alen = math::square_length(a);
+        const auto blen = math::square_length(b);
+
+        if (alen < blen)
+          return true;
+
+        if (alen == blen) {
+          if (a.y() < b.y())
+            return true;
+          if (a.y() == b.y() && a.x() < b.x())
+            return true;
+        }
+
+        return false;
       };
 
       std::sort(v.begin(), v.end(), cmp);
@@ -72,15 +86,19 @@ namespace quadwar_app::action {
     };
 
     const auto order     = gen_order();
-    const auto footprint = vector<uint8_t>(side * side, 1);
+    const auto footprint = sl::vector<int8_t>(side * side, 1);
+
+    const auto step = (s + 1) * 2;
 
     for (sl::index i = 0; i < order.size(); i++) {
-      const auto x = x0 + order[i].x() * s - s;
-      const auto y = y0 + order[i].y() * s - s;
+      const auto x = x0 + order[i].x() * step - s;
+      const auto y = y0 + order[i].y() * step - s;
 
       if (pathmap::check(path, x, y, side, side, footprint)) {
         pathmap::add(path, x, y, side, side, footprint);
         unit::set_position(u, { (x + s) * sx, (y + s) * sy });
+        path.adjust();
+        u.adjust();
         return;
       }
     }

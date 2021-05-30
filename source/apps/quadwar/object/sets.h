@@ -21,8 +21,6 @@ namespace quadwar_app::object::sets {
   enum set_id : sl::index {
     state_version = _native_count,
 
-    player_name,
-
     root_is_loading,
     root_is_launched,
     root_slot_count,

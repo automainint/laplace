@@ -19,7 +19,7 @@
 namespace quadwar_app::object {
   class landscape : public engine::basic_entity, helper {
   public:
-    enum tile_state : uint8_t { tile_walkable, tile_wall };
+    enum tile_state : int8_t { tile_walkable, tile_wall };
 
     static constexpr sl::index cave_size   = 5;
     static constexpr sl::index tunnel_size = 1;
@@ -30,40 +30,41 @@ namespace quadwar_app::object {
 
     static auto gen_maze(world w, sl::index width, sl::index height,
                          std::span<const engine::vec2z> start_locs) noexcept
-        -> std::vector<uint8_t>;
+        -> std::vector<int8_t>;
 
     static auto gen_start_locs(sl::whole width, sl::whole height,
                                sl::whole edge,
                                sl::whole player_count) noexcept
         -> std::vector<engine::vec2z>;
 
-    static void create_maze(world w, sl::index width, sl::index height,
-                            sl::index player_count);
+    static void create_maze(world w, sl::index width,
+                            sl::index height, sl::index player_count);
 
     [[nodiscard]] static auto get_version(entity en) -> sl::index;
     [[nodiscard]] static auto get_width(entity en) -> sl::index;
     [[nodiscard]] static auto get_height(entity en) -> sl::index;
 
-    [[nodiscard]] static auto get_tile(entity en, sl::index x, sl::index y)
-        -> uint8_t;
+    [[nodiscard]] static auto get_tile(entity en, sl::index x,
+                                       sl::index y) -> int8_t;
 
     [[nodiscard]] static auto get_start_loc(entity en, sl::index index)
         -> engine::vec2z;
 
     [[nodiscard]] static auto get_tiles(entity en)
-        -> std::vector<uint8_t>;
+        -> sl::vector<int8_t>;
 
     [[nodiscard]] static auto get_start_locs(entity en)
-        -> std::vector<engine::vec2z>;
+        -> sl::vector<engine::vec2z>;
 
     static void inc_version(entity en);
 
-    static void set_tile(entity en, sl::index x, sl::index y, uint8_t tile);
+    static void set_tile(entity en, sl::index x, sl::index y,
+                         int8_t tile);
 
-    static void set_start_loc(entity en, sl::index index,
+    static void set_start_loc(entity en, sl::index n,
                               engine::vec2z start_loc);
 
-    static void set_tiles(entity en, const std::vector<uint8_t> &tiles);
+    static void set_tiles(entity en, const sl::vector<int8_t> &tiles);
 
     static void set_size(entity en, sl::whole width, sl::whole height);
 
@@ -71,7 +72,8 @@ namespace quadwar_app::object {
                                std::span<const engine::vec2z> locs);
 
   protected:
-    auto do_request(sl::index id, span_cbyte args) const -> vbyte override;
+    auto do_request(sl::index id, span_cbyte args) const
+        -> vbyte override;
     void do_modify(sl::index id, span_cbyte args) override;
 
   private:
@@ -88,11 +90,12 @@ namespace quadwar_app::object {
 
     landscape(proto_tag);
 
-    [[nodiscard]] auto get_tile(sl::index x, sl::index y) const -> uint8_t;
+    [[nodiscard]] auto get_tile(sl::index x, sl::index y) const
+        -> int8_t;
     [[nodiscard]] auto get_start_loc(sl::index index) const
         -> engine::vec2z;
 
-    void set_tile(sl::index x, sl::index y, uint8_t value);
+    void set_tile(sl::index x, sl::index y, int8_t value);
     void set_size(sl::index width, sl::index height);
     void set_start_loc(sl::index index, const engine::vec2z loc);
 
@@ -102,8 +105,8 @@ namespace quadwar_app::object {
 
     static landscape m_proto;
 
-    std::vector<uint8_t>       m_tiles;
-    std::vector<engine::vec2z> m_start_locs;
+    sl::vector<int8_t>        m_tiles;
+    sl::vector<engine::vec2z> m_start_locs;
   };
 }
 

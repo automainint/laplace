@@ -14,10 +14,9 @@
 #include "maze.h"
 
 namespace laplace::engine::eval::maze {
-  using std::span, std::function, std::vector, std::tuple, std::tie,
-      std::min;
+  using std::span, std::function, std::tuple, std::tie, std::min;
 
-  void generate(const vec2z size, const span_byte map,
+  void generate(const vec2z size, const span<int8_t> map,
                 const fn_random random) {
 
     if (size.x() < 0 || size.y() < 0) {
@@ -57,8 +56,8 @@ namespace laplace::engine::eval::maze {
     }
 
     const auto gen_caves = [](const sl::index cols,
-                              const sl::index rows) -> vector<vec2z> {
-      auto caves = vector<vec2z>(cols * rows);
+                              const sl::index rows) -> sl::vector<vec2z> {
+      auto caves = sl::vector<vec2z>(cols * rows);
 
       for (sl::index i = 0; i < cols; i++) {
         for (sl::index j = 0; j < rows; j++)
@@ -74,8 +73,9 @@ namespace laplace::engine::eval::maze {
       return caves;
     };
 
-    const auto shuffle = [&random](vector<vec2z> caves) -> vector<vec2z> {
-      auto v = vector<vec2z> {};
+    const auto shuffle =
+        [&random](sl::vector<vec2z> caves) -> sl::vector<vec2z> {
+      auto v = sl::vector<vec2z> {};
       v.reserve(caves.size());
 
       while (!caves.empty()) {
@@ -129,7 +129,7 @@ namespace laplace::engine::eval::maze {
 
       while (grid::path_exists(
           size.x(), map,
-          [](const uint8_t state) {
+          [](const int8_t state) {
             return state == walkable;
           },
           a, b)) {
@@ -154,8 +154,8 @@ namespace laplace::engine::eval::maze {
     }
   }
 
-  void stretch(const vec2z dst_size, const span_byte dst,
-               const vec2z src_size, const span_cbyte src,
+  void stretch(const vec2z dst_size, const span<int8_t> dst,
+               const vec2z src_size, const span<const int8_t> src,
                const sl::index tunnel_size,
                const sl::index gate_size) noexcept {
 

@@ -27,50 +27,37 @@ namespace quadwar_app::object {
     static auto create(world w) -> sl::index;
 
     static void set_tiles(entity en, const sl::whole width,
-                          const sl::whole                height,
-                          const std::span<const uint8_t> tiles);
+                          const sl::whole               height,
+                          const std::span<const int8_t> tiles);
 
-    static void add(entity en, const sl::whole x, const sl::whole y,
+    static void add(entity en, const sl::whole x0, const sl::whole y0,
                     const sl::whole width, const sl::whole height,
-                    const std::span<const uint8_t> tiles);
+                    const std::span<const int8_t> tiles);
 
-    static void subtract(entity en, const sl::whole x,
-                         const sl::whole y, const sl::whole width,
-                         const sl::whole                height,
-                         const std::span<const uint8_t> tiles);
+    static void subtract(entity en, const sl::whole x0,
+                         const sl::whole y0, const sl::whole width,
+                         const sl::whole               height,
+                         const std::span<const int8_t> tiles);
 
     [[nodiscard]] static auto get_width(entity en) -> sl::whole;
     [[nodiscard]] static auto get_height(entity en) -> sl::whole;
     [[nodiscard]] static auto get_tiles(entity en)
-        -> sl::vector<uint8_t>;
+        -> sl::vector<int8_t>;
 
-    [[nodiscard]] static auto check(
-        entity en, const sl::whole x, const sl::whole y,
-        const sl::whole width, const sl::whole height,
-        const std::span<const uint8_t> tiles) -> bool;
-
-  protected:
-    auto do_request(sl::index id, span_cbyte args) const -> vbyte override;
-    void do_modify(sl::index id, span_cbyte args) override;
+    [[nodiscard]] static auto check(entity en, const sl::whole x0,
+                                    const sl::whole y0,
+                                    const sl::whole width,
+                                    const sl::whole height,
+                                    const std::span<const int8_t> tiles)
+        -> bool;
 
   private:
-    enum args_offset : sl::index {
-      args_x         = 0,
-      args_y         = args_x + sizeof(sl::whole),
-      args_width     = args_y + sizeof(sl::whole),
-      args_height    = args_width + sizeof(sl::whole),
-      args_tiles     = args_y + sizeof(sl::whole),
-      args_src_tiles = args_height + sizeof(sl::whole)
-    };
-
     pathmap(proto_tag);
 
     static sl::index n_width;
     static sl::index n_height;
 
     static pathmap m_proto;
-
-    std::vector<uint8_t> m_tiles;
   };
 }
 

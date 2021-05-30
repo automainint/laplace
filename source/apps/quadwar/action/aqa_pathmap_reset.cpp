@@ -36,7 +36,7 @@ namespace quadwar_app::action {
     const auto dst_height = height * pathmap::resolution;
 
     const auto src_tiles = landscape::get_tiles(land);
-    auto       dst_tiles = vbyte(dst_width * dst_height);
+    auto       dst_tiles = sl::vector<int8_t>(dst_width * dst_height);
 
     for (sl::index j = 0; j < height; j++)
       for (sl::index i = 0; i < width; i++) {
