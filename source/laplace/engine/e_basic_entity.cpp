@@ -22,7 +22,8 @@
 namespace laplace::engine {
   namespace sets = object::sets;
 
-  using std::unique_lock, std::shared_lock, std::move, std::make_shared;
+  using std::unique_lock, std::shared_lock, std::span, std::move,
+      std::make_shared;
 
   basic_entity::basic_entity(cref_entity en) noexcept {
     assign(en);
@@ -237,6 +238,16 @@ namespace laplace::engine {
     return {};
   }
 
+  void basic_entity::bytes_read(sl::index n, span<int8_t> dst) {
+    if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
+      for (sl::index i = 0; i < dst.size(); i++)
+        dst.begin()[i] = locked_bytes_get(n + i);
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
   void basic_entity::bytes_set(sl::index n, int8_t value) {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       if (n < 0 || n >= m_bytes.size()) {
@@ -254,6 +265,25 @@ namespace laplace::engine {
     }
   }
 
+  void basic_entity::bytes_write(sl::index n, span<const int8_t> values) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+      if (n < 0 || n + values.size() > m_bytes.size()) {
+        error_("Invalid index.", __FUNCTION__);
+        desync();
+        return;
+      }
+
+      for (sl::index i = 0; i < values.size(); i++)
+        m_bytes[n + i].delta += values[i] - m_bytes[n + i].value;
+
+      m_is_bytes_changed = true;
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
   void basic_entity::bytes_apply_delta(sl::index n, int8_t delta) {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       if (n < 0 || n >= m_bytes.size()) {
@@ -263,6 +293,25 @@ namespace laplace::engine {
       }
 
       m_bytes[n].delta += delta;
+      m_is_bytes_changed = true;
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+  
+  void basic_entity::bytes_write_delta(sl::index n, span<const int8_t> deltas) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+      if (n < 0 || n + deltas.size() > m_bytes.size()) {
+        error_("Invalid index.", __FUNCTION__);
+        desync();
+        return;
+      }
+
+      for (sl::index i = 0; i < deltas.size(); i++)
+        m_bytes[n + i].delta += deltas[i];
+
       m_is_bytes_changed = true;
 
     } else {

@@ -112,9 +112,15 @@ namespace laplace::engine {
 
     [[nodiscard]] auto bytes_get(sl::index n) -> int8_t;
 
+    void bytes_read(sl::index n, std::span<int8_t> dst);
+
     void bytes_set(sl::index n, int8_t value);
 
+    void bytes_write(sl::index n, std::span<const int8_t> values);
+
     void bytes_apply_delta(sl::index n, int8_t delta);
+
+    void bytes_write_delta(sl::index n, std::span<const int8_t> deltas);
 
     void bytes_resize(sl::whole size);
 
@@ -210,7 +216,7 @@ namespace laplace::engine {
     void init(sl::index n, intval value);
 
     void bytes_init(sl::index n, int8_t value);
-    
+
     void vec_init(sl::index n, intval value);
 
     /*  Get a state value without

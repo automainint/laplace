@@ -50,8 +50,14 @@ namespace laplace::engine::access {
     [[nodiscard]] auto bytes_get(sl::index n, int8_t defval = {}) const
         -> int8_t;
 
+    void bytes_read(sl::index n, std::span<int8_t> dst) const;
+
     void bytes_set(sl::index n, int8_t value) const;
+    void bytes_write(sl::index n, std::span<const int8_t> values) const;
     void bytes_apply_delta(sl::index n, int8_t delta) const;
+    void bytes_write_delta(sl::index               n,
+                           std::span<const int8_t> deltas) const;
+
     void bytes_resize(sl::whole size) const;
 
     [[nodiscard]] auto vec_get_size() const -> sl::whole;

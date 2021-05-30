@@ -185,24 +185,24 @@ namespace quadwar_app::object {
     const auto dst_width  = en.get(n_width);
     const auto dst_height = en.get(n_height);
 
+    auto line = sl::vector<int8_t>(width);
+
     for (sl::index j = 0; j < height; j++) {
       const auto y = y0 + j;
 
       if (y < 0 || y >= dst_height)
         return false;
 
-      for (sl::index i = 0; i < width; i++) {
-        const auto x = x0 + i;
+      en.bytes_read(y * dst_width + x0, line);
 
-        if (x < 0 || x >= dst_width)
+      for (sl::index i = 0; i < width; i++) {
+        if (x0 + i < 0 || x0 + i >= dst_width)
           return false;
 
         if (tiles[j * width + i] <= 0)
           continue;
 
-        const auto n = y * dst_width + x;
-
-        if (en.bytes_get(n) > 0)
+        if (line[i] > 0)
           return false;
       }
     }

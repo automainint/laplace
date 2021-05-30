@@ -13,6 +13,8 @@
 #include "entity.h"
 
 namespace laplace::engine::access {
+  using std::span;
+
   entity::entity(entity &&ent) noexcept :
       m_entity(std::move(ent.m_entity)), m_mode(std::move(ent.m_mode)) {
     ent.m_mode = forbidden;
@@ -84,15 +86,35 @@ namespace laplace::engine::access {
     return m_mode > forbidden ? m_entity->bytes_get(n) : defval;
   }
 
+  void entity::bytes_read(sl::index n, span<int8_t> dst) const {
+    if (m_mode > forbidden) {
+      m_entity->bytes_read(n, dst);
+    }
+  }
+
   void entity::bytes_set(sl::index n, int8_t value) const {
     if (m_mode > read_only) {
       m_entity->bytes_set(n, value);
     }
   }
 
+  void entity::bytes_write(sl::index          n,
+                           span<const int8_t> values) const {
+    if (m_mode > read_only) {
+      m_entity->bytes_write(n, values);
+    }
+  }
+
   void entity::bytes_apply_delta(sl::index n, int8_t delta) const {
     if (m_mode > read_only) {
       m_entity->bytes_apply_delta(n, delta);
+    }
+  }
+
+  void entity::bytes_write_delta(sl::index          n,
+                                 span<const int8_t> deltas) const {
+    if (m_mode > read_only) {
+      m_entity->bytes_write_delta(n, deltas);
     }
   }
 
