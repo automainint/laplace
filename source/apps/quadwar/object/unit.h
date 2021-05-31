@@ -21,7 +21,7 @@ namespace quadwar_app::object {
   class unit : public engine::basic_entity, helper {
   public:
     static constexpr engine::intval default_health = 100;
-    static constexpr engine::intval default_radius = 10;
+    static constexpr engine::intval default_radius = 1;
 
     unit();
     ~unit() override = default;

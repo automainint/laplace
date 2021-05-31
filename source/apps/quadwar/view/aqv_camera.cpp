@@ -27,7 +27,7 @@ namespace quadwar_app::view {
     m_min = v0;
     m_max = v1;
 
-    set_position(m_position);
+    adjust_position(m_position_origin);
   }
 
   void camera::set_scale(const real scale) noexcept {
@@ -35,6 +35,11 @@ namespace quadwar_app::view {
   }
 
   void camera::set_position(const vec2 v) noexcept {
+    m_position_origin = v;
+    adjust_position(v);
+  }
+
+  void camera::adjust_position(const vec2 v) noexcept {
     m_position.x() = max(m_min.x(), min(v.x(), m_max.x()));
     m_position.y() = max(m_min.y(), min(v.y(), m_max.y()));
   }

@@ -40,9 +40,12 @@ namespace quadwar_app::view {
     [[nodiscard]] auto get_transform() const noexcept -> transform;
 
   private:
+    void adjust_position(const vec2 v) noexcept;
+
     real m_grid_scale = default_grid_scale;
     real m_scale      = default_scale;
     vec2 m_position;
+    vec2 m_position_origin;
     vec2 m_frame;
     vec2 m_min;
     vec2 m_max;

@@ -21,13 +21,12 @@ namespace quadwar_app::view {
   using std::min, std::numeric_limits;
 
   void game::adjust_layout(int width, int height) {
-    m_camera.set_frame(             //
-        { static_cast<real>(width), //
-          static_cast<real>(height) });
+    m_camera.set_frame(
+        { static_cast<real>(width), static_cast<real>(height) });
   }
 
   void game::set_position(const vec2 v) {
-    m_camera.set_position(v);
+    m_camera.set_position(v * m_camera.get_grid_scale());
   }
 
   void game::move(const vec2 delta) {

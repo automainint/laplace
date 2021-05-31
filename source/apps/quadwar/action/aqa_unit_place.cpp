@@ -88,11 +88,9 @@ namespace quadwar_app::action {
     const auto order     = gen_order();
     const auto footprint = sl::vector<int8_t>(side * side, 1);
 
-    const auto step = (s + 1) * 2;
-
     for (sl::index i = 0; i < order.size(); i++) {
-      const auto x = x0 + order[i].x() * step - s;
-      const auto y = y0 + order[i].y() * step - s;
+      const auto x = x0 + order[i].x() * s - s;
+      const auto y = y0 + order[i].y() * s - s;
 
       if (pathmap::check(path, x, y, side, side, footprint)) {
         pathmap::add(path, x, y, side, side, footprint);

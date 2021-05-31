@@ -30,7 +30,9 @@ namespace quadwar_app::view {
 
       const auto p = unit::get_position_scaled(u) *
                      cam.get_grid_scale();
-      const auto s = unit::get_radius_scaled(u) * cam.get_grid_scale();
+
+      const auto s = unit::get_radius_scaled(u) *
+                     cam.get_grid_scale() * unit_scaling;
 
       const auto p0 = p - vec2 { s, s };
       const auto d  = vec2 { s * 2, s * 2 };

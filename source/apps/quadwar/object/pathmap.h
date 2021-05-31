@@ -19,7 +19,7 @@
 namespace quadwar_app::object {
   class pathmap : public engine::basic_entity, helper {
   public:
-    static constexpr sl::whole resolution = 10;
+    static constexpr sl::whole resolution = 2;
 
     pathmap();
     ~pathmap() override = default;
