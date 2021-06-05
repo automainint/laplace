@@ -53,52 +53,14 @@ namespace quadwar_app::action {
     const auto s    = unit::get_radius(u) / sr;
     const auto side = s * 2 + 1;
 
-    constexpr sl::whole distance = 20;
-
-    auto gen_order = [distance]() -> sl::vector<vec2i> {
-      auto v = sl::vector<vec2i>((distance * 2 + 1) *
-                                 (distance * 2 + 1));
-
-      for (sl::index i = -distance, k = 0; i <= distance; i++) {
-        for (sl::index j = -distance; j <= distance; j++, k++)
-          v[k] = vec2i { i, j };
-      }
-
-      constexpr auto cmp = [](const vec2i a, const vec2i b) -> bool {
-        const auto alen = math::square_length(a);
-        const auto blen = math::square_length(b);
-
-        if (alen < blen)
-          return true;
-
-        if (alen == blen) {
-          if (a.y() < b.y())
-            return true;
-          if (a.y() == b.y() && a.x() < b.x())
-            return true;
-        }
-
-        return false;
-      };
-
-      std::sort(v.begin(), v.end(), cmp);
-      return v;
-    };
-
-    const auto order     = gen_order();
     const auto footprint = sl::vector<int8_t>(side * side, 1);
 
-    for (sl::index i = 0; i < order.size(); i++) {
-      const auto x = x0 + order[i].x() * s - s;
-      const auto y = y0 + order[i].y() * s - s;
+    auto p = pathmap::place(
+        path, { x0 - s, y0 - s }, { side, side }, footprint);
 
-      if (pathmap::check(path, x, y, side, side, footprint)) {
-        pathmap::add(path, x, y, side, side, footprint);
-        unit::set_position(u, { (x + s) * sx, (y + s) * sy });
-        path.adjust();
-        u.adjust();
-        return;
-      }
-    }
+    unit::set_position(u, { (p.x() + s) * sx, (p.y() + s) * sy });
+
+    path.adjust();
+    u.adjust();
   }
 }

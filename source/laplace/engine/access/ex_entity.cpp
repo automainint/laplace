@@ -78,47 +78,49 @@ namespace laplace::engine::access {
     }
   }
 
-  auto entity::bytes_get_size() const -> sl::whole {
+  auto entity::bytes_get_size() const noexcept -> sl::whole {
     return m_mode > forbidden ? m_entity->bytes_get_size() : 0;
   }
 
-  auto entity::bytes_get(sl::index n, int8_t defval) const -> int8_t {
+  auto entity::bytes_get(sl::index n, int8_t defval) const noexcept
+      -> int8_t {
     return m_mode > forbidden ? m_entity->bytes_get(n) : defval;
   }
 
-  void entity::bytes_read(sl::index n, span<int8_t> dst) const {
+  void entity::bytes_read(sl::index n, span<int8_t> dst) const noexcept {
     if (m_mode > forbidden) {
       m_entity->bytes_read(n, dst);
     }
   }
 
-  void entity::bytes_set(sl::index n, int8_t value) const {
+  void entity::bytes_set(sl::index n, int8_t value) const noexcept {
     if (m_mode > read_only) {
       m_entity->bytes_set(n, value);
     }
   }
 
   void entity::bytes_write(sl::index          n,
-                           span<const int8_t> values) const {
+                           span<const int8_t> values) const noexcept {
     if (m_mode > read_only) {
       m_entity->bytes_write(n, values);
     }
   }
 
-  void entity::bytes_apply_delta(sl::index n, int8_t delta) const {
+  void entity::bytes_apply_delta(sl::index n,
+                                 int8_t    delta) const noexcept {
     if (m_mode > read_only) {
       m_entity->bytes_apply_delta(n, delta);
     }
   }
 
-  void entity::bytes_write_delta(sl::index          n,
-                                 span<const int8_t> deltas) const {
+  void entity::bytes_write_delta(
+      sl::index n, span<const int8_t> deltas) const noexcept {
     if (m_mode > read_only) {
       m_entity->bytes_write_delta(n, deltas);
     }
   }
 
-  void entity::bytes_resize(sl::whole size) const {
+  void entity::bytes_resize(sl::whole size) const noexcept {
     if (m_mode > async) {
       m_entity->bytes_resize(size);
     }

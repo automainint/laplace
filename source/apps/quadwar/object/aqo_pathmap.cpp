@@ -18,13 +18,15 @@
 namespace quadwar_app::object {
   namespace access = engine::access;
 
-  using std::make_shared, std::min, std::max, std::span,
-      engine::id_undefined;
+  using std::make_shared, std::min, std::max, std::span, std::array,
+      engine::id_undefined, engine::vec2z;
 
   sl::index pathmap::n_width  = {};
   sl::index pathmap::n_height = {};
 
   pathmap pathmap::m_proto(pathmap::proto);
+
+  const sl::vector<vec2z> pathmap::m_circular = pathmap::gen_circular();
 
   pathmap::pathmap(proto_tag) {
 
@@ -75,79 +77,6 @@ namespace quadwar_app::object {
     en.adjust();
   }
 
-  void pathmap::add(entity en, const sl::whole x0, const sl::whole y0,
-                    const sl::whole width, const sl::whole height,
-                    const span<const int8_t> tiles) {
-
-    if (width <= 0 || height <= 0) {
-      error_("Invalid size.", __FUNCTION__);
-      return;
-    }
-
-    if (tiles.size() != width * height) {
-      error_("Invalid tiles.", __FUNCTION__);
-      return;
-    }
-
-    const auto dst_width  = en.get(n_width);
-    const auto dst_height = en.get(n_height);
-
-    for (sl::index j = 0; j < height; j++) {
-      const auto y = y0 + j;
-
-      if (y < 0 || y >= dst_height)
-        continue;
-
-      for (sl::index i = 0; i < width; i++) {
-        const auto x = x0 + i;
-
-        if (x < 0 || x >= dst_width)
-          continue;
-
-        const auto n = y * dst_width + x;
-
-        en.bytes_apply_delta(n, tiles[j * width + i]);
-      }
-    }
-  }
-
-  void pathmap::subtract(entity en, const sl::whole x0,
-                         const sl::whole y0, const sl::whole width,
-                         const sl::whole          height,
-                         const span<const int8_t> tiles) {
-
-    if (width <= 0 || height <= 0) {
-      error_("Invalid size.", __FUNCTION__);
-      return;
-    }
-
-    if (tiles.size() != width * height) {
-      error_("Invalid tiles.", __FUNCTION__);
-      return;
-    }
-
-    const auto dst_width  = en.get(n_width);
-    const auto dst_height = en.get(n_height);
-
-    for (sl::index j = 0; j < height; j++) {
-      const auto y = y0 + j;
-
-      if (y < 0 || y >= dst_height)
-        continue;
-
-      for (sl::index i = 0; i < width; i++) {
-        const auto x = x0 + i;
-
-        if (x < 0 || x >= dst_width)
-          continue;
-
-        const auto n = y * dst_width + x;
-
-        en.bytes_apply_delta(n, -tiles[j * width + i]);
-      }
-    }
-  }
-
   auto pathmap::get_width(entity en) -> sl::whole {
     return en.get(n_width);
   }
@@ -168,45 +97,104 @@ namespace quadwar_app::object {
     return v;
   }
 
-  auto pathmap::check(entity en, const sl::whole x0, const sl::whole y0,
-                      const sl::whole width, const sl::whole height,
-                      const span<const int8_t> tiles) -> bool {
+  auto pathmap::place(entity en, const vec2z position, const vec2z size,
+                      const span<const int8_t> footprint) noexcept
+      -> vec2z {
 
-    if (width <= 0 || height <= 0) {
+    if (size.x() <= 0 || size.y() <= 0) {
       error_("Invalid size.", __FUNCTION__);
-      return false;
+      return {};
     }
 
-    if (tiles.size() != width * height) {
-      error_("Invalid tiles.", __FUNCTION__);
-      return false;
+    if (size.x() * size.y() != footprint.size()) {
+      error_("Invalid footprint.", __FUNCTION__);
+      return {};
     }
 
-    const auto dst_width  = en.get(n_width);
-    const auto dst_height = en.get(n_height);
+    const auto width  = en.get(n_width);
+    const auto height = en.get(n_height);
 
-    auto line = sl::vector<int8_t>(width);
+    auto line = sl::vector<int8_t>(size.x());
 
-    for (sl::index j = 0; j < height; j++) {
-      const auto y = y0 + j;
+    for (sl::index k = 0; k < m_circular.size(); k++) {
+      const auto x = position.x() + m_circular[k].x() * size.x();
+      const auto y = position.y() + m_circular[k].y() * size.y();
 
-      if (y < 0 || y >= dst_height)
-        return false;
+      bool ok = true;
 
-      en.bytes_read(y * dst_width + x0, line);
+      for (sl::index j = 0; j < size.y(); j++) {
+        if (y + j < 0 || y + j >= height)
+          break;
 
-      for (sl::index i = 0; i < width; i++) {
-        if (x0 + i < 0 || x0 + i >= dst_width)
-          return false;
+        en.bytes_read((y + j) * width + x, line);
 
-        if (tiles[j * width + i] <= 0)
-          continue;
+        for (sl::index i = 0; i < size.x(); i++) {
+          if (x + i < 0 || x + i >= width) {
+            ok = false;
+            break;
+          }
 
-        if (line[i] > 0)
-          return false;
+          if (footprint[j * size.x() + i] <= 0)
+            continue;
+
+          if (line[i] > 0) {
+            ok = false;
+            break;
+          }
+        }
+
+        if (!ok)
+          break;
+      }
+
+      if (ok) {
+        for (sl::index j = 0; j < size.y(); j++) {
+          en.bytes_write_delta(
+              (y + j) * width + x,
+              { footprint.begin() + (j * size.x()),
+                footprint.begin() + ((j + 1) * size.x()) });
+        }
+
+        return { x, y };
       }
     }
 
-    return true;
+    for (sl::index j = 0; j < size.y(); j++) {
+      en.bytes_write_delta(
+          (position.y() + j) * width + position.x(),
+          { footprint.begin() + (j * size.x()),
+            footprint.begin() + ((j + 1) * size.x()) });
+    }
+
+    return position;
+  }
+
+  auto pathmap::gen_circular() -> sl::vector<vec2z> {
+    auto v = sl::vector<vec2z>(_circular_size);
+
+    for (sl::index i = -_distance, k = 0; i <= _distance; i++) {
+      for (sl::index j = -_distance; j <= _distance; j++, k++)
+        v[k] = vec2z { i, j };
+    }
+
+    constexpr auto cmp = [](const vec2z a, const vec2z b) -> bool {
+      const auto alen = math::square_length(a);
+      const auto blen = math::square_length(b);
+
+      if (alen < blen)
+        return true;
+
+      if (alen == blen) {
+        if (a.y() < b.y())
+          return true;
+        if (a.y() == b.y() && a.x() < b.x())
+          return true;
+      }
+
+      return false;
+    };
+
+    std::sort(v.begin(), v.end(), cmp);
+    return v;
   }
 }

@@ -108,21 +108,23 @@ namespace laplace::engine {
      */
     void apply_delta(sl::index n, intval delta);
 
-    [[nodiscard]] auto bytes_get_size() -> sl::whole;
+    [[nodiscard]] auto bytes_get_size() noexcept -> sl::whole;
 
-    [[nodiscard]] auto bytes_get(sl::index n) -> int8_t;
+    [[nodiscard]] auto bytes_get(sl::index n) noexcept -> int8_t;
 
-    void bytes_read(sl::index n, std::span<int8_t> dst);
+    void bytes_read(sl::index n, std::span<int8_t> dst) noexcept;
 
-    void bytes_set(sl::index n, int8_t value);
+    void bytes_set(sl::index n, int8_t value) noexcept;
 
-    void bytes_write(sl::index n, std::span<const int8_t> values);
+    void bytes_write(sl::index               n,
+                     std::span<const int8_t> values) noexcept;
 
-    void bytes_apply_delta(sl::index n, int8_t delta);
+    void bytes_apply_delta(sl::index n, int8_t delta) noexcept;
 
-    void bytes_write_delta(sl::index n, std::span<const int8_t> deltas);
+    void bytes_write_delta(sl::index               n,
+                           std::span<const int8_t> deltas) noexcept;
 
-    void bytes_resize(sl::whole size);
+    void bytes_resize(sl::whole size) noexcept;
 
     [[nodiscard]] auto vec_get_size() -> sl::whole;
 
@@ -215,7 +217,7 @@ namespace laplace::engine {
      */
     void init(sl::index n, intval value);
 
-    void bytes_init(sl::index n, int8_t value);
+    void bytes_init(sl::index n, int8_t value) noexcept;
 
     void vec_init(sl::index n, intval value);
 
@@ -229,9 +231,11 @@ namespace laplace::engine {
      */
     [[nodiscard]] auto locked_get_by_id(sl::index id) const -> intval;
 
-    [[nodiscard]] auto locked_bytes_get_size() const -> sl::whole;
+    [[nodiscard]] auto locked_bytes_get_size() const noexcept
+        -> sl::whole;
 
-    [[nodiscard]] auto locked_bytes_get(sl::index n) const -> int8_t;
+    [[nodiscard]] auto locked_bytes_get(sl::index n) const noexcept
+        -> int8_t;
 
     [[nodiscard]] auto locked_vec_get_size() const -> sl::whole;
 

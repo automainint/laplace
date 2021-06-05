@@ -1,7 +1,5 @@
 /*  laplace/engine/e_basic_entity.cpp
  *
- *      Basic class for any gameplay object. Implementation.
- *
  *  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
@@ -87,7 +85,7 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::bytes_init(sl::index n, int8_t value) {
+  void basic_entity::bytes_init(sl::index n, int8_t value) noexcept {
     if (n >= 0 && n < m_bytes.size()) {
       m_bytes[n].value = value;
       m_bytes[n].delta = 0;
@@ -218,7 +216,7 @@ namespace laplace::engine {
     }
   }
 
-  auto basic_entity::bytes_get_size() -> sl::whole {
+  auto basic_entity::bytes_get_size() noexcept -> sl::whole {
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       return locked_bytes_get_size();
     }
@@ -228,7 +226,7 @@ namespace laplace::engine {
     return {};
   }
 
-  auto basic_entity::bytes_get(sl::index n) -> int8_t {
+  auto basic_entity::bytes_get(sl::index n) noexcept -> int8_t {
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       return locked_bytes_get(n);
     }
@@ -238,7 +236,7 @@ namespace laplace::engine {
     return {};
   }
 
-  void basic_entity::bytes_read(sl::index n, span<int8_t> dst) {
+  void basic_entity::bytes_read(sl::index n, span<int8_t> dst) noexcept {
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       for (sl::index i = 0; i < dst.size(); i++)
         dst.begin()[i] = locked_bytes_get(n + i);
@@ -248,7 +246,7 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::bytes_set(sl::index n, int8_t value) {
+  void basic_entity::bytes_set(sl::index n, int8_t value) noexcept {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       if (n < 0 || n >= m_bytes.size()) {
         error_("Invalid index.", __FUNCTION__);
@@ -265,7 +263,8 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::bytes_write(sl::index n, span<const int8_t> values) {
+  void basic_entity::bytes_write(sl::index          n,
+                                 span<const int8_t> values) noexcept {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       if (n < 0 || n + values.size() > m_bytes.size()) {
         error_("Invalid index.", __FUNCTION__);
@@ -284,7 +283,8 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::bytes_apply_delta(sl::index n, int8_t delta) {
+  void basic_entity::bytes_apply_delta(sl::index n,
+                                       int8_t    delta) noexcept {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       if (n < 0 || n >= m_bytes.size()) {
         error_("Invalid index.", __FUNCTION__);
@@ -300,8 +300,9 @@ namespace laplace::engine {
       desync();
     }
   }
-  
-  void basic_entity::bytes_write_delta(sl::index n, span<const int8_t> deltas) {
+
+  void basic_entity::bytes_write_delta(
+      sl::index n, span<const int8_t> deltas) noexcept {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       if (n < 0 || n + deltas.size() > m_bytes.size()) {
         error_("Invalid index.", __FUNCTION__);
@@ -320,7 +321,7 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::bytes_resize(sl::whole size) {
+  void basic_entity::bytes_resize(sl::whole size) noexcept {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       if (size < 0) {
         error_("Invalid size.", __FUNCTION__);
@@ -531,11 +532,13 @@ namespace laplace::engine {
     return n >= 0 && n < m_sets.size() ? m_sets[n].value : 0;
   }
 
-  auto basic_entity::locked_bytes_get_size() const -> sl::whole {
+  auto basic_entity::locked_bytes_get_size() const noexcept
+      -> sl::whole {
     return m_bytes.size();
   }
 
-  auto basic_entity::locked_bytes_get(sl::index n) const -> int8_t {
+  auto basic_entity::locked_bytes_get(sl::index n) const noexcept
+      -> int8_t {
     return n >= 0 && n < m_bytes.size() ? m_bytes[n].value : 0;
   }
 
