@@ -22,8 +22,8 @@ namespace quadwar_app {
 
   auto quadwar::get_player_name() -> u8string_view {
     auto dev  = std::random_device {};
-    auto dist = std::uniform_int_distribution<size_t>(
-        0u, default_player_names.size() - 1);
+    auto dist = std::uniform_int_distribution<sl::index>(
+        0, default_player_names.size() - 1);
 
     return default_player_names.begin()[dist(dev)];
   }
@@ -31,7 +31,7 @@ namespace quadwar_app {
   auto quadwar::get_config() -> family {
     using namespace stem::config;
 
-    family cfg = get_default();
+    auto cfg = get_default();
 
     cfg[k_caption]        = caption;
     cfg[k_server_address] = default_server_address;

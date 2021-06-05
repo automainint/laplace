@@ -22,15 +22,15 @@ namespace laplace::engine {
 
   inline void prime_impact::encode_to(std::span<uint8_t>) const { }
 
-  constexpr auto prime_impact::get_encoded_size() const -> size_t {
+  constexpr auto prime_impact::get_encoded_size() const -> sl::whole {
     return this->m_encoded_size;
   }
 
-  constexpr void prime_impact::set_index(span_byte seq, size_t index) {
+  constexpr void prime_impact::set_index(span_byte seq, sl::index n) {
     using namespace protocol;
 
     if (get_id(seq) >= ids::_unindexed_count)
-      serial::wr<uint64_t>(seq, n_index, index);
+      serial::wr<uint64_t>(seq, n_index, n);
   }
 
   constexpr auto prime_impact::get_id_unsafe(span_cbyte seq)
@@ -39,7 +39,7 @@ namespace laplace::engine {
   }
 
   constexpr auto prime_impact::get_index_unsafe(span_cbyte seq)
-      -> size_t {
+      -> sl::index {
     return as_index(serial::rd<uint64_t>(seq, n_index));
   }
 
@@ -49,7 +49,7 @@ namespace laplace::engine {
   }
 
   constexpr auto prime_impact::get_actor_unsafe(span_cbyte seq)
-      -> size_t {
+      -> sl::index {
     return as_index(serial::rd<uint64_t>(seq, n_actor));
   }
 
@@ -62,7 +62,7 @@ namespace laplace::engine {
     return ids::undefined;
   }
 
-  constexpr auto prime_impact::get_index(span_cbyte seq) -> size_t {
+  constexpr auto prime_impact::get_index(span_cbyte seq) -> sl::index {
     using namespace protocol;
 
     if (get_id(seq) < ids::_unindexed_count) {
@@ -82,7 +82,7 @@ namespace laplace::engine {
     return get_time_unsafe(seq);
   }
 
-  constexpr auto prime_impact::get_actor(span_cbyte seq) -> size_t {
+  constexpr auto prime_impact::get_actor(span_cbyte seq) -> sl::index {
     using namespace protocol;
 
     if (get_id(seq) < ids::_control_count) {
@@ -113,7 +113,7 @@ namespace laplace::engine {
              size };
   }
 
-  constexpr void prime_impact::set_encoded_size(size_t size) {
+  constexpr void prime_impact::set_encoded_size(sl::whole size) {
     this->m_encoded_size = size;
   }
 

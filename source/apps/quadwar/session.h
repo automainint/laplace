@@ -92,6 +92,7 @@ namespace quadwar_app {
     size_t        m_player_count    = 0;
     size_t        m_unit_count      = 0;
     bool          m_host_info_saved = false;
+    bool          m_show_game       = false;
 
     network::ptr_server m_server;
 

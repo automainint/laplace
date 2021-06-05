@@ -16,60 +16,63 @@
 #include "astar.h"
 
 namespace laplace::engine::eval::grid {
-  using op = std::function<uint8_t(const uint8_t dst, const uint8_t src)>;
+  using op = std::function<int8_t(const int8_t dst, const int8_t src)>;
 
-  static constexpr auto op_and = [](const uint8_t dst,
-                                    const uint8_t src) {
+  static constexpr auto op_and = [](const int8_t dst, const int8_t src) {
     return dst & src;
   };
 
-  static constexpr auto op_or = [](const uint8_t dst,
-                                   const uint8_t src) {
+  static constexpr auto op_or = [](const int8_t dst, const int8_t src) {
     return dst | src;
   };
 
-  static constexpr auto op_xor = [](const uint8_t dst,
-                                    const uint8_t src) {
+  static constexpr auto op_xor = [](const int8_t dst, const int8_t src) {
     return dst ^ src;
   };
 
-  void merge(const vec2z size, const span_byte dst,
-             const span_cbyte src, const op merge_op) noexcept;
+  void merge(const vec2z size, const std::span<int8_t> dst,
+             const std::span<const int8_t> src,
+             const op                      merge_op) noexcept;
 
-  void merge(const vec2z dst_size, const span_byte dst,
+  void merge(const vec2z dst_size, const std::span<int8_t> dst,
              const vec2z src_size, const vec2i src_offset,
-             const span_cbyte src, const op merge_op) noexcept;
+             const std::span<const int8_t> src,
+             const op                      merge_op) noexcept;
 
   using fn_point     = std::function<bool(const vec2z p)>;
-  using fn_available = std::function<bool(const uint8_t state)>;
+  using fn_available = std::function<bool(const int8_t state)>;
 
   auto trace_line(const vec2z size, const vec2z a, const vec2z b,
                   const fn_point point) -> bool;
 
-  auto neighbors4(const size_t width, const intval scale,
-                  const span_cbyte map, const fn_available available,
-                  const size_t p) -> astar::vlink;
+  auto neighbors4(const sl::index width, const intval scale,
+                  const std::span<const int8_t> map,
+                  const fn_available available, const sl::index p)
+      -> astar::vlink;
 
-  auto neighbors8(const size_t width, const intval scale,
-                  const span_cbyte map, const fn_available available,
-                  const size_t p) -> astar::vlink;
+  auto neighbors8(const sl::index width, const intval scale,
+                  const std::span<const int8_t> map,
+                  const fn_available available, const sl::index p)
+      -> astar::vlink;
 
-  auto manhattan(const size_t width, const intval scale,
-                 const size_t a, const size_t b) -> intval;
+  auto manhattan(const sl::index width, const intval scale,
+                 const sl::index a, const sl::index b) -> intval;
 
-  auto diagonal(const size_t width, const intval scale,
-                const size_t a, const size_t b) -> intval;
+  auto diagonal(const sl::index width, const intval scale,
+                const sl::index a, const sl::index b) -> intval;
 
-  auto euclidean(const size_t width, const intval scale,
-                 const size_t a, const size_t b) -> intval;
+  auto euclidean(const sl::index width, const intval scale,
+                 const sl::index a, const sl::index b) -> intval;
 
-  auto path_exists(const size_t width, const span_cbyte map,
+  auto path_exists(const sl::index               width,
+                   const std::span<const int8_t> map,
                    const fn_available available, const vec2z a,
                    const vec2z b) -> bool;
 
   auto path_search(const vec2z size, const intval scale,
-                   const span_cbyte map, const fn_available available,
-                   const vec2z a, const vec2z b) -> sl::vector<vec2z>;
+                   const std::span<const int8_t> map,
+                   const fn_available available, const vec2z a,
+                   const vec2z b) -> sl::vector<vec2z>;
 }
 
 #endif

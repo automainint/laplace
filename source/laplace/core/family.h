@@ -1,6 +1,6 @@
 /*  laplace/core/family.h
  *
- *      Indexed family data type. Universal data container.
+ *      Universal data container. Indexed family data type.
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -18,16 +18,13 @@
 #include "defs.h"
 
 namespace laplace::core {
-  /*  TODO
-   *  Make it constexpr.
-   */
   class family {
   public:
     using ref_family  = family &;
     using cref_family = const family &;
 
-    using vfamily   = std::vector<family>;
-    using composite = std::vector<std::pair<family, family>>;
+    using vfamily   = sl::vector<family>;
+    using composite = sl::vector<std::pair<family, family>>;
 
     using cref_vfamily   = const vfamily &;
     using cref_composite = const composite &;
@@ -155,8 +152,7 @@ namespace laplace::core {
     auto by_key(size_t key) -> ref_family;
     auto by_key(size_t key) const -> cref_family;
 
-    [[nodiscard]] auto compare(cref_family value) const noexcept
-        -> int;
+    [[nodiscard]] auto compare(cref_family value) const noexcept -> int;
 
     auto value(int index) -> ref_family;
     auto value(const char *key) -> ref_family;
@@ -201,13 +197,12 @@ namespace laplace::core {
 
     static auto op_lower_bound(const std::pair<family, family> &a,
                                const family &key) -> bool;
-    static auto op_lower_bound_uint(
-        const std::pair<family, family> &a, size_t key) -> bool;
+    static auto op_lower_bound_uint(const std::pair<family, family> &a,
+                                    size_t key) -> bool;
     static auto op_sort(const std::pair<family, family> &a,
-                        const std::pair<family, family> &b)
-        -> bool;
+                        const std::pair<family, family> &b) -> bool;
 
-    enum type_index : size_t {
+    enum type_index : sl::index {
       n_uint = 1,
       n_bool,
       n_int,

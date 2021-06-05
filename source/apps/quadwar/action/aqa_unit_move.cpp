@@ -10,20 +10,19 @@
  *  the MIT License for more details.
  */
 
-#include "unit_move.h"
 #include "../object/unit.h"
+#include "unit_move.h"
 
 namespace quadwar_app::action {
   namespace access = engine::access;
 
   using object::unit;
 
-  unit_move::unit_move(size_t id_unit) {
+  unit_move::unit_move(sl::index id_unit) {
     m_id_unit = id_unit;
   }
 
   void unit_move::perform(access::world w) const {
     auto u = w.get_entity(m_id_unit);
-
   }
 }

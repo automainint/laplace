@@ -19,13 +19,13 @@
 namespace quadwar_app::action {
   class unit_place : public engine::sync_impact {
   public:
-    unit_place(size_t id_unit);
+    unit_place(sl::index id_unit);
     ~unit_place() override = default;
 
     void perform(engine::access::world w) const override;
 
   private:
-    size_t m_id_unit = {};
+    sl::index m_id_unit = {};
   };
 }
 

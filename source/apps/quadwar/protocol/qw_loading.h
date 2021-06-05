@@ -18,19 +18,19 @@
 namespace quadwar_app::protocol {
   class qw_loading final : public engine::sync_prime_impact {
   public:
-    enum encoding_offset : size_t {
+    enum encoding_offset : sl::index {
       n_map_size     = 10,
       n_player_count = 18,
       n_unit_count   = 26
     };
 
-    static constexpr uint16_t id   = ids::server_loading;
-    static constexpr size_t   size = 34;
+    static constexpr uint16_t  id   = ids::server_loading;
+    static constexpr sl::whole size = 34;
 
     ~qw_loading() final = default;
 
-    inline qw_loading(size_t map_size, size_t player_count,
-                      size_t unit_count) {
+    inline qw_loading(sl::whole map_size, sl::whole player_count,
+                      sl::whole unit_count) {
 
       set_encoded_size(size);
 
@@ -39,8 +39,8 @@ namespace quadwar_app::protocol {
       m_unit_count   = unit_count;
     }
 
-    inline qw_loading(size_t index, size_t map_size,
-                      size_t player_count, size_t unit_count) {
+    inline qw_loading(sl::index index, sl::whole map_size,
+                      sl::whole player_count, sl::whole unit_count) {
 
       set_index(index);
       set_encoded_size(size);
@@ -54,9 +54,9 @@ namespace quadwar_app::protocol {
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
       serial::write_bytes(bytes, id, get_index64(),
-                          static_cast<uint64_t>(m_map_size),
-                          static_cast<uint64_t>(m_player_count),
-                          static_cast<uint64_t>(m_unit_count));
+                          static_cast<sl::whole64>(m_map_size),
+                          static_cast<sl::whole64>(m_player_count),
+                          static_cast<sl::whole64>(m_unit_count));
     }
 
     static constexpr auto scan(span_cbyte seq) -> bool {
@@ -64,15 +64,15 @@ namespace quadwar_app::protocol {
     }
 
     static inline auto get_map_size(span_cbyte seq) {
-      return as_index(serial::rd<uint64_t>(seq, n_map_size));
+      return as_index(serial::rd<sl::whole64>(seq, n_map_size));
     }
 
     static inline auto get_player_count(span_cbyte seq) {
-      return as_index(serial::rd<uint64_t>(seq, n_player_count));
+      return as_index(serial::rd<sl::whole64>(seq, n_player_count));
     }
 
     static inline auto get_unit_count(span_cbyte seq) {
-      return as_index(serial::rd<uint64_t>(seq, n_unit_count));
+      return as_index(serial::rd<sl::whole64>(seq, n_unit_count));
     }
 
     static inline auto decode(span_cbyte seq) {
@@ -81,9 +81,9 @@ namespace quadwar_app::protocol {
     }
 
   private:
-    size_t m_map_size;
-    size_t m_player_count;
-    size_t m_unit_count;
+    sl::whole m_map_size;
+    sl::whole m_player_count;
+    sl::whole m_unit_count;
   };
 }
 

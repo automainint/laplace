@@ -18,10 +18,8 @@
 namespace quadwar_app::object::sets {
   using namespace laplace::engine::object::sets;
 
-  enum set_id : size_t {
+  enum set_id : sl::index {
     state_version = _native_count,
-
-    player_name,
 
     root_is_loading,
     root_is_launched,
@@ -65,6 +63,7 @@ namespace quadwar_app::object::sets {
     pathmap_add,
     pathmap_subtract,
     pathmap_check,
+    pathmap_place,
 
     _count
   };

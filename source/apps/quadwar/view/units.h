@@ -21,6 +21,7 @@ namespace quadwar_app::view {
   class units : engine::helper {
   public:
     static constexpr auto default_color = vec4 { .8f, .1f, .1f, 1.f };
+    static constexpr auto unit_scaling  = .9f;
 
     void render(const camera &cam, world w);
 

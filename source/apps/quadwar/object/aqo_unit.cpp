@@ -14,7 +14,6 @@
 
 #include "../action/unit_move.h"
 #include "landscape.h"
-#include "pathmap.h"
 #include "root.h"
 
 namespace quadwar_app::object {
@@ -23,11 +22,11 @@ namespace quadwar_app::object {
   using std::vector, engine::intval, engine::vec2i,
       engine::id_undefined, std::make_shared, action::unit_move;
 
-  size_t unit::n_actor  = {};
-  size_t unit::n_x      = {};
-  size_t unit::n_y      = {};
-  size_t unit::n_radius = {};
-  size_t unit::n_health = {};
+  sl::index unit::n_actor  = {};
+  sl::index unit::n_x      = {};
+  sl::index unit::n_y      = {};
+  sl::index unit::n_radius = {};
+  sl::index unit::n_health = {};
 
   unit unit::m_proto(unit::proto);
 
@@ -36,7 +35,7 @@ namespace quadwar_app::object {
         { { .id = sets::unit_actor, .scale = 1 },
           { .id = sets::unit_x, .scale = sets::scale_real },
           { .id = sets::unit_y, .scale = sets::scale_real },
-          { .id = sets::unit_radius, .scale = pathmap::resolution },
+          { .id = sets::unit_radius, .scale = sets::scale_real },
           { .id = sets::unit_health, .scale = sets::scale_points } });
 
     n_actor  = index_of(sets::unit_actor);
@@ -53,9 +52,9 @@ namespace quadwar_app::object {
   void unit::tick(access::world w) { }
 
   auto unit::spawn_start_units(world w, sl::whole unit_count)
-      -> vector<size_t> {
+      -> vector<sl::index> {
 
-    auto ids = vector<size_t> {};
+    auto ids = vector<sl::index> {};
 
     auto r    = w.get_entity(w.get_root());
     auto land = w.get_entity(root::get_landscape(r));
@@ -91,12 +90,13 @@ namespace quadwar_app::object {
 
         const auto sx = u.scale_of(n_x);
         const auto sy = u.scale_of(n_y);
+        const auto sr = u.scale_of(n_radius);
         const auto sh = u.scale_of(n_health);
 
         u.init(n_actor, id_actor);
         u.init(n_x, x * sx);
         u.init(n_y, y * sy);
-        u.init(n_radius, radius);
+        u.init(n_radius, radius * sr);
         u.init(n_health, health * sh);
 
         return u;
@@ -112,7 +112,7 @@ namespace quadwar_app::object {
     return ids;
   }
 
-  void unit::set_actor(entity en, size_t id_actor) {
+  void unit::set_actor(entity en, sl::index id_actor) {
     en.set(n_actor, static_cast<int64_t>(id_actor));
   }
 
@@ -137,7 +137,7 @@ namespace quadwar_app::object {
     en.set(n_health, health);
   }
 
-  auto unit::get_actor(entity en) -> size_t {
+  auto unit::get_actor(entity en) -> sl::index {
     return as_index(en.get(n_actor));
   }
 

@@ -18,7 +18,7 @@
 namespace quadwar_app::object {
   using engine::basic_entity;
 
-  size_t game_clock::n_clock_time = 0;
+  sl::index game_clock::n_clock_time = 0;
 
   game_clock game_clock::m_proto(basic_entity::proto);
 

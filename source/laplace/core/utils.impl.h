@@ -14,7 +14,7 @@
 #define laplace_core_utils_impl_h
 
 namespace laplace {
-  constexpr auto as_index(uint64_t value) noexcept -> size_t {
+  constexpr auto as_index(uint64_t value) noexcept -> sl::index {
     if constexpr (sizeof(uint64_t) != sizeof(size_t)) {
       if (value > std::numeric_limits<size_t>::max()) {
         verb("[ error ] 32-bit index value overflow.");
@@ -22,10 +22,10 @@ namespace laplace {
       }
     }
 
-    return static_cast<size_t>(value);
+    return static_cast<sl::index>(value);
   }
 
-  constexpr auto as_index(int64_t value) noexcept -> size_t {
+  constexpr auto as_index(int64_t value) noexcept -> sl::index {
     return as_index(static_cast<uint64_t>(value));
   }
 }

@@ -26,9 +26,6 @@
 #include <shared_mutex>
 
 namespace laplace::engine {
-  /*  TODO
-   *  Atomics, constexpr.
-   */
   class basic_entity {
   public:
     class dummy_tag { };
@@ -83,33 +80,61 @@ namespace laplace::engine {
     /*  Set the Entity id. Do not modify the
      *  id set by the World.
      */
-    void set_id(size_t id);
+    void set_id(sl::index id);
 
     void set_world(ptr_world w);
     void reset_world();
 
-    [[nodiscard]] auto index_of(size_t id) const -> size_t;
-    [[nodiscard]] auto get_count() const -> size_t;
+    [[nodiscard]] auto index_of(sl::index id) const -> sl::index;
+    [[nodiscard]] auto get_count() const -> sl::whole;
 
-    [[nodiscard]] auto id_of(size_t index) const -> size_t;
-    [[nodiscard]] auto scale_of(size_t index) const -> size_t;
+    [[nodiscard]] auto id_of(sl::index index) const -> sl::index;
+    [[nodiscard]] auto scale_of(sl::index index) const -> sl::index;
 
     /*  Get a state value.
      *  Thread-safe.
      */
-    [[nodiscard]] auto get(size_t index) -> int64_t;
+    [[nodiscard]] auto get(sl::index n) -> intval;
 
     /*  Change a state value. It will apply
      *  calculated delta for the value. The actual
      *  value will change due adjusting.
      *  Thread-safe.
      */
-    void set(size_t index, int64_t value);
+    void set(sl::index n, intval value);
 
     /*  Apply a state value delta.
      *  Thread-safe.
      */
-    void apply_delta(size_t index, int64_t delta);
+    void apply_delta(sl::index n, intval delta);
+
+    [[nodiscard]] auto bytes_get_size() noexcept -> sl::whole;
+
+    [[nodiscard]] auto bytes_get(sl::index n) noexcept -> int8_t;
+
+    void bytes_read(sl::index n, std::span<int8_t> dst) noexcept;
+
+    void bytes_set(sl::index n, int8_t value) noexcept;
+
+    void bytes_write(sl::index               n,
+                     std::span<const int8_t> values) noexcept;
+
+    void bytes_apply_delta(sl::index n, int8_t delta) noexcept;
+
+    void bytes_write_delta(sl::index               n,
+                           std::span<const int8_t> deltas) noexcept;
+
+    void bytes_resize(sl::whole size) noexcept;
+
+    [[nodiscard]] auto vec_get_size() -> sl::whole;
+
+    [[nodiscard]] auto vec_get(sl::index n) -> intval;
+
+    void vec_set(sl::index n, intval value);
+
+    void vec_apply_delta(sl::index n, intval delta);
+
+    void vec_resize(sl::whole size);
 
     /*  Adjust Entity new state.
      *  Thread-safe.
@@ -119,16 +144,13 @@ namespace laplace::engine {
     /*  Perform an universal request.
      *  Thread-safe.
      */
-    [[nodiscard]] auto request( //
-        size_t     id,          //
-        span_cbyte args = {}) -> vbyte;
+    [[nodiscard]] auto request(sl::index id, span_cbyte args = {})
+        -> vbyte;
 
     /*  Perform an universal modification.
      *  Thread-safe.
      */
-    void modify(       //
-        size_t     id, //
-        span_cbyte args = {});
+    void modify(sl::index id, span_cbyte args = {});
 
     /*  Dynamic Entity live loop.
      */
@@ -140,11 +162,6 @@ namespace laplace::engine {
      *  Thread-safe.
      */
     auto clock() -> bool;
-
-    /*  Returns true if the Entity was changed.
-     *  Thread-safe.
-     */
-    [[nodiscard]] auto is_changed() -> bool;
 
     /*  Returns true if the Entity is dynamic.
      *  Thread-safe.
@@ -158,50 +175,71 @@ namespace laplace::engine {
 
     /*  Returns the Entity id.
      */
-    [[nodiscard]] auto get_id() const -> size_t;
+    [[nodiscard]] auto get_id() const -> sl::index;
 
     /*  Get a state value by id.
      *  Thread-safe.
      */
-    [[nodiscard]] auto get_by_id(size_t id) -> int64_t;
+    [[nodiscard]] auto get_by_id(sl::index id) -> intval;
 
   protected:
     /*  State values' indices in PRECISE order.
      */
-    enum indices : size_t {
+    enum indices : sl::index {
       n_is_dynamic = 0,
       n_tick_period,
     };
 
     struct sets_row {
-      size_t  id    = id_undefined;
-      int64_t scale = 0;
-      int64_t value = 0;
-      int64_t delta = 0;
+      sl::index id    = id_undefined;
+      intval    scale = {};
+      intval    value = {};
+      intval    delta = {};
     };
 
-    using vsets_row      = std::vector<sets_row>;
-    using cref_vsets_row = const vsets_row &;
+    struct bytes_row {
+      int8_t value = {};
+      int8_t delta = {};
+    };
 
-    std::shared_timed_mutex m_lock;
+    struct vec_row {
+      intval value = {};
+      intval delta = {};
+    };
+
+    using vsets_row = std::vector<sets_row>;
 
     /*  Setup state values.
      */
-    void setup_sets(cref_vsets_row sets);
+    void setup_sets(const vsets_row &sets);
 
     /*  Init state value.
      */
-    void init(size_t index, int64_t value);
+    void init(sl::index n, intval value);
+
+    void bytes_init(sl::index n, int8_t value) noexcept;
+
+    void vec_init(sl::index n, intval value);
 
     /*  Get a state value without
      *  locking.
      */
-    [[nodiscard]] auto locked_get(size_t index) const -> int64_t;
+    [[nodiscard]] auto locked_get(sl::index n) const -> intval;
 
     /*  Get a state value by id
      *  without locking.
      */
-    [[nodiscard]] auto locked_get_by_id(size_t id) const -> int64_t;
+    [[nodiscard]] auto locked_get_by_id(sl::index id) const -> intval;
+
+    [[nodiscard]] auto locked_bytes_get_size() const noexcept
+        -> sl::whole;
+
+    [[nodiscard]] auto locked_bytes_get(sl::index n) const noexcept
+        -> int8_t;
+
+    [[nodiscard]] auto locked_vec_get_size() const -> sl::whole;
+
+    [[nodiscard]] auto locked_vec_get(sl::index n) const -> intval;
 
     void self_destruct(const access::world &w);
     void desync();
@@ -211,30 +249,31 @@ namespace laplace::engine {
      *  Thread-safe methods not allowed
      *  from here due to the locking.
      */
-    [[nodiscard]] virtual auto do_request( //
-        size_t     id,                     //
-        span_cbyte args) const -> vbyte;
+    [[nodiscard]] virtual auto do_request(sl::index  id,
+                                          span_cbyte args) const
+        -> vbyte;
 
     /*  Universal modification implementation.
      *
      *  Thread-safe methods not allowed
      *  from here due to the locking.
      */
-    virtual void do_modify( //
-        size_t     id,      //
-        span_cbyte args);
+    virtual void do_modify(sl::index id, span_cbyte args);
 
   private:
     void assign(cref_entity en) noexcept;
     void assign(basic_entity &&en) noexcept;
 
-    std::weak_ptr<world> m_world;
-
-    vsets_row m_sets;
-    uint64_t  m_clock = 0;
-
-    size_t m_id         = id_undefined;
-    bool   m_is_changed = false;
+    std::shared_timed_mutex m_lock;
+    std::weak_ptr<world>    m_world;
+    vsets_row               m_sets;
+    sl::vector<bytes_row>   m_bytes;
+    sl::vector<vec_row>     m_vec;
+    uint64_t                m_clock            = {};
+    sl::index               m_id               = id_undefined;
+    bool                    m_is_changed       = false;
+    bool                    m_is_bytes_changed = false;
+    bool                    m_is_vec_changed   = false;
   };
 }
 

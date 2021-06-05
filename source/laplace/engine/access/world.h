@@ -37,27 +37,27 @@ namespace laplace::engine::access {
     /*  Reserve an entity id.
      *  Sync.
      */
-    auto reserve(size_t id) const -> size_t;
+    auto reserve(sl::index id) const -> sl::index;
 
     /*  Spawn a new entity. Allow to use already taken id.
      *  Sync.
      */
-    void emplace(ptr_entity ent, size_t id) const;
+    void emplace(ptr_entity ent, sl::index id) const;
 
     /*  Spawn a new entity.
      *  Sync.
      */
-    auto spawn(ptr_entity ent, size_t id) const -> size_t;
+    auto spawn(ptr_entity ent, sl::index id) const -> sl::index;
 
     /*  Remove an existing entity.
      *  Sync.
      */
-    void remove(size_t id) const;
+    void remove(sl::index id) const;
 
     /*  Respawn an entity.
      *  Sync.
      */
-    void respawn(size_t id) const;
+    void respawn(sl::index id) const;
 
     /*  Remove all entities.
      *  Sync.
@@ -72,22 +72,22 @@ namespace laplace::engine::access {
     /*  Set the root entity id.
      *  Sync.
      */
-    void set_root(size_t id_root) const;
+    void set_root(sl::index id_root) const;
 
     /*  Get the root entity id.
      *  Async.
      */
-    [[nodiscard]] auto get_root() const -> size_t;
+    [[nodiscard]] auto get_root() const -> sl::index;
 
     /*  If the world has an entity.
      *  Async.
      */
-    [[nodiscard]] auto has_entity(size_t id) const -> bool;
+    [[nodiscard]] auto has_entity(sl::index id) const -> bool;
 
     /*  Get an entity.
      *  Async.
      */
-    [[nodiscard]] auto get_entity(size_t id) const -> access::entity;
+    [[nodiscard]] auto get_entity(sl::index id) const -> access::entity;
 
     /*  Generate a random number.
      *  Sync.

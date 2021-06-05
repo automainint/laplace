@@ -25,16 +25,10 @@ namespace quadwar_app::object {
     static void set_name(entity en, std::u8string_view name);
     static auto get_name(entity en) -> std::u8string;
 
-  protected:
-    auto do_request(size_t id, span_cbyte args) const -> vbyte override;
-    void do_modify(size_t id, span_cbyte args) override;
-
   private:
     player(proto_tag);
 
     static player m_proto;
-
-    std::u8string m_name;
   };
 }
 

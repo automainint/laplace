@@ -16,6 +16,7 @@
 #include "../../laplace/network/host.h"
 #include "../../laplace/network/remote.h"
 #include "../../laplace/platform/keys.h"
+#include "object/landscape.h"
 #include "object/player.h"
 #include "object/root.h"
 #include "protocol/qw_loading.h"
@@ -32,8 +33,8 @@ namespace quadwar_app {
   using std::find, std::make_shared, std::string, std::string_view,
       std::u8string_view, std::ofstream, std::ifstream, network::host,
       network::remote, protocol::qw_player_name, object::root,
-      object::player, engine::id_undefined, platform::ref_input,
-      view::vec2, view::real;
+      object::landscape, object::player, engine::id_undefined,
+      platform::ref_input, view::vec2, view::real;
 
   session::session() {
     m_lobby.on_abort([this] {
@@ -44,10 +45,8 @@ namespace quadwar_app {
     m_lobby.on_start([this] {
       if (m_server) {
 
-        m_server->emit<protocol::qw_loading>( //
-            m_map_size,                       //
-            m_player_count,                   //
-            m_unit_count);
+        m_server->emit<protocol::qw_loading>(
+            m_map_size, m_player_count, m_unit_count);
 
         m_server->emit<protocol::server_launch>();
         m_server->emit<protocol::server_action>();
@@ -97,7 +96,7 @@ namespace quadwar_app {
   }
 
   void session::render() {
-    if (m_world) {
+    if (m_world && m_show_game) {
       m_view.render(*m_world);
     }
   }
@@ -203,7 +202,8 @@ namespace quadwar_app {
       f >> port;
 
       if (f) {
-        verb(fmt("Host address found: %s:%hu", network::localhost, port));
+        verb(fmt(
+            "Host address found: %s:%hu", network::localhost, port));
         return fmt("%s:%hu", network::localhost, port);
       }
     } else if (auto f2 = ifstream(session::host_info_file_debug); f2) {
@@ -211,7 +211,8 @@ namespace quadwar_app {
       f2 >> port;
 
       if (f2) {
-        verb(fmt("Host address found: %s:%hu", network::localhost, port));
+        verb(fmt(
+            "Host address found: %s:%hu", network::localhost, port));
         return fmt("%s:%hu", network::localhost, port);
       }
     }
@@ -265,37 +266,57 @@ namespace quadwar_app {
     if (!m_lobby.is_visible())
       return;
 
-    auto r = m_world->get_entity(m_world->get_root());
+    auto world = access::world({ *m_world, access::read_only });
 
-    const auto ver = root::get_version({ r, access::read_only });
+    auto r = world.get_entity(world.get_root());
+
+    const auto ver = root::get_version(r);
 
     if (m_root_ver < ver) {
       m_root_ver = ver;
 
-      if (root::is_launched({ r, access::read_only })) {
+      if (root::is_launched(r)) {
         m_lobby.set_visible(false);
+        m_show_game = true;
+
+        auto       slot_index = sl::index {};
+        const auto slot_count = root::get_slot_count(r);
+
+        for (sl::index i = 0; i < slot_count; i++) {
+          if (root::get_slot(r, i) == m_id_actor) {
+            slot_index = i;
+            break;
+          }
+        }
+
+        auto land      = world.get_entity(root::get_landscape(r));
+        auto start_loc = landscape::get_start_loc(land, slot_index);
+
+        const auto x = static_cast<real>(start_loc.x());
+        const auto y = static_cast<real>(start_loc.y());
+
+        m_view.set_position({ x, y });
+
         return;
       }
 
-      if (root::is_loading({ r, access::read_only })) {
+      if (root::is_loading(r)) {
         m_lobby.show_loading();
         return;
       }
 
-      const auto count = root::get_slot_count({ r, access::read_only });
+      const auto count = root::get_slot_count(r);
 
       for (size_t i = 0; i < count; i++) {
 
-        const auto id_actor = root::get_slot(
-            { r, access::read_only }, i);
-        const auto actor    = m_world->get_entity(id_actor);
-        const auto is_local = player::is_local(
-            { actor, access::read_only });
+        const auto id_actor = root::get_slot(r, i);
+        const auto actor    = world.get_entity(id_actor);
+        const auto is_local = player::is_local(actor);
 
         if (is_local)
           m_id_actor = id_actor;
 
-        auto name = player::get_name({ actor, access::read_only });
+        auto name = player::get_name(actor);
 
         if (name.empty()) {
           name = u8"[ Reserved ]";

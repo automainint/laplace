@@ -14,11 +14,15 @@
 #include "maze.h"
 
 namespace laplace::engine::eval::maze {
-  using std::span, std::function, std::vector, std::tuple, std::tie,
-      std::min;
+  using std::span, std::function, std::tuple, std::tie, std::min;
 
-  void generate(const vec2z size, const span_byte map,
+  void generate(const vec2z size, const span<int8_t> map,
                 const fn_random random) {
+
+    if (size.x() < 0 || size.y() < 0) {
+      error_("Invalid size value.", __FUNCTION__);
+      return;
+    }
 
     if (map.size() < size.x() * size.y()) {
       error_("Invalid map size.", __FUNCTION__);
@@ -29,7 +33,7 @@ namespace laplace::engine::eval::maze {
       return p.y() * width + p.x();
     };
 
-    for (size_t i = 0, i1 = size.x() * size.y(); i < i1; i++) {
+    for (sl::index i = 0, i1 = size.x() * size.y(); i < i1; i++) {
       map[i] = walkable;
     }
 
@@ -39,38 +43,39 @@ namespace laplace::engine::eval::maze {
     const auto i1 = cols * 2 + 1;
     const auto j1 = rows * 2 + 1;
 
-    for (size_t col = 0; col <= cols; col++) {
-      for (size_t j = 0; j < j1; j++) {
+    for (sl::index col = 0; col <= cols; col++) {
+      for (sl::index j = 0; j < j1; j++) {
         map[index_of({ col * 2, j })] = wall;
       }
     }
 
-    for (size_t row = 0; row <= rows; row++) {
-      for (size_t i = 1; i < i1; i += 2) {
+    for (sl::index row = 0; row <= rows; row++) {
+      for (sl::index i = 1; i < i1; i += 2) {
         map[index_of({ i, row * 2 })] = wall;
       }
     }
 
-    const auto gen_caves = [](const size_t cols,
-                              const size_t rows) -> vector<vec2z> {
-      auto caves = vector<vec2z>(cols * rows);
+    const auto gen_caves = [](const sl::index cols,
+                              const sl::index rows) -> sl::vector<vec2z> {
+      auto caves = sl::vector<vec2z>(cols * rows);
 
-      for (size_t i = 0; i < cols; i++) {
-        for (size_t j = 0; j < rows; j++)
+      for (sl::index i = 0; i < cols; i++) {
+        for (sl::index j = 0; j < rows; j++)
           caves[j * cols + i] = vec2z { 1 + i * 2, 1 + j * 2 };
       }
 
       caves.resize(caves.size() * 2);
 
-      for (size_t i = 0, i0 = caves.size() / 2; i < i0; i++) {
+      for (sl::index i = 0, i0 = caves.size() / 2; i < i0; i++) {
         caves[i0 + i] = caves[i];
       }
 
       return caves;
     };
 
-    const auto shuffle = [&random](vector<vec2z> caves) -> vector<vec2z> {
-      auto v = vector<vec2z> {};
+    const auto shuffle =
+        [&random](sl::vector<vec2z> caves) -> sl::vector<vec2z> {
+      auto v = sl::vector<vec2z> {};
       v.reserve(caves.size());
 
       while (!caves.empty()) {
@@ -87,9 +92,9 @@ namespace laplace::engine::eval::maze {
     const auto limit = caves.size() / 2 + 1;
 
     while (caves.size() > limit) {
-      const auto step = [&size](
-                            const vec2z  a,
-                            const size_t dir) -> tuple<vec2z, vec2z> {
+      const auto step =
+          [&size](const vec2z     a,
+                  const sl::index dir) -> tuple<vec2z, vec2z> {
         if (dir == 0) {
           if (a.x() <= 2)
             return { { a.x() + 2, a.y() }, { a.x() + 1, a.y() } };
@@ -113,8 +118,8 @@ namespace laplace::engine::eval::maze {
         return { { a.x(), a.y() + 2 }, { a.x(), a.y() + 1 } };
       };
 
-      auto dir  = static_cast<size_t>(random() % 4);
-      auto cave = static_cast<size_t>(random() % caves.size());
+      auto dir  = static_cast<sl::index>(random() % 4);
+      auto cave = static_cast<sl::index>(random() % caves.size());
 
       vec2z a     = caves[cave];
       auto [b, m] = step(a, dir);
@@ -124,7 +129,7 @@ namespace laplace::engine::eval::maze {
 
       while (grid::path_exists(
           size.x(), map,
-          [](const uint8_t state) {
+          [](const int8_t state) {
             return state == walkable;
           },
           a, b)) {
@@ -149,10 +154,16 @@ namespace laplace::engine::eval::maze {
     }
   }
 
-  void stretch(const vec2z dst_size, const span_byte dst,
-               const vec2z src_size, const span_cbyte src,
-               const size_t tunnel_size,
-               const size_t gate_size) noexcept {
+  void stretch(const vec2z dst_size, const span<int8_t> dst,
+               const vec2z src_size, const span<const int8_t> src,
+               const sl::index tunnel_size,
+               const sl::index gate_size) noexcept {
+
+    if (dst_size.x() < 0 || dst_size.y() < 0 || src_size.x() < 0 ||
+        src_size.y() < 0) {
+      error_("Invalid size value.", __FUNCTION__);
+      return;
+    }
 
     if (dst.size() < dst_size.x() * dst_size.y()) {
       error_("Invalid destination size.", __FUNCTION__);
@@ -164,12 +175,13 @@ namespace laplace::engine::eval::maze {
       return;
     }
 
-    for (size_t i = 0, i1 = dst_size.x() * dst_size.y(); i < i1; i++) {
+    for (sl::index i = 0, i1 = dst_size.x() * dst_size.y(); i < i1;
+         i++) {
       dst[i] = walkable;
     }
 
-    for (size_t j = 0; j < src_size.y(); j++) {
-      for (size_t i = 0; i < src_size.x(); i++) {
+    for (sl::index j = 0; j < src_size.y(); j++) {
+      for (sl::index i = 0; i < src_size.x(); i++) {
 
         if (src[j * src_size.x() + i] == walkable) {
           continue;
@@ -230,8 +242,8 @@ namespace laplace::engine::eval::maze {
           }
         }
 
-        for (size_t y = y0; y < y1; y++) {
-          for (size_t x = x0; x < x1; x++) {
+        for (sl::index y = y0; y < y1; y++) {
+          for (sl::index x = x0; x < x1; x++) {
             const auto n = y * dst_size.x() + x;
 
             if (n < dst.size()) {

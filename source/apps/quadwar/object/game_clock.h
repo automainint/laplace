@@ -19,8 +19,8 @@
 namespace quadwar_app::object {
   class game_clock : public engine::basic_entity, helper {
   public:
-    static constexpr size_t tick_period          = 100;
-    static constexpr size_t server_tick_duration = 10;
+    static constexpr sl::index tick_period          = 100;
+    static constexpr sl::index server_tick_duration = 10;
 
     game_clock();
     ~game_clock() override = default;
@@ -30,7 +30,7 @@ namespace quadwar_app::object {
   private:
     game_clock(proto_tag);
 
-    static size_t n_clock_time;
+    static sl::index n_clock_time;
 
     static game_clock m_proto;
   };

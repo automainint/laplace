@@ -22,10 +22,10 @@ namespace quadwar_app::action {
   namespace access = engine::access;
   namespace sets   = object::sets;
 
-  using std::vector, object::root, object::pathmap, object::unit,
-      engine::intval, engine::vec2i;
+  using object::root, object::pathmap, object::unit, engine::intval,
+      engine::vec2i;
 
-  unit_place::unit_place(size_t id_unit) {
+  unit_place::unit_place(sl::index id_unit) {
     m_id_unit = id_unit;
   }
 
@@ -53,36 +53,14 @@ namespace quadwar_app::action {
     const auto s    = unit::get_radius(u) / sr;
     const auto side = s * 2 + 1;
 
-    constexpr sl::whole distance = 20;
+    const auto footprint = sl::vector<int8_t>(side * side, 1);
 
-    auto gen_order = [distance]() -> vector<vec2i> {
-      auto v = vector<vec2i>((distance * 2 + 1) * (distance * 2 + 1));
+    auto p = pathmap::place(
+        path, { x0 - s, y0 - s }, { side, side }, footprint);
 
-      for (sl::index i = -distance, k = 0; i <= distance; i++) {
-        for (sl::index j = -distance; j <= distance; j++, k++)
-          v[k] = vec2i { i, j };
-      }
+    unit::set_position(u, { (p.x() + s) * sx, (p.y() + s) * sy });
 
-      constexpr auto cmp = [](const vec2i a, const vec2i b) -> bool {
-        return math::square_length(a) < math::square_length(b);
-      };
-
-      std::sort(v.begin(), v.end(), cmp);
-      return v;
-    };
-
-    const auto order     = gen_order();
-    const auto footprint = vector<uint8_t>(side * side, 1);
-
-    for (sl::index i = 0; i < order.size(); i++) {
-      const auto x = x0 + order[i].x() * s - s;
-      const auto y = y0 + order[i].y() * s - s;
-
-      if (pathmap::check(path, x, y, side, side, footprint)) {
-        pathmap::add(path, x, y, side, side, footprint);
-        unit::set_position(u, { (x + s) * sx, (y + s) * sy });
-        return;
-      }
-    }
+    path.adjust();
+    u.adjust();
   }
 }

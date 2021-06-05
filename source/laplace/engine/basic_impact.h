@@ -67,7 +67,7 @@ namespace laplace::engine {
      */
     virtual ~basic_impact() = default;
 
-    constexpr void set_index(size_t index);
+    constexpr void set_index(sl::index n);
 
     /*  Set the order index sequence. Required for the sync
      *  Impacts to be sequentially consistent.
@@ -82,20 +82,20 @@ namespace laplace::engine {
     /*  Set actor entity id. Can be undefined. Allows to verify
      *  players' permissions.
      */
-    constexpr void set_actor(size_t id);
+    constexpr void set_actor(sl::index id);
 
     virtual void perform(access::world w) const;
 
-    constexpr auto get_index() const -> size_t;
+    constexpr auto get_index() const -> sl::index;
     constexpr auto get_order() const -> cref_eventorder;
     constexpr auto get_time() const -> uint64_t;
-    constexpr auto get_actor() const -> size_t;
+    constexpr auto get_actor() const -> sl::index;
 
     constexpr auto is_async() const -> bool;
 
-    constexpr auto get_index64() const -> uint64_t;
+    constexpr auto get_index64() const -> sl::index64;
     constexpr auto get_time64() const -> uint64_t;
-    constexpr auto get_actor64() const -> uint64_t;
+    constexpr auto get_actor64() const -> sl::index64;
 
   protected:
     constexpr void set_async(bool is_async);
@@ -104,7 +104,7 @@ namespace laplace::engine {
   private:
     eventorder m_order;
     uint64_t   m_time     = time_undefined;
-    size_t     m_id_actor = id_undefined;
+    sl::index  m_id_actor = id_undefined;
     bool       m_is_async = true;
   };
 

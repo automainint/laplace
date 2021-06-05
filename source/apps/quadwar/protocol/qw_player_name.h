@@ -20,7 +20,7 @@
 namespace quadwar_app::protocol {
   class qw_player_name final : public engine::sync_prime_impact {
   public:
-    enum encoding_offset : size_t { n_name = 26 };
+    enum encoding_offset : sl::index { n_name = 26 };
 
     static constexpr auto id = ids::player_name;
 
@@ -32,9 +32,8 @@ namespace quadwar_app::protocol {
       m_name = name;
     }
 
-    inline qw_player_name(                //
-        size_t             id_host_actor, //
-        std::u8string_view name) {
+    inline qw_player_name(sl::index          id_host_actor,
+                          std::u8string_view name) {
 
       set_actor(id_host_actor);
       set_encoded_size(n_name + name.size());
@@ -42,11 +41,8 @@ namespace quadwar_app::protocol {
       m_name = name;
     }
 
-    inline qw_player_name(           //
-        size_t             index,    //
-        uint64_t           time,     //
-        size_t             id_actor, //
-        std::u8string_view name) {
+    inline qw_player_name(sl::index index, uint64_t time,
+                          sl::index id_actor, std::u8string_view name) {
 
       set_index(index);
       set_time(time);
@@ -81,9 +77,8 @@ namespace quadwar_app::protocol {
     }
 
     static inline auto decode(span_cbyte seq) {
-      return qw_player_name //
-          { get_index(seq), get_time(seq), get_actor(seq),
-            get_name(seq) };
+      return qw_player_name { get_index(seq), get_time(seq),
+                              get_actor(seq), get_name(seq) };
     }
 
   private:

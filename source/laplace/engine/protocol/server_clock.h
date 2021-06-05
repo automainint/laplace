@@ -18,10 +18,10 @@
 namespace laplace::engine::protocol {
   class server_clock : public prime_impact {
   public:
-    enum encoding_offset : size_t { n_tick_duration = 10 };
+    enum encoding_offset : sl::index { n_tick_duration = 10 };
 
-    static constexpr uint16_t id   = ids::server_clock;
-    static constexpr size_t   size = 18;
+    static constexpr uint16_t  id   = ids::server_clock;
+    static constexpr sl::whole size = 18;
 
     ~server_clock() final = default;
 
@@ -35,8 +35,8 @@ namespace laplace::engine::protocol {
       m_tick_duration_msec = tick_duration_msec;
     }
 
-    constexpr server_clock(size_t index, uint64_t tick_duration_msec) {
-      set_index(index);
+    constexpr server_clock(sl::index n, uint64_t tick_duration_msec) {
+      set_index(n);
       set_encoded_size(size);
 
       m_tick_duration_msec = tick_duration_msec;

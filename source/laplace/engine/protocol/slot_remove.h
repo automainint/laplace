@@ -18,10 +18,10 @@
 namespace laplace::engine::protocol {
   class slot_remove : public sync_prime_impact {
   public:
-    enum encoding_offset : size_t { n_slot_actor = 18 };
+    enum encoding_offset : sl::index { n_slot_actor = 18 };
 
-    static constexpr uint16_t id   = ids::slot_remove;
-    static constexpr size_t   size = 26;
+    static constexpr uint16_t  id   = ids::slot_remove;
+    static constexpr sl::whole size = 26;
 
     ~slot_remove() override = default;
 
@@ -29,8 +29,9 @@ namespace laplace::engine::protocol {
       set_encoded_size(size);
     }
 
-    constexpr slot_remove(size_t index, uint64_t time, size_t id_actor) {
-      set_index(index);
+    constexpr slot_remove(sl::index n, uint64_t time,
+                          sl::index id_actor) {
+      set_index(n);
       set_time(time);
       set_actor(id_actor);
       set_encoded_size(size);

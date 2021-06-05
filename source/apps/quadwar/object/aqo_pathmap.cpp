@@ -18,12 +18,15 @@
 namespace quadwar_app::object {
   namespace access = engine::access;
 
-  using std::make_shared, std::span, engine::id_undefined;
+  using std::make_shared, std::min, std::max, std::span, std::array,
+      engine::id_undefined, engine::vec2z;
 
   sl::index pathmap::n_width  = {};
   sl::index pathmap::n_height = {};
 
   pathmap pathmap::m_proto(pathmap::proto);
+
+  const sl::vector<vec2z> pathmap::m_circular = pathmap::gen_circular();
 
   pathmap::pathmap(proto_tag) {
 
@@ -38,7 +41,7 @@ namespace quadwar_app::object {
     *this = m_proto;
   }
 
-  auto pathmap::create(world w) -> size_t {
+  auto pathmap::create(world w) -> sl::index {
     auto r  = w.get_entity(w.get_root());
     auto id = w.spawn(make_shared<pathmap>(), id_undefined);
 
@@ -49,52 +52,29 @@ namespace quadwar_app::object {
   }
 
   void pathmap::set_tiles(entity en, const sl::whole width,
-                          const sl::whole                height,
-                          const std::span<const uint8_t> tiles) {
+                          const sl::whole               height,
+                          const std::span<const int8_t> tiles) {
 
-    if (width < 0 || height < 0)
+    if (width < 0 || height < 0) {
+      error_("Invalid size.", __FUNCTION__);
       return;
+    }
 
     if (tiles.size() != width * height) {
       error_("Invalid tiles.", __FUNCTION__);
       return;
     }
 
-    en.modify(sets::pathmap_set_tiles,
-              serial::pack_to_bytes(width, height, tiles));
-  }
+    en.bytes_resize(tiles.size());
 
-  void pathmap::add(entity en, const sl::whole x, const sl::whole y,
-                    const sl::whole width, const sl::whole height,
-                    const span<const uint8_t> tiles) {
-
-    if (x < 0 || y < 0 || width <= 0 || height <= 0)
-      return;
-
-    if (tiles.size() != width * height) {
-      error_("Invalid tiles.", __FUNCTION__);
-      return;
+    for (sl::index i = 0; i < tiles.size(); i++) {
+      en.bytes_set(i, tiles[i]);
     }
 
-    en.modify(sets::pathmap_add,
-              serial::pack_to_bytes(x, y, width, height, tiles));
-  }
+    en.set(n_width, width);
+    en.set(n_height, height);
 
-  void pathmap::subtract(entity en, const sl::whole x,
-                         const sl::whole y, const sl::whole width,
-                         const sl::whole           height,
-                         const span<const uint8_t> tiles) {
-
-    if (x < 0 || y < 0 || width <= 0 || height <= 0)
-      return;
-
-    if (tiles.size() != width * height) {
-      error_("Invalid tiles.", __FUNCTION__);
-      return;
-    }
-
-    en.modify(sets::pathmap_subtract,
-              serial::pack_to_bytes(x, y, width, height, tiles));
+    en.adjust();
   }
 
   auto pathmap::get_width(entity en) -> sl::whole {
@@ -105,137 +85,116 @@ namespace quadwar_app::object {
     return en.get(n_height);
   }
 
-  auto pathmap::get_tiles(entity en) -> sl::vector<uint8_t> {
+  auto pathmap::get_tiles(entity en) -> sl::vector<int8_t> {
+    auto v = sl::vector<int8_t> {};
 
-    return en.request(sets::pathmap_get_tiles);
-  }
+    v.resize(en.bytes_get_size());
 
-  auto pathmap::check(entity en, const sl::whole x, const sl::whole y,
-                      const sl::whole width, const sl::whole height,
-                      const span<const uint8_t> tiles) -> bool {
-
-    return serial::rd<uint8_t>(
-               en.request(
-                   sets::pathmap_check,
-                   serial::pack_to_bytes(x, y, width, height, tiles)),
-               0) != 0;
-  }
-
-  auto pathmap::do_request(size_t id, span_cbyte args) const -> vbyte {
-    switch (id) {
-      case sets::pathmap_get_tiles: return m_tiles;
-
-      case sets::pathmap_check: {
-        const auto x      = serial::rd<sl::whole>(args, args_x);
-        const auto y      = serial::rd<sl::whole>(args, args_y);
-        const auto width  = serial::rd<sl::whole>(args, args_width);
-        const auto height = serial::rd<sl::whole>(args, args_height);
-
-        const auto dst_width  = locked_get(n_width);
-        const auto dst_height = locked_get(n_height);
-
-        constexpr auto v_true = []() -> vbyte {
-          auto v = vbyte(1);
-          v[0]   = 1;
-          return v;
-        };
-
-        constexpr auto v_false = []() -> vbyte {
-          auto v = vbyte(1);
-          v[0]   = 0;
-          return v;
-        };
-
-        for (sl::index j = 0, k = 0; j < height; j++)
-          for (sl::index i = 0; i < width; i++, k++) {
-            const auto tile = serial::rd<uint8_t>(
-                args, args_src_tiles + k);
-
-            if (x + i < 0 || y + j < 0 || x + i >= dst_width ||
-                y + j >= dst_height) {
-              if (tile)
-                return v_false();
-              continue;
-            }
-
-            const auto n = (y + j) * dst_width + (x + i);
-
-            if (n < 0 || n >= m_tiles.size()) {
-              if (tile)
-                return v_false();
-              continue;
-            }
-
-            if (m_tiles[n] != 0 && tile != 0)
-              return v_false();
-          }
-
-        return v_true();
-      }
-
-      default: error_("Invalid request id.", __FUNCTION__);
+    for (sl::index i = 0; i < v.size(); i++) {
+      v[i] = en.bytes_get(i);
     }
 
-    return {};
+    return v;
   }
 
-  void pathmap::do_modify(size_t id, span_cbyte args) {
-    switch (id) {
-      case sets::pathmap_set_tiles: {
-        const auto width  = serial::rd<sl::whole>(args, args_x);
-        const auto height = serial::rd<sl::whole>(args, args_y);
+  auto pathmap::place(entity en, const vec2z position, const vec2z size,
+                      const span<const int8_t> footprint) noexcept
+      -> vec2z {
 
-        if (width < 0 || height < 0)
-          return;
+    if (size.x() <= 0 || size.y() <= 0) {
+      error_("Invalid size.", __FUNCTION__);
+      return {};
+    }
 
-        m_tiles.resize(width * height);
+    if (size.x() * size.y() != footprint.size()) {
+      error_("Invalid footprint.", __FUNCTION__);
+      return {};
+    }
 
-        for (sl::index i = 0; i < m_tiles.size(); i++) {
-          m_tiles[i] = serial::rd<uint8_t>(args, args_tiles + i);
+    const auto width  = en.get(n_width);
+    const auto height = en.get(n_height);
+
+    auto line = sl::vector<int8_t>(size.x());
+
+    for (sl::index k = 0; k < m_circular.size(); k++) {
+      const auto x = position.x() + m_circular[k].x() * size.x();
+      const auto y = position.y() + m_circular[k].y() * size.y();
+
+      bool ok = true;
+
+      for (sl::index j = 0; j < size.y(); j++) {
+        if (y + j < 0 || y + j >= height)
+          break;
+
+        en.bytes_read((y + j) * width + x, line);
+
+        for (sl::index i = 0; i < size.x(); i++) {
+          if (x + i < 0 || x + i >= width) {
+            ok = false;
+            break;
+          }
+
+          if (footprint[j * size.x() + i] <= 0)
+            continue;
+
+          if (line[i] > 0) {
+            ok = false;
+            break;
+          }
         }
 
-        init(n_width, width);
-        init(n_height, height);
+        if (!ok)
+          break;
+      }
 
-      } break;
+      if (ok) {
+        for (sl::index j = 0; j < size.y(); j++) {
+          en.bytes_write_delta(
+              (y + j) * width + x,
+              { footprint.begin() + (j * size.x()),
+                footprint.begin() + ((j + 1) * size.x()) });
+        }
 
-      case sets::pathmap_add:
-      case sets::pathmap_subtract: {
-        const auto x      = serial::rd<sl::whole>(args, args_x);
-        const auto y      = serial::rd<sl::whole>(args, args_y);
-        const auto width  = serial::rd<sl::whole>(args, args_width);
-        const auto height = serial::rd<sl::whole>(args, args_height);
-
-        const auto dst_width  = locked_get(n_width);
-        const auto dst_height = locked_get(n_height);
-
-        for (sl::index j = 0, k = 0; j < height; j++)
-          for (sl::index i = 0; i < width; i++, k++) {
-
-            if (x + i < 0 || y + j < 0 || x + i >= dst_width ||
-                y + j >= dst_height)
-              continue;
-            const auto n = (y + j) * dst_width + (x + i);
-            if (n < 0 || n >= m_tiles.size())
-              continue;
-
-            const auto tile = serial::rd<uint8_t>(
-                args, args_src_tiles + k);
-
-            if (id == sets::pathmap_add) {
-              m_tiles[n] += tile;
-            } else {
-              if (m_tiles[n] <= tile) {
-                m_tiles[n] = 0;
-              } else {
-                m_tiles[n] -= tile;
-              }
-            }
-          }
-
-      } break;
-
-      default: error_("Invalid request id.", __FUNCTION__);
+        return { x, y };
+      }
     }
+
+    for (sl::index j = 0; j < size.y(); j++) {
+      en.bytes_write_delta(
+          (position.y() + j) * width + position.x(),
+          { footprint.begin() + (j * size.x()),
+            footprint.begin() + ((j + 1) * size.x()) });
+    }
+
+    return position;
+  }
+
+  auto pathmap::gen_circular() -> sl::vector<vec2z> {
+    auto v = sl::vector<vec2z>(_circular_size);
+
+    for (sl::index i = -_distance, k = 0; i <= _distance; i++) {
+      for (sl::index j = -_distance; j <= _distance; j++, k++)
+        v[k] = vec2z { i, j };
+    }
+
+    constexpr auto cmp = [](const vec2z a, const vec2z b) -> bool {
+      const auto alen = math::square_length(a);
+      const auto blen = math::square_length(b);
+
+      if (alen < blen)
+        return true;
+
+      if (alen == blen) {
+        if (a.y() < b.y())
+          return true;
+        if (a.y() == b.y() && a.x() < b.x())
+          return true;
+      }
+
+      return false;
+    };
+
+    std::sort(v.begin(), v.end(), cmp);
+    return v;
   }
 }

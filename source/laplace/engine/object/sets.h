@@ -13,35 +13,34 @@
 #ifndef laplace_engine_object_sets_h
 #define laplace_engine_object_sets_h
 
-#include <cstddef>
-#include <cstdint>
+#include "../defs.h"
 
 namespace laplace::engine::object::sets {
   /*  For removed units.
    */
-  static constexpr int64_t zombie_duration = 100000;
+  static constexpr intval zombie_duration = 100000;
 
   /*  Health points, experience points, etc.
    */
-  static constexpr int64_t scale_points = 100;
+  static constexpr intval scale_points = 100;
 
   /*  Any real value.
    */
-  static constexpr int64_t scale_real = 1000;
+  static constexpr intval scale_real = 1000;
 
   /*  Values in virtual seconds.
    */
-  static constexpr int64_t scale_time = 1000;
+  static constexpr intval scale_time = 1000;
 
   /*  Values of coefficients.
    */
-  static constexpr int64_t scale_factor = 10000;
+  static constexpr intval scale_factor = 10000;
 
   /*  Values in 2 Pi units (360 degree).
    */
-  static constexpr int64_t scale_angle = scale_factor;
+  static constexpr intval scale_angle = scale_factor;
 
-  enum set_id : size_t {
+  enum set_id : sl::index {
     undefined = 0,
 
     is_dynamic,

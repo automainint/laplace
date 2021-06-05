@@ -28,16 +28,16 @@ namespace laplace::engine {
   constexpr intval infinity   = intval_max >> 4;
   constexpr intval safe_limit = intval_max >> 2;
 
-  constexpr uint64_t time_undefined = -1;
-  constexpr size_t   id_undefined   = -1;
+  constexpr uint64_t  time_undefined = -1;
+  constexpr sl::index id_undefined   = -1;
 
   using vec2i = math::vector<2, intval>;
   using vec3i = math::vector<3, intval>;
   using vec4i = math::vector<4, intval>;
 
-  using vec2z = math::vector<2, size_t>;
-  using vec3z = math::vector<3, size_t>;
-  using vec4z = math::vector<4, size_t>;
+  using vec2z = math::vector<2, sl::index>;
+  using vec3z = math::vector<3, sl::index>;
+  using vec4z = math::vector<4, sl::index>;
 
   using ref_vec2i = vec2i &;
   using ref_vec3i = vec3i &;

@@ -23,7 +23,7 @@ namespace laplace::test {
     constexpr auto width  = 25;
     constexpr auto height = 21;
 
-    auto map = array<uint8_t, width * height> {};
+    auto map = array<int8_t, width * height> {};
 
     auto random = random_device {};
 
