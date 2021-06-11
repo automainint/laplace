@@ -11,6 +11,7 @@
  */
 
 #include "actor.h"
+
 #include "sets.h"
 
 namespace laplace::engine::object {

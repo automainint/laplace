@@ -26,8 +26,6 @@ namespace quadwar_app::object {
 
   pathmap pathmap::m_proto(pathmap::proto);
 
-  const sl::vector<vec2z> pathmap::m_circular = pathmap::gen_circular();
-
   pathmap::pathmap(proto_tag) {
 
     setup_sets({ { .id = sets::pathmap_width, .scale = 1 },
@@ -66,10 +64,7 @@ namespace quadwar_app::object {
     }
 
     en.bytes_resize(tiles.size());
-
-    for (sl::index i = 0; i < tiles.size(); i++) {
-      en.bytes_set(i, tiles[i]);
-    }
+    en.bytes_write(0, tiles);
 
     en.set(n_width, width);
     en.set(n_height, height);
@@ -90,9 +85,7 @@ namespace quadwar_app::object {
 
     v.resize(en.bytes_get_size());
 
-    for (sl::index i = 0; i < v.size(); i++) {
-      v[i] = en.bytes_get(i);
-    }
+    en.bytes_read(0, { v.begin(), v.end() });
 
     return v;
   }
@@ -114,87 +107,186 @@ namespace quadwar_app::object {
     const auto width  = en.get(n_width);
     const auto height = en.get(n_height);
 
-    auto line = sl::vector<int8_t>(size.x());
+    const auto delta = vec2z { spawn_distance, spawn_distance };
 
-    for (sl::index k = 0; k < m_circular.size(); k++) {
-      const auto x = position.x() + m_circular[k].x() * size.x();
-      const auto y = position.y() + m_circular[k].y() * size.y();
+    const auto area = adjust_rect(position - delta, position + delta,
+                                  { width, height });
 
-      bool ok = true;
+    const auto area_size = area.max - area.min;
 
-      for (sl::index j = 0; j < size.y(); j++) {
-        if (y + j < 0 || y + j >= height)
-          break;
+    const auto area_src = [&en, &width, &area,
+                           &area_size]() -> sl::vector<int8_t> {
+      auto v = sl::vector<int8_t>(area_size.x() * area_size.y());
 
-        en.bytes_read((y + j) * width + x, line);
+      for (sl::index j = 0; j < area_size.y(); j++) {
+        const auto dst = v.begin() + (j * area_size.x());
 
-        for (sl::index i = 0; i < size.x(); i++) {
-          if (x + i < 0 || x + i >= width) {
-            ok = false;
-            break;
-          }
-
-          if (footprint[j * size.x() + i] <= 0)
-            continue;
-
-          if (line[i] > 0) {
-            ok = false;
-            break;
-          }
-        }
-
-        if (!ok)
-          break;
+        en.bytes_read((area.min.y() + j) * width + area.min.x(),
+                      { dst, dst + area_size.x() });
       }
 
-      if (ok) {
-        for (sl::index j = 0; j < size.y(); j++) {
-          en.bytes_write_delta(
-              (y + j) * width + x,
-              { footprint.begin() + (j * size.x()),
-                footprint.begin() + ((j + 1) * size.x()) });
-        }
+      return v;
+    }();
 
-        return { x, y };
-      }
+    const auto fp_center = size / sl::index(2);
+
+    const auto area_dst = [&size, &fp_center, &footprint, &area,
+                           &area_size,
+                           &area_src]() -> sl::vector<int8_t> {
+      auto v = sl::vector<int8_t>(area_src.size());
+
+      convolve(fp_center, size, footprint, area_size, area_src, v);
+
+      return v;
+    }();
+
+    const auto p = area.min +
+                   nearest(position - area.min, area_size, area_dst);
+
+    const auto p0 = p - fp_center;
+
+    const auto i0 = -max<sl::index>(0, -p0.x());
+    const auto i1 = min(width, p0.x() + size.x()) - p0.x();
+
+    const auto j0 = -max<sl::index>(0, -p0.y());
+    const auto j1 = min(height, p0.y() + size.y()) - p0.y();
+
+    for (sl::index j = j0; j < j1; j++) {
+      const auto src = footprint.begin() + (j * size.x());
+
+      en.bytes_write_delta((p0.y() + j) * width + p0.x() + i0,
+                           { src + i0, src + i1 });
     }
 
-    for (sl::index j = 0; j < size.y(); j++) {
-      en.bytes_write_delta(
-          (position.y() + j) * width + position.x(),
-          { footprint.begin() + (j * size.x()),
-            footprint.begin() + ((j + 1) * size.x()) });
-    }
-
-    return position;
+    return p;
   }
 
-  auto pathmap::gen_circular() -> sl::vector<vec2z> {
-    auto v = sl::vector<vec2z>(_circular_size);
+  auto pathmap::adjust_rect(const vec2z min, const vec2z max,
+                            const vec2z bounds) noexcept
+      -> adjust_rect_result {
 
-    for (sl::index i = -_distance, k = 0; i <= _distance; i++) {
-      for (sl::index j = -_distance; j <= _distance; j++, k++)
-        v[k] = vec2z { i, j };
+    if (bounds.x() < 0 || bounds.y() < 0) {
+      error_("Invalid bounds.", __FUNCTION__);
+      return {};
     }
 
-    constexpr auto cmp = [](const vec2z a, const vec2z b) -> bool {
-      const auto alen = math::square_length(a);
-      const auto blen = math::square_length(b);
+    if (min.x() > max.x() || min.y() > max.y()) {
+      error_("Invalid rect.", __FUNCTION__);
+      return {};
+    }
 
-      if (alen < blen)
-        return true;
+    auto res = adjust_rect_result { .min = min, .max = max };
 
-      if (alen == blen) {
-        if (a.y() < b.y())
-          return true;
-        if (a.y() == b.y() && a.x() < b.x())
-          return true;
+    if (min.x() < 0)
+      res.min.x() = 0;
+    if (min.y() < 0)
+      res.min.y() = 0;
+
+    if (min.x() > bounds.x())
+      res.min.x() = bounds.x();
+    if (min.y() > bounds.y())
+      res.min.y() = bounds.y();
+
+    if (res.max.x() > bounds.x())
+      res.max.x() = bounds.x();
+    if (res.max.y() > bounds.y())
+      res.max.y() = bounds.y();
+
+    return res;
+  }
+
+  void pathmap::convolve(const vec2z center, const vec2z fp_size,
+                         const span<const int8_t> footprint,
+                         const vec2z size, const span<const int8_t> src,
+                         const span<int8_t> dst) noexcept {
+
+    if (fp_size.x() < 0 || fp_size.y() < 0) {
+      error_("Invalid footprint size.", __FUNCTION__);
+      return;
+    }
+
+    if (size.x() < 0 || size.y() < 0) {
+      error_("Invalid size.", __FUNCTION__);
+      return;
+    }
+
+    if (fp_size.x() * fp_size.y() != footprint.size()) {
+      error_("Invalid footprint.");
+      return;
+    }
+
+    if (size.x() * size.y() != src.size()) {
+      error_("Invalid source.");
+      return;
+    }
+
+    if (src.size() != dst.size()) {
+      error_("Invalid destination.");
+      return;
+    }
+
+    for (sl::index j0 = 0; j0 < size.y(); j0++)
+      for (sl::index i0 = 0; i0 < size.x(); i0++) {
+
+        if (src[j0 * size.x() + i0] <= 0)
+          continue;
+
+        for (sl::index n = 0; n < fp_size.y(); n++)
+          for (sl::index m = 0; m < fp_size.x(); m++) {
+
+            const auto x = footprint[n * fp_size.x() + m];
+
+            if (x <= 0)
+              continue;
+
+            const auto i = i0 + m - center.x();
+            const auto j = j0 + n - center.y();
+
+            if (i < 0 || i >= size.x() || j < 0 || j >= size.y())
+              continue;
+
+            dst[j * size.x() + i] += x;
+          }
+      }
+  }
+
+  auto pathmap::nearest(const vec2z center, const vec2z size,
+                        const span<const int8_t> map) noexcept
+      -> vec2z {
+
+    if (size.x() < 0 || size.y() < 0) {
+      error_("Invalid size.", __FUNCTION__);
+      return {};
+    }
+
+    if (size.x() * size.y() != map.size()) {
+      error_("Invalid map.", __FUNCTION__);
+      return {};
+    }
+
+    if (center.x() >= 0 && center.x() < size.x() && center.y() >= 0 &&
+        center.y() < size.y() &&
+        map[center.y() * size.x() + center.x()] <= 0)
+      return center;
+
+    auto      p        = center;
+    sl::index distance = -1;
+
+    for (sl::index j = 0, k = 0; j < size.y(); j++)
+      for (sl::index i = 0; i < size.x(); i++, k++) {
+
+        if (map[k] > 0)
+          continue;
+
+        const auto v = vec2z { i, j };
+        const auto d = math::square_length(center - v);
+
+        if (distance < 0 || d < distance) {
+          p        = v;
+          distance = d;
+        }
       }
 
-      return false;
-    };
-
-    std::sort(v.begin(), v.end(), cmp);
-    return v;
+    return p;
   }
 }

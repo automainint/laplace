@@ -1,7 +1,5 @@
 /*  laplace/engine/e_basic_factory.cpp
  *
- *      Basic factory implementation.
- *
  *  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
@@ -12,9 +10,10 @@
  *  the MIT License for more details.
  */
 
+#include "basic_factory.h"
+
 #include "../core/parser.h"
 #include "../core/utils.h"
-#include "basic_factory.h"
 #include "protocol/basic_event.h"
 #include "protocol/client_desync.h"
 #include "protocol/debug.h"

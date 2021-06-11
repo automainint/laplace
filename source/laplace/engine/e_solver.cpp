@@ -11,6 +11,7 @@
  */
 
 #include "solver.h"
+
 #include <algorithm>
 
 namespace laplace::engine {
@@ -64,11 +65,6 @@ namespace laplace::engine {
 
   void solver::rewind_to(uint64_t time) {
     adjust(time);
-    join();
-  }
-
-  void solver::solve(uint64_t delta) {
-    schedule(delta);
     join();
   }
 

@@ -11,6 +11,7 @@
  */
 
 #include "grid.h"
+
 #include "integral.h"
 
 namespace laplace::engine::eval::grid {

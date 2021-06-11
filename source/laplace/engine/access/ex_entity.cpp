@@ -120,6 +120,13 @@ namespace laplace::engine::access {
     }
   }
 
+  void entity::bytes_erase_delta(
+      sl::index n, span<const int8_t> deltas) const noexcept {
+    if (m_mode > read_only) {
+      m_entity->bytes_erase_delta(n, deltas);
+    }
+  }
+
   void entity::bytes_resize(sl::whole size) const noexcept {
     if (m_mode > async) {
       m_entity->bytes_resize(size);

@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../action/remove.h"
 #include "timer.h"
+
+#include "../action/remove.h"
 
 namespace laplace::engine::object {
   timer timer::m_proto(timer::proto);

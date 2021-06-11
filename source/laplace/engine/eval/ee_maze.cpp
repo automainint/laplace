@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "grid.h"
 #include "maze.h"
+
+#include "grid.h"
 
 namespace laplace::engine::eval::maze {
   using std::span, std::function, std::tuple, std::tie, std::min;

@@ -20,9 +20,7 @@ namespace quadwar_app::object {
   class pathmap : public engine::basic_entity, helper {
   public:
     static constexpr sl::whole resolution     = 2;
-    static constexpr sl::whole _distance      = 20;
-    static constexpr sl::whole _circular_size = (_distance * 2 + 1) *
-                                                (_distance * 2 + 1);
+    static constexpr sl::whole spawn_distance = 100;
 
     pathmap();
     ~pathmap() override = default;
@@ -44,18 +42,33 @@ namespace quadwar_app::object {
         const std::span<const int8_t> footprint) noexcept
         -> engine::vec2z;
 
-    static auto gen_circular()
-        -> sl::vector<engine::vec2z>;
-
   private:
     pathmap(proto_tag);
+
+    struct adjust_rect_result {
+      engine::vec2z min = {};
+      engine::vec2z max = {};
+    };
+
+    [[nodiscard]] static auto adjust_rect(
+        const engine::vec2z min, const engine::vec2z max,
+        const engine::vec2z bounds) noexcept -> adjust_rect_result;
+
+    static void convolve(const engine::vec2z           center,
+                         const engine::vec2z           fp_size,
+                         const std::span<const int8_t> footprint,
+                         const engine::vec2z           size,
+                         const std::span<const int8_t> src,
+                         const std::span<int8_t>       dst) noexcept;
+
+    [[nodiscard]] static auto nearest(
+        const engine::vec2z center, const engine::vec2z size,
+        const std::span<const int8_t> map) noexcept -> engine::vec2z;
 
     static sl::index n_width;
     static sl::index n_height;
 
     static pathmap m_proto;
-
-    static const sl::vector<engine::vec2z> m_circular;
   };
 }
 

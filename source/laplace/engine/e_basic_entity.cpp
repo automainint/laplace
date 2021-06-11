@@ -10,10 +10,11 @@
  *  the MIT License for more details.
  */
 
+#include "basic_entity.h"
+
 #include "../core/utils.h"
 #include "access/world.h"
 #include "action/remove.h"
-#include "basic_entity.h"
 #include "world.h"
 #include <algorithm>
 
@@ -312,6 +313,26 @@ namespace laplace::engine {
 
       for (sl::index i = 0; i < deltas.size(); i++)
         m_bytes[n + i].delta += deltas[i];
+
+      m_is_bytes_changed = true;
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
+  void basic_entity::bytes_erase_delta(
+      sl::index n, span<const int8_t> deltas) noexcept {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+      if (n < 0 || n + deltas.size() > m_bytes.size()) {
+        error_("Invalid index.", __FUNCTION__);
+        desync();
+        return;
+      }
+
+      for (sl::index i = 0; i < deltas.size(); i++)
+        m_bytes[n + i].delta -= deltas[i];
 
       m_is_bytes_changed = true;
 

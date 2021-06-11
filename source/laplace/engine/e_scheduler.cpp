@@ -1,7 +1,5 @@
 /*  laplace/engine/e_scheduler.cpp
  *
- *      The World multithreading scheduler. Full thread-safe.
- *
  *  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
@@ -12,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "basic_impact.h"
 #include "scheduler.h"
+
+#include "basic_impact.h"
 #include "world.h"
 #include <mutex>
 #include <sstream>

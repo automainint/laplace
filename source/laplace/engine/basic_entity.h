@@ -124,6 +124,9 @@ namespace laplace::engine {
     void bytes_write_delta(sl::index               n,
                            std::span<const int8_t> deltas) noexcept;
 
+    void bytes_erase_delta(sl::index               n,
+                           std::span<const int8_t> deltas) noexcept;
+
     void bytes_resize(sl::whole size) noexcept;
 
     [[nodiscard]] auto vec_get_size() -> sl::whole;

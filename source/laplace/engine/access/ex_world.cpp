@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../world.h"
 #include "world.h"
+
+#include "../world.h"
 
 namespace laplace::engine::access {
   world::world(world &&w) noexcept :

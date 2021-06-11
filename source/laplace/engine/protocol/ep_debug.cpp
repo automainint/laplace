@@ -10,9 +10,10 @@
  *  the MIT License for more details.
  */
 
+#include "debug.h"
+
 #include "../../core/utils.h"
 #include "../object/sets.h"
-#include "debug.h"
 
 namespace laplace::engine::protocol {
   using std::make_shared, object::sets::debug_value;

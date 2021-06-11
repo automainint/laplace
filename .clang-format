@@ -11,7 +11,6 @@ MaxEmptyLinesToKeep: 1
 SpacesBeforeTrailingComments: 1
 AccessModifierOffset: -2
 PenaltyBreakAssignment: 100
-PenaltyBreakBeforeFirstCallParameter: 0
 PenaltyExcessCharacter: 10
 # PenaltyIndentedWhitespace: 5
 PenaltyReturnTypeOnItsOwnLine: 200

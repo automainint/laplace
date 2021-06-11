@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "basic_impact.h"
 #include "world.h"
+
+#include "basic_impact.h"
 #include <algorithm>
 
 namespace laplace::engine {

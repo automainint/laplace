@@ -59,6 +59,8 @@ namespace laplace::engine::access {
     void bytes_apply_delta(sl::index n, int8_t delta) const noexcept;
     void bytes_write_delta(sl::index               n,
                            std::span<const int8_t> deltas) const noexcept;
+    void bytes_erase_delta(sl::index               n,
+                           std::span<const int8_t> deltas) const noexcept;
 
     void bytes_resize(sl::whole size) const noexcept;
 
