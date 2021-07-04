@@ -29,6 +29,17 @@ namespace quadwar_app::view {
     m_camera.set_position(v * m_camera.get_grid_scale());
   }
 
+  void game::set_cursor(const vec2 cursor) {
+    const auto s = m_camera.get_scale();
+    const auto f = m_camera.get_frame() / 2.f;
+    const auto p = m_camera.get_position();
+
+    if (s == 0.f)
+      return;
+
+    m_cursor = p + (cursor - f) / s;
+  }
+
   void game::move(const vec2 delta) {
     const auto s = get_scale();
 
@@ -41,10 +52,28 @@ namespace quadwar_app::view {
     m_camera.set_scale(get_scale());
   }
 
+  void game::click() {
+    const auto units = m_units.get_units();
+
+    for (sl::index i = 0; i < units.size(); i++) {
+      if (units[i].rect[0].x() <= m_cursor.x() &&
+          units[i].rect[1].x() > m_cursor.x() &&
+          units[i].rect[0].y() <= m_cursor.y() &&
+          units[i].rect[1].y() > m_cursor.y()) {
+
+        m_selection.resize(1);
+        m_selection[0] = units[i].id;
+        return;
+      }
+    }
+
+    m_selection.clear();
+  }
+
   void game::render(engine::access::world w) {
     update_bounds(w);
     m_landscape.render(m_camera, w);
-    m_units.render(m_camera, w);
+    m_units.render(m_camera, w, m_highlight, m_selection);
   }
 
   auto game::get_scale() const -> real {

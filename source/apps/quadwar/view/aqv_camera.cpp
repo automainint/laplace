@@ -63,8 +63,8 @@ namespace quadwar_app::view {
   auto camera::get_transform() const noexcept -> camera::transform {
     const auto s = get_scale();
     const auto f = get_frame() / 2.f;
-    const auto p = -get_position();
+    const auto p = get_position();
 
-    return { f + p * s, { s, s } };
+    return { f - p * s, { s, s } };
   }
 }

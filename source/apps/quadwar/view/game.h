@@ -23,9 +23,11 @@ namespace quadwar_app::view {
     void adjust_layout(int width, int height);
 
     void set_position(const vec2 v);
+    void set_cursor(const vec2 cursor);
 
     void move(const vec2 delta);
     void scale(const real delta);
+    void click();
 
     void render(engine::access::world w);
 
@@ -38,6 +40,10 @@ namespace quadwar_app::view {
     camera    m_camera;
     landscape m_landscape;
     units     m_units;
+    vec2      m_cursor;
+
+    sl::vector<sl::index> m_highlight;
+    sl::vector<sl::index> m_selection;
   };
 }
 

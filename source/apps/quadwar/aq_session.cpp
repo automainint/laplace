@@ -202,8 +202,8 @@ namespace quadwar_app {
       f >> port;
 
       if (f) {
-        verb(fmt(
-            "Host address found: %s:%hu", network::localhost, port));
+        verb(fmt("Host address found: %s:%hu", network::localhost,
+                 port));
         return fmt("%s:%hu", network::localhost, port);
       }
     } else if (auto f2 = ifstream(session::host_info_file_debug); f2) {
@@ -211,8 +211,8 @@ namespace quadwar_app {
       f2 >> port;
 
       if (f2) {
-        verb(fmt(
-            "Host address found: %s:%hu", network::localhost, port));
+        verb(fmt("Host address found: %s:%hu", network::localhost,
+                 port));
         return fmt("%s:%hu", network::localhost, port);
       }
     }
@@ -225,6 +225,9 @@ namespace quadwar_app {
     vec2 delta;
 
     const auto fdelta = static_cast<real>(delta_msec);
+
+    m_view.set_cursor({ static_cast<real>(in.get_mouse_x()),
+                        static_cast<real>(in.get_mouse_y()) });
 
     if (in.is_key_down(platform::key_left)) {
       is_moved = true;
@@ -255,6 +258,10 @@ namespace quadwar_app {
       is_moved = true;
       delta.x() -= static_cast<real>(in.get_mouse_delta_x());
       delta.y() -= static_cast<real>(in.get_mouse_delta_y());
+    }
+
+    if (in.is_key_pressed(platform::key_lbutton)) {
+      m_view.click();
     }
 
     if (is_moved) {

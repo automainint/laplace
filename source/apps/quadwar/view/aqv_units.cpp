@@ -16,14 +16,32 @@
 #include "units.h"
 
 namespace quadwar_app::view {
-  using object::root, object::unit;
+  using object::root, object::unit, std::lower_bound, std::span;
 
-  void units::render(const camera &cam, world w) {
+  void units::render(const camera &cam, world w,
+                     span<const sl::index> highlight,
+                     span<const sl::index> selection) {
+
+    update_units(cam, w);
+    update_buffer(highlight, selection);
+
+    auto cont = render::context::get_default();
+
+    if (cont) {
+      const auto [p, s] = cam.get_transform();
+      cont->render(m_vertices, p, s);
+    }
+  }
+
+  auto units::get_units() const -> span<const unit_info> {
+    return m_info;
+  }
+
+  void units::update_units(const camera &cam, world w) {
     const auto r     = w.get_entity(w.get_root());
     const auto units = root::get_all_units(r);
 
-    m_vertices.resize(
-        units.size() * 6, vertex { vec2 {}, default_color });
+    m_info.resize(units.size());
 
     for (sl::index i = 0; i < units.size(); i++) {
       const auto u = w.get_entity(units[i]);
@@ -34,24 +52,50 @@ namespace quadwar_app::view {
       const auto s = unit::get_radius_scaled(u) *
                      cam.get_grid_scale() * unit_scaling;
 
-      const auto p0 = p - vec2 { s, s };
-      const auto d  = vec2 { s * 2, s * 2 };
-      const auto dx = vec2 { s * 2, 0 };
-      const auto dy = vec2 { 0, s * 2 };
-
-      m_vertices[i * 6].position     = p0;
-      m_vertices[i * 6 + 1].position = p0 + dx;
-      m_vertices[i * 6 + 2].position = p0 + dy;
-      m_vertices[i * 6 + 3].position = p0 + dx;
-      m_vertices[i * 6 + 4].position = p0 + d;
-      m_vertices[i * 6 + 5].position = p0 + dy;
+      m_info[i].id      = units[i];
+      m_info[i].rect[0] = p - vec2 { s, s };
+      m_info[i].rect[1] = p + vec2 { s, s };
     }
+  }
 
-    auto cont = render::context::get_default();
+  void units::update_buffer(span<const sl::index> highlight,
+                            span<const sl::index> selection) {
 
-    if (cont) {
-      const auto [p, s] = cam.get_transform();
-      cont->render(m_vertices, p, s);
+    m_vertices.resize(m_info.size() * 6,
+                      vertex { vec2 {}, default_color });
+
+    for (sl::index i = 0; i < m_info.size(); i++) {
+      const auto x0 = m_info[i].rect[0].x();
+      const auto y0 = m_info[i].rect[0].y();
+      const auto x1 = m_info[i].rect[1].x();
+      const auto y1 = m_info[i].rect[1].y();
+
+      m_vertices[i * 6].position     = vec2 { x0, y0 };
+      m_vertices[i * 6 + 1].position = vec2 { x1, y0 };
+      m_vertices[i * 6 + 2].position = vec2 { x0, y1 };
+      m_vertices[i * 6 + 3].position = vec2 { x1, y0 };
+      m_vertices[i * 6 + 4].position = vec2 { x1, y1 };
+      m_vertices[i * 6 + 5].position = vec2 { x0, y1 };
+
+      const auto color = [id = m_info[i].id, &highlight,
+                          &selection]() -> vec4 {
+        if (auto i = lower_bound(highlight.begin(), highlight.end(), id);
+            i != highlight.end() && *i == id)
+          return highlight_color;
+
+        if (auto i = lower_bound(selection.begin(), selection.end(), id);
+            i != selection.end() && *i == id)
+          return selection_color;
+
+        return default_color;
+      }();
+
+      m_vertices[i * 6].color     = color;
+      m_vertices[i * 6 + 1].color = color;
+      m_vertices[i * 6 + 2].color = color;
+      m_vertices[i * 6 + 3].color = color;
+      m_vertices[i * 6 + 4].color = color;
+      m_vertices[i * 6 + 5].color = color;
     }
   }
 }
