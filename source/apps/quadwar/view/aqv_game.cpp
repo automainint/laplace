@@ -34,7 +34,7 @@ namespace quadwar_app::view {
     const auto f = m_camera.get_frame() / 2.f;
     const auto p = m_camera.get_position();
 
-    if (s == 0.f)
+    if (s <= numeric_limits<decltype(s)>::epsilon())
       return;
 
     m_cursor = p + (cursor - f) / s;
@@ -72,6 +72,8 @@ namespace quadwar_app::view {
 
   void game::render(engine::access::world w) {
     update_bounds(w);
+    update_highlight();
+
     m_landscape.render(m_camera, w);
     m_units.render(m_camera, w, m_highlight, m_selection);
   }
@@ -93,22 +95,41 @@ namespace quadwar_app::view {
 
     const auto s = get_scale();
 
-    if (s > numeric_limits<decltype(s)>::epsilon()) {
-      const auto fx = m_camera.get_frame().x() / s;
-      const auto fy = m_camera.get_frame().y() / s;
+    if (s <= numeric_limits<decltype(s)>::epsilon())
+      return;
 
-      const auto dx = m_camera.get_grid_scale() * width;
-      const auto dy = m_camera.get_grid_scale() * height;
+    const auto fx = m_camera.get_frame().x() / s;
+    const auto fy = m_camera.get_frame().y() / s;
 
-      const auto hx = min(dx / 2.f, fx / 2.f);
-      const auto hy = min(dy / 2.f, fy / 2.f);
+    const auto dx = m_camera.get_grid_scale() * width;
+    const auto dy = m_camera.get_grid_scale() * height;
 
-      const auto x0 = hx;
-      const auto y0 = hy;
-      const auto x1 = dx - hx;
-      const auto y1 = dy - hy;
+    const auto hx = min(dx / 2.f, fx / 2.f);
+    const auto hy = min(dy / 2.f, fy / 2.f);
 
-      m_camera.set_bounds({ x0, y0 }, { x1, y1 });
+    const auto x0 = hx;
+    const auto y0 = hy;
+    const auto x1 = dx - hx;
+    const auto y1 = dy - hy;
+
+    m_camera.set_bounds({ x0, y0 }, { x1, y1 });
+  }
+
+  void game::update_highlight() {
+    const auto units = m_units.get_units();
+
+    for (sl::index i = 0; i < units.size(); i++) {
+      if (units[i].rect[0].x() <= m_cursor.x() &&
+          units[i].rect[1].x() > m_cursor.x() &&
+          units[i].rect[0].y() <= m_cursor.y() &&
+          units[i].rect[1].y() > m_cursor.y()) {
+
+        m_highlight.resize(1);
+        m_highlight[0] = units[i].id;
+        return;
+      }
     }
+
+    m_highlight.clear();
   }
 }

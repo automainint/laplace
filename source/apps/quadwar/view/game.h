@@ -35,6 +35,7 @@ namespace quadwar_app::view {
     [[nodiscard]] auto get_scale() const -> real;
 
     void update_bounds(world w);
+    void update_highlight();
 
     real      m_scale_ln = 0.f;
     camera    m_camera;
