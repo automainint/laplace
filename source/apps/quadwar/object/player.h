@@ -23,7 +23,9 @@ namespace quadwar_app::object {
     ~player() override = default;
 
     static void set_name(entity en, std::u8string_view name);
+    static void set_index(entity en, sl::index n);
     static auto get_name(entity en) -> std::u8string;
+    static auto get_index(entity en) -> sl::index;
 
   private:
     player(proto_tag);

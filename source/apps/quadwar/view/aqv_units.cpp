@@ -10,10 +10,12 @@
  *  the MIT License for more details.
  */
 
+#include "units.h"
+
+#include "../../../laplace/core/utils.h"
 #include "../../../laplace/render/context.h"
 #include "../object/root.h"
 #include "../object/unit.h"
-#include "units.h"
 
 namespace quadwar_app::view {
   using object::root, object::unit, std::lower_bound, std::span;
@@ -39,12 +41,13 @@ namespace quadwar_app::view {
 
   void units::update_units(const camera &cam, world w) {
     const auto r     = w.get_entity(w.get_root());
-    const auto units = root::get_all_units(r);
+    const auto units = w.get_entity(root::get_units(r));
 
-    m_info.resize(units.size());
+    m_info.resize(units.vec_get_size());
 
-    for (sl::index i = 0; i < units.size(); i++) {
-      const auto u = w.get_entity(units[i]);
+    for (sl::index i = 0; i < m_info.size(); i++) {
+      const auto id = as_index(units.vec_get(i, -1));
+      const auto u  = w.get_entity(id);
 
       const auto p = unit::get_position_scaled(u) *
                      cam.get_grid_scale();
@@ -52,7 +55,7 @@ namespace quadwar_app::view {
       const auto s = unit::get_radius_scaled(u) *
                      cam.get_grid_scale() * unit_scaling;
 
-      m_info[i].id      = units[i];
+      m_info[i].id      = id;
       m_info[i].rect[0] = p - vec2 { s, s };
       m_info[i].rect[1] = p + vec2 { s, s };
     }

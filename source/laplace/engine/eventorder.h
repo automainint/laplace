@@ -25,11 +25,11 @@ namespace laplace::engine {
      */
     static constexpr uint8_t max_depth = 16;
 
-    static constexpr size_t tick = 0;
-    static constexpr size_t root = 1;
+    static constexpr sl::index tick = 0;
+    static constexpr sl::index root = 1;
 
     constexpr eventorder() = default;
-    constexpr eventorder(size_t index);
+    constexpr eventorder(sl::index n);
     ~eventorder() = default;
 
     constexpr eventorder(const eventorder &) = default;
@@ -40,19 +40,20 @@ namespace laplace::engine {
 
     /*  Spawn a child event.
      */
-    [[nodiscard]] constexpr auto spawn(ref_uint child_count) const
+    [[nodiscard]] constexpr auto spawn(sl::whole &child_count) const
         -> eventorder;
 
     [[nodiscard]] constexpr auto operator<(const eventorder &order) const
         -> bool;
 
-    [[nodiscard]] constexpr auto get_index() const -> size_t;
+    [[nodiscard]] constexpr auto get_index() const -> sl::index;
 
   private:
-    constexpr eventorder(const eventorder &parent, size_t child_index);
+    constexpr eventorder(const eventorder &parent,
+                         sl::index         child_index);
 
-    std::array<size_t, max_depth> m_indices = { 0 };
-    uint8_t                       m_size    = 0;
+    std::array<sl::index, max_depth> m_indices = { 0 };
+    uint8_t                          m_size    = 0;
   };
 
   using cref_eventorder = const eventorder &;

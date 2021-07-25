@@ -13,6 +13,7 @@
 #ifndef laplace_core_log_h
 #define laplace_core_log_h
 
+#include <source_location>
 #include <string>
 
 namespace laplace {
@@ -25,10 +26,8 @@ namespace laplace {
   /*  TODO
    *  Use source_location.
    */
-  void error_(std::string_view message,
-              std::string_view loc = {}) noexcept;
-  void error_(std::u8string_view message,
-              std::string_view   loc = {}) noexcept;
+  void error_(std::string_view message, std::string_view loc) noexcept;
+  void error_(std::u8string_view message, std::string_view loc) noexcept;
 
   void verb(std::string_view s) noexcept;
   void verb(std::u8string_view s) noexcept;

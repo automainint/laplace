@@ -99,7 +99,7 @@ namespace laplace::engine {
 
   protected:
     constexpr void set_async(bool is_async);
-    constexpr auto order_of_child(ref_uint count) const -> eventorder;
+    constexpr auto order_of_child(sl::whole &count) const -> eventorder;
 
   private:
     eventorder m_order;

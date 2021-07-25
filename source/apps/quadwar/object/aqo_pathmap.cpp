@@ -211,17 +211,17 @@ namespace quadwar_app::object {
     }
 
     if (fp_size.x() * fp_size.y() != footprint.size()) {
-      error_("Invalid footprint.");
+      error_("Invalid footprint.", __FUNCTION__);
       return;
     }
 
     if (size.x() * size.y() != src.size()) {
-      error_("Invalid source.");
+      error_("Invalid source.", __FUNCTION__);
       return;
     }
 
     if (src.size() != dst.size()) {
-      error_("Invalid destination.");
+      error_("Invalid destination.", __FUNCTION__);
       return;
     }
 

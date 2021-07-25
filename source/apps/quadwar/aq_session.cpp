@@ -275,9 +275,11 @@ namespace quadwar_app {
 
     auto world = access::world({ *m_world, access::read_only });
 
-    auto r = world.get_entity(world.get_root());
+    auto r     = world.get_entity(world.get_root());
+    auto slots = world.get_entity(root::get_slots(r));
 
-    const auto ver = root::get_version(r);
+    const auto ver        = root::get_version(r);
+    const auto slot_count = slots.vec_get_size();
 
     if (m_root_ver < ver) {
       m_root_ver = ver;
@@ -286,11 +288,10 @@ namespace quadwar_app {
         m_lobby.set_visible(false);
         m_show_game = true;
 
-        auto       slot_index = sl::index {};
-        const auto slot_count = root::get_slot_count(r);
+        auto slot_index = sl::index {};
 
         for (sl::index i = 0; i < slot_count; i++) {
-          if (root::get_slot(r, i) == m_id_actor) {
+          if (slots.vec_get(i) == m_id_actor) {
             slot_index = i;
             break;
           }
@@ -312,16 +313,15 @@ namespace quadwar_app {
         return;
       }
 
-      const auto count = root::get_slot_count(r);
+      for (sl::index i = 0; i < slot_count; i++) {
 
-      for (size_t i = 0; i < count; i++) {
-
-        const auto id_actor = root::get_slot(r, i);
+        const auto id_actor = slots.vec_get(i);
         const auto actor    = world.get_entity(id_actor);
         const auto is_local = player::is_local(actor);
 
-        if (is_local)
+        if (is_local) {
           m_id_actor = id_actor;
+        }
 
         auto name = player::get_name(actor);
 
@@ -336,7 +336,7 @@ namespace quadwar_app {
         m_lobby.set_slot(i, id_actor, name);
       }
 
-      for (size_t i = count; i < m_lobby.get_slot_count(); i++) {
+      for (sl::index i = slot_count; i < m_lobby.get_slot_count(); i++) {
         m_lobby.remove_slot(i);
       }
     }

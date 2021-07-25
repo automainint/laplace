@@ -20,7 +20,8 @@ namespace quadwar_app::object {
   namespace access = engine::access;
 
   using std::vector, engine::intval, engine::vec2i,
-      engine::id_undefined, std::make_shared, action::unit_move;
+      engine::id_undefined, std::shared_ptr, std::make_shared,
+      action::unit_move;
 
   sl::index unit::n_actor  = {};
   sl::index unit::n_x      = {};
@@ -56,16 +57,19 @@ namespace quadwar_app::object {
 
     auto ids = vector<sl::index> {};
 
-    auto r    = w.get_entity(w.get_root());
-    auto land = w.get_entity(root::get_landscape(r));
-    auto locs = landscape::get_start_locs(land);
+    auto r     = w.get_entity(w.get_root());
+    auto land  = w.get_entity(root::get_landscape(r));
+    auto slots = w.get_entity(root::get_slots(r));
+    auto units = w.get_entity(root::get_units(r));
+
+    auto locs  = landscape::get_start_locs(land);
 
     if (!land.exist()) {
       error_("No landscape.", __FUNCTION__);
       return {};
     }
 
-    auto player_count = root::get_slot_count(r);
+    auto player_count = slots.vec_get_size();
 
     if (locs.size() < player_count) {
       if (locs.empty())
@@ -77,36 +81,40 @@ namespace quadwar_app::object {
 
     ids.reserve(unit_count * player_count);
 
+    auto create_unit =
+        [&r, &locs, &slots](const sl::index i) -> shared_ptr<unit> {
+      auto u = unit {};
+
+      const auto id_actor = as_index(slots.vec_get(i));
+
+      const auto x      = locs[i].x();
+      const auto y      = locs[i].y();
+      const auto radius = default_radius;
+      const auto health = default_health;
+
+      const auto sx = u.scale_of(n_x);
+      const auto sy = u.scale_of(n_y);
+      const auto sr = u.scale_of(n_radius);
+      const auto sh = u.scale_of(n_health);
+
+      u.init(n_actor, id_actor);
+      u.init(n_x, x * sx);
+      u.init(n_y, y * sy);
+      u.init(n_radius, radius * sr);
+      u.init(n_health, health * sh);
+
+      return make_shared<unit>(u);
+    };
+
     for (sl::index i = 0; i < player_count; i++) {
-      const auto u = [&r, &locs, &i]() -> unit {
-        auto u = unit {};
-
-        const auto id_actor = root::get_slot(r, i);
-
-        const auto x      = locs[i].x();
-        const auto y      = locs[i].y();
-        const auto radius = default_radius;
-        const auto health = default_health;
-
-        const auto sx = u.scale_of(n_x);
-        const auto sy = u.scale_of(n_y);
-        const auto sr = u.scale_of(n_radius);
-        const auto sh = u.scale_of(n_health);
-
-        u.init(n_actor, id_actor);
-        u.init(n_x, x * sx);
-        u.init(n_y, y * sy);
-        u.init(n_radius, radius * sr);
-        u.init(n_health, health * sh);
-
-        return u;
-      }();
-
       for (sl::index j = 0; j < unit_count; j++) {
-        const auto id = w.spawn(make_shared<unit>(u), id_undefined);
-        root::unit_create(r, id);
+        const auto id = w.spawn(create_unit(i), id_undefined);
         ids.emplace_back(id);
       }
+    }
+
+    for (sl::index i = 0; i < ids.size(); i++) {
+      units.vec_add_sorted(ids[i]);
     }
 
     return ids;

@@ -138,22 +138,17 @@ namespace laplace::engine {
     void vec_apply_delta(sl::index n, intval delta);
 
     void vec_resize(sl::whole size);
+    void vec_add(intval value);
+    void vec_add_sorted(intval value);
+    void vec_insert(sl::index n, intval value);
+    void vec_erase(sl::index n);
+    void vec_erase_by_value(intval value);
+    void vec_erase_by_value_sorted(intval value);
 
     /*  Adjust Entity new state.
      *  Thread-safe.
      */
     void adjust();
-
-    /*  Perform an universal request.
-     *  Thread-safe.
-     */
-    [[nodiscard]] auto request(sl::index id, span_cbyte args = {})
-        -> vbyte;
-
-    /*  Perform an universal modification.
-     *  Thread-safe.
-     */
-    void modify(sl::index id, span_cbyte args = {});
 
     /*  Dynamic Entity live loop.
      */
@@ -246,22 +241,6 @@ namespace laplace::engine {
 
     void self_destruct(const access::world &w);
     void desync();
-
-    /*  Universal request implementation.
-     *
-     *  Thread-safe methods not allowed
-     *  from here due to the locking.
-     */
-    [[nodiscard]] virtual auto do_request(sl::index  id,
-                                          span_cbyte args) const
-        -> vbyte;
-
-    /*  Universal modification implementation.
-     *
-     *  Thread-safe methods not allowed
-     *  from here due to the locking.
-     */
-    virtual void do_modify(sl::index id, span_cbyte args);
 
   private:
     void assign(cref_entity en) noexcept;

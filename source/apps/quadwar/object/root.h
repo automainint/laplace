@@ -22,10 +22,7 @@ namespace quadwar_app::object {
     root();
     ~root() override = default;
 
-    static void slot_create(entity en, sl::index id_actor);
-    static void slot_remove(entity en, sl::index id_actor);
-    static void unit_create(entity en, sl::index id_unit);
-    static void unit_remove(entity en, sl::index id_unit);
+    static void create(world w);
     static void loading(entity en);
     static void launch(entity en);
     static void status_changed(entity en);
@@ -35,41 +32,24 @@ namespace quadwar_app::object {
     [[nodiscard]] static auto get_version(entity en) -> sl::index;
     [[nodiscard]] static auto is_loading(entity en) -> bool;
     [[nodiscard]] static auto is_launched(entity en) -> bool;
-    [[nodiscard]] static auto get_slot_count(entity en) -> sl::whole;
-    [[nodiscard]] static auto get_slot(entity en, sl::index index)
-        -> sl::index;
-    [[nodiscard]] static auto get_unit_count(entity en) -> sl::whole;
-    [[nodiscard]] static auto get_unit(entity en, sl::index index)
-        -> sl::index;
-    [[nodiscard]] static auto get_all_units(entity en) -> sl::vector<sl::index>;
     [[nodiscard]] static auto get_landscape(entity en) -> sl::index;
     [[nodiscard]] static auto get_pathmap(entity en) -> sl::index;
+    [[nodiscard]] static auto get_slots(entity en) -> sl::index;
+    [[nodiscard]] static auto get_units(entity en) -> sl::index;
 
   protected:
     root(proto_tag);
 
-    auto do_request(sl::index id, span_cbyte args) const -> vbyte override;
-    void do_modify(sl::index id, span_cbyte args) override;
-
   private:
-    void do_slot_create(const sl::index id_actor);
-    void do_slot_remove(const sl::index id_actor);
-    void do_unit_create(const sl::index id_unit);
-    void do_unit_remove(const sl::index id_unit);
-    void do_launch();
-
     static sl::index n_version;
     static sl::index n_is_loading;
     static sl::index n_is_launched;
-    static sl::index n_slot_count;
-    static sl::index n_unit_count;
     static sl::index n_landscape;
     static sl::index n_pathmap;
+    static sl::index n_slots;
+    static sl::index n_units;
 
     static root m_proto;
-
-    sl::vector<sl::index> m_slots;
-    sl::vector<sl::index> m_units;
   };
 
   using ptr_root = std::shared_ptr<root>;

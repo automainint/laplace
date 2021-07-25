@@ -159,19 +159,45 @@ namespace laplace::engine::access {
     }
   }
 
-  void entity::adjust() const {
+  void entity::vec_add(intval value) const {
     if (m_mode > async) {
-      m_entity->adjust();
+      m_entity->vec_add(value);
+    }
+  }
+  
+  void entity::vec_add_sorted(intval value) const {
+    if (m_mode > async) {
+      m_entity->vec_add_sorted(value);
+    }
+  }
+  
+  void entity::vec_insert(sl::index n, intval value) const {
+    if (m_mode > async) {
+      m_entity->vec_insert(n, value);
+    }
+  }
+  
+  void entity::vec_erase(sl::index n) const {
+    if (m_mode > async) {
+      m_entity->vec_erase(n);
+    }
+  }
+  
+  void entity::vec_erase_by_value(intval value) const {
+    if (m_mode > async) {
+      m_entity->vec_erase_by_value(value);
     }
   }
 
-  auto entity::request(sl::index id, span_cbyte args) const -> vbyte {
-    return m_mode > forbidden ? m_entity->request(id, args) : vbyte {};
+  void entity::vec_erase_by_value_sorted(intval value) const {
+    if (m_mode > async) {
+      m_entity->vec_erase_by_value_sorted(value);
+    }
   }
 
-  void entity::modify(sl::index id, span_cbyte args) const {
+  void entity::adjust() const {
     if (m_mode > async) {
-      m_entity->modify(id, args);
+      m_entity->adjust();
     }
   }
 

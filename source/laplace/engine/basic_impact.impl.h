@@ -70,7 +70,7 @@ namespace laplace::engine {
     this->m_is_async = is_async;
   }
 
-  constexpr auto basic_impact::order_of_child(ref_uint count) const
+  constexpr auto basic_impact::order_of_child(sl::whole &count) const
       -> eventorder {
     return this->m_order.spawn(count);
   }

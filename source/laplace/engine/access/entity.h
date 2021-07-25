@@ -72,13 +72,14 @@ namespace laplace::engine::access {
     void vec_set(sl::index n, intval value) const;
     void vec_apply_delta(sl::index n, intval delta) const;
     void vec_resize(sl::whole size) const;
+    void vec_add(intval value) const;
+    void vec_add_sorted(intval value) const;
+    void vec_insert(sl::index n, intval value) const;
+    void vec_erase(sl::index n) const;
+    void vec_erase_by_value(intval value) const;
+    void vec_erase_by_value_sorted(intval value) const;
 
     void adjust() const;
-
-    [[nodiscard]] auto request(sl::index  id,
-                               span_cbyte args = {}) const -> vbyte;
-
-    void modify(sl::index id, span_cbyte args = {}) const;
 
     [[nodiscard]] auto is_dynamic() const -> bool;
     [[nodiscard]] auto get_tick_period() const -> uint64_t;

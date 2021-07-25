@@ -21,9 +21,10 @@
 #include "../object/unit.h"
 
 namespace quadwar_app::protocol {
-  using std::make_shared, object::root, object::pathmap, object::unit,
-      object::game_clock, object::landscape, action::pathmap_reset,
-      action::unit_place, engine::id_undefined, engine::ptr_impact;
+  using std::make_shared, engine::basic_entity, object::root,
+      object::pathmap, object::unit, object::game_clock,
+      object::landscape, action::pathmap_reset, action::unit_place,
+      engine::id_undefined, engine::ptr_impact;
 
   void qw_loading::perform(world w) const {
     verb(" :: event  Quadwar/loading");
@@ -32,15 +33,13 @@ namespace quadwar_app::protocol {
 
     root::loading(r);
 
-    w.spawn(make_shared<game_clock>(), id_undefined);
-
     landscape::create_maze(w, m_map_size, m_map_size, m_player_count);
 
     auto id_path = pathmap::create(w);
     auto units   = unit::spawn_start_units(w, m_unit_count);
 
     auto ev          = ptr_impact {};
-    auto child_count = size_t {};
+    auto child_count = sl::whole {};
 
     ev = make_shared<pathmap_reset>(id_path);
     ev->set_order(order_of_child(child_count));
@@ -51,5 +50,7 @@ namespace quadwar_app::protocol {
       ev->set_order(order_of_child(child_count));
       w.queue(ev);
     }
+
+    w.spawn(make_shared<game_clock>(), id_undefined);
   }
 }

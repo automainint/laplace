@@ -12,17 +12,17 @@ Official repository: [GitHub][laplace-link]
 
 ### Dependencies
 - C++20 [MSVC][msvc-link]/[Clang][clang-link]/[GCC][gcc-link] for the compilation;
-- [Python3][python-link], [Cmake][cmake-link], [Git][git-link] for the building and tools;
+- [Python3][python-link], [Cmake][cmake-link], [Git][git-link] for building and tools;
 - [OpenGL][opengl-link] for all the graphics;
 - [wolfSSL][wolfssl-link] for encryption algorithms (ECC/Rabbit);
-- [FreeType2][freetype-link] for the font rendering;
+- [FreeType2][freetype-link] for font rendering;
 - [bzip2][bzip2-link] for the archivation;
 - [googletest][googletest-link] for the test suite;
-- [google/benchmark][benchmark-link] for the benchmarks;
-- [Blender][blender-link] for the content creating.
+- [google/benchmark][benchmark-link] for benchmarks;
+- [Blender][blender-link] for content creating.
 
 ##  How to build
-To build the project CMake 3.18 and Python 3 are required.
+To build the project CMake 3.18, Git and Python 3 are required.
 
 ### With provided build script
 - Execute the build script.
@@ -49,13 +49,13 @@ Laplace CMake configuration options:
 
 Tests will be created if `LAPLACE_ENABLE_TESTING` or `LAPLACE_ENABLE_COVERAGE` is `ON`.
 
-To build only the dependencies set `LAPLACE_ENABLE_EXE` to `OFF`.
+To build only dependencies set `LAPLACE_ENABLE_EXE` to `OFF`.
 
 ##  Hacking
 If you want to build the source code by hand, follow the instructions below:
-- Use `tools/build-deps.py` to build the dependencies.
-- Use `tools/gen-gl.py` to generate the OpenGL interface files.
-- Use `tools/embed.py` to generate the embedded data source files.
+- Use `tools/build-deps.py` to build dependencies.
+- Use `tools/gen-gl.py` to generate OpenGL interface files.
+- Use `tools/embed.py` to generate embedded data source files.
 
 ```shell
 cd tools
@@ -67,7 +67,7 @@ cd ..
 
 Add `source` to the project and build manually. Required headers will be in `include` folder, libraries will be in `lib` folder.
 
-If you change the source code files structure, use `tools/gen-cmake.py` to generate the `CMakeLists.txt` files.
+If you change the source code files structure, use `tools/gen-cmake.py` to generate `CMakeLists.txt` files.
 
 ##  Contribution
 To contribute, follow these steps:

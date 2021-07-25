@@ -22,7 +22,7 @@ namespace laplace::engine {
   namespace sets = object::sets;
 
   using std::unique_lock, std::shared_lock, std::span, std::move,
-      std::make_shared;
+      std::make_shared, std::lower_bound;
 
   basic_entity::basic_entity(cref_entity en) noexcept {
     assign(en);
@@ -428,6 +428,103 @@ namespace laplace::engine {
     }
   }
 
+  void basic_entity::vec_add(intval value) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+
+      m_vec.emplace_back(vec_row { value, 0 });
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
+  void basic_entity::vec_add_sorted(intval value) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+
+      const auto i = lower_bound(
+          m_vec.begin(), m_vec.end(), value,
+          [](const vec_row &a, const intval b) -> bool {
+            return a.value < b;
+          });
+
+      m_vec.insert(i, vec_row { value, 0 });
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
+  void basic_entity::vec_insert(sl::index n, intval value) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+      if (n < 0 || n > m_vec.size()) {
+        error_("Invalid idnex.", __FUNCTION__);
+        desync();
+        return;
+      }
+
+      m_vec.insert(m_vec.begin() + n, 1, { value, 0 });
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
+  void basic_entity::vec_erase(sl::index n) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+      if (n < 0 || n >= m_vec.size()) {
+        error_("Invalid idnex.", __FUNCTION__);
+        desync();
+        return;
+      }
+
+      m_vec.erase(m_vec.begin() + n);
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
+  void basic_entity::vec_erase_by_value(intval value) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+
+      [this, value]() {
+        for (auto i = m_vec.begin(); i != m_vec.end(); i++) {
+          if (i->value == value) {
+            m_vec.erase(i);
+            return;
+          }
+        }
+      }();
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
+  void basic_entity::vec_erase_by_value_sorted(intval value) {
+    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
+
+      const auto i = lower_bound(
+          m_vec.begin(), m_vec.end(), value,
+          [](const vec_row &a, const intval b) -> bool {
+            return a.value < b;
+          });
+
+      if (i != m_vec.end() && i->value == value) {
+        m_vec.erase(i);
+      }
+
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
+  }
+
   void basic_entity::adjust() {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       if (m_is_changed) {
@@ -461,34 +558,12 @@ namespace laplace::engine {
 
       if (m_is_vec_changed) {
         for (auto &x : m_vec) {
-          x.value += x.value;
+          x.value += x.delta;
           x.delta = 0;
         }
 
         m_is_vec_changed = false;
       }
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
-    }
-  }
-
-  auto basic_entity::request(sl::index id, span_cbyte args) -> vbyte {
-
-    if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
-      return this->do_request(id, args);
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
-    }
-
-    return {};
-  }
-
-  void basic_entity::modify(sl::index id, span_cbyte args) {
-
-    if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
-      this->do_modify(id, args);
     } else {
       error_("Lock timeout.", __FUNCTION__);
       desync();
@@ -580,13 +655,6 @@ namespace laplace::engine {
       w->desync();
     }
   }
-
-  auto basic_entity::do_request(sl::index id, span_cbyte args) const
-      -> vbyte {
-    return {};
-  }
-
-  void basic_entity::do_modify(sl::index id, span_cbyte args) { }
 
   void basic_entity::assign(cref_entity en) noexcept {
     m_is_changed       = en.m_is_changed;
