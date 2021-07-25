@@ -13,7 +13,7 @@
 #ifndef laplace_core_log_h
 #define laplace_core_log_h
 
-#include <source_location>
+//#include <source_location>
 #include <string>
 
 namespace laplace {
