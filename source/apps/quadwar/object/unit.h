@@ -32,6 +32,7 @@ namespace quadwar_app::object {
         -> std::vector<sl::index>;
 
     static void set_actor(entity en, sl::index id_actor);
+    static void set_color(entity en, sl::index color_index);
     static void set_x(entity en, engine::intval x);
     static void set_y(entity en, engine::intval y);
     static void set_position(entity en, engine::vec2i p);
@@ -39,6 +40,7 @@ namespace quadwar_app::object {
     static void set_health(entity en, engine::intval health);
 
     [[nodiscard]] static auto get_actor(entity en) -> sl::index;
+    [[nodiscard]] static auto get_color(entity en) -> sl::index;
     [[nodiscard]] static auto get_x(entity en) -> engine::intval;
     [[nodiscard]] static auto get_y(entity en) -> engine::intval;
     [[nodiscard]] static auto get_position(entity en) -> engine::vec2i;
@@ -63,6 +65,7 @@ namespace quadwar_app::object {
     static unit m_proto;
 
     static sl::index n_actor;
+    static sl::index n_color;
     static sl::index n_x;
     static sl::index n_y;
     static sl::index n_radius;

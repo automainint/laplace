@@ -18,7 +18,7 @@
 #include "../object/unit.h"
 
 namespace quadwar_app::view {
-  using object::root, object::unit, std::lower_bound, std::span;
+  using object::root, object::unit, std::find, std::span;
 
   void units::render(const camera &cam, world w,
                      span<const sl::index> highlight,
@@ -31,7 +31,8 @@ namespace quadwar_app::view {
 
     if (cont) {
       const auto [p, s] = cam.get_transform();
-      cont->render(m_vertices, p, s);
+      cont->render(m_marks, p, s);
+      cont->render(m_units, p, s);
     }
   }
 
@@ -55,50 +56,69 @@ namespace quadwar_app::view {
       const auto s = unit::get_radius_scaled(u) *
                      cam.get_grid_scale() * unit_scaling;
 
-      m_info[i].id      = id;
-      m_info[i].rect[0] = p - vec2 { s, s };
-      m_info[i].rect[1] = p + vec2 { s, s };
+      m_info[i].id          = id;
+      m_info[i].color_index = unit::get_color(u);
+      m_info[i].rect[0]     = p - vec2 { s, s };
+      m_info[i].rect[1]     = p + vec2 { s, s };
     }
   }
 
   void units::update_buffer(span<const sl::index> highlight,
                             span<const sl::index> selection) {
 
-    m_vertices.resize(m_info.size() * 6,
-                      vertex { vec2 {}, default_color });
+    static_assert(colors.size() > 0);
+
+    auto add_rect = [](sl::vector<vertex> &v, sl::index n,
+                       const vec2 min, const vec2 max,
+                       const float delta, const vec4 color) {
+      if (n >= v.size()) {
+        v.resize(n + 6);
+      }
+
+      const auto x0 = min.x() - delta;
+      const auto y0 = min.y() - delta;
+      const auto x1 = max.x() + delta;
+      const auto y1 = max.y() + delta;
+
+      v[n].position     = vec2 { x0, y0 };
+      v[n + 1].position = vec2 { x1, y0 };
+      v[n + 2].position = vec2 { x0, y1 };
+      v[n + 3].position = vec2 { x1, y0 };
+      v[n + 4].position = vec2 { x1, y1 };
+      v[n + 5].position = vec2 { x0, y1 };
+
+      v[n].color     = color;
+      v[n + 1].color = color;
+      v[n + 2].color = color;
+      v[n + 3].color = color;
+      v[n + 4].color = color;
+      v[n + 5].color = color;
+    };
+
+    m_units.resize(m_info.size() * 6, vertex {});
+
+    m_marks.clear();
 
     for (sl::index i = 0; i < m_info.size(); i++) {
-      const auto x0 = m_info[i].rect[0].x();
-      const auto y0 = m_info[i].rect[0].y();
-      const auto x1 = m_info[i].rect[1].x();
-      const auto y1 = m_info[i].rect[1].y();
 
-      m_vertices[i * 6].position     = vec2 { x0, y0 };
-      m_vertices[i * 6 + 1].position = vec2 { x1, y0 };
-      m_vertices[i * 6 + 2].position = vec2 { x0, y1 };
-      m_vertices[i * 6 + 3].position = vec2 { x1, y0 };
-      m_vertices[i * 6 + 4].position = vec2 { x1, y1 };
-      m_vertices[i * 6 + 5].position = vec2 { x0, y1 };
+      const auto min = m_info[i].rect[0];
+      const auto max = m_info[i].rect[1];
 
-      const auto color = [id = m_info[i].id, &highlight,
-                          &selection]() -> vec4 {
-        if (auto i = lower_bound(highlight.begin(), highlight.end(), id);
-            i != highlight.end() && *i == id)
-          return highlight_color;
+      if (find(highlight.begin(), highlight.end(), m_info[i].id) !=
+          highlight.end()) {
+        add_rect(m_marks, m_marks.size(), min, max, selection_delta,
+                 highlight_color);
 
-        if (auto i = lower_bound(selection.begin(), selection.end(), id);
-            i != selection.end() && *i == id)
-          return selection_color;
+      } else if (find(selection.begin(), selection.end(),
+                      m_info[i].id) != selection.end()) {
+        add_rect(m_marks, m_marks.size(), min, max, selection_delta,
+                 selection_color);
+      }
 
-        return default_color;
-      }();
+      const auto color_index = m_info[i].color_index % colors.size();
+      const auto color       = colors.begin()[color_index];
 
-      m_vertices[i * 6].color     = color;
-      m_vertices[i * 6 + 1].color = color;
-      m_vertices[i * 6 + 2].color = color;
-      m_vertices[i * 6 + 3].color = color;
-      m_vertices[i * 6 + 4].color = color;
-      m_vertices[i * 6 + 5].color = color;
+      add_rect(m_units, i * 6, min, max, 0.f, color);
     }
   }
 }

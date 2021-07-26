@@ -29,12 +29,15 @@ namespace quadwar_app::object::sets {
     root_slots,
     root_units,
 
+    player_index,
+
     game_clock_time,
 
     land_width,
     land_height,
 
     unit_actor,
+    unit_color,
     unit_x,
     unit_y,
     unit_radius,

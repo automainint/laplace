@@ -14,6 +14,7 @@
 
 #include "../action/unit_move.h"
 #include "landscape.h"
+#include "player.h"
 #include "root.h"
 
 namespace quadwar_app::object {
@@ -24,6 +25,7 @@ namespace quadwar_app::object {
       action::unit_move;
 
   sl::index unit::n_actor  = {};
+  sl::index unit::n_color  = {};
   sl::index unit::n_x      = {};
   sl::index unit::n_y      = {};
   sl::index unit::n_radius = {};
@@ -34,12 +36,14 @@ namespace quadwar_app::object {
   unit::unit(proto_tag) : basic_entity(1) {
     setup_sets(
         { { .id = sets::unit_actor, .scale = 1 },
+          { .id = sets::unit_color, .scale = 1 },
           { .id = sets::unit_x, .scale = sets::scale_real },
           { .id = sets::unit_y, .scale = sets::scale_real },
           { .id = sets::unit_radius, .scale = sets::scale_real },
           { .id = sets::unit_health, .scale = sets::scale_points } });
 
     n_actor  = index_of(sets::unit_actor);
+    n_color  = index_of(sets::unit_color);
     n_x      = index_of(sets::unit_x);
     n_y      = index_of(sets::unit_y);
     n_radius = index_of(sets::unit_radius);
@@ -54,7 +58,6 @@ namespace quadwar_app::object {
 
   auto unit::spawn_start_units(world w, sl::whole unit_count)
       -> vector<sl::index> {
-
     auto ids = vector<sl::index> {};
 
     auto r     = w.get_entity(w.get_root());
@@ -62,7 +65,7 @@ namespace quadwar_app::object {
     auto slots = w.get_entity(root::get_slots(r));
     auto units = w.get_entity(root::get_units(r));
 
-    auto locs  = landscape::get_start_locs(land);
+    auto locs = landscape::get_start_locs(land);
 
     if (!land.exist()) {
       error_("No landscape.", __FUNCTION__);
@@ -81,14 +84,12 @@ namespace quadwar_app::object {
 
     ids.reserve(unit_count * player_count);
 
-    auto create_unit =
-        [&r, &locs, &slots](const sl::index i) -> shared_ptr<unit> {
+    auto create_unit = [&r, &locs,
+                        &slots](const sl::index id_actor,
+                                const sl::index color, const intval x,
+                                const intval y) -> shared_ptr<unit> {
       auto u = unit {};
 
-      const auto id_actor = as_index(slots.vec_get(i));
-
-      const auto x      = locs[i].x();
-      const auto y      = locs[i].y();
       const auto radius = default_radius;
       const auto health = default_health;
 
@@ -98,8 +99,9 @@ namespace quadwar_app::object {
       const auto sh = u.scale_of(n_health);
 
       u.init(n_actor, id_actor);
-      u.init(n_x, x * sx);
-      u.init(n_y, y * sy);
+      u.init(n_color, color);
+      u.init(n_x, x * sx + sx / 2);
+      u.init(n_y, y * sy + sy / 2);
       u.init(n_radius, radius * sr);
       u.init(n_health, health * sh);
 
@@ -107,8 +109,15 @@ namespace quadwar_app::object {
     };
 
     for (sl::index i = 0; i < player_count; i++) {
+      const auto id_actor = as_index(slots.vec_get(i));
+      const auto color    = player::get_index(w.get_entity(id_actor));
+
+      const auto x = locs[i].x();
+      const auto y = locs[i].y();
+
       for (sl::index j = 0; j < unit_count; j++) {
-        const auto id = w.spawn(create_unit(i), id_undefined);
+        const auto id = w.spawn(create_unit(id_actor, color, x, y),
+                                id_undefined);
         ids.emplace_back(id);
       }
     }
@@ -121,7 +130,11 @@ namespace quadwar_app::object {
   }
 
   void unit::set_actor(entity en, sl::index id_actor) {
-    en.set(n_actor, static_cast<int64_t>(id_actor));
+    en.set(n_actor, id_actor);
+  }
+
+  void unit::set_color(entity en, sl::index color_index) {
+    en.set(n_color, color_index);
   }
 
   void unit::set_x(entity en, intval x) {
@@ -147,6 +160,10 @@ namespace quadwar_app::object {
 
   auto unit::get_actor(entity en) -> sl::index {
     return as_index(en.get(n_actor));
+  }
+
+  auto unit::get_color(entity en) -> sl::index {
+    return as_index(en.get(n_color));
   }
 
   auto unit::get_x(entity en) -> intval {

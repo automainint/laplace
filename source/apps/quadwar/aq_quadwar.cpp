@@ -10,10 +10,11 @@
  *  the MIT License for more details.
  */
 
+#include "quadwar.h"
+
 #include "../../laplace/core/utils.h"
 #include "../../laplace/graphics/utils.h"
 #include "../../laplace/stem/config.h"
-#include "quadwar.h"
 #include <fstream>
 #include <random>
 
@@ -78,8 +79,8 @@ namespace quadwar_app {
       m_session = make_shared<session>();
       m_session->attach_to(m_ui);
 
-      m_session->adjust_layout(
-          m_ui->get_rect().width, m_ui->get_rect().height);
+      m_session->adjust_layout(m_ui->get_rect().width,
+                               m_ui->get_rect().height);
 
       m_session->on_done(return_to_mainmenu);
       m_session->on_quit(quit);

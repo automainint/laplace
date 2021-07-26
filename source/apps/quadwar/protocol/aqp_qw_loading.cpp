@@ -17,14 +17,15 @@
 #include "../object/game_clock.h"
 #include "../object/landscape.h"
 #include "../object/pathmap.h"
+#include "../object/player.h"
 #include "../object/root.h"
 #include "../object/unit.h"
 
 namespace quadwar_app::protocol {
   using std::make_shared, engine::basic_entity, object::root,
-      object::pathmap, object::unit, object::game_clock,
-      object::landscape, action::pathmap_reset, action::unit_place,
-      engine::id_undefined, engine::ptr_impact;
+      object::pathmap, object::player, object::unit,
+      object::game_clock, object::landscape, action::pathmap_reset,
+      action::unit_place, engine::id_undefined, engine::ptr_impact;
 
   void qw_loading::perform(world w) const {
     verb(" :: event  Quadwar/loading");
@@ -32,6 +33,8 @@ namespace quadwar_app::protocol {
     auto r = w.get_entity(w.get_root());
 
     root::loading(r);
+
+    player::init_indices(w);
 
     landscape::create_maze(w, m_map_size, m_map_size, m_player_count);
 
