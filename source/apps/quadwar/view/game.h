@@ -25,6 +25,9 @@ namespace quadwar_app::view {
     void set_position(const vec2 v);
     void set_cursor(const vec2 cursor);
 
+    auto get_unit() -> sl::index;
+    auto get_grid_position() -> engine::vec2z;
+
     void move(const vec2 delta);
     void scale(const real delta);
     void click();

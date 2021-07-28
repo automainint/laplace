@@ -450,11 +450,8 @@ namespace laplace::network {
     if (m_slots[slot].outdate >= get_update_timeout()) {
       if (is_master()) {
         if (auto sol = get_solver(); sol) {
-          send_event_to(                 //
-              slot,                      //
-              encode<server_idle>(       //
-                  m_queue.events.size(), //
-                  sol->get_time()));
+          send_event_to(slot, encode<server_idle>(m_queue.events.size(),
+                                                  sol->get_time()));
         }
       }
 
@@ -470,8 +467,8 @@ namespace laplace::network {
         }
       }
 
-      const auto compensate = min(
-          m_queue.events.size(), m_loss_compensation);
+      const auto compensate = min(m_queue.events.size(),
+                                  m_loss_compensation);
 
       for (size_t i = m_queue.events.size() - compensate;
            i < m_queue.events.size(); i++) {
@@ -485,14 +482,11 @@ namespace laplace::network {
 
   void udp_server::clean_slots() {
     if (is_master()) {
-      m_slots.erase(           //
-          std::remove_if(      //
-              m_slots.begin(), //
-              m_slots.end(),   //
-              [](const auto &s) {
-                return s.id_actor == id_undefined;
-              }),
-          m_slots.end());
+      m_slots.erase(std::remove_if(m_slots.begin(), m_slots.end(),
+                                   [](const auto &s) {
+                                     return s.id_actor == id_undefined;
+                                   }),
+                    m_slots.end());
     }
   }
 
@@ -636,8 +630,8 @@ namespace laplace::network {
   void udp_server::receive_chunks() {
     if (m_node) {
       for (;;) {
-        const auto n = m_node->receive_to(
-            m_buffer.data(), m_buffer.size(), async);
+        const auto n = m_node->receive_to(m_buffer.data(),
+                                          m_buffer.size(), async);
 
         if (n == 0) {
           if (m_node->is_msgsize()) {
@@ -704,8 +698,8 @@ namespace laplace::network {
       /*  For public_key, request_events and ping.
        */
       if (!perform_control(slot, seq)) {
-        verb(fmt(
-            "Network: Ignore unindexed command on slot %zu.", slot));
+        verb(fmt("Network: Ignore unindexed command on slot %zu.",
+                 slot));
       }
 
     } else if (index >= qu.index) {

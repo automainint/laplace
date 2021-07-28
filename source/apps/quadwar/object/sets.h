@@ -40,6 +40,8 @@ namespace quadwar_app::object::sets {
     unit_color,
     unit_x,
     unit_y,
+    unit_move_x,
+    unit_move_y,
     unit_radius,
     unit_health,
 

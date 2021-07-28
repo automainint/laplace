@@ -39,6 +39,9 @@ namespace quadwar_app::object {
     static void set_radius(entity en, engine::intval radius);
     static void set_health(entity en, engine::intval health);
 
+    static void order_move(world w, sl::index id_actor,
+                           sl::index id_unit, engine::vec2i target);
+
     [[nodiscard]] static auto get_actor(entity en) -> sl::index;
     [[nodiscard]] static auto get_color(entity en) -> sl::index;
     [[nodiscard]] static auto get_x(entity en) -> engine::intval;
@@ -68,6 +71,8 @@ namespace quadwar_app::object {
     static sl::index n_color;
     static sl::index n_x;
     static sl::index n_y;
+    static sl::index n_move_x;
+    static sl::index n_move_y;
     static sl::index n_radius;
     static sl::index n_health;
   };

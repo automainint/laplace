@@ -41,10 +41,10 @@ namespace quadwar_app::protocol {
       m_name = name;
     }
 
-    inline qw_player_name(sl::index index, uint64_t time,
+    inline qw_player_name(sl::index n, uint64_t time,
                           sl::index id_actor, std::u8string_view name) {
 
-      set_index(index);
+      set_index(n);
       set_time(time);
       set_actor(id_actor);
       set_encoded_size(n_name + name.size());

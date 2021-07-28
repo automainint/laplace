@@ -13,12 +13,15 @@
 #include "../../../laplace/engine/world.h"
 #include "../object/landscape.h"
 #include "../object/root.h"
+#include "../object/sets.h"
 #include "game.h"
 #include <numeric>
 
 namespace quadwar_app::view {
   namespace access = engine::access;
-  using std::min, std::numeric_limits;
+
+  using std::min, std::numeric_limits, engine::vec2z, engine::intval,
+      object::sets::scale_real;
 
   void game::adjust_layout(int width, int height) {
     m_camera.set_frame(
@@ -38,6 +41,28 @@ namespace quadwar_app::view {
       return;
 
     m_cursor = p + (cursor - f) / s;
+  }
+
+  auto game::get_unit() -> sl::index {
+    if (m_selection.empty()) {
+      return -1;
+    }
+
+    return m_selection[0];
+  }
+
+  auto game::get_grid_position() -> vec2z {
+    const auto s = m_camera.get_grid_scale();
+
+    if (s <= numeric_limits<decltype(s)>::epsilon())
+      return {};
+
+    const auto p = (m_cursor / s) * static_cast<real>(scale_real);
+
+    const auto x = static_cast<intval>(round(p.x()));
+    const auto y = static_cast<intval>(round(p.y()));
+
+    return { x, y };
   }
 
   void game::move(const vec2 delta) {

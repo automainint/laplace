@@ -92,7 +92,23 @@ namespace laplace::engine {
     return get_actor_unsafe(seq);
   }
 
-  inline auto prime_impact::get_string(span_cbyte seq, size_t offset)
+  constexpr auto prime_impact::get_intval(span_cbyte seq,
+                                          sl::index offset) -> intval {
+
+    const auto value = serial::rd<int64_t>(seq, offset);
+    const auto n     = static_cast<intval>(value);
+
+    if constexpr (sizeof value != sizeof n) {
+      if (static_cast<decltype(value)>(n) != value) {
+        error_("32-bit integer value overflow.", __FUNCTION__);
+        return -1;
+      }
+    }
+
+    return n;
+  }
+
+  inline auto prime_impact::get_string(span_cbyte seq, sl::index offset)
       -> std::u8string_view {
 
     if (offset >= seq.size())
@@ -102,15 +118,15 @@ namespace laplace::engine {
              seq.size() - offset };
   }
 
-  inline auto prime_impact::get_string(span_cbyte seq, size_t offset,
-                                       size_t size)
+  inline auto prime_impact::get_string(span_cbyte seq,
+                                       sl::index offset, sl::whole size)
       -> std::u8string_view {
 
     if (offset + size > seq.size())
       return {};
 
     return { reinterpret_cast<const char8_t *>(seq.data() + offset),
-             size };
+             static_cast<std::u8string_view::size_type>(size) };
   }
 
   constexpr void prime_impact::set_encoded_size(sl::whole size) {
@@ -123,8 +139,8 @@ namespace laplace::engine {
 
   template <typename prime_impact_, typename... args_>
   constexpr auto encode(args_... args) -> vbyte {
-    const auto ev = prime_impact_(args...);
-    vbyte      seq(ev.get_encoded_size());
+    const auto ev  = prime_impact_(args...);
+    auto       seq = vbyte(ev.get_encoded_size());
     ev.prime_impact_::encode_to(seq);
     return seq;
   }

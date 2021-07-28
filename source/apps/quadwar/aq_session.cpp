@@ -10,6 +10,8 @@
  *  the MIT License for more details.
  */
 
+#include "session.h"
+
 #include "../../laplace/core/utils.h"
 #include "../../laplace/engine/protocol/basic_event.h"
 #include "../../laplace/engine/protocol/slot_create.h"
@@ -20,8 +22,8 @@
 #include "object/player.h"
 #include "object/root.h"
 #include "protocol/qw_loading.h"
+#include "protocol/qw_order_move.h"
 #include "protocol/qw_player_name.h"
-#include "session.h"
 #include <filesystem>
 #include <fstream>
 #include <thread>
@@ -266,6 +268,17 @@ namespace quadwar_app {
 
     if (is_moved) {
       m_view.move(delta);
+    }
+
+    if (in.is_key_pressed(platform::key_rbutton)) {
+      const auto u = m_view.get_unit();
+
+      if (u >= 0) {
+        const auto target = m_view.get_grid_position();
+
+        m_server->emit<protocol::qw_order_move>(
+            m_id_actor, u, target.x(), target.y());
+      }
     }
   }
 

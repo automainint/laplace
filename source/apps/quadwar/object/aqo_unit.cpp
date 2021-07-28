@@ -14,6 +14,7 @@
 
 #include "../action/unit_move.h"
 #include "landscape.h"
+#include "pathmap.h"
 #include "player.h"
 #include "root.h"
 
@@ -28,6 +29,8 @@ namespace quadwar_app::object {
   sl::index unit::n_color  = {};
   sl::index unit::n_x      = {};
   sl::index unit::n_y      = {};
+  sl::index unit::n_move_x = {};
+  sl::index unit::n_move_y = {};
   sl::index unit::n_radius = {};
   sl::index unit::n_health = {};
 
@@ -39,6 +42,8 @@ namespace quadwar_app::object {
           { .id = sets::unit_color, .scale = 1 },
           { .id = sets::unit_x, .scale = sets::scale_real },
           { .id = sets::unit_y, .scale = sets::scale_real },
+          { .id = sets::unit_move_x, .scale = sets::scale_real },
+          { .id = sets::unit_move_y, .scale = sets::scale_real },
           { .id = sets::unit_radius, .scale = sets::scale_real },
           { .id = sets::unit_health, .scale = sets::scale_points } });
 
@@ -46,6 +51,8 @@ namespace quadwar_app::object {
     n_color  = index_of(sets::unit_color);
     n_x      = index_of(sets::unit_x);
     n_y      = index_of(sets::unit_y);
+    n_move_x = index_of(sets::unit_move_x);
+    n_move_y = index_of(sets::unit_move_y);
     n_radius = index_of(sets::unit_radius);
     n_health = index_of(sets::unit_health);
   }
@@ -54,7 +61,50 @@ namespace quadwar_app::object {
     *this = m_proto;
   }
 
-  void unit::tick(access::world w) { }
+  void unit::tick(access::world w) {
+    const auto sx = sets::scale_real / pathmap::resolution;
+    const auto sy = sets::scale_real / pathmap::resolution;
+    const auto sr = sets::scale_real / pathmap::resolution;
+
+    if constexpr (sx == 0 || sy == 0 || sr == 0) {
+      error_("Invalid scale.", __FUNCTION__);
+      return;
+    }
+
+    const auto ox0 = get(n_x);
+    const auto oy0 = get(n_y);
+
+    const auto ox1 = get(n_move_x);
+    const auto oy1 = get(n_move_y);
+
+    if (ox0 != ox1 || oy0 != oy1) {
+      const auto x0 = ox0 / sx;
+      const auto y0 = oy0 / sy;
+
+      const auto x1 = ox1 / sx;
+      const auto y1 = oy1 / sy;
+
+      auto r    = w.get_entity(w.get_root());
+      auto path = w.get_entity(root::get_pathmap(r));
+
+      const auto radius = get(n_radius) / sr;
+      const auto size   = 1 + radius * 2;
+
+      const auto footprint = sl::vector<int8_t>(size * size, 1);
+
+      if (pathmap::check(path, { x1, y1 }, { size, size }, footprint)) {
+        pathmap::subtract(path, { x0, y0 }, { size, size }, footprint);
+        pathmap::add(path, { x1, y1 }, { size, size }, footprint);
+
+        set(n_x, ox1);
+        set(n_y, oy1);
+
+      } else {
+        set(n_move_x, ox0);
+        set(n_move_y, oy0);
+      }
+    }
+  }
 
   auto unit::spawn_start_units(world w, sl::whole unit_count)
       -> vector<sl::index> {
@@ -156,6 +206,20 @@ namespace quadwar_app::object {
 
   void unit::set_health(entity en, intval health) {
     en.set(n_health, health);
+  }
+
+  void unit::order_move(world w, sl::index id_actor,
+                        sl::index id_unit, vec2i target) {
+
+    auto u = w.get_entity(id_unit);
+
+    if (get_actor(u) != id_actor) {
+      return;
+    }
+
+    u.set(n_move_x, target.x());
+    u.set(n_move_y, target.y());
+    u.adjust();
   }
 
   auto unit::get_actor(entity en) -> sl::index {

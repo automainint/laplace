@@ -36,6 +36,21 @@ namespace quadwar_app::object {
     [[nodiscard]] static auto get_tiles(entity en)
         -> sl::vector<int8_t>;
 
+    [[nodiscard]] static auto check(
+        entity en, const engine::vec2z position,
+        const engine::vec2z           size,
+        const std::span<const int8_t> footprint) noexcept -> bool;
+
+    static void add(
+        entity en, const engine::vec2z position,
+        const engine::vec2z           size,
+        const std::span<const int8_t> footprint) noexcept;
+
+    static void subtract(
+        entity en, const engine::vec2z position,
+        const engine::vec2z           size,
+        const std::span<const int8_t> footprint) noexcept;
+
     [[nodiscard]] static auto place(
         entity en, const engine::vec2z position,
         const engine::vec2z           size,

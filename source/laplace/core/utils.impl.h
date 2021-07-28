@@ -15,18 +15,29 @@
 
 namespace laplace {
   constexpr auto as_index(uint64_t value) noexcept -> sl::index {
-    if constexpr (sizeof(uint64_t) != sizeof(size_t)) {
-      if (value > std::numeric_limits<size_t>::max()) {
-        verb("[ error ] 32-bit index value overflow.");
+    const auto n = static_cast<sl::index>(value);
+
+    if constexpr (sizeof value != sizeof n) {
+      if (static_cast<decltype(value)>(n) != value) {
+        error_("32-bit index value overflow.", __FUNCTION__);
         return -1;
       }
     }
 
-    return static_cast<sl::index>(value);
+    return n;
   }
 
   constexpr auto as_index(int64_t value) noexcept -> sl::index {
-    return as_index(static_cast<uint64_t>(value));
+    const auto n = static_cast<sl::index>(value);
+
+    if constexpr (sizeof value != sizeof n) {
+      if (static_cast<decltype(value)>(n) != value) {
+        error_("32-bit index value overflow.", __FUNCTION__);
+        return -1;
+      }
+    }
+
+    return n;
   }
 }
 

@@ -56,9 +56,9 @@ namespace quadwar_app::action {
     const auto footprint = sl::vector<int8_t>(side * side, 1);
 
     auto p = pathmap::place(
-        path, { x0 - s, y0 - s }, { side, side }, footprint);
+        path, { x0, y0 }, { side, side }, footprint);
 
-    unit::set_position(u, { (p.x() + s) * sx, (p.y() + s) * sy });
+    unit::set_position(u, { p.x() * sx, p.y() * sy });
 
     path.adjust();
     u.adjust();

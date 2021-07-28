@@ -90,6 +90,123 @@ namespace quadwar_app::object {
     return v;
   }
 
+  auto pathmap::check(entity en, const vec2z position, const vec2z size,
+                      const span<const int8_t> footprint) noexcept
+      -> bool {
+
+    if (size.x() <= 0 || size.y() <= 0) {
+      error_("Invalid size.", __FUNCTION__);
+      return false;
+    }
+
+    if (size.x() * size.y() != footprint.size()) {
+      error_("Invalid footprint.", __FUNCTION__);
+      return false;
+    }
+
+    const auto width  = en.get(n_width);
+    const auto height = en.get(n_height);
+
+    const auto fp_center = size / sl::index(2);
+
+    const auto x0 = position.x() - fp_center.x();
+    const auto y0 = position.y() - fp_center.y();
+
+    const auto x1 = position.x() + size.x() - fp_center.x();
+    const auto y1 = position.y() + size.y() - fp_center.y();
+
+    if (x0 < 0 || y0 < 0 || x1 >= width || y1 >= height) {
+      return false;
+    }
+
+    auto line = sl::vector<int8_t>(size.x());
+
+    for (sl::index j = 0; j < size.y(); j++) {
+      en.bytes_read((y0 + j) * width + x0, line);
+
+      for (sl::index i = 0; i < size.x(); i++)
+        if (footprint[j * size.x() + i] > 0 && line[i] > 0) {
+          return false;
+        }
+    }
+
+    return true;
+  }
+
+  void pathmap::add(entity en, const engine::vec2z position,
+                    const engine::vec2z           size,
+                    const std::span<const int8_t> footprint) noexcept {
+
+    if (size.x() <= 0 || size.y() <= 0) {
+      error_("Invalid size.", __FUNCTION__);
+      return;
+    }
+
+    if (size.x() * size.y() != footprint.size()) {
+      error_("Invalid footprint.", __FUNCTION__);
+      return;
+    }
+
+    const auto width  = en.get(n_width);
+    const auto height = en.get(n_height);
+
+    const auto fp_center = size / sl::index(2);
+
+    const auto x0 = position.x() - fp_center.x();
+    const auto y0 = position.y() - fp_center.y();
+
+    const auto x1 = position.x() + size.x() - fp_center.x();
+    const auto y1 = position.y() + size.y() - fp_center.y();
+
+    if (x0 < 0 || y0 < 0 || x1 >= width || y1 >= height) {
+      error_("Invalid position.", __FUNCTION__);
+      return;
+    }
+
+    for (sl::index j = 0; j < size.y(); j++) {
+      en.bytes_write_delta((y0 + j) * width + x0,
+                           { footprint.begin() + (j * size.x()),
+                             footprint.begin() + ((j + 1) * size.x()) });
+    }
+  }
+
+  void pathmap::subtract(entity en, const engine::vec2z position,
+                         const engine::vec2z           size,
+                         const std::span<const int8_t> footprint) noexcept {
+
+    if (size.x() <= 0 || size.y() <= 0) {
+      error_("Invalid size.", __FUNCTION__);
+      return;
+    }
+
+    if (size.x() * size.y() != footprint.size()) {
+      error_("Invalid footprint.", __FUNCTION__);
+      return;
+    }
+    
+    const auto width  = en.get(n_width);
+    const auto height = en.get(n_height);
+
+    const auto fp_center = size / sl::index(2);
+
+    const auto x0 = position.x() - fp_center.x();
+    const auto y0 = position.y() - fp_center.y();
+
+    const auto x1 = position.x() + size.x() - fp_center.x();
+    const auto y1 = position.y() + size.y() - fp_center.y();
+
+    if (x0 < 0 || y0 < 0 || x1 >= width || y1 >= height) {
+      error_("Invalid position.", __FUNCTION__);
+      return;
+    }
+
+    for (sl::index j = 0; j < size.y(); j++) {
+      en.bytes_erase_delta((y0 + j) * width + x0,
+                           { footprint.begin() + (j * size.x()),
+                             footprint.begin() + ((j + 1) * size.x()) });
+    }
+  }
+
   auto pathmap::place(entity en, const vec2z position, const vec2z size,
                       const span<const int8_t> footprint) noexcept
       -> vec2z {

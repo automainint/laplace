@@ -28,10 +28,10 @@ namespace laplace::engine {
       n_actor = 18
     };
 
-    using basic_impact::set_index;
     using basic_impact::get_actor;
     using basic_impact::get_index;
     using basic_impact::get_time;
+    using basic_impact::set_index;
 
     /*  Max encoded impact size.
      */
@@ -74,13 +74,17 @@ namespace laplace::engine {
     [[nodiscard]] static constexpr auto get_actor(span_cbyte seq)
         -> sl::index;
 
+    [[nodiscard]] static constexpr auto get_intval(span_cbyte seq,
+                                                   sl::index  offset)
+        -> intval;
+
     [[nodiscard]] static inline auto get_string(span_cbyte seq,
-                                                size_t     offset)
+                                                sl::index  offset)
         -> std::u8string_view;
 
     [[nodiscard]] static inline auto get_string(span_cbyte seq,
-                                                size_t     offset,
-                                                size_t     size)
+                                                sl::index  offset,
+                                                sl::whole  size)
         -> std::u8string_view;
 
   protected:
