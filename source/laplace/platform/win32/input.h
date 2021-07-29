@@ -32,10 +32,10 @@ namespace laplace::win32 {
    */
   class input {
   public:
-    static constexpr size_t char_predelay_msec   = 500;
-    static constexpr size_t char_period_msec     = 50;
-    static constexpr size_t default_resolution_x = 2000;
-    static constexpr size_t default_resolution_y = 1500;
+    static constexpr sl::whole char_predelay_msec   = 500;
+    static constexpr sl::whole char_period_msec     = 50;
+    static constexpr sl::whole default_resolution_x = 2000;
+    static constexpr sl::whole default_resolution_y = 1500;
 
     struct key_state {
       bool is_down    : 1 = false;
@@ -43,16 +43,16 @@ namespace laplace::win32 {
     };
 
     struct mouse_state {
-      int x           = 0;
-      int y           = 0;
-      int delta_x     = 0;
-      int delta_y     = 0;
-      int cursor_x    = 0;
-      int cursor_y    = 0;
-      int wheel_delta = 0;
+      sl::index x           = 0;
+      sl::index y           = 0;
+      sl::index delta_x     = 0;
+      sl::index delta_y     = 0;
+      sl::index cursor_x    = 0;
+      sl::index cursor_y    = 0;
+      sl::index wheel_delta = 0;
     };
 
-    static constexpr size_t key_count = 256;
+    static constexpr sl::whole key_count = 256;
 
     using keyboard_state = std::array<key_state, key_count>;
     using keymap_table   = std::array<uint8_t, key_count>;
@@ -65,7 +65,7 @@ namespace laplace::win32 {
 
     void use_system_cursor(bool use);
     void set_cursor_enabled(bool is_enabled);
-    void set_mouse_resolution(size_t x, size_t y);
+    void set_mouse_resolution(sl::whole x, sl::whole y);
     void set_clamp(bool clamp_x_axis, bool clamp_y_axis);
 
     auto is_capslock() const -> bool;
@@ -76,29 +76,29 @@ namespace laplace::win32 {
     auto is_shift() const -> bool;
     auto is_control() const -> bool;
 
-    auto is_key_down(int code) const -> bool;
-    auto is_key_up(int code) const -> bool;
-    auto is_key_changed(int code) const -> bool;
-    auto is_key_pressed(int code) const -> bool;
-    auto is_key_unpressed(int code) const -> bool;
+    auto is_key_down(sl::index code) const -> bool;
+    auto is_key_up(sl::index code) const -> bool;
+    auto is_key_changed(sl::index code) const -> bool;
+    auto is_key_pressed(sl::index code) const -> bool;
+    auto is_key_unpressed(sl::index code) const -> bool;
 
-    auto get_mouse_resolution_x() const -> size_t;
-    auto get_mouse_resolution_y() const -> size_t;
+    auto get_mouse_resolution_x() const -> sl::whole;
+    auto get_mouse_resolution_y() const -> sl::whole;
 
-    auto get_mouse_x() const -> int;
-    auto get_mouse_y() const -> int;
-    auto get_mouse_delta_x() const -> int;
-    auto get_mouse_delta_y() const -> int;
+    auto get_mouse_x() const -> sl::index;
+    auto get_mouse_y() const -> sl::index;
+    auto get_mouse_delta_x() const -> sl::index;
+    auto get_mouse_delta_y() const -> sl::index;
 
-    auto get_cursor_x() const -> int;
-    auto get_cursor_y() const -> int;
+    auto get_cursor_x() const -> sl::index;
+    auto get_cursor_y() const -> sl::index;
 
-    auto get_wheel_delta() const -> int;
+    auto get_wheel_delta() const -> sl::index;
     auto get_text() const -> std::u8string_view;
     void refresh();
 
-    void set_window_rect(size_t x, size_t y, size_t width,
-                         size_t height);
+    void set_window_rect(sl::index x, sl::index y, sl::whole width,
+                         sl::whole height);
     void attach(HWND handle);
     void process(HRAWINPUT raw_input);
     void tick(uint64_t delta_msec);
@@ -120,12 +120,12 @@ namespace laplace::win32 {
     keymap_table   m_keymap;
     keyboard_state m_keyboard_state;
     mouse_state    m_mouse_state;
-    size_t         m_res_x             = default_resolution_x;
-    size_t         m_res_y             = default_resolution_y;
-    int            m_center_x          = 0;
-    int            m_center_y          = 0;
-    size_t         m_window_width      = 0;
-    size_t         m_window_height     = 0;
+    sl::whole      m_res_x             = default_resolution_x;
+    sl::whole      m_res_y             = default_resolution_y;
+    sl::index      m_center_x          = 0;
+    sl::index      m_center_y          = 0;
+    sl::whole      m_window_width      = 0;
+    sl::whole      m_window_height     = 0;
     bool           m_clamp_x           = true;
     bool           m_clamp_y           = true;
     bool           m_use_system_cursor = true;
@@ -133,7 +133,7 @@ namespace laplace::win32 {
     bool           m_is_char_pressed   = false;
     char32_t       m_last_char         = 0;
     uint8_t        m_last_char_key     = 0;
-    size_t         m_char_period_msec  = char_predelay_msec;
+    sl::whole      m_char_period_msec  = char_predelay_msec;
     std::u8string  m_text;
     HWND           m_handle = nullptr;
   };

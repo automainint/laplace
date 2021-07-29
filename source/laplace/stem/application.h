@@ -24,9 +24,7 @@
 namespace laplace::stem {
   class application {
   public:
-    application(               //
-        int argc, char **argv, //
-        core::cref_family def_cfg);
+    application(int argc, char **argv, core::cref_family def_cfg);
 
     virtual ~application();
 
@@ -39,8 +37,8 @@ namespace laplace::stem {
     virtual void cleanup();
     virtual void update(uint64_t delta_msec);
     virtual void render();
-    virtual void set_frame_size(size_t width, size_t height);
-    virtual void adjust_layout(int width, int height);
+    virtual void set_frame_size(sl::whole width, sl::whole height);
+    virtual void adjust_layout(sl::whole width, sl::whole height);
 
     [[nodiscard]] auto get_window() -> platform::ref_window;
     [[nodiscard]] auto get_gl() -> platform::ref_glcontext;
@@ -48,14 +46,14 @@ namespace laplace::stem {
 
   private:
     void load_shaders();
-    void adjust_frame_size(int width, int height);
+    void adjust_frame_size(sl::whole width, sl::whole height);
 
-    [[nodiscard]] auto shader_path( //
-        const char *name,           //
-        const char *type) const -> std::wstring;
+    [[nodiscard]] auto shader_path(const char *name,
+                                   const char *type) const
+        -> std::wstring;
 
-    [[nodiscard]] auto open( //
-        std::wstring_view file_name) -> std::unique_ptr<std::istream>;
+    [[nodiscard]] auto open(std::wstring_view file_name)
+        -> std::unique_ptr<std::istream>;
 
     platform::ptr_window    m_window;
     platform::ptr_glcontext m_gl;

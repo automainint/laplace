@@ -32,7 +32,7 @@ namespace laplace::ui {
 
     context(text::ptr_renderer font = text::renderer::get_default());
 
-    void set_frame_size(size_t width, size_t height);
+    void set_frame_size(sl::whole width, sl::whole height);
     void set_colors(const graphics::vec4 colors[8]);
     void set_font(text::ptr_renderer font);
 
@@ -44,8 +44,8 @@ namespace laplace::ui {
                 std::u8string_view  text);
     void render(elem::textedit::state textedit_state);
 
-    auto get_frame_width() const -> size_t;
-    auto get_frame_height() const -> size_t;
+    auto get_frame_width() const -> sl::whole;
+    auto get_frame_height() const -> sl::whole;
 
     static auto get_default() -> ptr_context;
 
@@ -57,8 +57,8 @@ namespace laplace::ui {
 
     static std::weak_ptr<context> m_default;
 
-    size_t m_frame_width  = 0;
-    size_t m_frame_height = 0;
+    sl::whole m_frame_width  = 0;
+    sl::whole m_frame_height = 0;
 
     graphics::vec4     m_colors[8];
     text::ptr_renderer m_font;

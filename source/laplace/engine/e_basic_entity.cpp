@@ -72,7 +72,7 @@ namespace laplace::engine {
 
     for (sl::index i = 1; i < m_sets.size();) {
       if (m_sets[i - 1].id == m_sets[i].id) {
-        m_sets.erase(m_sets.begin() + static_cast<ptrdiff_t>(i));
+        m_sets.erase(m_sets.begin() + i);
       } else {
         i++;
       }

@@ -18,10 +18,10 @@
 namespace laplace::engine::protocol {
   class public_key final : public prime_impact {
   public:
-    enum encoding_offset : size_t { n_cipher = 2, n_key = 4 };
+    enum encoding_offset : sl::index { n_cipher = 2, n_key = 4 };
 
-    static constexpr size_t   max_key_size = 1024;
-    static constexpr uint16_t id           = ids::public_key;
+    static constexpr sl::whole max_key_size = 1024;
+    static constexpr uint16_t  id           = ids::public_key;
 
     using key_type = std::array<uint8_t, max_key_size>;
 
@@ -33,13 +33,11 @@ namespace laplace::engine::protocol {
 
     constexpr public_key(uint16_t cipher_id, span_cbyte key) {
       m_cipher_id = cipher_id;
-      m_key_size  = std::min(key.size(), max_key_size);
+      m_key_size  = std::min<sl::whole>(key.size(), max_key_size);
 
       set_encoded_size(n_key + m_key_size);
 
-      std::copy(key.begin(),
-                key.begin() + static_cast<ptrdiff_t>(m_key_size),
-                m_key.begin());
+      std::copy(key.begin(), key.begin() + m_key_size, m_key.begin());
     }
 
     static constexpr auto get_cipher(span_cbyte seq) {
@@ -69,9 +67,9 @@ namespace laplace::engine::protocol {
     }
 
   private:
-    uint16_t m_cipher_id = ids::cipher_plain;
-    size_t   m_key_size  = 0;
-    key_type m_key       = {};
+    uint16_t  m_cipher_id = ids::cipher_plain;
+    sl::whole m_key_size  = 0;
+    key_type  m_key       = {};
   };
 }
 

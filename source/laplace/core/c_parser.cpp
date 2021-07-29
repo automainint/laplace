@@ -54,13 +54,13 @@ namespace laplace::core {
   }
 
   auto parser::wrap(std::string_view s) -> parser {
-    return parser([s, i = size_t {}]() mutable -> char32_t {
+    return parser([s, i = sl::index {}]() mutable -> char32_t {
       return i < s.size() ? s[i++] : U'\0';
     });
   }
 
   auto parser::wrap(std::u8string_view s) -> parser {
-    return parser([s, i = size_t {}]() mutable -> char32_t {
+    return parser([s, i = sl::index {}]() mutable -> char32_t {
       return i < s.size() ? s[i++] : U'\0';
     });
   }
@@ -687,7 +687,7 @@ namespace laplace::core {
             }
 
             if (!is_silent) {
-              auto offset = s_value.size();
+              sl::index offset = s_value.size();
 
               if (!utf8::encode(c, s_value, offset)) {
                 error_("UTF-8 encoding failed.", __FUNCTION__);
@@ -720,7 +720,7 @@ namespace laplace::core {
           if (c == '_' || (c >= 'a' && c <= 'z') ||
               (c >= 'A' && c <= 'Z')) {
             if (!is_silent) {
-              auto offset = s_value.size();
+              sl::index offset = s_value.size();
 
               if (!utf8::encode(c, s_value, offset)) {
                 error_("UTF-8 encoding failed.", __FUNCTION__);
@@ -733,7 +733,7 @@ namespace laplace::core {
             while (c == '_' || (c >= '0' && c <= '9') ||
                    (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
               if (!is_silent) {
-                auto offset = s_value.size();
+                sl::index offset = s_value.size();
 
                 if (!utf8::encode(c, s_value, offset)) {
                   error_("UTF-8 encoding failed.", __FUNCTION__);
@@ -766,7 +766,7 @@ namespace laplace::core {
             is_empty = false;
 
             if (!is_silent) {
-              auto offset = s_value.size();
+              sl::index offset = s_value.size();
 
               if (!utf8::encode(c, s_value, offset)) {
                 error_("UTF-8 encoding failed.", __FUNCTION__);
@@ -798,7 +798,7 @@ namespace laplace::core {
             is_empty = false;
 
             if (!is_silent) {
-              auto offset = s_value.size();
+              sl::index offset = s_value.size();
 
               if (!utf8::encode(c, s_value, offset)) {
                 error_("UTF-8 encoding failed.", __FUNCTION__);
@@ -830,7 +830,7 @@ namespace laplace::core {
             is_empty = false;
 
             if (!is_silent) {
-              auto offset = s_value.size();
+              sl::index offset = s_value.size();
 
               if (!utf8::encode(c, s_value, offset)) {
                 error_("UTF-8 encoding failed.", __FUNCTION__);
@@ -899,11 +899,11 @@ namespace laplace::core {
     return m_is_eof;
   }
 
-  auto parser::get_line() const -> size_t {
+  auto parser::get_line() const -> sl::index {
     return m_line;
   }
 
-  auto parser::get_column() const -> size_t {
+  auto parser::get_column() const -> sl::index {
     return m_column;
   }
 }

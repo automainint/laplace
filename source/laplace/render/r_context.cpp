@@ -10,21 +10,18 @@
  *  the MIT License for more details.
  */
 
+#include "context.h"
+
 #include "../math/transform.h"
 #include "../platform/opengl.h"
-#include "context.h"
-#include <cassert>
 
 namespace laplace::render {
-  namespace flat  = graphics::flat;
-  namespace tridi = graphics::tridi;
+  namespace flat = graphics::flat;
 
   using std::make_shared, std::weak_ptr, std::span,
       graphics::ref_texture, graphics::vec2, graphics::cref_vec2,
       flat::solid_shader, flat::ptr_solid_shader,
-      flat::ptr_sprite_shader, tridi::ptr_mesh_shader,
-      tridi::ptr_uvmap_shader, tridi::ptr_shadow_shader,
-      tridi::ptr_reflect_shader, tridi::ptr_refract_shader;
+      flat::ptr_sprite_shader;
 
   weak_ptr<context> context::m_default;
 
@@ -36,31 +33,7 @@ namespace laplace::render {
     m_sprite_shader = shader;
   }
 
-  void context::setup(ptr_mesh_shader shader) {
-    m_mesh_shader = shader;
-  }
-
-  void context::setup(ptr_uvmap_shader shader) {
-    m_uvmap_shader = shader;
-  }
-
-  void context::setup(ptr_shadow_shader shader) {
-    m_shadow_shader = shader;
-  }
-
-  void context::setup(ptr_reflect_shader shader) {
-    m_reflect_shader = shader;
-  }
-
-  void context::setup(ptr_refract_shader shader) {
-    m_refract_shader = shader;
-  }
-
-  void context::set_settings(cref_settings sets) {
-    m_settings = sets;
-  }
-
-  void context::adjust_frame_size(int width, int height) {
+  void context::adjust_frame_size(sl::whole width, sl::whole height) {
     const auto x0 = width < 0 ? 1.f : -1.f;
     const auto y0 = height < 0 ? -1.f : 1.f;
     const auto w  = 2.f / static_cast<float>(width);

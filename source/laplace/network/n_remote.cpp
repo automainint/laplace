@@ -10,6 +10,8 @@
  *  the MIT License for more details.
  */
 
+#include "remote.h"
+
 #include "../engine/protocol/basic_event.h"
 #include "../engine/protocol/ping.h"
 #include "../engine/protocol/public_key.h"
@@ -18,7 +20,6 @@
 #include "../engine/protocol/server_idle.h"
 #include "../engine/protocol/server_seed.h"
 #include "crypto/ecc_rabbit.h"
-#include "remote.h"
 
 namespace laplace::network {
   namespace access = engine::access;
@@ -71,7 +72,7 @@ namespace laplace::network {
     reconnect();
   }
 
-  auto remote::perform_control(size_t slot, span_cbyte seq) -> bool {
+  auto remote::perform_control(sl::index slot, span_cbyte seq) -> bool {
 
     if (server_idle::scan(seq)) {
       const auto index = server_idle::get_idle_index(seq);
@@ -81,9 +82,9 @@ namespace laplace::network {
         const auto  event_count = qu.index + qu.events.size();
 
         if (index > event_count) {
-          vuint events;
+          auto events = sl::vector<sl::index> {};
 
-          for (size_t n = event_count; n < index; n++) {
+          for (sl::index n = event_count; n < index; n++) {
             events.emplace_back(n);
 
             if (events.size() >= request_events::max_event_count) {

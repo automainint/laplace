@@ -27,7 +27,7 @@ namespace laplace::engine {
     set_done();
   }
 
-  void scheduler::schedule(size_t delta) {
+  void scheduler::schedule(sl::whole delta) {
     lock(m_lock_ex, m_lock_in);
     auto _ul_ex = unique_lock(m_lock_ex, adopt_lock);
     auto _ul    = unique_lock(m_lock_in, adopt_lock);
@@ -83,7 +83,7 @@ namespace laplace::engine {
       count = thread_count_limit;
     }
 
-    auto n = m_threads.size();
+    sl::whole n = m_threads.size();
 
     if (count < n) {
       m_done = true;

@@ -25,21 +25,22 @@ namespace laplace::network {
    */
   class udp_server : public server {
   public:
-    static constexpr size_t slot_host            = -1;
-    static constexpr size_t slot_count_unlimited = -1;
+    static constexpr sl::index slot_host            = -1;
+    static constexpr sl::index slot_count_unlimited = -1;
 
-    static constexpr size_t default_chunk_size        = 2096;
-    static constexpr size_t chunk_size_increment      = 128;
-    static constexpr size_t chunk_size_limit          = 0x4000;
-    static constexpr size_t max_index_delta           = 0x100;
-    static constexpr size_t default_loss_compensation = 4;
+    static constexpr sl::whole default_chunk_size        = 2096;
+    static constexpr sl::whole chunk_size_increment      = 128;
+    static constexpr sl::whole chunk_size_limit          = 0x4000;
+    static constexpr sl::whole default_loss_compensation = 4;
+    static constexpr uint16_t  default_max_command_id    = 400;
+    static constexpr sl::index max_index_delta           = 0x1000;
 
     ~udp_server() override;
 
     void set_encryption_enabled(bool is_enabled) noexcept;
     void set_allowed_commands(span_cuint16 commands);
 
-    void set_chunk_size(size_t size);
+    void set_chunk_size(sl::whole size);
 
     void queue(span_cbyte seq) override;
     void tick(uint64_t delta_msec) override;
@@ -48,7 +49,7 @@ namespace laplace::network {
 
   protected:
     struct event_queue {
-      size_t             index = 0;
+      sl::index          index = 0;
       std::vector<vbyte> events;
     };
 
@@ -73,9 +74,8 @@ namespace laplace::network {
     /*  Returns false if the event should be
      *  added to the main queue.
      */
-    [[nodiscard]] virtual auto perform_control( //
-        size_t     slot,                        //
-        span_cbyte seq) -> bool;
+    [[nodiscard]] virtual auto perform_control(sl::index  slot,
+                                               span_cbyte seq) -> bool;
 
     void cleanup();
 
@@ -86,44 +86,44 @@ namespace laplace::network {
 
     void send_events();
 
-    void send_event_to(size_t slot, span_cbyte seq);
+    void send_event_to(sl::index slot, span_cbyte seq);
     void send_event(span_cbyte seq);
 
-    void append_event(size_t slot, span_cbyte seq);
+    void append_event(sl::index slot, span_cbyte seq);
 
-    void set_max_slot_count(size_t count);
+    void set_max_slot_count(sl::whole count);
     void set_master(bool is_master);
 
-    [[nodiscard]] auto is_allowed(size_t command_id) const -> bool;
+    [[nodiscard]] auto is_allowed(uint16_t command_id) const -> bool;
 
     [[nodiscard]] auto is_master() const -> bool;
 
-    auto add_slot(std::string_view address, uint16_t port) -> size_t;
+    auto add_slot(std::string_view address, uint16_t port) -> sl::index;
 
     [[nodiscard]] auto has_slot(std::string_view address,
                                 uint16_t         port) const -> bool;
 
     [[nodiscard]] auto find_slot(std::string_view address,
-                                 uint16_t         port) -> size_t;
+                                 uint16_t         port) -> sl::index;
 
     void process_slots();
-    void process_queue(size_t slot);
-    void check_outdate(size_t slot);
+    void process_queue(sl::index slot);
+    void check_outdate(sl::index slot);
     void clean_slots();
-    void process_event(size_t slot, span_cbyte seq);
-    void distribute_event(size_t slot, span_cbyte seq);
+    void process_event(sl::index slot, span_cbyte seq);
+    void distribute_event(sl::index slot, span_cbyte seq);
     void add_instant_event(uint16_t id, engine::ptr_impact ev);
     void add_instant_event(span_cbyte seq);
-    void perform_event(size_t slot, span_cbyte seq);
+    void perform_event(sl::index slot, span_cbyte seq);
     void perform_instant_events();
 
     void receive_events();
     void process_buffers();
     void receive_chunks();
 
-    void add_event(size_t slot, span_cbyte seq);
+    void add_event(sl::index slot, span_cbyte seq);
     void send_chunks();
-    void disconnect(size_t slot);
+    void disconnect(sl::index slot);
 
     void update_slots(uint64_t delta_msec);
     void update_local_time(uint64_t delta_msec);
@@ -146,14 +146,15 @@ namespace laplace::network {
 
     engine::vptr_impact m_instant_events;
 
-    vuint16  m_allowed_commands;
-    bool     m_is_master             = false;
-    bool     m_is_encryption_enabled = true;
-    size_t   m_max_slot_count        = 0;
-    size_t   m_loss_compensation     = default_loss_compensation;
-    uint64_t m_local_time            = 0;
-    uint64_t m_time_limit            = 0;
-    uint64_t m_ping_clock            = 0;
+    vuint16   m_allowed_commands;
+    uint16_t  m_max_command_id        = default_max_command_id;
+    bool      m_is_master             = false;
+    bool      m_is_encryption_enabled = true;
+    sl::whole m_max_slot_count        = 0;
+    sl::whole m_loss_compensation     = default_loss_compensation;
+    uint64_t  m_local_time            = 0;
+    uint64_t  m_time_limit            = 0;
+    uint64_t  m_ping_clock            = 0;
   };
 }
 

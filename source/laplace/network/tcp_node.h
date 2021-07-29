@@ -52,7 +52,7 @@ namespace laplace::network {
     event_accept m_on_accept;
     uint16_t     m_port = 0;
     sockaddr_in  m_remote;
-    socket_t       m_listen;
+    socket_t     m_listen;
   };
 
   using ref_tcp_node = tcp_node::ref_tcp_node;

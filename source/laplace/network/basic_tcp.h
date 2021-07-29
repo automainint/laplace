@@ -20,16 +20,16 @@
 namespace laplace::network {
   class basic_tcp {
   public:
-    static constexpr size_t address_size = 64;
+    static constexpr sl::whole address_size = 64;
 
     basic_tcp();
     virtual ~basic_tcp();
 
-    [[nodiscard]] auto receive_to(uint8_t *p, size_t count,
-                                  io_mode mode) -> size_t;
+    [[nodiscard]] auto receive_to(uint8_t *p, sl::whole count,
+                                  io_mode mode) -> sl::whole;
 
-    [[nodiscard]] auto receive(size_t count, io_mode mode) -> vbyte;
-    [[nodiscard]] auto send(span_cbyte seq) -> size_t;
+    [[nodiscard]] auto receive(sl::whole count, io_mode mode) -> vbyte;
+    [[nodiscard]] auto send(span_cbyte seq) -> sl::whole;
 
     [[nodiscard]] auto is_done() const -> bool;
 

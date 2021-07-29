@@ -52,15 +52,15 @@ namespace laplace::engine {
     [[nodiscard]] auto is_rewind_allowed() const -> bool;
 
     [[nodiscard]] auto get_time() const -> uint64_t;
-    [[nodiscard]] auto get_position() const -> size_t;
+    [[nodiscard]] auto get_position() const -> sl::index;
 
     void               set_seed(seed_type seed);
     [[nodiscard]] auto get_seed() const -> seed_type;
 
     void clear_history();
 
-    [[nodiscard]] auto get_history_count() const -> size_t;
-    [[nodiscard]] auto get_history(size_t index) const -> ptr_impact;
+    [[nodiscard]] auto get_history_count() const -> sl::whole;
+    [[nodiscard]] auto get_history(sl::index index) const -> ptr_impact;
 
     [[nodiscard]] static auto generate_seed() -> seed_type;
 
@@ -71,7 +71,7 @@ namespace laplace::engine {
     vptr_impact m_history;
 
     uint64_t  m_time              = 0;
-    size_t    m_position          = 0;
+    sl::index m_position          = 0;
     bool      m_is_rewind_allowed = default_is_rewind_allowed;
     seed_type m_seed              = 0;
   };

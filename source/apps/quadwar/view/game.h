@@ -20,7 +20,7 @@
 namespace quadwar_app::view {
   class game : engine::helper {
   public:
-    void adjust_layout(int width, int height);
+    void adjust_layout(sl::index width, sl::index height);
 
     void set_position(const vec2 v);
     void set_cursor(const vec2 cursor);

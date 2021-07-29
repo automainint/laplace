@@ -373,7 +373,7 @@ namespace laplace::core {
     return m_data.index() == n_bytes ? get<n_bytes>(m_data) : nil;
   }
 
-  auto family::get_size() const -> size_t {
+  auto family::get_size() const -> sl::whole {
     if (m_data.index() == n_bytes) {
       return get<n_bytes>(m_data).size();
     }
@@ -419,9 +419,8 @@ namespace laplace::core {
     if (get<n_composite>(m_data).size() <= index)
       return;
 
-    get<n_composite>(m_data).erase(        //
-        get<n_composite>(m_data).begin() + //
-        static_cast<ptrdiff_t>(index));
+    get<n_composite>(m_data).erase(get<n_composite>(m_data).begin() +
+                                   index);
 
     auto i = lower_bound(get<n_composite>(m_data).begin(),
                          get<n_composite>(m_data).end(), k,

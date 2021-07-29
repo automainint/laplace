@@ -21,7 +21,7 @@ namespace laplace::engine::object {
    */
   class timer final : public basic_entity {
   public:
-    timer(impact_gen gen, uint64_t period, size_t count = 1);
+    timer(impact_gen gen, intval period, sl::whole count = 1);
     ~timer() final = default;
 
     void tick(access::world w) final;
@@ -31,7 +31,7 @@ namespace laplace::engine::object {
 
     static timer m_proto;
 
-    size_t     m_count = 1;
+    sl::whole  m_count = 1;
     impact_gen m_gen;
   };
 }

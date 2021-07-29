@@ -13,9 +13,8 @@
 #ifndef laplace_core_parser_h
 #define laplace_core_parser_h
 
-#include <cstdint>
+#include "slib.h"
 #include <functional>
-#include <string>
 
 namespace laplace::core {
   class parser {
@@ -55,8 +54,8 @@ namespace laplace::core {
 
     auto is_eof() const -> bool;
 
-    auto get_line() const -> size_t;
-    auto get_column() const -> size_t;
+    auto get_line() const -> sl::index;
+    auto get_column() const -> sl::index;
 
     void push_offset();
 
@@ -100,16 +99,16 @@ namespace laplace::core {
     static auto string_end(char32_t c, const char *p) -> bool;
 
     struct position {
-      size_t line   = 0;
-      size_t column = 0;
-      size_t offset = 0;
+      sl::index line   = 0;
+      sl::index column = 0;
+      sl::index offset = 0;
     };
 
     std::vector<char32_t> m_buffer;
     std::vector<position> m_buffer_offset = std::vector<position>(1);
 
-    size_t       m_line   = 0;
-    size_t       m_column = 0;
+    sl::index    m_line   = 0;
+    sl::index    m_column = 0;
     bool         m_is_eof = false;
     input_stream m_stream;
   };

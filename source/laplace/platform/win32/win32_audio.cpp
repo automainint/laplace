@@ -16,7 +16,11 @@
 #include <audioclient.h>
 #include <mmdeviceapi.h>
 
+#undef min
+#undef max
+
 #include "audio.h"
+
 #include "thread.h"
 #include <algorithm>
 
@@ -61,8 +65,8 @@ namespace laplace::win32 {
   }
 
   void audio::write(span_cbyte samples) {
-    size_t offset = adjust_offset();
-    size_t size   = adjust_bytes(samples.size());
+    const auto offset = adjust_offset();
+    const auto size   = adjust_bytes(samples.size());
 
     buffer_adjust(offset + size);
     buffer_write(samples, size);
@@ -86,46 +90,46 @@ namespace laplace::win32 {
     }
   }
 
-  auto audio::get_channel_count() -> size_t {
+  auto audio::get_channel_count() -> sl::whole {
     auto _sl = shared_lock(m_lock);
     return m_channel_count;
   }
 
-  auto audio::get_sample_rate() -> size_t {
+  auto audio::get_sample_rate() -> sl::whole {
     auto _sl = shared_lock(m_lock);
     return m_sample_rate_hz;
   }
 
-  auto audio::get_sample_bits() -> size_t {
+  auto audio::get_sample_bits() -> sl::whole {
     auto _sl = shared_lock(m_lock);
     return m_sample_bits;
   }
 
-  auto audio::get_errors() -> vector<string> {
+  auto audio::get_errors() -> sl::vector<string> {
     auto _ul    = unique_lock(m_lock);
-    auto result = vector<string>(m_errors);
+    auto result = sl::vector<string>(m_errors);
     m_errors.clear();
     return result;
   }
 
-  auto audio::adjust_offset() -> size_t {
+  auto audio::adjust_offset() -> sl::index {
     auto _sl = shared_lock(m_lock);
 
     return m_read <= m_write ? m_write - m_read
                              : m_buffer.size() - m_read + m_write;
   }
 
-  auto audio::adjust_bytes(size_t size) -> size_t {
+  auto audio::adjust_bytes(sl::whole size) -> sl::whole {
     auto _sl = shared_lock(m_lock);
     return (size / m_sample_bytes_total) * m_sample_bytes_total;
   }
 
-  auto audio::buffer_size() -> size_t {
+  auto audio::buffer_size() -> sl::whole {
     auto _sl = shared_lock(m_lock);
     return m_buffer.size();
   }
 
-  void audio::buffer_adjust(size_t size_required) {
+  void audio::buffer_adjust(sl::whole size_required) {
     if (buffer_size() < size_required) {
       auto _ul = unique_lock(m_lock);
 
@@ -137,14 +141,12 @@ namespace laplace::win32 {
         }
 
         if (m_read > 0) {
-          vbyte temp(m_read);
-          move(m_buffer.begin(),
-               m_buffer.begin() + static_cast<ptrdiff_t>(m_read),
+          auto temp = vbyte(m_read);
+          move(m_buffer.begin(), m_buffer.begin() + m_read,
                temp.begin());
-          move(m_buffer.begin() + static_cast<ptrdiff_t>(m_read),
-               m_buffer.end(), m_buffer.begin());
-          move(temp.begin(), temp.end(),
-               m_buffer.end() - static_cast<ptrdiff_t>(m_read));
+          move(m_buffer.begin() + m_read, m_buffer.end(),
+               m_buffer.begin());
+          move(temp.begin(), temp.end(), m_buffer.end() - m_read);
           m_read = 0;
         }
 
@@ -153,31 +155,29 @@ namespace laplace::win32 {
     }
   }
 
-  void audio::buffer_write(span_cbyte samples, size_t size) {
+  void audio::buffer_write(span_cbyte samples, sl::whole size) {
     auto _ul = unique_lock(m_lock);
 
-    size_t i0 = m_write;
-    size_t i1 = i0 + size;
+    auto i0 = m_write;
+    auto i1 = i0 + size;
 
     if (i1 >= m_buffer.size()) {
       m_write = i1 - m_buffer.size();
       i1      = m_buffer.size();
 
-      move(samples.begin(),
-           samples.begin() + static_cast<ptrdiff_t>(i1 - i0),
-           m_buffer.begin() + static_cast<ptrdiff_t>(i0));
-      move(samples.begin() + static_cast<ptrdiff_t>(i1 - i0),
-           samples.end(), m_buffer.begin());
+      move(samples.begin(), samples.begin() + i1 - i0,
+           m_buffer.begin() + i0);
+      move(samples.begin() + i1 - i0, samples.end(), m_buffer.begin());
     } else {
       m_write = i1;
 
-      move(samples.begin(), samples.end(),
-           m_buffer.begin() + static_cast<ptrdiff_t>(i0));
+      move(samples.begin(), samples.end(), m_buffer.begin() + i0);
     }
   }
 
-  void audio::set_format(size_t channel_count, size_t sample_rate_hz,
-                         size_t sample_bits) {
+  void audio::set_format(sl::whole channel_count,
+                         sl::whole sample_rate_hz,
+                         sl::whole sample_bits) {
     auto _ul = unique_lock(m_lock);
 
     m_channel_count  = channel_count;
@@ -187,7 +187,7 @@ namespace laplace::win32 {
     m_sample_bytes_total = (channel_count * sample_bits) / 8;
   }
 
-  void audio::render_buffer(uint8_t *data, size_t size) {
+  void audio::render_buffer(uint8_t *data, sl::whole size) {
     buffer_adjust(size);
 
     bool reset = false;
@@ -195,9 +195,8 @@ namespace laplace::win32 {
     auto _sl = shared_lock(m_lock);
 
     if (m_read + size <= m_buffer.size()) {
-      copy(m_buffer.begin() + static_cast<ptrdiff_t>(m_read),
-           m_buffer.begin() + static_cast<ptrdiff_t>(m_read + size),
-           data);
+      copy(m_buffer.begin() + m_read,
+           m_buffer.begin() + m_read + size, data);
 
       reset = m_write >= m_read && m_write < m_read + size;
 
@@ -207,13 +206,11 @@ namespace laplace::win32 {
         m_read = 0;
       }
     } else {
-      size_t m = m_buffer.size() - m_read;
-      size_t n = size - m;
+      sl::index m = m_buffer.size() - m_read;
+      sl::index n = size - m;
 
-      copy(m_buffer.begin() + static_cast<ptrdiff_t>(m_read),
-           m_buffer.end(), data);
-      copy(m_buffer.begin(),
-           m_buffer.begin() + static_cast<ptrdiff_t>(n), data + m);
+      copy(m_buffer.begin() + m_read, m_buffer.end(), data);
+      copy(m_buffer.begin(), m_buffer.begin() + n, data + m);
 
       reset = m_write >= m_read || m_write < n;
 
@@ -225,7 +222,7 @@ namespace laplace::win32 {
     }
   }
 
-  void audio::render_thread(audio::ref a) {
+  void audio::render_thread(audio &a) {
     using clock = std::chrono::steady_clock;
 
     auto to_hns = [](double time_sec) -> REFERENCE_TIME {
@@ -248,8 +245,8 @@ namespace laplace::win32 {
 
     uint8_t *buffer_data = nullptr;
 
-    status = CoInitializeEx(
-        nullptr, COINIT_APARTMENTTHREADED | COINIT_SPEED_OVER_MEMORY);
+    status = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED |
+                                         COINIT_SPEED_OVER_MEMORY);
 
     if (FAILED(status)) {
       auto _sl = shared_lock(a.m_lock);
@@ -268,8 +265,8 @@ namespace laplace::win32 {
       a.m_done.store(true, memory_order_release);
     }
 
-    status = enumerator->GetDefaultAudioEndpoint(
-        eRender, eMultimedia, &device);
+    status = enumerator->GetDefaultAudioEndpoint(eRender, eMultimedia,
+                                                 &device);
 
     if (FAILED(status)) {
       auto _sl = shared_lock(a.m_lock);
@@ -303,8 +300,8 @@ namespace laplace::win32 {
     format->nAvgBytesPerSec = format->nSamplesPerSec *
                               format->nBlockAlign;
 
-    status = audio_client->Initialize(
-        AUDCLNT_SHAREMODE_SHARED, 0, to_hns(0.1), 0, format, nullptr);
+    status = audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, 0,
+                                      to_hns(0.1), 0, format, nullptr);
 
     if (FAILED(status)) {
       auto _sl = shared_lock(a.m_lock);
@@ -419,8 +416,8 @@ namespace laplace::win32 {
         num_frames_available = buffer_size - num_frames_padding;
 
         if (num_frames_available > 0) {
-          status = render_client->GetBuffer(
-              num_frames_available, &buffer_data);
+          status = render_client->GetBuffer(num_frames_available,
+                                            &buffer_data);
 
           if (FAILED(status)) {
             auto _sl = shared_lock(a.m_lock);
@@ -431,8 +428,8 @@ namespace laplace::win32 {
 
           a.render_buffer(buffer_data, num_frames_available);
 
-          status = render_client->ReleaseBuffer(
-              num_frames_available, 0);
+          status = render_client->ReleaseBuffer(num_frames_available,
+                                                0);
 
           if (FAILED(status)) {
             auto _sl = shared_lock(a.m_lock);

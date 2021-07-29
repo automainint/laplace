@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../core/utils.h"
 #include "server.h"
+
+#include "../core/utils.h"
 #include <iomanip>
 
 namespace laplace::network {
@@ -64,19 +65,19 @@ namespace laplace::network {
     return m_state;
   }
 
-  auto server::get_tick_duration() noexcept -> size_t {
+  auto server::get_tick_duration() noexcept -> sl::whole {
     return m_tick_duration_msec;
   }
 
-  auto server::get_bytes_sent() const noexcept -> size_t {
+  auto server::get_bytes_sent() const noexcept -> sl::whole {
     return m_bytes_sent;
   }
 
-  auto server::get_bytes_received() const noexcept -> size_t {
+  auto server::get_bytes_received() const noexcept -> sl::whole {
     return m_bytes_received;
   }
 
-  auto server::get_bytes_loss() const noexcept -> size_t {
+  auto server::get_bytes_loss() const noexcept -> sl::whole {
     return m_bytes_loss;
   }
 
@@ -149,15 +150,15 @@ namespace laplace::network {
     m_bytes_loss     = 0;
   }
 
-  void server::add_bytes_sent(size_t count) noexcept {
+  void server::add_bytes_sent(sl::whole count) noexcept {
     m_bytes_sent += count;
   }
 
-  void server::add_bytes_received(size_t count) noexcept {
+  void server::add_bytes_received(sl::whole count) noexcept {
     m_bytes_received += count;
   }
 
-  void server::add_bytes_loss(size_t count) noexcept {
+  void server::add_bytes_loss(sl::whole count) noexcept {
     m_bytes_loss += count;
   }
 
@@ -184,7 +185,7 @@ namespace laplace::network {
     return m_ping_timeout_msec;
   }
 
-  auto server::get_overtake_factor() const noexcept -> size_t {
+  auto server::get_overtake_factor() const noexcept -> sl::whole {
     return m_overtake_factor;
   }
 
@@ -192,7 +193,7 @@ namespace laplace::network {
     if (m_verbose) {
       auto ss = ostringstream {};
       ss << " ";
-      for (size_t i = 0; i < bytes.size(); i++) {
+      for (sl::index i = 0; i < bytes.size(); i++) {
         ss << " " << setw(2) << hex << static_cast<unsigned>(bytes[i]);
         if ((i % 16) == 15)
           ss << "\n ";

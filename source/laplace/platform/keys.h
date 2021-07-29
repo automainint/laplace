@@ -13,7 +13,7 @@
 #ifndef laplace_platform_keys_h
 #define laplace_platform_keys_h
 
-#include <cstdint>
+#include "../core/slib.h"
 
 namespace laplace::platform {
   /*  Input control codes based on ASCII.
@@ -33,7 +33,7 @@ namespace laplace::platform {
 
   /*  Input key codes.
    */
-  enum key : int {
+  enum key : sl::index {
     key_lbutton = 0x01,
     key_rbutton,
     key_mbutton = 0x04,

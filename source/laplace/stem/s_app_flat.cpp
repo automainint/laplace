@@ -47,13 +47,10 @@ namespace laplace::stem {
     get_gl().swap_buffers();
   }
 
-  void app_flat::adjust_layout(int width, int height) {
+  void app_flat::adjust_layout(sl::whole width, sl::whole height) {
     application::adjust_layout(width, height);
 
-    m_ui->set_rect({ .x      = 0,          //
-                     .y      = 0,          //
-                     .width  = abs(width), //
-                     .height = abs(height) });
+    m_ui->set_rect({ .x = 0, .y = 0, .width = width, .height = height });
 
     m_ui->refresh();
   }

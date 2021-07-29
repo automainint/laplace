@@ -130,7 +130,7 @@ namespace laplace::core {
     auto get_uint() const -> uint64_t;
     auto get_bytes() const -> span_cbyte;
 
-    auto get_size() const -> size_t;
+    auto get_size() const -> sl::whole;
     auto has(cref_family key) const -> bool;
 
     /*  Keys are sorted. Setting a key
@@ -154,10 +154,12 @@ namespace laplace::core {
 
     [[nodiscard]] auto compare(cref_family value) const noexcept -> int;
 
-    auto value(int index) -> ref_family;
+    auto value(int n) -> ref_family;
+    auto value(ptrdiff_t n) -> ref_family;
     auto value(const char *key) -> ref_family;
 
-    auto get_value(int index) const -> cref_family;
+    auto get_value(int n) const -> cref_family;
+    auto get_value(ptrdiff_t n) const -> cref_family;
     auto get_value(const char *key) const -> cref_family;
 
     /*  Merge composite data. Returns false
@@ -169,8 +171,11 @@ namespace laplace::core {
     operator int32_t() const;
     operator uint32_t() const;
 
-    auto operator[](int index) -> ref_family;
-    auto operator[](int index) const -> cref_family;
+    auto operator[](int n) -> ref_family;
+    auto operator[](int n) const -> cref_family;
+
+    auto operator[](ptrdiff_t n) -> ref_family;
+    auto operator[](ptrdiff_t n) const -> cref_family;
 
     auto operator[](const char *key) -> ref_family;
     auto operator[](const char *key) const -> cref_family;

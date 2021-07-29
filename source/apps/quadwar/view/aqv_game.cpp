@@ -23,7 +23,7 @@ namespace quadwar_app::view {
   using std::min, std::numeric_limits, engine::vec2z, engine::intval,
       object::sets::scale_real;
 
-  void game::adjust_layout(int width, int height) {
+  void game::adjust_layout(sl::index width, sl::index height) {
     m_camera.set_frame(
         { static_cast<real>(width), static_cast<real>(height) });
   }

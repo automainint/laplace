@@ -145,7 +145,7 @@ namespace quadwar_app {
     get_gl().swap_buffers();
   }
 
-  void quadwar::adjust_layout(int width, int height) {
+  void quadwar::adjust_layout(sl::whole width, sl::whole height) {
     app_flat::adjust_layout(width, height);
 
     m_mainmenu->adjust_layout(width, height);

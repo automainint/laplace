@@ -30,7 +30,7 @@ namespace laplace::engine::object {
     actor(dummy_tag);
     actor(proto_tag);
 
-    static size_t n_is_local;
+    static sl::index n_is_local;
 
   private:
     static actor m_proto;

@@ -13,6 +13,7 @@
 #ifndef laplace_platform_dummy_h
 #define laplace_platform_dummy_h
 
+#include "../core/slib.h"
 #include "events.h"
 #include "opengl.h"
 #include <cstdint>
@@ -39,7 +40,7 @@ namespace laplace::platform::dummy {
 
     void use_system_cursor(bool) { }
     void set_cursor_enabled(bool) { }
-    void set_mouse_resolution(size_t, size_t) { }
+    void set_mouse_resolution(sl::whole, sl::whole) { }
     void set_clamp(bool, bool) { }
 
     auto is_capslock() const -> bool {
@@ -66,59 +67,59 @@ namespace laplace::platform::dummy {
       return false;
     }
 
-    auto is_key_down(int) const -> bool {
+    auto is_key_down(sl::index) const -> bool {
       return false;
     }
 
-    auto is_key_up(int) const -> bool {
+    auto is_key_up(sl::index) const -> bool {
       return true;
     }
 
-    auto is_key_changed(int) const -> bool {
+    auto is_key_changed(sl::index) const -> bool {
       return false;
     }
 
-    auto is_key_pressed(int) const -> bool {
+    auto is_key_pressed(sl::index) const -> bool {
       return false;
     }
 
-    auto is_key_unpressed(int) const -> bool {
+    auto is_key_unpressed(sl::index) const -> bool {
       return false;
     }
 
-    auto get_mouse_resolution_x() const -> size_t {
+    auto get_mouse_resolution_x() const -> sl::whole {
       return 0u;
     }
 
-    auto get_mouse_resolution_y() const -> size_t {
+    auto get_mouse_resolution_y() const -> sl::whole {
       return 0u;
     }
 
-    auto get_mouse_x() const -> int {
+    auto get_mouse_x() const -> sl::index {
       return 0;
     }
 
-    auto get_mouse_y() const -> int {
+    auto get_mouse_y() const -> sl::index {
       return 0;
     }
 
-    auto get_mouse_delta_x() const -> int {
+    auto get_mouse_delta_x() const -> sl::index {
       return 0;
     }
 
-    auto get_mouse_delta_y() const -> int {
+    auto get_mouse_delta_y() const -> sl::index {
       return 0;
     }
 
-    auto get_cursor_x() const -> int {
+    auto get_cursor_x() const -> sl::index {
       return 0;
     }
 
-    auto get_cursor_y() const -> int {
+    auto get_cursor_y() const -> sl::index {
       return 0;
     }
 
-    auto get_wheel_delta() const -> int {
+    auto get_wheel_delta() const -> sl::index {
       return 0;
     }
 
@@ -134,9 +135,9 @@ namespace laplace::platform::dummy {
   public:
     using native_handle = std::nullptr_t;
 
-    static constexpr size_t default_frame_width  = 0;
-    static constexpr size_t default_frame_height = 0;
-    static constexpr size_t default_frame_rate   = 0;
+    static constexpr sl::whole default_frame_width  = 0;
+    static constexpr sl::whole default_frame_height = 0;
+    static constexpr sl::whole default_frame_rate   = 0;
 
     window() { }
     window(native_handle) { }
@@ -155,11 +156,11 @@ namespace laplace::platform::dummy {
     void set_fullscreen(bool) { }
 
     void set_centered() { }
-    void set_position(size_t, size_t) { }
-    void set_size(size_t, size_t) { }
+    void set_position(sl::index, sl::index) { }
+    void set_size(sl::whole, sl::whole) { }
 
     void set_fullscreen_windowed() { }
-    void set_fullscreen_mode(size_t, size_t, size_t) { }
+    void set_fullscreen_mode(sl::whole, sl::whole, sl::whole) { }
 
     void set_input(std::shared_ptr<input>) { }
 
@@ -172,43 +173,43 @@ namespace laplace::platform::dummy {
 
     void quit(int = 0) { }
 
-    auto get_screen_width() const -> size_t {
+    auto get_screen_width() const -> sl::whole {
       return 0u;
     }
 
-    auto get_screen_height() const -> size_t {
+    auto get_screen_height() const -> sl::whole {
       return 0u;
     }
 
-    auto get_fullscreen_width() const -> size_t {
+    auto get_fullscreen_width() const -> sl::whole {
       return 0u;
     }
 
-    auto get_fullscreen_height() const -> size_t {
+    auto get_fullscreen_height() const -> sl::whole {
       return 0u;
     }
 
-    auto get_x() const -> size_t {
+    auto get_x() const -> sl::index {
       return 0u;
     }
 
-    auto get_y() const -> size_t {
+    auto get_y() const -> sl::index {
       return 0u;
     }
 
-    auto get_width() const -> size_t {
+    auto get_width() const -> sl::whole {
       return 0u;
     }
 
-    auto get_height() const -> size_t {
+    auto get_height() const -> sl::whole {
       return 0u;
     }
 
-    auto get_frame_width() const -> size_t {
+    auto get_frame_width() const -> sl::whole {
       return 0u;
     }
 
-    auto get_frame_height() const -> size_t {
+    auto get_frame_height() const -> sl::whole {
       return 0u;
     }
 

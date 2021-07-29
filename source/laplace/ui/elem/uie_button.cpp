@@ -10,10 +10,10 @@
  *  the MIT License for more details.
  */
 
+#include "button.h"
+
 #include "../../platform/keys.h"
 #include "../context.h"
-#include "button.h"
-#include <cassert>
 
 namespace laplace::ui::elem {
   using platform::ref_input, platform::key_lbutton;
@@ -28,7 +28,11 @@ namespace laplace::ui::elem {
   }
 
   void button::render() {
-    assert(m_context);
+    if (!m_context) {
+      error_("No context.", __FUNCTION__);
+      return;
+    }
+
     m_context->render(get_state());
 
     up_to_date();
@@ -100,8 +104,8 @@ namespace laplace::ui::elem {
   }
 
   auto button::button_tick(ref_input in) -> bool {
-    auto status = update(
-        shared_from_this(), get_state(), m_on_click, in);
+    auto status = update(shared_from_this(), get_state(), m_on_click,
+                         in);
 
     set_pressed(status.is_pressed);
     set_cursor(status.has_cursor);

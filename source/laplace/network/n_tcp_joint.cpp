@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../core/string.h"
 #include "tcp_joint.h"
+
+#include "../core/string.h"
 #include "utils.h"
 
 namespace laplace::network {

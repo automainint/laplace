@@ -24,49 +24,52 @@ namespace laplace::graphics {
     using ptr  = std::shared_ptr<image>;
 
     image() = default;
-    image(size_t width, size_t height, size_t depth = 1);
+    image(sl::whole width, sl::whole height, sl::whole depth = 1);
     ~image() = default;
 
     void clear();
 
-    void set_size(size_t width, size_t height, size_t depth = 1);
-    void set_size_radix2(size_t width, size_t height);
+    void set_size(sl::whole width, sl::whole height,
+                  sl::whole depth = 1);
+    void set_size_radix2(sl::whole width, sl::whole height);
     void set_pixels(cref_vpixel pixels);
 
-    auto mip(size_t level, size_t z = 0) const -> ptr;
-    auto get_mip_count() const -> size_t;
+    auto mip(sl::index level, sl::index z = 0) const -> ptr;
+    auto get_mip_count() const -> sl::whole;
 
-    auto get_width() const -> size_t;
-    auto get_height() const -> size_t;
-    auto get_depth() const -> size_t;
-    auto get_plane() const -> size_t;
+    auto get_width() const -> sl::whole;
+    auto get_height() const -> sl::whole;
+    auto get_depth() const -> sl::whole;
+    auto get_plane() const -> sl::whole;
 
-    auto get_size_bytes() const -> size_t;
+    auto get_size_bytes() const -> sl::whole;
 
-    void set_pixel(size_t index, cref_pixel value);
-    auto get_pixel(size_t index) const -> pixel;
+    void set_pixel(sl::index n, cref_pixel value);
+    auto get_pixel(sl::index n) const -> pixel;
 
-    void set_pixel(size_t x, size_t y, cref_pixel value);
-    auto get_pixel(size_t x, size_t y) const -> pixel;
+    void set_pixel(sl::index x, sl::index y, cref_pixel value);
+    auto get_pixel(sl::index x, sl::index y) const -> pixel;
 
-    void set_pixel(size_t x, size_t y, size_t z, cref_pixel value);
-    auto get_pixel(size_t x, size_t y, size_t z) const -> pixel;
+    void set_pixel(sl::index x, sl::index y, sl::index z,
+                   cref_pixel value);
+    auto get_pixel(sl::index x, sl::index y, sl::index z) const
+        -> pixel;
 
     auto data() -> uint8_t *;
     auto get_data() const -> const uint8_t *;
 
   private:
-    auto get_mip_size(size_t level) const -> size_t;
-    auto get_average(size_t x0, size_t y0, size_t x1, size_t y1,
-                     size_t z = 0) const -> pixel;
+    auto get_mip_size(sl::index level) const -> size_t;
+    auto get_average(sl::index x0, sl::index y0, sl::index x1,
+                     sl::index y1, sl::index z = 0) const -> pixel;
 
-    size_t m_width     = 0;
-    size_t m_height    = 0;
-    size_t m_depth     = 0;
-    size_t m_mip_size  = 0;
-    size_t m_mip_count = 0;
-    size_t m_plane     = 0;
-    vpixel m_data;
+    sl::whole m_width     = 0;
+    sl::whole m_height    = 0;
+    sl::whole m_depth     = 0;
+    sl::whole m_mip_size  = 0;
+    sl::whole m_mip_count = 0;
+    sl::whole m_plane     = 0;
+    vpixel    m_data;
   };
 
   using ref_image  = image::ref;

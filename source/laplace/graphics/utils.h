@@ -17,7 +17,8 @@
 
 namespace laplace::graphics {
   void init();
-  void viewport(int x, int y, size_t width, size_t height);
+  void viewport(sl::index x, sl::index y, sl::whole width,
+                sl::whole height);
   void clear(cref_vec4 color);
   void clear_color_buffer(cref_vec4 color);
 

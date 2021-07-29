@@ -22,8 +22,8 @@ namespace laplace::graphics {
     glFrontFace(GL_CCW);
   }
 
-  void viewport(int x, int y, size_t width,
-                          size_t height) {
+  void viewport(sl::index x, sl::index y, sl::whole width,
+                sl::whole height) {
 
     auto x0 = static_cast<GLint>(x);
     auto y0 = static_cast<GLint>(y);

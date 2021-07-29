@@ -16,21 +16,27 @@
 #define laplace_core_family_impl_h
 
 namespace laplace::core {
-  inline auto family::value(int index) -> ref_family {
-    return this->value(static_cast<size_t>(index));
+  inline auto family::value(int n) -> ref_family {
+    return this->value(static_cast<size_t>(n));
+  }
+
+  inline auto family::value(ptrdiff_t n) -> ref_family {
+    return this->value(static_cast<size_t>(n));
   }
 
   inline auto family::value(const char *key) -> ref_family {
     return this->value(family(key));
   }
 
-  inline auto family::get_value(int index) const
-      -> cref_family {
-    return this->get_value(static_cast<size_t>(index));
+  inline auto family::get_value(int n) const -> cref_family {
+    return this->get_value(static_cast<size_t>(n));
   }
 
-  inline auto family::get_value(const char *key) const
-      -> cref_family {
+  inline auto family::get_value(ptrdiff_t n) const -> cref_family {
+    return this->get_value(static_cast<size_t>(n));
+  }
+
+  inline auto family::get_value(const char *key) const -> cref_family {
     return this->get_value(family(key));
   }
 
@@ -46,27 +52,31 @@ namespace laplace::core {
     return static_cast<uint32_t>(this->get_uint());
   }
 
-  inline auto family::operator[](int index) -> ref_family {
-    return this->value(index);
+  inline auto family::operator[](int n) -> ref_family {
+    return this->value(n);
   }
 
-  inline auto family::operator[](int index) const
-      -> cref_family {
-    return this->get_value(index);
+  inline auto family::operator[](int n) const -> cref_family {
+    return this->get_value(n);
   }
 
-  inline auto family::operator[](const char *key)
-      -> ref_family {
+  inline auto family::operator[](ptrdiff_t n) -> ref_family {
+    return this->value(n);
+  }
+
+  inline auto family::operator[](ptrdiff_t n) const -> cref_family {
+    return this->get_value(n);
+  }
+
+  inline auto family::operator[](const char *key) -> ref_family {
     return this->value(key);
   }
 
-  inline auto family::operator[](const char *key) const
-      -> cref_family {
+  inline auto family::operator[](const char *key) const -> cref_family {
     return this->get_value(key);
   }
 
-  inline auto family::operator[](const char8_t *key)
-      -> ref_family {
+  inline auto family::operator[](const char8_t *key) -> ref_family {
     return this->value(key);
   }
 

@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../core/string.h"
 #include "basic_tcp.h"
+
+#include "../core/string.h"
 #include "utils.h"
 
 namespace laplace::network {
@@ -24,9 +25,9 @@ namespace laplace::network {
     close();
   }
 
-  auto basic_tcp::receive_to(uint8_t *p, size_t count, io_mode mode)
-      -> size_t {
-    size_t size = 0;
+  auto basic_tcp::receive_to(uint8_t *p, sl::whole count, io_mode mode)
+      -> sl::whole {
+    sl::whole size = 0;
 
     if (m_socket != -1 && (p != nullptr || count == 0)) {
       auto buf     = reinterpret_cast<char *>(p);
@@ -58,8 +59,8 @@ namespace laplace::network {
 
       if (is_sync) {
         if (!set_mode(m_socket, async)) {
-          verb(fmt(
-              "TCP: ioctlsocket failed (code %d).", socket_error()));
+          verb(fmt("TCP: ioctlsocket failed (code %d).",
+                   socket_error()));
           close();
         }
       }
@@ -68,7 +69,7 @@ namespace laplace::network {
     return size;
   }
 
-  auto basic_tcp::receive(size_t count, io_mode mode) -> vbyte {
+  auto basic_tcp::receive(sl::whole count, io_mode mode) -> vbyte {
     vbyte seq;
 
     if (m_socket != -1) {
@@ -79,8 +80,8 @@ namespace laplace::network {
     return seq;
   }
 
-  auto basic_tcp::send(span_cbyte seq) -> size_t {
-    size_t count = 0;
+  auto basic_tcp::send(span_cbyte seq) -> sl::whole {
+    sl::whole count = 0;
 
     if (m_socket != -1) {
       auto buf     = reinterpret_cast<const char *>(seq.data());
@@ -111,8 +112,8 @@ namespace laplace::network {
 
       if (is_sync) {
         if (!set_mode(m_socket, async)) {
-          verb(fmt(
-              "TCP: ioctlsocket failed (code: %d).", socket_error()));
+          verb(fmt("TCP: ioctlsocket failed (code: %d).",
+                   socket_error()));
           close();
         }
       }

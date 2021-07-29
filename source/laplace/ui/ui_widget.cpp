@@ -10,11 +10,12 @@
  *  the MIT License for more details.
  */
 
+#include "widget.h"
+
 #include "../core/defs.h"
 #include "../graphics/utils.h"
 #include "../platform/opengl.h"
 #include "context.h"
-#include "widget.h"
 #include <algorithm>
 
 namespace laplace::ui {
@@ -31,7 +32,7 @@ namespace laplace::ui {
     up_to_date();
   }
 
-  auto widget::event_allowed(int x, int y) -> bool {
+  auto widget::event_allowed(sl::index x, sl::index y) -> bool {
     if (!contains(get_absolute_rect(), x, y))
       return false;
 
@@ -50,7 +51,7 @@ namespace laplace::ui {
     set_expired(true);
   }
 
-  void widget::set_level(size_t level) {
+  void widget::set_level(sl::index level) {
     m_level = level;
     set_expired(true);
   }
@@ -99,7 +100,7 @@ namespace laplace::ui {
     }
   }
 
-  void widget::move_to(int x, int y) {
+  void widget::move_to(sl::index x, sl::index y) {
     if (m_rect.x != x || m_rect.y != y) {
       m_rect.x = x;
       m_rect.y = y;
@@ -109,9 +110,8 @@ namespace laplace::ui {
   }
 
   void widget::draw_childs() {
-    vuint indices;
-
-    rect local_area { 0, 0, m_rect.width, m_rect.height };
+    auto indices    = sl::vector<sl::index> {};
+    auto local_area = rect { 0, 0, m_rect.width, m_rect.height };
 
     for (auto &c : m_childs) {
       if (c->is_visible()) {
@@ -120,7 +120,7 @@ namespace laplace::ui {
       }
     }
 
-    for (size_t i = 0; i < m_childs.size(); i++) {
+    for (sl::index i = 0; i < m_childs.size(); i++) {
       auto &w = m_childs[i];
 
       if (w->is_visible() && intersects(local_area, w->m_rect)) {
@@ -128,7 +128,7 @@ namespace laplace::ui {
       }
     }
 
-    auto op = [this](size_t a, size_t b) -> bool {
+    auto op = [this](sl::index a, sl::index b) -> bool {
       return m_childs[a]->get_level() < m_childs[b]->get_level();
     };
 
@@ -187,7 +187,7 @@ namespace laplace::ui {
   }
 
   void widget::clear() {
-    for (size_t i = 0; i < m_childs.size(); i++) {
+    for (sl::index i = 0; i < m_childs.size(); i++) {
       m_childs[i]->m_is_attached  = false;
       m_childs[i]->m_attach_index = 0;
       m_childs[i]->m_parent.reset();
@@ -196,8 +196,8 @@ namespace laplace::ui {
     set_expired(true);
   }
 
-  auto widget::attach(ptr_widget child) -> size_t {
-    size_t result = m_childs.size();
+  auto widget::attach(ptr_widget child) -> sl::index {
+    sl::index result = m_childs.size();
 
     if (auto c = child; c) {
       if (auto p = c->m_parent.lock(); p) {
@@ -235,7 +235,7 @@ namespace laplace::ui {
     set_expired(true);
   }
 
-  void widget::detach(size_t child_index) {
+  void widget::detach(sl::index child_index) {
     if (child_index < m_childs.size()) {
       m_childs[child_index]->m_is_attached  = false;
       m_childs[child_index]->m_attach_index = 0;
@@ -251,7 +251,7 @@ namespace laplace::ui {
     }
   }
 
-  auto widget::get_level() const -> size_t {
+  auto widget::get_level() const -> sl::index {
     return m_level;
   }
 
@@ -259,11 +259,11 @@ namespace laplace::ui {
     return m_rect;
   }
 
-  auto widget::get_absolute_x() const -> int {
+  auto widget::get_absolute_x() const -> sl::index {
     return m_absolute_x;
   }
 
-  auto widget::get_absolute_y() const -> int {
+  auto widget::get_absolute_y() const -> sl::index {
     return m_absolute_y;
   }
 
@@ -275,7 +275,7 @@ namespace laplace::ui {
   }
 
   void widget::next_tab() {
-    size_t i = 0, j = 1;
+    sl::index i = 0, j = 1;
 
     for (; i < m_childs.size(); i++) {
       if (m_childs[i]->has_focus()) {
@@ -344,7 +344,7 @@ namespace laplace::ui {
     return m_has_focus;
   }
 
-  auto widget::get_child_count() const -> size_t {
+  auto widget::get_child_count() const -> sl::index {
     return m_childs.size();
   }
 
@@ -352,7 +352,7 @@ namespace laplace::ui {
     return m_parent.lock();
   }
 
-  auto widget::get_child(size_t index) const -> ptr_widget {
+  auto widget::get_child(sl::index index) const -> ptr_widget {
     ptr_widget result;
 
     if (index < m_childs.size()) {
@@ -374,35 +374,35 @@ namespace laplace::ui {
     m_is_handler = is_handler;
   }
 
-  void widget::update_indices(size_t begin) {
-    for (size_t i = begin; i < m_childs.size(); i++) {
+  void widget::update_indices(sl::index begin) {
+    for (sl::index i = begin; i < m_childs.size(); i++) {
       m_childs[i]->m_attach_index = i;
     }
   }
 
   void widget::adjust_layout() {
     if (m_layout) {
-      vuint           childs;
-      vlayout_context context;
+      auto childs  = sl::vector<sl::index> {};
+      auto context = vlayout_context {};
 
       childs.reserve(m_childs.size());
       context.reserve(m_childs.size());
 
-      for (size_t i = 0; i < m_childs.size(); i++) {
+      for (sl::index i = 0; i < m_childs.size(); i++) {
         auto &c = *m_childs[i];
 
         if (c.is_visible()) {
           childs.emplace_back(i);
 
-          context.emplace_back(layout_context { .level = c.get_level(), //
-                                                .box = c.get_rect() });
+          context.emplace_back(layout_context {
+              .level = c.get_level(), .box = c.get_rect() });
         }
       }
 
       auto rects = m_layout(m_rect, context);
 
       if (rects.size() == childs.size()) {
-        for (size_t i = 0; i < childs.size(); i++) {
+        for (sl::index i = 0; i < childs.size(); i++) {
           m_childs[childs[i]]->set_rect(rects[i]);
         }
       } else {

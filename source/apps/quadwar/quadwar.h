@@ -55,7 +55,7 @@ namespace quadwar_app {
     void cleanup() override;
     void update(uint64_t delta_msec) override;
     void render() override;
-    void adjust_layout(int width, int height) override;
+    void adjust_layout(sl::whole width, sl::whole height) override;
 
   private:
     static auto get_player_name() -> std::u8string_view;

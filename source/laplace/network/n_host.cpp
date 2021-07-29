@@ -10,6 +10,8 @@
  *  the MIT License for more details.
  */
 
+#include "host.h"
+
 #include "../engine/protocol/basic_event.h"
 #include "../engine/protocol/ids.h"
 #include "../engine/protocol/ping.h"
@@ -19,7 +21,6 @@
 #include "../engine/protocol/server_seed.h"
 #include "../engine/protocol/slot_create.h"
 #include "../engine/protocol/slot_remove.h"
-#include "host.h"
 
 namespace laplace::network {
   namespace access = engine::access;
@@ -61,7 +62,7 @@ namespace laplace::network {
     perform_instant_events();
   }
 
-  auto host::perform_control(size_t slot, span_cbyte seq) -> bool {
+  auto host::perform_control(sl::index slot, span_cbyte seq) -> bool {
 
     if (client_enter::scan(seq) && slot != slot_host) {
       if (auto wor = get_world(); wor) {

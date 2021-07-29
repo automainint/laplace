@@ -54,7 +54,7 @@ namespace quadwar_app {
     void render();
 
     void attach_to(ui::ptr_widget w);
-    void adjust_layout(int width, int height);
+    void adjust_layout(sl::whole width, sl::whole height);
 
     void set_server_ip(std::string_view server_ip);
     void set_server_port(uint16_t port);

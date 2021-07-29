@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../../platform/gldef.h"
 #include "framebuffer.h"
+
+#include "../../platform/gldef.h"
 
 namespace laplace::graphics::flat {
   using namespace gl;
@@ -33,7 +34,7 @@ namespace laplace::graphics::flat {
     glDeleteFramebuffers(1, &m_id);
   }
 
-  void framebuffer::set_size(size_t width, size_t height) {
+  void framebuffer::set_size(sl::whole width, sl::whole height) {
     if (m_width != static_cast<uint32_t>(width) ||
         m_height != static_cast<uint32_t>(height)) {
 

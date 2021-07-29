@@ -85,9 +85,8 @@ namespace quadwar_app {
         if (m_on_done) {
           m_on_done();
         }
-      } else {
-        this_thread::yield();
 
+      } else {
         verb("Session: Trying to reconnect...");
 
         m_server->reconnect();
@@ -107,7 +106,7 @@ namespace quadwar_app {
     m_lobby.attach_to(w);
   }
 
-  void session::adjust_layout(int width, int height) {
+  void session::adjust_layout(sl::whole width, sl::whole height) {
     m_lobby.adjust_layout(width, height);
     m_view.adjust_layout(width, height);
   }

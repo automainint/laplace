@@ -12,15 +12,16 @@
  *  the MIT License for more details.
  */
 
+#include "application.h"
+
 #include "../core/embedded.h"
 #include "../core/utils.h"
 #include "../graphics/flat/solid_shader.h"
 #include "../graphics/flat/sprite_shader.h"
 #include "../graphics/utils.h"
-#include "application.h"
 #include "config.h"
-#include <fstream>
 #include <filesystem>
+#include <fstream>
 
 namespace laplace::stem {
   using std::make_shared, std::make_unique, config::load,
@@ -31,7 +32,8 @@ namespace laplace::stem {
       platform::ref_input, platform::ref_glcontext,
       graphics::flat::solid_shader, graphics::flat::sprite_shader,
       core::cref_family, std::wstring, std::wstring_view,
-      std::unique_ptr, std::istream, std::ifstream, std::filesystem::path;
+      std::unique_ptr, std::istream, std::ifstream,
+      std::filesystem::path;
 
   application::application(int argc, char **argv, cref_family def_cfg) {
     m_config = load(argc, argv, def_cfg);
@@ -42,9 +44,9 @@ namespace laplace::stem {
   }
 
   auto application::run() -> int {
-    size_t frame_width  = m_config[k_frame][0];
-    size_t frame_height = m_config[k_frame][1];
-    size_t frame_rate   = m_config[k_frame][2];
+    sl::whole frame_width  = m_config[k_frame][0];
+    sl::whole frame_height = m_config[k_frame][1];
+    sl::whole frame_rate   = m_config[k_frame][2];
 
     gl::require_extensions({ "GL_ARB_framebuffer_object" });
 
@@ -61,8 +63,8 @@ namespace laplace::stem {
     m_window->set_input(m_input);
     m_window->set_name(to_wstring(m_config[k_caption].get_string()));
     m_window->set_size(frame_width, frame_height);
-    m_window->set_fullscreen_mode(
-        frame_width, frame_height, frame_rate);
+    m_window->set_fullscreen_mode(frame_width, frame_height,
+                                  frame_rate);
 
     m_window->on_init([this]() {
       init();
@@ -108,8 +110,8 @@ namespace laplace::stem {
     m_gl->swap_buffers();
   }
 
-  void application::set_frame_size(size_t width, size_t height) {
-    adjust_layout(static_cast<int>(width), static_cast<int>(height));
+  void application::set_frame_size(sl::whole width, sl::whole height) {
+    adjust_layout(width, height);
 
     graphics::viewport(0, 0, width, height);
 
@@ -118,7 +120,7 @@ namespace laplace::stem {
     }
   }
 
-  void application::adjust_layout(int width, int height) {
+  void application::adjust_layout(sl::whole width, sl::whole height) {
     adjust_frame_size(width, height);
   }
 
@@ -158,7 +160,8 @@ namespace laplace::stem {
     }
   }
 
-  void application::adjust_frame_size(int width, int height) {
+  void application::adjust_frame_size(sl::whole width,
+                                      sl::whole height) {
     if (width != 0 && height != 0) {
       if (m_render)
         m_render->adjust_frame_size(width, height);

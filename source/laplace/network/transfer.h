@@ -34,9 +34,9 @@ namespace laplace::network {
 
     [[nodiscard]] auto is_encrypted() const noexcept -> bool;
 
-    [[nodiscard]] auto get_loss_count() const noexcept -> size_t;
+    [[nodiscard]] auto get_loss_count() const noexcept -> sl::whole;
 
-    [[nodiscard]] static auto get_data_overhead() noexcept -> size_t;
+    [[nodiscard]] static auto get_data_overhead() noexcept -> sl::whole;
     [[nodiscard]] static auto check_sum(span_cbyte data) -> uint64_t;
 
     template <typename cipher_>
@@ -45,22 +45,20 @@ namespace laplace::network {
     }
 
   private:
-    [[nodiscard]] auto pack_internal(     //
-        std::span<const span_cbyte> data, //
-        const uint16_t              mark) -> vbyte;
+    [[nodiscard]] auto pack_internal(std::span<const span_cbyte> data,
+                                     const uint16_t mark) -> vbyte;
 
-    [[nodiscard]] auto unpack_internal( //
-        span_cbyte     data,            //
-        const uint16_t mark) -> std::vector<vbyte>;
+    [[nodiscard]] auto unpack_internal(span_cbyte     data,
+                                       const uint16_t mark)
+        -> std::vector<vbyte>;
 
-    [[nodiscard]] auto scan( //
-        span_cbyte data,     //
-        uint16_t   mark) const noexcept -> size_t;
+    [[nodiscard]] auto scan(span_cbyte data,
+                            uint16_t mark) const noexcept -> sl::whole;
 
     static constexpr uint16_t mark_plain     = 0;
     static constexpr uint16_t mark_encrypted = 1;
 
-    enum encoding_offset : size_t {
+    enum encoding_offset : sl::whole {
       n_mark = 0,
       n_sum  = 2,
       n_size = 10,
@@ -69,8 +67,8 @@ namespace laplace::network {
 
     std::unique_ptr<crypto::basic_cipher> m_cipher;
 
-    bool   m_verbose    = false;
-    size_t m_loss_count = 0;
+    bool      m_verbose    = false;
+    sl::whole m_loss_count = 0;
   };
 }
 

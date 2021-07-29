@@ -16,9 +16,10 @@
 #define laplace_windows_header
 #include <windows.h>
 
+#include "glcontext.h"
+
 #include "../../core/defs.h"
 #include "../gldef.h"
-#include "glcontext.h"
 #include "window.h"
 #include <algorithm>
 #include <iostream>

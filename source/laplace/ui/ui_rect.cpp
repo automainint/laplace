@@ -32,7 +32,7 @@ namespace laplace::ui {
     return true;
   }
 
-  auto contains(cref_rect a, int x, int y) -> bool {
+  auto contains(cref_rect a, sl::index x, sl::index y) -> bool {
     return x >= a.x && x < a.x + a.width && y >= a.y &&
            y < a.y + a.height;
   }
@@ -55,9 +55,11 @@ namespace laplace::ui {
   }
 
   auto to_rect(cref_rectf a) -> rect {
-    return { .x      = static_cast<int>(a.x),
-             .y      = static_cast<int>(a.y),
-             .width  = static_cast<int>(a.width),
-             .height = static_cast<int>(a.height) };
+    const auto x0 = static_cast<sl::index>(round(a.x));
+    const auto y0 = static_cast<sl::index>(round(a.y));
+    const auto x1 = static_cast<sl::index>(round(a.x + a.width));
+    const auto y1 = static_cast<sl::index>(round(a.y + a.height));
+
+    return { .x = x0, .y = y0, .width = x1 - x0, .height = y1 - y0 };
   }
 }

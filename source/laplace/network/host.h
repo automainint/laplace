@@ -13,8 +13,8 @@
 #ifndef laplace_engine_host_h
 #define laplace_engine_host_h
 
-#include "udp_server.h"
 #include "../engine/solver.h"
+#include "udp_server.h"
 
 namespace laplace::network {
   /*  Host server.
@@ -29,7 +29,7 @@ namespace laplace::network {
     void listen(uint16_t port = any_port);
 
   private:
-    [[nodiscard]] auto perform_control(size_t slot, span_cbyte seq)
+    [[nodiscard]] auto perform_control(sl::index slot, span_cbyte seq)
         -> bool override;
 
     engine::seed_type m_seed = engine::solver::generate_seed();

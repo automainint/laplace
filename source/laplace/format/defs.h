@@ -21,8 +21,8 @@ namespace laplace::format {
 
   using pack_type       = core::ptr_family;
   using const_pack_type = core::cref_family;
-  using fn_read         = std::function<vbyte(size_t)>;
-  using fn_write        = std::function<size_t(span_cbyte)>;
+  using fn_read         = std::function<vbyte(sl::whole)>;
+  using fn_write        = std::function<sl::whole(span_cbyte)>;
 }
 
 #endif

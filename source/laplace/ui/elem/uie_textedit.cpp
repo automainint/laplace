@@ -1,8 +1,20 @@
+/*  laplace/ui/elem/uie_textedit.cpp
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#include "textedit.h"
+
 #include "../../core/utf8.h"
 #include "../../platform/keys.h"
 #include "../context.h"
-#include "textedit.h"
-#include <cassert>
 
 namespace laplace::ui::elem {
   using std::u8string_view, std::u8string, platform::ref_input,
@@ -23,7 +35,10 @@ namespace laplace::ui::elem {
   }
 
   void textedit::render() {
-    assert(m_context);
+    if (!m_context) {
+      error_("No context.", __FUNCTION__);
+    }
+
     m_context->render(get_state());
 
     up_to_date();
@@ -36,7 +51,7 @@ namespace laplace::ui::elem {
     }
   }
 
-  void textedit::set_length_limit(size_t limit) {
+  void textedit::set_length_limit(sl::whole limit) {
     m_length_limit = limit;
 
     if (m_text.size() > limit) {
@@ -45,14 +60,14 @@ namespace laplace::ui::elem {
     }
   }
 
-  void textedit::set_cursor(size_t cursor) {
+  void textedit::set_cursor(sl::index cursor) {
     if (m_cursor != cursor) {
       m_cursor = cursor;
       set_expired(true);
     }
   }
 
-  void textedit::set_selection(int selection) {
+  void textedit::set_selection(sl::index selection) {
     if (m_selection != selection) {
       m_selection = selection;
       set_expired(true);
@@ -63,11 +78,11 @@ namespace laplace::ui::elem {
     return m_text;
   }
 
-  auto textedit::get_cursor() const -> size_t {
+  auto textedit::get_cursor() const -> sl::index {
     return m_cursor;
   }
 
-  auto textedit::get_selection() const -> int {
+  auto textedit::get_selection() const -> sl::index {
     return m_selection;
   }
 
@@ -100,10 +115,10 @@ namespace laplace::ui::elem {
       if (!s.empty()) {
         for (auto c : s) {
           if (c == ctrl_backspace) {
-            size_t   n = 0;
-            char32_t buf;
+            sl::index n = 0;
+            char32_t  buf;
 
-            for (size_t i = 0; i < cursor;) {
+            for (sl::index i = 0; i < cursor;) {
               n = i;
 
               if (!utf8::decode(text, i, buf))
@@ -119,8 +134,8 @@ namespace laplace::ui::elem {
               if (textedit_state.length_limit == 0 ||
                   text.size() < textedit_state.length_limit)
                 if (!utf8::encode(c, text, cursor))
-                  error_(
-                      "Unable to encode UTF-8 string.", __FUNCTION__);
+                  error_("Unable to encode UTF-8 string.",
+                         __FUNCTION__);
             }
           }
         }
@@ -133,7 +148,7 @@ namespace laplace::ui::elem {
     return { event_status, has_focus, text, cursor, selection };
   }
 
-  auto textedit::textedit_tick(platform::ref_input in) -> bool {
+  auto textedit::textedit_tick(ref_input in) -> bool {
     if (in.is_key_pressed(key_tab)) {
       if (auto p = get_parent(); p) {
         p->next_tab();

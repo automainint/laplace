@@ -26,16 +26,13 @@ namespace laplace::ui {
 
   void frame::render() {
     if (m_context) {
-      rect r = {
-        .x      = 0,
-        .y      = 0,
-        .width  = static_cast<int>(m_context->get_frame_width()),
-        .height = static_cast<int>(m_context->get_frame_height())
-      };
+      const auto r = rect { .x      = 0,
+                            .y      = 0,
+                            .width  = m_context->get_frame_width(),
+                            .height = m_context->get_frame_height() };
 
       if (is_widget_changed()) {
-        m_buffer.set_size(static_cast<size_t>(r.width),
-                          static_cast<size_t>(r.height));
+        m_buffer.set_size(r.width, r.height);
       }
 
       if (is_widget_changed() || has_childs_expired()) {
@@ -45,8 +42,7 @@ namespace laplace::ui {
           widget_render();
         });
 
-        viewport(0, 0, static_cast<size_t>(r.width),
-                 static_cast<size_t>(r.height));
+        viewport(0, 0, r.width, r.height);
       }
 
       m_context->render(r, m_buffer.color_texture);
