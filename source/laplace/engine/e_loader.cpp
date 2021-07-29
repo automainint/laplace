@@ -37,6 +37,11 @@ namespace laplace::engine {
         }
 
         m_is_ready = true;
+
+        if (m_is_done) {
+          break;
+        }
+
         m_sync.wait(_ul);
       }
     });
@@ -63,7 +68,7 @@ namespace laplace::engine {
     return m_is_ready;
   }
 
-  auto loader::get_progress() -> size_t {
+  auto loader::get_progress() -> sl::index {
     auto _ul = unique_lock(m_lock);
     return m_progress;
   }

@@ -25,13 +25,12 @@ namespace laplace::network {
 
     void reconnect() override;
 
-    void connect(                      //
-        std::string_view host_address, //
-        uint16_t         host_port,    //
-        uint16_t         client_port = any_port);
+    void connect(std::string_view host_address, uint16_t host_port,
+                 uint16_t client_port = any_port);
 
   private:
-    auto perform_control(sl::index slot, span_cbyte seq) -> bool override;
+    auto perform_control(sl::index slot, span_cbyte seq)
+        -> bool override;
 
     std::string m_host_address = localhost;
     uint16_t    m_host_port    = any_port;

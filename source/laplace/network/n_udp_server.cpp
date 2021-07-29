@@ -46,6 +46,13 @@ namespace laplace::network {
       pro::client_leave, engine::time_undefined, engine::id_undefined,
       engine::encode, crypto::ecc_rabbit;
 
+  const sl::whole udp_server::default_chunk_size        = 2096;
+  const sl::whole udp_server::chunk_size_increment      = 128;
+  const sl::whole udp_server::chunk_size_limit          = 0x4000;
+  const sl::whole udp_server::default_loss_compensation = 4;
+  const uint16_t  udp_server::default_max_command_id    = 400;
+  const sl::index udp_server::max_index_delta           = 0x1000;
+
   udp_server::~udp_server() {
     cleanup();
   }
@@ -235,6 +242,10 @@ namespace laplace::network {
   }
 
   void udp_server::cleanup() {
+    if (m_loader) {
+      m_loader.reset();
+    }
+
     if (m_node) {
       if (is_master()) {
         emit<server_quit>();
@@ -905,6 +916,6 @@ namespace laplace::network {
   }
 
   auto udp_server::has_free_slots() const -> bool {
-    return m_slots.size() < m_max_slot_count;
+    return m_max_slot_count < 0 || m_slots.size() < m_max_slot_count;
   }
 }

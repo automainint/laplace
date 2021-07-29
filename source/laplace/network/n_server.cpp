@@ -20,6 +20,13 @@ namespace laplace::network {
       engine::ptr_factory, engine::ptr_world, engine::ptr_solver,
       engine::solver, engine::world, engine::seed_type;
 
+  const bool      server::default_verbose                 = false;
+  const uint64_t  server::default_tick_duration_msec      = 10;
+  const uint64_t  server::default_update_timeout_msec     = 10;
+  const uint64_t  server::default_ping_timeout_msec       = 100;
+  const uint64_t  server::default_connection_timeout_msec = 5000;
+  const sl::whole server::default_overtake_factor         = 3;
+
   server::~server() {
     if (is_verbose()) {
       verb(fmt("Total bytes sent:      %zu", m_total_sent));

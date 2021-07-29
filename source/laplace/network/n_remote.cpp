@@ -24,6 +24,7 @@
 namespace laplace::network {
   namespace access = engine::access;
   using namespace engine::protocol;
+
   using std::min, std::make_unique, std::string, std::string_view,
       engine::encode, engine::prime_impact, engine::time_undefined,
       crypto::ecc_rabbit;

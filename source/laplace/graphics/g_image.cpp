@@ -13,6 +13,7 @@
 #include "image.h"
 
 #include <algorithm>
+#include <cmath>
 
 namespace laplace::graphics {
   using std::make_shared, std::min, std::max, std::copy;

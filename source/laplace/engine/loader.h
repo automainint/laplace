@@ -34,7 +34,7 @@ namespace laplace::engine {
 
     /*  Get done task count.
      */
-    [[nodiscard]] auto get_progress() -> size_t;
+    [[nodiscard]] auto get_progress() -> sl::index;
 
   private:
     void set_ready(bool is_ready);
@@ -46,7 +46,7 @@ namespace laplace::engine {
 
     bool        m_is_ready = true;
     bool        m_is_done  = false;
-    size_t      m_progress = 0;
+    sl::index   m_progress = 0;
     ptr_world   m_world;
     vptr_impact m_queue;
   };

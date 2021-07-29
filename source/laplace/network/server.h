@@ -21,12 +21,12 @@ namespace laplace::network {
 
   class server {
   public:
-    static constexpr bool      default_verbose             = false;
-    static constexpr uint64_t  default_tick_duration_msec  = 10;
-    static constexpr uint64_t  default_update_timeout_msec = 10;
-    static constexpr uint64_t  default_ping_timeout_msec   = 100;
-    static constexpr uint64_t  default_connection_timeout_msec = 1000;
-    static constexpr sl::whole default_overtake_factor         = 3;
+    static const bool      default_verbose;
+    static const uint64_t  default_tick_duration_msec;
+    static const uint64_t  default_update_timeout_msec;
+    static const uint64_t  default_ping_timeout_msec;
+    static const uint64_t  default_connection_timeout_msec;
+    static const sl::whole default_overtake_factor;
 
     server() = default;
     virtual ~server();

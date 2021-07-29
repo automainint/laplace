@@ -28,12 +28,12 @@ namespace laplace::network {
     static constexpr sl::index slot_host            = -1;
     static constexpr sl::index slot_count_unlimited = -1;
 
-    static constexpr sl::whole default_chunk_size        = 2096;
-    static constexpr sl::whole chunk_size_increment      = 128;
-    static constexpr sl::whole chunk_size_limit          = 0x4000;
-    static constexpr sl::whole default_loss_compensation = 4;
-    static constexpr uint16_t  default_max_command_id    = 400;
-    static constexpr sl::index max_index_delta           = 0x1000;
+    static const sl::whole default_chunk_size;
+    static const sl::whole chunk_size_increment;
+    static const sl::whole chunk_size_limit;
+    static const sl::whole default_loss_compensation;
+    static const uint16_t  default_max_command_id;
+    static const sl::index max_index_delta;
 
     ~udp_server() override;
 
