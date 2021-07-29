@@ -31,12 +31,11 @@ namespace laplace::engine {
     class dummy_tag { };
     class proto_tag { };
 
-    static constexpr auto lock_timeout = std::chrono::milliseconds(100);
-
     static constexpr auto dummy = dummy_tag {};
     static constexpr auto proto = proto_tag {};
 
-    static constexpr uint64_t default_tick_period = 10;
+    static const std::chrono::milliseconds lock_timeout;
+    static const uint64_t                  default_tick_period;
 
     basic_entity(cref_entity en) noexcept;
     basic_entity(basic_entity &&en) noexcept;

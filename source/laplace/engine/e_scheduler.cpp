@@ -21,6 +21,9 @@ namespace laplace::engine {
   using std::unique_lock, std::lock, std::adopt_lock, std::jthread,
       std::thread, std::function, std::ostringstream;
 
+  const sl::whole scheduler::overthreading_limit = 8;
+  const sl::whole scheduler::concurrency_limit   = 0x1000;
+
   scheduler::scheduler(world &w) : m_world(w) { }
 
   scheduler::~scheduler() {

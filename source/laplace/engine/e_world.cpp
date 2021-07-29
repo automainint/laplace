@@ -18,6 +18,8 @@
 namespace laplace::engine {
   using std::make_shared, std::unique_lock, std::shared_lock;
 
+  const bool world::default_allow_relaxed_spawn = false;
+
   world::world() {
     m_scheduler = make_unique<scheduler>(*this);
   }

@@ -21,7 +21,7 @@ namespace laplace::engine {
    */
   class solver {
   public:
-    static constexpr bool default_is_rewind_allowed = false;
+    static const bool default_allow_rewind;
 
     solver()  = default;
     ~solver() = default;
@@ -72,7 +72,7 @@ namespace laplace::engine {
 
     uint64_t  m_time              = 0;
     sl::index m_position          = 0;
-    bool      m_is_rewind_allowed = default_is_rewind_allowed;
+    bool      m_is_rewind_allowed = default_allow_rewind;
     seed_type m_seed              = 0;
   };
 

@@ -22,7 +22,10 @@ namespace laplace::engine {
   namespace sets = object::sets;
 
   using std::unique_lock, std::shared_lock, std::span, std::move,
-      std::make_shared, std::lower_bound;
+      std::make_shared, std::lower_bound, std::chrono::milliseconds;
+
+  const milliseconds basic_entity::lock_timeout = milliseconds(100);
+  const uint64_t     basic_entity::default_tick_period = 10;
 
   basic_entity::basic_entity(cref_entity en) noexcept {
     assign(en);

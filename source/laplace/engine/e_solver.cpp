@@ -15,6 +15,8 @@
 #include <algorithm>
 
 namespace laplace::engine {
+  const bool solver::default_allow_rewind = false;
+
   void solver::set_world(ptr_world w) {
     if (m_world != w) {
       m_world = w;

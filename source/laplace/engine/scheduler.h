@@ -23,8 +23,8 @@
 namespace laplace::engine {
   class scheduler {
   public:
-    static constexpr sl::whole overthreading_limit = 8;
-    static constexpr sl::whole concurrency_limit   = 0x1000;
+    static const sl::whole overthreading_limit;
+    static const sl::whole concurrency_limit;
 
     scheduler(const scheduler &) = delete;
     auto operator=(const scheduler &) -> scheduler & = delete;

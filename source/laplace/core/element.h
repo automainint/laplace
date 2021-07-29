@@ -27,28 +27,28 @@ namespace laplace::core {
     element() noexcept          = default;
     virtual ~element() noexcept = default;
 
-    [[nodiscard]] auto get_type_id() const noexcept -> size_t;
+    [[nodiscard]] auto get_type_id() const noexcept -> sl::index;
 
-    [[nodiscard]] static auto type_id() noexcept -> size_t;
+    [[nodiscard]] static auto type_id() noexcept -> sl::index;
 
   protected:
-    void set_type_id(size_t id) noexcept;
+    void set_type_id(sl::index id) noexcept;
 
     class type {
     public:
       type() noexcept;
       ~type() noexcept = default;
 
-      [[nodiscard]] auto get_id() const noexcept -> size_t;
+      [[nodiscard]] auto get_id() const noexcept -> sl::index;
 
     private:
-      static std::atomic_size_t m_count;
+      static std::atomic<sl::index> m_count;
 
-      size_t m_id = 0;
+      sl::index m_id = 0;
     };
 
   private:
-    size_t m_type_id = type_id();
+    sl::index m_type_id = type_id();
   };
 
   using ptr_element  = std::shared_ptr<element>;

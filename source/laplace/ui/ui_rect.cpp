@@ -12,6 +12,8 @@
 
 #include "rect.h"
 
+#include <cmath>
+
 namespace laplace::ui {
   auto compare(cref_rect a, cref_rect b) -> bool {
     if (a.x != b.x || a.y != b.y)
