@@ -11,8 +11,7 @@
  */
 
 #include "../../laplace/engine/object/sets.h"
-#include "../../laplace/engine/protocol/debug.h"
-#include "../../laplace/engine/protocol/ids.h"
+#include "../../laplace/engine/protocol/all.h"
 #include "../../laplace/network/host.h"
 #include "../../laplace/network/remote.h"
 #include <gtest/gtest.h>
@@ -27,19 +26,20 @@ namespace laplace::test {
   namespace ids  = engine::protocol::ids;
 
   TEST(network, server_echo) {
-    constexpr size_t test_count     = 3;
-    constexpr size_t test_threshold = 1;
+    constexpr sl::index test_count     = 3;
+    constexpr sl::index test_threshold = 1;
 
-    size_t success = 0;
+    sl::index success = 0;
 
-    for (size_t i = 0; i < test_count; i++) {
+    for (sl::index i = 0; i < test_count; i++) {
       auto my_host = make_shared<host>();
       auto client  = make_shared<remote>();
 
       my_host->make_factory<basic_factory>();
       client->make_factory<basic_factory>();
 
-      uint16_t allowed_commands[] = { ids::debug, ids::client_enter };
+      uint16_t allowed_commands[] = { ids::debug, ids::session_request,
+                                      ids::client_enter };
 
       my_host->set_allowed_commands(allowed_commands);
       my_host->listen();
@@ -84,20 +84,20 @@ namespace laplace::test {
   }
 
   TEST(network, server_encryption) {
-    constexpr size_t test_count     = 3;
-    constexpr size_t test_threshold = 1;
+    constexpr sl::index test_count     = 3;
+    constexpr sl::index test_threshold = 1;
 
-    size_t success = 0;
+    sl::index success = 0;
 
-    for (size_t i = 0; i < test_count; i++) {
+    for (sl::index i = 0; i < test_count; i++) {
       auto my_host = make_shared<host>();
       auto client  = make_shared<remote>();
 
       my_host->make_factory<basic_factory>();
       client->make_factory<basic_factory>();
 
-      uint16_t allowed_commands[] = { ids::debug, ids::client_enter,
-                                      ids::public_key };
+      uint16_t allowed_commands[] = { ids::debug, ids::session_request,
+                                      ids::client_enter };
 
       my_host->set_allowed_commands(allowed_commands);
       my_host->listen();

@@ -15,6 +15,7 @@
 
 #include "../core/serial.h"
 #include "basic_impact.h"
+#include "protocol/ids.h"
 
 namespace laplace::engine {
   /*  Basic class for any impact that can be serialized.

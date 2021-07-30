@@ -30,15 +30,13 @@ namespace laplace::win32 {
   public:
     using native_handle = HWND;
 
-    static constexpr auto class_name =
-        L"{46DA795E-8CD4-4F46-8462-86A47ED257DC}";
-    static constexpr auto default_window_name =
-        L"Laplace Application";
-    static constexpr bool      default_is_visible    = false;
-    static constexpr bool      default_is_fullscreen = false;
-    static constexpr sl::whole default_frame_width   = 960;
-    static constexpr sl::whole default_frame_height  = 720;
-    static constexpr sl::whole default_frame_rate    = 60;
+    static const wchar_t   class_name[];
+    static const wchar_t   default_window_name[];
+    static const bool      default_is_visible;
+    static const bool      default_is_fullscreen;
+    static const sl::whole default_frame_width;
+    static const sl::whole default_frame_height;
+    static const sl::whole default_frame_rate;
 
     window();
     window(native_handle parent);

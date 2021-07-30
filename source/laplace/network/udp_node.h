@@ -43,9 +43,8 @@ namespace laplace::network {
   private:
     void init();
 
-    [[nodiscard]] auto send_internal( //
-        const sockaddr_in &name,      //
-        span_cbyte         seq) -> sl::whole;
+    [[nodiscard]] auto send_internal(const sockaddr_in &name,
+                                     span_cbyte seq) -> sl::whole;
 
     socket_t    m_socket;
     uint16_t    m_port = 0;

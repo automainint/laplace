@@ -17,8 +17,8 @@
 #include <random>
 
 namespace laplace::test {
-  using math::equals, math::get_zero, math::get_unit,
-      math::length, math::shortnames::vec2;
+  using math::equals, math::get_zero, math::get_unit, math::length,
+      math::shortnames::vec2;
 
   TEST(math, basic_equals) {
     EXPECT_TRUE(equals(0.f, 0.f));

@@ -27,22 +27,12 @@ namespace quadwar_app {
     using event_done = std::function<void()>;
     using event_quit = std::function<void()>;
 
-    static constexpr auto sense_move  = 1.5f;
-    static constexpr auto sense_scale = .0003f;
-
-    static constexpr auto host_info_file       = ".host";
-    static constexpr auto host_info_file_debug = "../../.host";
-
-    static constexpr uint16_t allowed_commands[] = {
-      protocol::ids::public_key,   protocol::ids::request_events,
-      protocol::ids::ping_request, protocol::ids::ping_response,
-      protocol::ids::client_enter, protocol::ids::client_leave,
-      protocol::ids::client_ready, protocol::ids::player_name,
-      protocol::ids::order_move
-    };
-
-    static constexpr auto     default_server_ip = "127.0.0.1";
-    static constexpr uint16_t default_port      = network::any_port;
+    static const uint16_t allowed_commands[];
+    static const char     host_info_file[];
+    static const char     default_server_ip[];
+    static const uint16_t default_port;
+    static const float    sense_move;
+    static const float    sense_scale;
 
     session();
     ~session();
@@ -80,8 +70,8 @@ namespace quadwar_app {
 
     /*  Local actor id.
      */
-    size_t m_id_actor = engine::id_undefined;
-    size_t m_root_ver = 0;
+    sl::index m_id_actor = engine::id_undefined;
+    sl::index m_root_ver = 0;
 
     engine::ptr_world m_world;
 
@@ -89,9 +79,9 @@ namespace quadwar_app {
     uint16_t      m_server_port = default_port;
     std::u8string m_game_name;
     std::u8string m_player_name;
-    size_t        m_map_size        = 0;
-    size_t        m_player_count    = 0;
-    size_t        m_unit_count      = 0;
+    sl::whole     m_map_size        = 0;
+    sl::whole     m_player_count    = 0;
+    sl::whole     m_unit_count      = 0;
     bool          m_host_info_saved = false;
     bool          m_show_game       = false;
 

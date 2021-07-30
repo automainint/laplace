@@ -26,6 +26,16 @@ namespace laplace::win32 {
       std::shared_ptr, std::unique_lock, std::chrono::duration_cast,
       std::chrono::milliseconds;
 
+  const wchar_t window::class_name[] =
+      L"{46DA795E-8CD4-4F46-8462-86A47ED257DC}";
+  const wchar_t window::default_window_name[] =
+      L"Laplace Application";
+  const bool      window::default_is_visible    = false;
+  const bool      window::default_is_fullscreen = false;
+  const sl::whole window::default_frame_width   = 960;
+  const sl::whole window::default_frame_height  = 720;
+  const sl::whole window::default_frame_rate    = 60;
+
   void window::init(window::native_handle parent) {
     if (!parent) {
       SetProcessDPIAware();

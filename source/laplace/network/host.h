@@ -32,7 +32,10 @@ namespace laplace::network {
     [[nodiscard]] auto perform_control(sl::index slot, span_cbyte seq)
         -> bool override;
 
-    engine::seed_type m_seed = engine::solver::generate_seed();
+    [[nodiscard]] auto generate_token() -> vbyte;
+
+    engine::seed_type    m_seed = engine::solver::generate_seed();
+    engine::eval::random m_rand;
   };
 }
 

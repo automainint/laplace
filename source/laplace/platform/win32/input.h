@@ -32,10 +32,10 @@ namespace laplace::win32 {
    */
   class input {
   public:
-    static constexpr sl::whole char_predelay_msec   = 500;
-    static constexpr sl::whole char_period_msec     = 50;
-    static constexpr sl::whole default_resolution_x = 2000;
-    static constexpr sl::whole default_resolution_y = 1500;
+    static const sl::whole char_predelay_msec;
+    static const sl::whole char_period_msec;
+    static const sl::whole default_resolution_x;
+    static const sl::whole default_resolution_y;
 
     struct key_state {
       bool is_down    : 1 = false;

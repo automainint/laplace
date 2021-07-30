@@ -18,7 +18,7 @@
 namespace laplace::network::crypto {
   class basic_cipher {
   public:
-    static constexpr bool default_verbose = false;
+    static const bool default_verbose;
 
     basic_cipher(const basic_cipher &) = delete;
     basic_cipher(basic_cipher &&)      = delete;
@@ -60,7 +60,7 @@ namespace laplace::network::crypto {
     bool      m_is_ready   = false;
     bool      m_is_verbose = default_verbose;
     sl::whole m_loss_count = 0;
-    
+
     vbyte m_public_key;
     vbyte m_mutual_key;
   };

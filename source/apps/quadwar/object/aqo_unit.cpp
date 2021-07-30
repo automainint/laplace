@@ -62,11 +62,9 @@ namespace quadwar_app::object {
   }
 
   void unit::tick(access::world w) {
-    const auto sx = sets::scale_real / pathmap::resolution;
-    const auto sy = sets::scale_real / pathmap::resolution;
-    const auto sr = sets::scale_real / pathmap::resolution;
+    const auto scale = sets::scale_real / pathmap::resolution;
 
-    if constexpr (sx == 0 || sy == 0 || sr == 0) {
+    if constexpr (scale == 0) {
       error_("Invalid scale.", __FUNCTION__);
       return;
     }
@@ -78,16 +76,16 @@ namespace quadwar_app::object {
     const auto oy1 = get(n_move_y);
 
     if (ox0 != ox1 || oy0 != oy1) {
-      const auto x0 = ox0 / sx;
-      const auto y0 = oy0 / sy;
+      const auto x0 = ox0 / scale;
+      const auto y0 = oy0 / scale;
 
-      const auto x1 = ox1 / sx;
-      const auto y1 = oy1 / sy;
+      const auto x1 = ox1 / scale;
+      const auto y1 = oy1 / scale;
 
       auto r    = w.get_entity(w.get_root());
       auto path = w.get_entity(root::get_pathmap(r));
 
-      const auto radius = get(n_radius) / sr;
+      const auto radius = get(n_radius) / scale;
       const auto size   = 1 + radius * 2;
 
       const auto footprint = sl::vector<int8_t>(size * size, 1);
@@ -248,18 +246,6 @@ namespace quadwar_app::object {
 
   auto unit::get_health(entity en) -> intval {
     return en.get(n_health);
-  }
-
-  auto unit::scale_of_x(entity en) -> engine::intval {
-    return en.scale_of(n_x);
-  }
-
-  auto unit::scale_of_y(entity en) -> engine::intval {
-    return en.scale_of(n_y);
-  }
-
-  auto unit::scale_of_radius(entity en) -> engine::intval {
-    return en.scale_of(n_radius);
   }
 
   auto unit::get_position_scaled(entity en) -> view::vec2 {

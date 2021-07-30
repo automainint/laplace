@@ -17,52 +17,65 @@
 #include <string>
 
 namespace laplace::engine::protocol::ids {
-  constexpr std::string_view table[] = { //
-    "",
-    "public-key",
-    "request-events",
-    "ping-request",
-    "ping-response",
-    "server-idle",
-    "client-desync",
-    "server-init",
-    "server-loading",
-    "server-launch",
-    "server-action",
-    "server-pause",
-    "server-clock",
-    "server-seed",
-    "server-quit",
-    "client-enter",
-    "client-leave",
-    "client-ready",
-    "debug",
-    "slot-create",
-    "slot-remove"
-  };
+  constexpr std::string_view table[] = { "",
+                                         "request-events",
+                                         "request-token",
+                                         "session-request",
+                                         "session-response",
+                                         "session-token",
+                                         "ping-request",
+                                         "ping-response",
+                                         "client-desync",
+                                         "server-idle",
+                                         "server-init",
+                                         "server-loading",
+                                         "server-launch",
+                                         "server-action",
+                                         "server-pause",
+                                         "server-clock",
+                                         "server-seed",
+                                         "server-quit",
+                                         "client-enter",
+                                         "client-leave",
+                                         "client-ready",
+                                         "debug",
+                                         "slot-create",
+                                         "slot-remove" };
 
-  enum cipher_id : uint16_t { //
-    cipher_plain,             //
-    cipher_ecc_rabbit
-  };
+  enum cipher_id : uint16_t { cipher_plain, cipher_ecc_rabbit };
 
   enum command_id : uint16_t {
     undefined = 0,
 
-    /*  Provide public key.
-     *
-     *  uint16_t    id
-     *  uint16_t    cipher
-     *  uint8_t     key[ ]
-     */
-    public_key,
-
     /*  Request to resend specified events.
      *
      *  uint16_t    id
-     *  uint64_t    events[ ]
+     *  uint64_t[]  events
      */
     request_events,
+
+    /*  Request to send session token.
+     *
+     *  uint16_t    id
+     */
+    request_token,
+
+    /*  uint16_t    id
+     *  uint16_t    cipher
+     *  uint8_t[]   public key
+     */
+    session_request,
+
+    /*  uint16_t    id
+     *  uint16_t    port
+     *  uint8_t[]   public key
+     */
+    session_response,
+
+    /*  uint16_t    id
+     *  uint8_t[]   token
+     */
+    session_token,
 
     /*  uint16_t    id
      *  uint64_t    time msec
@@ -75,23 +88,22 @@ namespace laplace::engine::protocol::ids {
     ping_response,
 
     /*  uint16_t    id
+     */
+    client_desync,
+
+    /*  uint16_t    id
      *  uint64_t    last index
      *  uint64_t    time msec
      */
     server_idle,
-
-    /*  uint16_t    id
-     */
-    client_desync,
 
     /*  Unindexed command count.
      */
     _unindexed_count,
 
     /*  Server commands.
-     */
-
-    /*  uint16_t    id
+     *
+     *  uint16_t    id
      *  uint64_t    index
      */
     server_init = _unindexed_count,
@@ -137,9 +149,8 @@ namespace laplace::engine::protocol::ids {
     server_quit,
 
     /*  Client commands.
-     */
-
-    /*  uint16_t    id
+     *
+     *  uint16_t    id
      *  uint64_t    index
      */
     client_enter,
@@ -184,6 +195,8 @@ namespace laplace::engine::protocol::ids {
      */
     _native_count
   };
+
+  static_assert((sizeof table / sizeof *table) == _native_count);
 }
 
 #endif

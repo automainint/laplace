@@ -35,6 +35,8 @@ namespace laplace::network {
     std::string m_host_address = localhost;
     uint16_t    m_host_port    = any_port;
     uint16_t    m_client_port  = any_port;
+
+    vbyte m_token;
   };
 }
 

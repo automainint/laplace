@@ -31,6 +31,11 @@ namespace laplace::win32 {
   using std::u8string_view;
   using namespace platform;
 
+  const sl::whole input::char_predelay_msec   = 500;
+  const sl::whole input::char_period_msec     = 50;
+  const sl::whole input::default_resolution_x = 2000;
+  const sl::whole input::default_resolution_y = 1500;
+
   input::input() {
     for (sl::index i = 0; i < key_count; i++) {
       m_keymap[i] = static_cast<uint8_t>(i);
@@ -197,7 +202,7 @@ namespace laplace::win32 {
     for (auto &k : m_keyboard_state) { k.is_changed = false; }
   }
 
-  void input::set_window_rect(sl::whole x, sl::whole y,
+  void input::set_window_rect(sl::index x, sl::index y,
                               sl::whole width, sl::whole height) {
 
     m_center_x = x + width / 2;

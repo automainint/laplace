@@ -98,6 +98,7 @@ namespace laplace::network {
     [[nodiscard]] auto get_overtake_factor() const noexcept
         -> sl::whole;
 
+    void verb_queue(sl::index n, span_cbyte seq);
     void dump(span_cbyte bytes);
 
   private:

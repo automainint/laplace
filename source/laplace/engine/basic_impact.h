@@ -18,7 +18,6 @@
 #include "../core/utils.h"
 #include "access/world.h"
 #include "eventorder.h"
-#include "protocol/ids.h"
 
 namespace laplace::engine {
   /*  World event compute atom. Impacts can be SEQUENTIALLY

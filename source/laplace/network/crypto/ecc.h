@@ -23,9 +23,9 @@
 namespace laplace::network::crypto {
   class ecc : virtual public basic_cipher {
   public:
-    static constexpr sl::index buffer_size = 0x1000;
+    static const sl::whole buffer_size;
 
-    ecc(const sl::index key_size);
+    ecc(const sl::whole key_size);
     ~ecc() override;
 
   protected:

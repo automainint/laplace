@@ -13,12 +13,18 @@
 #include "server.h"
 
 #include "../core/utils.h"
+#include "../engine/prime_impact.h"
+#include "../engine/protocol/ids.h"
 #include <iomanip>
 
 namespace laplace::network {
+  namespace pro = engine::protocol;
+  namespace ids = pro::ids;
+
   using std::ostringstream, std::hex, std::setw, std::make_shared,
       engine::ptr_factory, engine::ptr_world, engine::ptr_solver,
-      engine::solver, engine::world, engine::seed_type;
+      engine::solver, engine::world, engine::seed_type,
+      engine::prime_impact;
 
   const bool      server::default_verbose                 = false;
   const uint64_t  server::default_tick_duration_msec      = 10;
@@ -194,6 +200,19 @@ namespace laplace::network {
 
   auto server::get_overtake_factor() const noexcept -> sl::whole {
     return m_overtake_factor;
+  }
+
+  void server::verb_queue(sl::index n, span_cbyte seq) {
+    if (m_verbose) {
+      const auto id = prime_impact::get_id(seq);
+
+      if (id >= 0 && id < ids::_native_count) {
+        verb(fmt(" :: queue %4d '%s (%d)'", (int) n,
+                 ids::table[id].data(), (int) id));
+      } else {
+        verb(fmt(" :: queue %4d '%d'", (int) n, (int) id));
+      }
+    }
   }
 
   void server::dump(span_cbyte bytes) {

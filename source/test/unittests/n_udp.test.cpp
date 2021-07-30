@@ -21,12 +21,12 @@ namespace laplace::test {
   namespace this_thread = std::this_thread;
 
   TEST(network, udp_message) {
-    constexpr size_t test_count     = 3;
-    constexpr size_t test_threshold = 1;
+    constexpr sl::index test_count     = 3;
+    constexpr sl::index test_threshold = 1;
 
-    size_t success = 0;
+    sl::index success = 0;
 
-    for (size_t i = 0; i < test_count; i++) {
+    for (sl::index i = 0; i < test_count; i++) {
       udp_node a;
       udp_node b(any_port);
 
@@ -48,12 +48,12 @@ namespace laplace::test {
   }
 
   TEST(network, udp_echo) {
-    constexpr size_t test_count     = 3;
-    constexpr size_t test_threshold = 1;
+    constexpr sl::index test_count     = 3;
+    constexpr sl::index test_threshold = 1;
 
-    size_t success = 0;
+    sl::index success = 0;
 
-    for (size_t i = 0; i < test_count; i++) {
+    for (sl::index i = 0; i < test_count; i++) {
       udp_node a;
       udp_node b(any_port);
 

@@ -56,19 +56,23 @@ namespace laplace::network {
     struct slot_info {
       std::string address = localhost;
       uint16_t    port    = any_port;
+      vbyte       token;
 
       sl::index id_actor     = engine::id_undefined;
       bool      is_connected = true;
       bool      is_encrypted = false;
+      bool      is_exclusive = false;
       bool      request_flag = true;
       uint64_t  outdate      = 0;
       uint64_t  wait         = 0;
 
-      std::vector<vbyte> in;
-      std::vector<vbyte> out;
+      sl::vector<vbyte> in;
+      sl::vector<vbyte> out;
 
       event_queue queue;
       transfer    tran;
+
+      std::unique_ptr<udp_node> node;
     };
 
     /*  Returns false if the event should be
@@ -94,7 +98,8 @@ namespace laplace::network {
     void set_max_slot_count(sl::whole count);
     void set_master(bool is_master);
 
-    [[nodiscard]] auto is_allowed(uint16_t command_id) const -> bool;
+    [[nodiscard]] auto is_allowed(sl::index slot,
+                                  uint16_t  command_id) const -> bool;
 
     [[nodiscard]] auto is_master() const -> bool;
 
@@ -121,6 +126,12 @@ namespace laplace::network {
     void process_buffers();
     void receive_chunks();
 
+    void receive_from(sl::index slot);
+    void process_chunk(sl::index slot, span_cbyte chunk);
+    void send_event_history_to(sl::index slot);
+
+    void inc_buffer_size();
+
     void add_event(sl::index slot, span_cbyte seq);
     void send_chunks();
     void disconnect(sl::index slot);
@@ -132,8 +143,7 @@ namespace laplace::network {
     [[nodiscard]] auto convert_delta(uint64_t delta_msec) -> uint64_t;
     [[nodiscard]] auto adjust_overtake(uint64_t time) -> uint64_t;
 
-    std::vector<slot_info> m_slots;
-
+    std::vector<slot_info>    m_slots;
     std::unique_ptr<udp_node> m_node;
 
   private:

@@ -12,27 +12,20 @@
 
 #include "host.h"
 
-#include "../engine/protocol/basic_event.h"
-#include "../engine/protocol/ids.h"
-#include "../engine/protocol/ping.h"
-#include "../engine/protocol/public_key.h"
-#include "../engine/protocol/request_events.h"
-#include "../engine/protocol/server_clock.h"
-#include "../engine/protocol/server_seed.h"
-#include "../engine/protocol/slot_create.h"
-#include "../engine/protocol/slot_remove.h"
+#include "../engine/protocol/all.h"
+#include "crypto/ecc_rabbit.h"
 
 namespace laplace::network {
   namespace access = engine::access;
-  namespace pro    = engine::protocol;
+  using namespace engine::protocol;
 
   using std::make_unique, engine::encode, engine::id_undefined,
-      engine::solver, engine::prime_impact, pro::client_enter,
-      pro::client_leave, pro::client_ready, pro::server_clock,
-      pro::server_seed, pro::server_init, pro::slot_create,
-      pro::slot_remove;
+      engine::solver, engine::prime_impact, crypto::ecc_rabbit;
 
   host::host() {
+    auto dev = std::random_device {};
+    m_rand.seed(dev());
+
     setup_world();
 
     set_max_slot_count(slot_count_unlimited);
@@ -52,8 +45,7 @@ namespace laplace::network {
     cleanup();
     set_connected(true);
 
-    m_node = make_unique<udp_node>();
-    m_node->bind(port);
+    m_node = make_unique<udp_node>(port);
 
     process_event(slot_host, encode<server_clock>(get_tick_duration()));
     process_event(slot_host, encode<server_seed>(m_seed));
@@ -64,7 +56,91 @@ namespace laplace::network {
 
   auto host::perform_control(sl::index slot, span_cbyte seq) -> bool {
 
-    if (client_enter::scan(seq) && slot != slot_host) {
+    if (session_request::scan(seq)) {
+      if (slot < 0 || slot >= m_slots.size()) {
+        error_("Invalid slot.", __FUNCTION__);
+        return true;
+      }
+
+      const auto cipher_id = session_request::get_cipher(seq);
+
+      m_slots[slot].token = generate_token();
+      m_slots[slot].node  = make_unique<udp_node>(any_port);
+
+      if (cipher_id == ids::cipher_ecc_rabbit) {
+        m_slots[slot].tran.setup_cipher<ecc_rabbit>();
+        m_slots[slot].tran.set_remote_key(session_request::get_key(seq));
+
+        send_event_to(slot, encode<session_response>(
+                                m_slots[slot].node->get_port(),
+                                m_slots[slot].tran.get_public_key()));
+      } else {
+        if (cipher_id != ids::cipher_plain) {
+          if (is_verbose()) {
+            verb(fmt("Network: Unknown cipher on slot %d.", (int) slot));
+          }
+        }
+
+        send_event_to(
+            slot, encode<session_response>(
+                      m_slots[slot].node->get_port(), span_cbyte {}));
+      }
+
+      return true;
+    }
+
+    if (session_token::scan(seq)) {
+      if (slot < 0 || slot >= m_slots.size()) {
+        error_("Invalid slot.", __FUNCTION__);
+        return true;
+      }
+
+      const auto token = session_token::get_token(seq);
+
+      if (token.empty()) {
+        return true;
+      }
+
+      for (sl::index i = 0; i < m_slots.size(); i++) {
+        auto &s = m_slots[i];
+
+        if (i == slot || s.token.empty() ||
+            s.token.size() != token.size()) {
+          continue;
+        }
+
+        bool equals = true;
+
+        for (sl::index k = 0; k < token.size(); k++)
+          if (s.token[k] != token[k]) {
+            equals = false;
+            break;
+          }
+
+        if (equals) {
+          if (m_slots[slot].id_actor != id_undefined) {
+            process_event(slot, encode<slot_remove>());
+          }
+
+          m_slots[slot].token    = s.token;
+          m_slots[slot].id_actor = s.id_actor;
+
+          s.id_actor     = id_undefined;
+          s.is_connected = false;
+
+          break;
+        }
+      }
+
+      return true;
+    }
+
+    if (client_enter::scan(seq)) {
+      if (slot < 0 || slot >= m_slots.size()) {
+        error_("Invalid slot.", __FUNCTION__);
+        return true;
+      }
+
       if (auto wor = get_world(); wor) {
         if (m_slots[slot].id_actor == id_undefined) {
           m_slots[slot].id_actor = get_world()->reserve(id_undefined);
@@ -77,7 +153,12 @@ namespace laplace::network {
       return true;
     }
 
-    if (client_leave::scan(seq) && slot != slot_host) {
+    if (client_leave::scan(seq)) {
+      if (slot < 0 || slot >= m_slots.size()) {
+        error_("Invalid slot.", __FUNCTION__);
+        return true;
+      }
+
       if (get_state() == server_state::prepare) {
         process_event(slot, encode<slot_remove>());
         m_slots[slot].id_actor = id_undefined;
@@ -87,7 +168,12 @@ namespace laplace::network {
       return true;
     }
 
-    if (client_ready::scan(seq) && slot != slot_host) {
+    if (client_ready::scan(seq)) {
+      if (slot < 0 || slot >= m_slots.size()) {
+        error_("Invalid slot.", __FUNCTION__);
+        return true;
+      }
+
       if (get_state() == server_state::prepare) {
         if (auto f = get_factory(); f) {
           auto ev = f->decode(seq);
@@ -95,18 +181,33 @@ namespace laplace::network {
           if (ev) {
             add_instant_event(prime_impact::get_id(seq), ev);
           } else {
-            verb("Network: Unable to decode command.");
+            if (is_verbose()) {
+              verb("Network: Unable to decode command.");
+            }
           }
         } else {
           error_("No factory.", __FUNCTION__);
         }
       } else {
-        verb("Network: Ignore ready command.");
+        if (is_verbose()) {
+          verb("Network: Ignore ready command.");
+        }
       }
 
       return true;
     }
 
     return udp_server::perform_control(slot, seq);
+  }
+
+  auto host::generate_token() -> vbyte {
+    auto v = vbyte(16);
+    auto d = std::uniform_int_distribution<int>(0, 255);
+
+    for (sl::index i = 0; i < v.size(); i++) {
+      v[i] = static_cast<uint8_t>(d(m_rand));
+    }
+
+    return v;
   }
 }

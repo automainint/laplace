@@ -35,30 +35,28 @@ namespace quadwar_app::action {
       return;
     }
 
-    auto u    = w.get_entity(m_id_unit);
-    auto r    = w.get_entity(w.get_root());
-    auto path = w.get_entity(root::get_pathmap(r));
+    constexpr auto scale = sets::scale_real / pathmap::resolution;
 
-    const auto sx = unit::scale_of_x(u) / pathmap::resolution;
-    const auto sy = unit::scale_of_y(u) / pathmap::resolution;
-    const auto sr = unit::scale_of_radius(u) / pathmap::resolution;
-
-    if (sx == 0 || sy == 0 || sr == 0) {
+    if constexpr (scale == 0) {
       error_("Invalid scale.", __FUNCTION__);
       return;
     }
 
-    const auto x0   = unit::get_x(u) / sx;
-    const auto y0   = unit::get_y(u) / sy;
-    const auto s    = unit::get_radius(u) / sr;
+    auto u    = w.get_entity(m_id_unit);
+    auto r    = w.get_entity(w.get_root());
+    auto path = w.get_entity(root::get_pathmap(r));
+
+    const auto x0   = unit::get_x(u) / scale;
+    const auto y0   = unit::get_y(u) / scale;
+    const auto s    = unit::get_radius(u) / scale;
     const auto side = s * 2 + 1;
 
     const auto footprint = sl::vector<int8_t>(side * side, 1);
 
-    auto p = pathmap::place(
-        path, { x0, y0 }, { side, side }, footprint);
+    auto p = pathmap::place(path, { x0, y0 }, { side, side },
+                            footprint);
 
-    unit::set_position(u, { p.x() * sx, p.y() * sy });
+    unit::set_position(u, { p.x() * scale, p.y() * scale });
 
     path.adjust();
     u.adjust();

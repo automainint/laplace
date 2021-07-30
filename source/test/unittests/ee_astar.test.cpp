@@ -50,7 +50,8 @@ namespace laplace::test {
                link { .node = node + width, .distance = 1 } };
     };
 
-    auto heuristic = [&](const size_t a, const size_t b) -> intval {
+    auto heuristic = [&](const sl::index a,
+                         const sl::index b) -> intval {
       const intval x0 = static_cast<intval>(a % width);
       const intval y0 = static_cast<intval>(a / width);
 
@@ -60,14 +61,15 @@ namespace laplace::test {
       return max(abs(x1 - x0), abs(y1 - y0));
     };
 
-    auto node_index = [&](const sl::index x, const sl::index y) -> sl::index {
+    auto node_index = [&](const sl::index x,
+                          const sl::index y) -> sl::index {
       return y * width + x;
     };
 
-    EXPECT_TRUE(exists(
-        neighbours, heuristic, node_index(1, 1), node_index(11, 8)));
-    EXPECT_FALSE(exists(
-        neighbours, heuristic, node_index(1, 8), node_index(18, 1)));
+    EXPECT_TRUE(exists(neighbours, heuristic, node_index(1, 1),
+                       node_index(11, 8)));
+    EXPECT_FALSE(exists(neighbours, heuristic, node_index(1, 8),
+                        node_index(18, 1)));
   }
 
   TEST(engine, eval_astar_search) {
@@ -101,7 +103,8 @@ namespace laplace::test {
                link { .node = node + width, .distance = 10 } };
     };
 
-    auto heuristic = [&](const sl::index a, const sl::index b) -> intval {
+    auto heuristic = [&](const sl::index a,
+                         const sl::index b) -> intval {
       const intval x0 = static_cast<intval>(a % width);
       const intval y0 = static_cast<intval>(a / width);
 
@@ -111,12 +114,13 @@ namespace laplace::test {
       return ((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)) * 10;
     };
 
-    auto node_index = [&](const sl::index x, const sl::index y) -> sl::index {
+    auto node_index = [&](const sl::index x,
+                          const sl::index y) -> sl::index {
       return y * width + x;
     };
 
-    auto path = search(
-        neighbours, heuristic, node_index(1, 8), node_index(8, 1));
+    auto path = search(neighbours, heuristic, node_index(1, 8),
+                       node_index(8, 1));
 
     std::array<uint8_t, size> path_map = map;
 
@@ -126,10 +130,10 @@ namespace laplace::test {
 
     s.append(1, '\n');
 
-    for (size_t j = 0; j < height; j++) {
+    for (sl::index j = 0; j < height; j++) {
       s.append(1, ' ');
 
-      for (size_t i = 0; i < width; i++) {
+      for (sl::index i = 0; i < width; i++) {
         const auto c = path_map[j * width + i];
 
         s.append(1, ' ');

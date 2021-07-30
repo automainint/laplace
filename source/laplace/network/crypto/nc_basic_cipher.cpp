@@ -10,11 +10,14 @@
  *  the MIT License for more details.
  */
 
-#include "../../core/string.h"
 #include "basic_cipher.h"
+
+#include "../../core/string.h"
 
 namespace laplace::network::crypto {
   using std::copy, std::string_view, std::string;
+
+  const bool basic_cipher::default_verbose = false;
 
   void basic_cipher::set_remote_key(span_cbyte key) {
     set_ready(setup_remote_key(key) && setup());
@@ -51,8 +54,8 @@ namespace laplace::network::crypto {
   void basic_cipher::verb_error(string_view sender,
                                 string_view message) const {
     if (m_is_verbose) {
-      verb(fmt(
-          "%s: %s", string(sender).c_str(), string(message).c_str()));
+      verb(fmt("%s: %s", string(sender).c_str(),
+               string(message).c_str()));
     }
   }
 

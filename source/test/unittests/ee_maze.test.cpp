@@ -35,9 +35,9 @@ namespace laplace::test {
 
     s.append(1, '\n');
 
-    for (size_t j = 0; j < height; j++) {
+    for (sl::index j = 0; j < height; j++) {
       s.append(1, ' ');
-      for (size_t i = 0; i < width; i++) {
+      for (sl::index i = 0; i < width; i++) {
         s.append(1, ' ');
         s.append(1, (map[j * width + i] == 0 ? ' ' : 'x'));
       }

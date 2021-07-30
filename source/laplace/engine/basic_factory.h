@@ -31,7 +31,7 @@ namespace laplace::engine {
     virtual auto decode(span_cbyte seq) const -> ptr_prime_impact;
 
     auto parse_multi(std::string_view commands) const
-        -> std::vector<vbyte>;
+        -> sl::vector<vbyte>;
     auto print_multi(std::span<const span_cbyte> seqs) const
         -> std::string;
 

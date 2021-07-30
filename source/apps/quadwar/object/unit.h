@@ -50,11 +50,6 @@ namespace quadwar_app::object {
     [[nodiscard]] static auto get_radius(entity en) -> engine::intval;
     [[nodiscard]] static auto get_health(entity en) -> engine::intval;
 
-    [[nodiscard]] static auto scale_of_x(entity en) -> engine::intval;
-    [[nodiscard]] static auto scale_of_y(entity en) -> engine::intval;
-    [[nodiscard]] static auto scale_of_radius(entity en)
-        -> engine::intval;
-
     [[nodiscard]] static auto get_position_scaled(entity en)
         -> view::vec2;
 

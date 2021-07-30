@@ -15,6 +15,9 @@
 namespace laplace::network::crypto {
   using std::span;
 
+  const sl::whole rabbit::key_size  = 24;
+  const sl::whole rabbit::key_extra = 16;
+
   auto rabbit::setup() -> bool {
     const auto key = get_mutual_key();
 
@@ -23,10 +26,8 @@ namespace laplace::network::crypto {
       return false;
     }
 
-    const auto status = wc_RabbitSetKey( //
-        &m_origin,                       //
-        key.data(),                      //
-        key.data() + key_extra);
+    const auto status = wc_RabbitSetKey(&m_origin, key.data(),
+                                        key.data() + key_extra);
 
     if (status != 0) {
       error_("wc_RabbitSetKey failed.", __FUNCTION__);

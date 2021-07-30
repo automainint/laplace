@@ -1,4 +1,4 @@
-/*  laplace/engine/protocol/public_key.h
+/*  laplace/engine/protocol/session_response.h
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -10,38 +10,38 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_protocol_public_key_h
-#define laplace_engine_protocol_public_key_h
+#ifndef laplace_engine_protocol_session_response_h
+#define laplace_engine_protocol_session_response_h
 
 #include "../prime_impact.h"
 
 namespace laplace::engine::protocol {
-  class public_key final : public prime_impact {
+  class session_response : public prime_impact {
   public:
-    enum encoding_offset : sl::index { n_cipher = 2, n_key = 4 };
+    enum encoding_offset : sl::index { n_port = 2, n_key = 4 };
 
     static constexpr sl::whole max_key_size = 1024;
-    static constexpr uint16_t  id           = ids::public_key;
+    static constexpr uint16_t  id           = ids::session_response;
 
     using key_type = std::array<uint8_t, max_key_size>;
 
-    ~public_key() final = default;
+    ~session_response() final = default;
 
-    constexpr public_key() {
+    constexpr session_response() {
       set_encoded_size(n_key);
     }
 
-    constexpr public_key(uint16_t cipher_id, span_cbyte key) {
-      m_cipher_id = cipher_id;
-      m_key_size  = std::min<sl::whole>(key.size(), max_key_size);
+    constexpr session_response(uint16_t port, span_cbyte key) {
+      m_port     = port;
+      m_key_size = std::min<sl::whole>(key.size(), max_key_size);
 
       set_encoded_size(n_key + m_key_size);
 
       std::copy(key.begin(), key.begin() + m_key_size, m_key.begin());
     }
 
-    static constexpr auto get_cipher(span_cbyte seq) {
-      return serial::rd<uint16_t>(seq, n_cipher);
+    static constexpr auto get_port(span_cbyte seq) {
+      return serial::rd<uint16_t>(seq, n_port);
     }
 
     static constexpr auto get_key(span_cbyte seq) -> span_cbyte {
@@ -54,7 +54,7 @@ namespace laplace::engine::protocol {
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
       serial::write_bytes(
-          bytes, id, m_cipher_id,
+          bytes, id, m_port,
           std::span<const uint8_t>(m_key.data(), m_key_size));
     }
 
@@ -63,13 +63,13 @@ namespace laplace::engine::protocol {
     }
 
     static inline auto decode(span_cbyte seq) {
-      return public_key { get_cipher(seq), get_key(seq) };
+      return session_response { get_port(seq), get_key(seq) };
     }
 
   private:
-    uint16_t  m_cipher_id = ids::cipher_plain;
-    sl::whole m_key_size  = 0;
-    key_type  m_key       = {};
+    uint16_t  m_port     = {};
+    sl::whole m_key_size = {};
+    key_type  m_key      = {};
   };
 }
 

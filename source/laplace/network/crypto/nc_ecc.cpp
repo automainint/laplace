@@ -10,11 +10,14 @@
  *  the MIT License for more details.
  */
 
-#include "../../core/string.h"
 #include "ecc.h"
 
+#include "../../core/string.h"
+
 namespace laplace::network::crypto {
-  ecc::ecc(const sl::index key_size) {
+  const sl::whole ecc::buffer_size = 0x1000;
+
+  ecc::ecc(const sl::whole key_size) {
     if (auto _n = wc_InitRng(&m_random); _n != 0) {
       error_(fmt("wc_InitRng failed (code: %d).", _n), __FUNCTION__);
       return;
@@ -32,13 +35,14 @@ namespace laplace::network::crypto {
 
 #ifdef ECC_TIMING_RESISTANT
     if (auto _n = wc_ecc_set_rng(&m_private, &m_random); _n != 0) {
-      error_(
-          fmt("wc_ecc_set_rng failed (code: %d).", _n), __FUNCTION__);
+      error_(fmt("wc_ecc_set_rng failed (code: %d).", _n),
+             __FUNCTION__);
       return;
     }
 #endif
 
-    if (auto _n = wc_ecc_make_key(&m_random, static_cast<int>(key_size), &m_private);
+    if (auto _n = wc_ecc_make_key(
+            &m_random, static_cast<int>(key_size), &m_private);
         _n != 0) {
       error_(fmt("wc_ecc_make_key failed (code: %d).", _n),
              __FUNCTION__);
@@ -87,8 +91,8 @@ namespace laplace::network::crypto {
     auto buf  = std::array<uint8_t, buffer_size> {};
     auto size = static_cast<uint32_t>(buffer_size);
 
-    if (auto _n = wc_ecc_shared_secret(
-            &m_private, &m_remote, buf.data(), &size);
+    if (auto _n = wc_ecc_shared_secret(&m_private, &m_remote,
+                                       buf.data(), &size);
         _n != 0) {
       error_(fmt("wc_ecc_shared_secret failed (code: %d).", _n),
              __FUNCTION__);

@@ -14,24 +14,13 @@
 
 #include "../core/parser.h"
 #include "../core/utils.h"
-#include "protocol/basic_event.h"
-#include "protocol/client_desync.h"
-#include "protocol/debug.h"
-#include "protocol/ids.h"
-#include "protocol/ping.h"
-#include "protocol/public_key.h"
-#include "protocol/request_events.h"
-#include "protocol/server_clock.h"
-#include "protocol/server_idle.h"
-#include "protocol/server_seed.h"
-#include "protocol/slot_create.h"
-#include "protocol/slot_remove.h"
+#include "protocol/all.h"
 
 namespace laplace::engine {
   using namespace protocol;
 
-  using std::string_view, std::string, std::vector, std::span,
-      std::u8string, core::parser;
+  using std::string_view, std::string, std::span, std::u8string,
+      core::parser;
 
   auto basic_factory::parse(string_view command) const -> vbyte {
     return parse_native({ ids::table, ids::_native_count }, command);
@@ -46,20 +35,22 @@ namespace laplace::engine {
   }
 
   auto basic_factory::parse_multi(std::string_view commands) const
-      -> vector<vbyte> {
-    constexpr size_t avg_command_size = 20;
+      -> sl::vector<vbyte> {
 
-    vector<vbyte> result;
-    size_t        index = 0;
+    constexpr sl::whole avg_command_size = 20;
+
+    auto result = sl::vector<vbyte> {};
+    auto n      = sl::index {};
 
     result.reserve(commands.size() / avg_command_size);
 
-    for (size_t i = 0; i < commands.size(); i++) {
+    for (sl::index i = 0; i < commands.size(); i++) {
       if (commands[i] == '\n') {
         result.emplace_back(
-            parse({ commands.data() + index, i - index }));
+            parse({ commands.data() + n,
+                    static_cast<string_view::size_type>(i - n) }));
 
-        index = i + 1;
+        n = i + 1;
       }
     }
 
@@ -68,7 +59,8 @@ namespace laplace::engine {
 
   auto basic_factory::print_multi(span<const span_cbyte> seqs) const
       -> string {
-    string cmds;
+
+    auto cmds = string {};
 
     for (auto &seq : seqs) {
       cmds.append(print(seq));
@@ -78,13 +70,12 @@ namespace laplace::engine {
     return cmds;
   }
 
-  auto basic_factory::parse_native(  //
-      span<const string_view> table, //
-      string_view             command) -> vbyte {
+  auto basic_factory::parse_native(span<const string_view> table,
+                                   string_view command) -> vbyte {
 
     auto in = parser::wrap(command);
 
-    u8string u8_id;
+    auto u8_id = u8string {};
 
     auto lin = in.get_line();
     auto col = in.get_column();
@@ -97,9 +88,9 @@ namespace laplace::engine {
     }
 
     uint16_t id   = ids::undefined;
-    string   s_id = to_string(u8_id);
+    auto     s_id = to_string(u8_id);
 
-    for (size_t i = 0; i < table.size(); i++) {
+    for (sl::index i = 0; i < table.size(); i++) {
       if (table[i] == s_id) {
         id = static_cast<uint16_t>(i);
         break;
@@ -112,10 +103,10 @@ namespace laplace::engine {
       return {};
     }
 
-    vbyte seq(2);
+    auto seq = vbyte(2);
     serial::wr<uint16_t>(seq, 0, id);
 
-    uint64_t x;
+    auto x = uint64_t {};
 
     lin = in.get_line();
     col = in.get_column();
@@ -142,12 +133,12 @@ namespace laplace::engine {
     return seq;
   }
 
-  auto basic_factory::print_native(  //
-      span<const string_view> table, //
-      span_cbyte              seq) -> string {
+  auto basic_factory::print_native(span<const string_view> table,
+                                   span_cbyte seq) -> string {
 
-    constexpr size_t max_id_size = 14;
-    string           s;
+    constexpr sl::whole max_id_size = 14;
+
+    auto s = string {};
     s.reserve(max_id_size + seq.size() * 3);
 
     if (seq.size() >= 2) {
@@ -156,7 +147,7 @@ namespace laplace::engine {
       if (id < table.size()) {
         s.append(table[id]);
 
-        for (size_t i = 2; i < seq.size(); i++) {
+        for (sl::index i = 2; i < seq.size(); i++) {
           s.append(fmt(" %02x", seq[i]));
         }
       }
@@ -168,12 +159,22 @@ namespace laplace::engine {
   auto basic_factory::decode_native(span_cbyte seq)
       -> ptr_prime_impact {
 
-    if (public_key::scan(seq))
-      return make<public_key>(seq);
-    if (client_desync::scan(seq))
-      return make<client_desync>(seq);
     if (request_events::scan(seq))
       return make<request_events>(seq);
+    if (request_token::scan(seq))
+      return make<request_token>(seq);
+    if (session_request::scan(seq))
+      return make<session_request>(seq);
+    if (session_response::scan(seq))
+      return make<session_response>(seq);
+    if (session_token::scan(seq))
+      return make<session_token>(seq);
+    if (ping_request::scan(seq))
+      return make<ping_request>(seq);
+    if (ping_response::scan(seq))
+      return make<ping_response>(seq);
+    if (client_desync::scan(seq))
+      return make<client_desync>(seq);
     if (server_idle::scan(seq))
       return make<server_idle>(seq);
     if (server_init::scan(seq))
@@ -190,10 +191,6 @@ namespace laplace::engine {
       return make<server_seed>(seq);
     if (server_quit::scan(seq))
       return make<server_quit>(seq);
-    if (ping_request::scan(seq))
-      return make<ping_request>(seq);
-    if (ping_response::scan(seq))
-      return make<ping_response>(seq);
     if (client_enter::scan(seq))
       return make<client_enter>(seq);
     if (client_leave::scan(seq))

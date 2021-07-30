@@ -31,12 +31,27 @@
 namespace quadwar_app {
   namespace access      = engine::access;
   namespace this_thread = std::this_thread;
+  namespace ids         = protocol::ids;
 
   using std::find, std::make_shared, std::string, std::string_view,
       std::u8string_view, std::ofstream, std::ifstream, network::host,
       network::remote, protocol::qw_player_name, object::root,
       object::landscape, object::player, engine::id_undefined,
       platform::ref_input, view::vec2, view::real;
+
+  const uint16_t session::allowed_commands[] = {
+    ids::session_request, ids::session_token, ids::request_token,
+    ids::request_events,  ids::ping_request,  ids::ping_response,
+    ids::client_enter,    ids::client_leave,  ids::client_ready,
+    ids::player_name,     ids::order_move
+  };
+
+  const char     session::host_info_file[]    = ".host";
+  const char     session::default_server_ip[] = "127.0.0.1";
+  const uint16_t session::default_port        = network::any_port;
+
+  const float session::sense_move  = 1.5f;
+  const float session::sense_scale = .0003f;
 
   session::session() {
     m_lobby.on_abort([this] {
@@ -81,18 +96,18 @@ namespace quadwar_app {
 
         update_lobby();
 
-      } else if (m_server->is_quit()) {
+      } else /*if (m_server->is_quit())*/ {
         if (m_on_done) {
           m_on_done();
         }
 
-      } else {
+      } /*else {
         verb("Session: Trying to reconnect...");
 
         m_server->reconnect();
 
         m_server->emit<qw_player_name>(m_player_name);
-      }
+      }*/
     }
   }
 
@@ -207,15 +222,6 @@ namespace quadwar_app {
                  port));
         return fmt("%s:%hu", network::localhost, port);
       }
-    } else if (auto f2 = ifstream(session::host_info_file_debug); f2) {
-      auto port = network::any_port;
-      f2 >> port;
-
-      if (f2) {
-        verb(fmt("Host address found: %s:%hu", network::localhost,
-                 port));
-        return fmt("%s:%hu", network::localhost, port);
-      }
     }
 
     return string(default_address);
@@ -223,7 +229,7 @@ namespace quadwar_app {
 
   void session::update_control(uint64_t delta_msec, ref_input in) {
     bool is_moved = false;
-    vec2 delta;
+    auto delta    = vec2 {};
 
     const auto fdelta = static_cast<real>(delta_msec);
 

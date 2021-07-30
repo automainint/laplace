@@ -22,9 +22,9 @@ namespace laplace::test {
   using crypto::ecc_rabbit, std::string, serial::wr;
 
   TEST(network, ecc_key_generation) {
-    constexpr size_t test_count = 1;
+    constexpr sl::index test_count = 1;
 
-    for (size_t i = 0; i < test_count; i++) {
+    for (sl::index i = 0; i < test_count; i++) {
       ecc_rabbit alice, bob;
 
       EXPECT_NE(alice.get_public_key().size(), 0u);
@@ -49,9 +49,9 @@ namespace laplace::test {
   }
 
   TEST(network, rabbit_encryption) {
-    constexpr size_t test_count = 1;
+    constexpr sl::index test_count = 1;
 
-    for (size_t i = 0; i < test_count; i++) {
+    for (sl::index i = 0; i < test_count; i++) {
       ecc_rabbit alice, bob;
 
       alice.set_remote_key(bob.get_public_key());
@@ -80,11 +80,11 @@ namespace laplace::test {
   }
 
   TEST(network, rabbit_packet_loss) {
-    constexpr size_t test_count = 1;
+    constexpr sl::index test_count = 1;
 
     std::random_device rdev;
 
-    for (size_t i = 0; i < test_count; i++) {
+    for (sl::index i = 0; i < test_count; i++) {
       ecc_rabbit alice, bob;
       alice.set_verbose(true);
       bob.set_verbose(true);
@@ -98,7 +98,7 @@ namespace laplace::test {
 
       vbyte baaad(128);
 
-      for (size_t k = 0; k < baaad.size(); k += 8)
+      for (sl::index k = 0; k < baaad.size(); k += 8)
         wr(baaad, k, static_cast<uint64_t>(rdev()));
 
       auto enc0 = alice.encrypt(msg0);
