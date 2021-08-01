@@ -27,15 +27,6 @@ set(WOLFSSL_EXAMPLES no)
 set(WOLFSSL_CRYPT_TESTS no)
 
 FetchContent_Declare(
-  bzip2
-  GIT_REPOSITORY https://gitlab.com/federicomenaquintero/bzip2.git
-)
-
-set(ENABLE_LIB_ONLY ON)
-set(ENABLE_SHARED_LIB OFF)
-set(ENABLE_STATIC_LIB ON)
-
-FetchContent_Declare(
   freetype
   GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
   GIT_TAG VER-2-10-4
@@ -48,5 +39,5 @@ set(CMAKE_DISABLE_FIND_PACKAGE_HarfBuzz ON)
 set(CMAKE_DISABLE_FIND_PACKAGE_BrotliDec ON)
 
 FetchContent_MakeAvailable(
-  googletest benchmark wolfssl bzip2 freetype
+  googletest benchmark wolfssl freetype
 )

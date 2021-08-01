@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.18)
 
 set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
+
+# Allow to set up the options for the dependencies.
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+
+# Allow to specify the MSVC runtime library for the dependencies.
 set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
 
 option(LAPLACE_ENABLE_EXE       "Enable building executable" ON)
@@ -54,7 +58,7 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
     ${LAPLACE_OBJ}
       PUBLIC
         ${LAPLACE_CONFIG}
-        gtest benchmark wolfssl bz2_static freetype
+        gtest benchmark wolfssl freetype
   )
 
   target_link_libraries(${QUADWAR_OBJ} PUBLIC ${LAPLACE_OBJ})

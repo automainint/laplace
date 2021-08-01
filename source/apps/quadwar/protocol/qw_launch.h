@@ -17,13 +17,12 @@
 #include "defs.h"
 
 namespace quadwar_app::protocol {
-  using qw_launch = event_handler< //
-      server_launch,               //
-      decltype([](world w) {
-        verb(" :: event  Quadwar/server_launch");
+  using qw_launch =
+      event_handler<server_launch, decltype([](world w) {
+                      verb(" :: event  Quadwar/server_launch");
 
-        object::root::launch(w.get_entity(w.get_root()));
-      })>;
+                      object::root::launch(w.get_entity(w.get_root()));
+                    })>;
 }
 
 #endif

@@ -96,18 +96,18 @@ namespace quadwar_app {
 
         update_lobby();
 
-      } else /*if (m_server->is_quit())*/ {
+      } else if (m_server->is_quit()) {
         if (m_on_done) {
           m_on_done();
         }
 
-      } /*else {
+      } else {
         verb("Session: Trying to reconnect...");
 
         m_server->reconnect();
 
         m_server->emit<qw_player_name>(m_player_name);
-      }*/
+      }
     }
   }
 

@@ -16,10 +16,8 @@ Official repository: [GitHub][laplace-link]
 - [OpenGL][opengl-link] for all the graphics;
 - [wolfSSL][wolfssl-link] for encryption algorithms (ECC/Rabbit);
 - [FreeType2][freetype-link] for font rendering;
-- [bzip2][bzip2-link] for the archivation;
 - [googletest][googletest-link] for the test suite;
-- [google/benchmark][benchmark-link] for benchmarks;
-- [Blender][blender-link] for content creating.
+- [google/benchmark][benchmark-link] for benchmarks.
 
 ##  How to build
 To build the project CMake 3.18, Git and Python 3 are required.
@@ -95,10 +93,8 @@ We have just started organizing the project. If you want to help, [contact me][c
 [opengl-link]:        https://www.khronos.org/registry/OpenGL/index_gl.php
 [wolfssl-link]:       https://github.com/wolfSSL/wolfssl
 [freetype-link]:      https://gitlab.freedesktop.org/freetype/freetype
-[bzip2-link]:         https://gitlab.com/federicomenaquintero/bzip2
 [googletest-link]:    https://github.com/google/googletest
 [benchmark-link]:     https://github.com/google/benchmark
-[blender-link]:       https://www.blender.org
 [clang-format-link]:  https://clang.llvm.org/docs/ClangFormat.html
 [guidelines-link]:    https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines
 
