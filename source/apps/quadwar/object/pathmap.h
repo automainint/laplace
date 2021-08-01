@@ -19,8 +19,8 @@
 namespace quadwar_app::object {
   class pathmap : public engine::basic_entity, helper {
   public:
-    static constexpr sl::whole resolution     = 2;
-    static constexpr sl::whole spawn_distance = 100;
+    static const sl::whole resolution;
+    static const sl::whole spawn_distance;
 
     pathmap();
     ~pathmap() override = default;
@@ -36,20 +36,18 @@ namespace quadwar_app::object {
     [[nodiscard]] static auto get_tiles(entity en)
         -> sl::vector<int8_t>;
 
-    [[nodiscard]] static auto check(
+    [[nodiscard]] static auto check_move(
         entity en, const engine::vec2z position,
-        const engine::vec2z           size,
+        const engine::vec2z new_position, const engine::vec2z size,
         const std::span<const int8_t> footprint) noexcept -> bool;
 
-    static void add(
-        entity en, const engine::vec2z position,
-        const engine::vec2z           size,
-        const std::span<const int8_t> footprint) noexcept;
+    static void add(entity en, const engine::vec2z position,
+                    const engine::vec2z           size,
+                    const std::span<const int8_t> footprint) noexcept;
 
-    static void subtract(
-        entity en, const engine::vec2z position,
-        const engine::vec2z           size,
-        const std::span<const int8_t> footprint) noexcept;
+    static void subtract(entity en, const engine::vec2z position,
+                         const engine::vec2z           size,
+                         const std::span<const int8_t> footprint) noexcept;
 
     [[nodiscard]] static auto place(
         entity en, const engine::vec2z position,

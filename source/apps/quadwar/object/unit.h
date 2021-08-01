@@ -20,8 +20,10 @@
 namespace quadwar_app::object {
   class unit : public engine::basic_entity, helper {
   public:
-    static constexpr engine::intval default_health = 100;
-    static constexpr engine::intval default_radius = 1;
+    static const engine::intval default_health;
+    static const engine::intval default_radius;
+    static const engine::intval default_collision_radius;
+    static const engine::intval default_movement_speed;
 
     unit();
     ~unit() override = default;
@@ -31,13 +33,7 @@ namespace quadwar_app::object {
     static auto spawn_start_units(world w, sl::whole unit_count)
         -> std::vector<sl::index>;
 
-    static void set_actor(entity en, sl::index id_actor);
-    static void set_color(entity en, sl::index color_index);
-    static void set_x(entity en, engine::intval x);
-    static void set_y(entity en, engine::intval y);
-    static void set_position(entity en, engine::vec2i p);
-    static void set_radius(entity en, engine::intval radius);
-    static void set_health(entity en, engine::intval health);
+    static void place_footprint(world w, sl::index id_unit);
 
     static void order_move(world w, sl::index id_actor,
                            sl::index id_unit, engine::vec2i target);
@@ -62,14 +58,18 @@ namespace quadwar_app::object {
   private:
     static unit m_proto;
 
+    static sl::index n_health;
+    static sl::index n_radius;
+    static sl::index n_collision_radius;
+    static sl::index n_movement_speed;
     static sl::index n_actor;
     static sl::index n_color;
     static sl::index n_x;
     static sl::index n_y;
     static sl::index n_move_x;
     static sl::index n_move_y;
-    static sl::index n_radius;
-    static sl::index n_health;
+    static sl::index n_waypoint_index;
+    static sl::index n_waypoint_count;
   };
 }
 

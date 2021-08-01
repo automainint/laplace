@@ -38,12 +38,16 @@ namespace quadwar_app::object::sets {
 
     unit_actor,
     unit_color,
+    unit_health,
+    unit_radius,
+    unit_collision_radius,
+    unit_movement_speed,
     unit_x,
     unit_y,
     unit_move_x,
     unit_move_y,
-    unit_radius,
-    unit_health,
+    unit_waypoint_index,
+    unit_waypoint_count,
 
     pathmap_width,
     pathmap_height,

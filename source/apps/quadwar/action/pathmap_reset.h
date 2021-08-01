@@ -20,13 +20,13 @@
 namespace quadwar_app::action {
   class pathmap_reset : public engine::sync_impact {
   public:
-    pathmap_reset(size_t id_pathmap);
+    pathmap_reset(sl::index id_pathmap);
     ~pathmap_reset() override = default;
 
     void perform(engine::access::world w) const override;
 
   private:
-    size_t m_id_pathmap = {};
+    sl::index m_id_pathmap = {};
   };
 }
 

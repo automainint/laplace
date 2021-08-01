@@ -21,7 +21,7 @@ namespace quadwar_app::action {
 
   using object::root, object::landscape, object::pathmap;
 
-  pathmap_reset::pathmap_reset(size_t id_pathmap) {
+  pathmap_reset::pathmap_reset(sl::index id_pathmap) {
     m_id_pathmap = id_pathmap;
   }
 

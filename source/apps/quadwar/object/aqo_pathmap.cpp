@@ -21,6 +21,9 @@ namespace quadwar_app::object {
   using std::make_shared, std::min, std::max, std::span, std::array,
       engine::id_undefined, engine::vec2z;
 
+  const sl::whole pathmap::resolution     = 2;
+  const sl::whole pathmap::spawn_distance = 100;
+
   sl::index pathmap::n_width  = {};
   sl::index pathmap::n_height = {};
 
@@ -90,8 +93,9 @@ namespace quadwar_app::object {
     return v;
   }
 
-  auto pathmap::check(entity en, const vec2z position, const vec2z size,
-                      const span<const int8_t> footprint) noexcept
+  auto pathmap::check_move(entity en, const vec2z position,
+                           const vec2z new_position, const vec2z size,
+                           const span<const int8_t> footprint) noexcept
       -> bool {
 
     if (size.x() <= 0 || size.y() <= 0) {
@@ -109,11 +113,14 @@ namespace quadwar_app::object {
 
     const auto fp_center = size / sl::index(2);
 
-    const auto x0 = position.x() - fp_center.x();
-    const auto y0 = position.y() - fp_center.y();
+    const auto x0 = new_position.x() - fp_center.x();
+    const auto y0 = new_position.y() - fp_center.y();
 
-    const auto x1 = position.x() + size.x() - fp_center.x();
-    const auto y1 = position.y() + size.y() - fp_center.y();
+    const auto x1 = new_position.x() + size.x() - fp_center.x();
+    const auto y1 = new_position.y() + size.y() - fp_center.y();
+
+    const auto dx = new_position.x() - position.x();
+    const auto dy = new_position.y() - position.y();
 
     if (x0 < 0 || y0 < 0 || x1 >= width || y1 >= height) {
       return false;
@@ -124,18 +131,26 @@ namespace quadwar_app::object {
     for (sl::index j = 0; j < size.y(); j++) {
       en.bytes_read((y0 + j) * width + x0, line);
 
-      for (sl::index i = 0; i < size.x(); i++)
+      for (sl::index i = 0; i < size.x(); i++) {
+        const auto i0 = i + dx;
+        const auto j0 = j + dy;
+
+        if (i0 >= 0 && i0 < size.x() && j0 >= 0 && j0 < size.y() &&
+            footprint[j0 * size.x() + i0] > 0) {
+          continue;
+        }
+
         if (footprint[j * size.x() + i] > 0 && line[i] > 0) {
           return false;
         }
+      }
     }
 
     return true;
   }
 
-  void pathmap::add(entity en, const engine::vec2z position,
-                    const engine::vec2z           size,
-                    const std::span<const int8_t> footprint) noexcept {
+  void pathmap::add(entity en, const vec2z position, const vec2z size,
+                    const span<const int8_t> footprint) noexcept {
 
     if (size.x() <= 0 || size.y() <= 0) {
       error_("Invalid size.", __FUNCTION__);
@@ -183,7 +198,7 @@ namespace quadwar_app::object {
       error_("Invalid footprint.", __FUNCTION__);
       return;
     }
-    
+
     const auto width  = en.get(n_width);
     const auto height = en.get(n_height);
 
