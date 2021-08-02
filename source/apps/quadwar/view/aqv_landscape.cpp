@@ -10,13 +10,17 @@
  *  the MIT License for more details.
  */
 
+#include "landscape.h"
+
 #include "../../../laplace/render/context.h"
 #include "../object/landscape.h"
+#include "../object/pathmap.h"
 #include "../object/root.h"
-#include "landscape.h"
 
 namespace quadwar_app::view {
   using std::span, graphics::flat::solid_shader;
+
+  const real landscape::tile_border = .2f;
 
   void landscape::render(const camera &cam, world w) {
     const auto r    = w.get_entity(w.get_root());
@@ -42,6 +46,8 @@ namespace quadwar_app::view {
       const auto tile_size   = cam.get_grid_scale();
       const auto border_size = tile_size * tile_border;
 
+      const auto bias = .5f / object::pathmap::resolution;
+
       m_vertices.reserve(12 * width * height);
       m_vertices.clear();
 
@@ -50,8 +56,8 @@ namespace quadwar_app::view {
 
           if (tiles[j * width + i] != object::landscape::tile_walkable) {
 
-            const auto x0 = static_cast<real>(i) * tile_size;
-            const auto y0 = static_cast<real>(j) * tile_size;
+            const auto x0 = (static_cast<real>(i) - bias) * tile_size;
+            const auto y0 = (static_cast<real>(j) - bias) * tile_size;
 
             const auto x1 = x0 + tile_size;
             const auto y1 = y0 + tile_size;

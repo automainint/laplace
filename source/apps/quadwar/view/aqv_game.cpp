@@ -10,11 +10,13 @@
  *  the MIT License for more details.
  */
 
+#include "game.h"
+
 #include "../../../laplace/engine/world.h"
 #include "../object/landscape.h"
+#include "../object/pathmap.h"
 #include "../object/root.h"
 #include "../object/sets.h"
-#include "game.h"
 #include <numeric>
 
 namespace quadwar_app::view {
@@ -132,10 +134,13 @@ namespace quadwar_app::view {
     const auto hx = min(dx / 2.f, fx / 2.f);
     const auto hy = min(dy / 2.f, fy / 2.f);
 
-    const auto x0 = hx;
-    const auto y0 = hy;
-    const auto x1 = dx - hx;
-    const auto y1 = dy - hy;
+    const auto bias = m_camera.get_grid_scale() * .5f /
+                      object::pathmap::resolution;
+
+    const auto x0 = hx - bias;
+    const auto y0 = hy - bias;
+    const auto x1 = dx - hx - bias;
+    const auto y1 = dy - hy - bias;
 
     m_camera.set_bounds({ x0, y0 }, { x1, y1 });
   }

@@ -15,6 +15,9 @@
 namespace quadwar_app::view {
   using std::min, std::max;
 
+  const real camera::default_grid_scale = 50.f;
+  const real camera::default_scale      = 1.f;
+
   void camera::set_grid_scale(const real scale) noexcept {
     m_grid_scale = scale;
   }
