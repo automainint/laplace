@@ -21,6 +21,7 @@ namespace quadwar_app::object {
   public:
     static const sl::whole resolution;
     static const sl::whole spawn_distance;
+    static const sl::whole search_scale;
 
     pathmap();
     ~pathmap() override = default;
@@ -49,11 +50,17 @@ namespace quadwar_app::object {
                          const engine::vec2z           size,
                          const std::span<const int8_t> footprint) noexcept;
 
-    [[nodiscard]] static auto place(
+    [[nodiscard]] static auto find_empty(
         entity en, const engine::vec2z position,
         const engine::vec2z           size,
         const std::span<const int8_t> footprint) noexcept
         -> engine::vec2z;
+
+    [[nodiscard]] static auto path_search(
+        entity en, const engine::vec2z origin,
+        const engine::vec2z target, const engine::vec2z fp_size,
+        const std::span<const int8_t> footprint) noexcept
+        -> sl::vector<engine::vec2z>;
 
   private:
     pathmap(proto_tag);

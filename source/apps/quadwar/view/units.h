@@ -20,15 +20,11 @@
 namespace quadwar_app::view {
   class units : engine::helper {
   public:
-    static constexpr auto colors = { vec4 { .1f, .6f, .1f, 1.f },
-                                     vec4 { .6f, .1f, .1f, 1.f },
-                                     vec4 { .1f, .1f, .6f, 1.f },
-                                     vec4 { .5f, .5f, .0f, 1.f } };
-
-    static constexpr auto highlight_color = vec4 { .9f, .9f, .9f, .8f };
-    static constexpr auto selection_color = vec4 { .7f, .7f, .7f, .8f };
-    static constexpr auto unit_scaling    = .9f;
-    static constexpr auto selection_delta = 8.f;
+    static const vec4 colors[];
+    static const vec4 highlight_color;
+    static const vec4 selection_color;
+    static const real unit_scaling;
+    static const real selection_delta;
 
     void render(const camera &cam, world w,
                 std::span<const sl::index> highlight,

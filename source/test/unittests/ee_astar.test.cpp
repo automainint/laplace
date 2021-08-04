@@ -17,7 +17,7 @@ namespace laplace::test {
   namespace astar = engine::eval::astar;
 
   using std::max, engine::intval, astar::vlink, astar::link,
-      astar::exists, astar::search;
+      astar::exists, astar::search, astar::search_theta;
 
   TEST(engine, eval_astar_exists) {
     constexpr auto width  = 20;
@@ -34,7 +34,7 @@ namespace laplace::test {
       1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, //
       1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, //
       1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, //
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1  //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
     };
 
     auto neighbours = [&](const sl::index node) -> vlink {
@@ -87,7 +87,7 @@ namespace laplace::test {
       1, 0, 0, 0, 0, 1, 0, 0, 0, 1, //
       1, 0, 0, 0, 0, 1, 0, 0, 0, 1, //
       1, 0, 0, 0, 0, 1, 0, 0, 0, 1, //
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     };
 
     auto neighbours = [&](const sl::index node) -> vlink {
@@ -155,5 +155,59 @@ namespace laplace::test {
     std::cerr << s;
 
     EXPECT_FALSE(path.empty());
+  }
+
+  TEST(engine, eval_astar_thera) {
+    constexpr auto width  = 6;
+    constexpr auto height = 3;
+    constexpr auto size   = width * height;
+
+    constexpr std::array<uint8_t, size> map = { 1, 1, 1, 1, 1, 1, //
+                                                1, 0, 0, 0, 0, 1, //
+                                                1, 1, 1, 1, 1, 1 };
+
+    auto neighbours = [&](const sl::index node) -> vlink {
+      if (node >= map.size())
+        return {};
+
+      if (map[node] == 1)
+        return {};
+
+      return { link { .node = node - 1, .distance = 10 },
+               link { .node = node + 1, .distance = 10 },
+               link { .node = node - width, .distance = 10 },
+               link { .node = node + width, .distance = 10 } };
+    };
+
+    auto heuristic = [&](const sl::index a,
+                         const sl::index b) -> intval {
+      const intval x0 = static_cast<intval>(a % width);
+      const intval y0 = static_cast<intval>(a / width);
+
+      const intval x1 = static_cast<intval>(b % width);
+      const intval y1 = static_cast<intval>(b / width);
+
+      return ((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)) * 10;
+    };
+
+    auto sight = [&](const sl::index a, const sl::index b) -> bool {
+      const auto x0 = a % width;
+      const auto y0 = a / width;
+
+      const auto x1 = b % width;
+      const auto y1 = b / width;
+
+      return x0 == x1 || y0 == y1;
+    };
+
+    auto node_index = [&](const sl::index x,
+                          const sl::index y) -> sl::index {
+      return y * width + x;
+    };
+
+    auto path = search_theta(neighbours, heuristic, sight,
+                             node_index(1, 1), node_index(4, 1));
+
+    EXPECT_EQ(path.size(), 2u);
   }
 }

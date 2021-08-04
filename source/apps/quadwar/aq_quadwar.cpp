@@ -21,12 +21,34 @@
 namespace quadwar_app {
   using std::make_shared, core::family, std::string, std::u8string_view;
 
-  auto quadwar::get_player_name() -> u8string_view {
-    auto dev  = std::random_device {};
-    auto dist = std::uniform_int_distribution<sl::index>(
-        0, default_player_names.size() - 1);
+  const char8_t *quadwar::default_player_names[] = {
+    u8"Alice",     u8"Bob",      u8"Foo",      u8"Bar",
+    u8"Newbye",    u8"Gosu",     u8"Decartes", u8"Socrates",
+    u8"Spinosa",   u8"Pluto",    u8"Monke",    u8"Deleuze",
+    u8"Sorceress", u8"Daemon",   u8"Warlock",  u8"Ranger",
+    u8"Priest",    u8"Doge",     u8"Glider",   u8"Skeleton",
+    u8"Peon",      u8"Baron",    u8"Warlord",  u8"Count",
+    u8"Point",     u8"Triangle", u8"Crown",    u8"Blade"
+  };
 
-    return default_player_names.begin()[dist(dev)];
+  const char *    quadwar::default_server_address = "127.0.0.1";
+  const char *    quadwar::default_game_name      = "Unknown";
+  const sl::whole quadwar::default_player_count   = 4u;
+  const sl::whole quadwar::default_unit_count     = 6u;
+  const sl::whole quadwar::default_map_size       = 64u;
+
+  const char8_t *quadwar::caption = u8"Quadwar";
+
+  auto quadwar::get_player_name() -> u8string_view {
+    constexpr auto count = sizeof default_player_names /
+                           sizeof *default_player_names;
+
+    static_assert(count > 0);
+
+    auto dev  = std::random_device {};
+    auto dist = std::uniform_int_distribution<sl::index>(0, count - 1);
+
+    return default_player_names[dist(dev)];
   }
 
   auto quadwar::get_config() -> family {

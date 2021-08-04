@@ -23,12 +23,13 @@ namespace quadwar_app::object {
   namespace access = engine::access;
   namespace eval   = engine::eval;
 
-  using std::vector, engine::intval, engine::vec2i,
-      engine::id_undefined, std::shared_ptr, std::make_shared;
+  using std::span, std::vector, engine::intval, engine::vec2i,
+      engine::vec2z, engine::id_undefined, std::shared_ptr,
+      std::make_shared;
 
   const engine::intval unit::default_health           = 100;
-  const engine::intval unit::default_radius           = 1000;
-  const engine::intval unit::default_collision_radius = 900;
+  const engine::intval unit::default_radius           = 1200;
+  const engine::intval unit::default_collision_radius = 600;
   const engine::intval unit::default_movement_speed   = 200;
 
   sl::index unit::n_health           = {};
@@ -130,16 +131,16 @@ namespace quadwar_app::object {
     auto r    = w.get_entity(w.get_root());
     auto path = w.get_entity(root::get_pathmap(r));
 
-    const auto s    = eval::div(get(n_collision_radius), scale, 1);
-    const auto size = s * 2 + 1;
+    const auto s = eval::div(get(n_collision_radius), scale, 1);
 
-    const auto footprint = sl::vector<int8_t>(size * size, 1);
+    const auto footprint = make_footprint(s);
 
     if (pathmap::check_move(path, { x0, y0 }, { x1, y1 },
-                            { size, size }, footprint)) {
+                            footprint.size, footprint.bytes)) {
 
-      pathmap::subtract(path, { x0, y0 }, { size, size }, footprint);
-      pathmap::add(path, { x1, y1 }, { size, size }, footprint);
+      pathmap::subtract(path, { x0, y0 }, footprint.size,
+                        footprint.bytes);
+      pathmap::add(path, { x1, y1 }, footprint.size, footprint.bytes);
 
       set(n_x, ox1);
       set(n_y, oy1);
@@ -236,23 +237,26 @@ namespace quadwar_app::object {
     auto u    = w.get_entity(id_unit);
     auto path = w.get_entity(root::get_pathmap(r));
 
-    const auto x0   = eval::div(u.get(n_x), scale, 1);
-    const auto y0   = eval::div(u.get(n_y), scale, 1);
-    const auto s    = eval::div(u.get(n_collision_radius), scale, 1);
-    const auto side = s * 2 + 1;
+    const auto x0    = as_index(eval::div(u.get(n_x), scale, 1));
+    const auto y0    = as_index(eval::div(u.get(n_y), scale, 1));
+    const auto r_max = as_index(eval::div(u.get(n_radius), scale, 1));
+    const auto r_min = as_index(
+        eval::div(u.get(n_collision_radius), scale, 1));
 
-    const auto footprint = sl::vector<int8_t>(side * side, 1);
+    const auto foot_max = make_footprint(r_max);
+    const auto foot_min = make_footprint(r_min);
 
-    auto p = pathmap::place(path, { x0, y0 }, { side, side },
-                            footprint);
+    auto p = pathmap::find_empty(path, { x0, y0 }, foot_max.size,
+                                 foot_max.bytes);
+    pathmap::add(path, p, foot_min.size, foot_min.bytes);
 
     u.set(n_x, p.x() * scale);
     u.set(n_y, p.y() * scale);
     u.set(n_move_x, p.x() * scale);
     u.set(n_move_y, p.y() * scale);
-    u.adjust();
 
     path.adjust();
+    u.adjust();
   }
 
   void unit::order_move(world w, sl::index id_actor,
@@ -264,8 +268,28 @@ namespace quadwar_app::object {
       return;
     }
 
-    u.set(n_move_x, target.x());
-    u.set(n_move_y, target.y());
+    auto r    = w.get_entity(w.get_root());
+    auto path = w.get_entity(root::get_pathmap(r));
+
+    const auto scale = sets::scale_real / pathmap::resolution;
+
+    const auto x0 = as_index(eval::div(u.get(n_x), scale, 1));
+    const auto y0 = as_index(eval::div(u.get(n_y), scale, 1));
+    const auto x1 = as_index(eval::div(target.x(), scale, 1));
+    const auto y1 = as_index(eval::div(target.y(), scale, 1));
+    const auto s  = as_index(eval::div(u.get(n_radius), scale, 1));
+
+    const auto foot = make_footprint(s);
+
+    const auto waypoints = pathmap::path_search(
+        path, { x0, y0 }, { x1, y1 }, foot.size, foot.bytes);
+
+    if (waypoints.size() < 2) {
+      return;
+    }
+
+    u.set(n_move_x, waypoints[1].x() * scale);
+    u.set(n_move_y, waypoints[1].y() * scale);
     u.adjust();
   }
 
@@ -304,5 +328,11 @@ namespace quadwar_app::object {
 
   auto unit::get_radius_scaled(entity en) -> view::real {
     return static_cast<view::real>(get_radius(en)) / sets::scale_real;
+  }
+
+  auto unit::make_footprint(sl::whole radius) -> footprint_data {
+    const auto size = 1 + radius * 2;
+
+    return { { size, size }, sl::vector<int8_t>(size * size, 1) };
   }
 }

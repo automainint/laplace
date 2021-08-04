@@ -20,6 +20,16 @@
 namespace quadwar_app::view {
   using object::root, object::unit, std::find, std::span;
 
+  const vec4 units::colors[] = { vec4 { .1f, .6f, .1f, 1.f },
+                                 vec4 { .6f, .1f, .1f, 1.f },
+                                 vec4 { .1f, .1f, .6f, 1.f },
+                                 vec4 { .5f, .5f, .0f, 1.f } };
+
+  const vec4 units::highlight_color = vec4 { .9f, .9f, .9f, .8f };
+  const vec4 units::selection_color = vec4 { .7f, .7f, .7f, .8f };
+  const real units::unit_scaling    = .7f;
+  const real units::selection_delta = 8.f;
+
   void units::render(const camera &cam, world w,
                      span<const sl::index> highlight,
                      span<const sl::index> selection) {
@@ -65,8 +75,7 @@ namespace quadwar_app::view {
 
   void units::update_buffer(span<const sl::index> highlight,
                             span<const sl::index> selection) {
-
-    static_assert(colors.size() > 0);
+    static_assert(sizeof colors > 0);
 
     auto add_rect = [](sl::vector<vertex> &v, sl::index n,
                        const vec2 min, const vec2 max,
@@ -115,8 +124,9 @@ namespace quadwar_app::view {
                  selection_color);
       }
 
-      const auto color_index = m_info[i].color_index % colors.size();
-      const auto color       = colors.begin()[color_index];
+      const auto color_index = m_info[i].color_index %
+                               (sizeof colors / sizeof *colors);
+      const auto color = colors[color_index];
 
       add_rect(m_units, i * 6, min, max, 0.f, color);
     }

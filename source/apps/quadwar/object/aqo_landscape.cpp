@@ -10,9 +10,10 @@
  *  the MIT License for more details.
  */
 
+#include "landscape.h"
+
 #include "../../../laplace/core/serial.h"
 #include "../../../laplace/engine/eval/maze.h"
-#include "landscape.h"
 #include "root.h"
 
 namespace quadwar_app::object {

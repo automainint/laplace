@@ -152,8 +152,9 @@ namespace laplace::engine::eval::grid {
   }
 
   auto neighbors4(const sl::index width, const intval scale,
-                  const span<const int8_t> map, const fn_available available,
-                  const sl::index p) -> vlink {
+                  const span<const int8_t> map,
+                  const fn_available available, const sl::index p)
+      -> vlink {
 
     if (p < 0 || p >= map.size())
       return {};
@@ -174,8 +175,9 @@ namespace laplace::engine::eval::grid {
   }
 
   auto neighbors8(const sl::index width, const intval scale,
-                  const span<const int8_t> map, const fn_available available,
-                  const sl::index p) -> vlink {
+                  const span<const int8_t> map,
+                  const fn_available available, const sl::index p)
+      -> vlink {
 
     if (p < 0 || p >= map.size())
       return {};
@@ -281,13 +283,14 @@ namespace laplace::engine::eval::grid {
       return p.y() * width + p.x();
     };
 
-    return astar::exists(
-        neighbors, heuristic, index_of(a), index_of(b));
+    return astar::exists(neighbors, heuristic, index_of(a),
+                         index_of(b));
   }
 
   auto path_search(const vec2z size, const intval scale,
-                   const span<const int8_t> map, const fn_available available,
-                   const vec2z a, const vec2z b) -> sl::vector<vec2z> {
+                   const span<const int8_t> map,
+                   const fn_available available, const vec2z a,
+                   const vec2z b) -> sl::vector<vec2z> {
 
     if (size.x() * size.y() > map.size()) {
       error_("Invalid map size.", __FUNCTION__);
@@ -298,9 +301,9 @@ namespace laplace::engine::eval::grid {
       return {};
     }
 
-    const auto heuristic = [width = size.x(), scale](
-                               const sl::index a,
-                               const sl::index b) -> intval {
+    const auto heuristic = [width = size.x(),
+                            scale](const sl::index a,
+                                   const sl::index b) -> intval {
       return euclidean(width, scale, a, b);
     };
 
@@ -313,11 +316,16 @@ namespace laplace::engine::eval::grid {
       return vec2z { n % width, n / width };
     };
 
-    const auto sight = [&size, &map, &available, &point_of](
-                           const sl::index a,
-                           const sl::index b) -> bool {
+    const auto sight = [&size, &map, &available,
+                        &point_of](const sl::index a,
+                                   const sl::index b) -> bool {
       return trace_line(
           size, point_of(a), point_of(b), [&](const vec2z p) {
+            if (p.x() < 0 || p.x() >= size.x() || p.y() < 0 ||
+                p.y() >= size.y()) {
+              return false;
+            }
+
             return available(map[p.y() * size.x() + p.x()]);
           });
     };
@@ -326,29 +334,13 @@ namespace laplace::engine::eval::grid {
       return p.y() * width + p.x();
     };
 
-    const auto v = astar::search_theta(
-        neighbors, heuristic, sight, index_of(a), index_of(b));
+    const auto v = astar::search_theta(neighbors, heuristic, sight,
+                                       index_of(a), index_of(b));
 
     auto path = sl::vector<vec2z> {};
+    path.reserve(v.size());
 
-    if (v.size() == 1) {
-      path.emplace_back(point_of(v[0]));
-
-    } else if (v.size() > 1) {
-      const auto draw_line = [&path, &size](
-                                 const vec2z a, const vec2z b) {
-        trace_line(size, a, b, [&path](const vec2z p) {
-          if (path.empty() || path.back() != p) {
-            path.emplace_back(p);
-          }
-          return true;
-        });
-      };
-
-      for (sl::index i = 1; i < v.size(); i++) {
-        draw_line(point_of(v[i - 1]), point_of(v[i]));
-      }
-    }
+    for (auto &p : v) { path.emplace_back(point_of(p)); }
 
     return path;
   }

@@ -13,7 +13,7 @@
 #include "astar.h"
 
 namespace laplace::engine::eval::astar {
-  using std::find_if, std::lower_bound, std::vector, std::span;
+  using std::find_if, std::lower_bound, std::span;
 
   static constexpr sl::index _invalid_index = -1;
 
@@ -58,7 +58,7 @@ namespace laplace::engine::eval::astar {
 
     const auto make_neighs = [&](const sl::index index) {
       const auto ns    = neighbors(index);
-      auto       nodes = vector<_node>(ns.size());
+      auto       nodes = sl::vector<_node>(ns.size());
 
       for (sl::index i = 0; i < ns.size(); i++) {
         nodes[i].index  = ns[i].node;
@@ -82,8 +82,8 @@ namespace laplace::engine::eval::astar {
     if (source == destination)
       return gen_path({}, 0, source, destination);
 
-    auto open   = vector<_node> {};
-    auto closed = vector<_node> {};
+    auto open   = sl::vector<_node> {};
+    auto closed = sl::vector<_node> {};
 
     open.emplace_back();
     open.back().index = source;
@@ -96,6 +96,10 @@ namespace laplace::engine::eval::astar {
 
       for (auto &n : neigs) {
         if (n.index == destination) {
+          if (q.parent != _invalid_index && sight(q.parent, n.index)) {
+            return gen_path(closed, q.parent, source, destination);
+          }
+
           closed.emplace_back(q);
           return gen_path(closed, n.parent, source, destination);
         }
@@ -103,8 +107,8 @@ namespace laplace::engine::eval::astar {
         n.add_g(q.g);
         n.f = n.g + heuristic(n.index, destination);
 
-        auto j = find_if(
-            closed.begin(), closed.end(), cmp_index(n.index));
+        auto j = find_if(closed.begin(), closed.end(),
+                         cmp_index(n.index));
 
         if (j != closed.end() && j->f < n.f) {
           continue;
@@ -120,15 +124,15 @@ namespace laplace::engine::eval::astar {
           open.erase(i);
         }
 
-        if (sight(q.parent, n.index)) {
+        if (q.parent != _invalid_index && sight(q.parent, n.index)) {
           n.g = heuristic(q.parent, n.index);
           n.add_g(q.get_parent_g());
           n.f      = n.g + heuristic(n.index, destination);
           n.parent = q.parent;
         }
 
-        open.emplace(
-            lower_bound(open.begin(), open.end(), n.f, cmp_f), n);
+        open.emplace(lower_bound(open.begin(), open.end(), n.f, cmp_f),
+                     n);
       }
 
       closed.emplace_back(q);
@@ -140,8 +144,8 @@ namespace laplace::engine::eval::astar {
   template <typename _node>
   auto _basic_path(span<const _node> closed, sl::index parent,
                    sl::index source, sl::index destination)
-      -> vector<sl::index> {
-    auto v = vector<sl::index> {};
+      -> sl::vector<sl::index> {
+    auto v = sl::vector<sl::index> {};
 
     if (source == destination) {
       v.emplace_back(destination);
@@ -182,8 +186,8 @@ namespace laplace::engine::eval::astar {
       return false;
     };
 
-    return _basic_search<_basic_node>(
-        gen_path, sight, neighbors, heuristic, source, destination);
+    return _basic_search<_basic_node>(gen_path, sight, neighbors,
+                                      heuristic, source, destination);
   }
 
   auto search(const fn_neighbors neighbors,

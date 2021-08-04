@@ -13,16 +13,19 @@
 #include "pathmap.h"
 
 #include "../../../laplace/core/serial.h"
+#include "../../../laplace/engine/eval/grid.h"
 #include "root.h"
 
 namespace quadwar_app::object {
   namespace access = engine::access;
+  namespace grid   = engine::eval::grid;
 
   using std::make_shared, std::min, std::max, std::span, std::array,
       engine::id_undefined, engine::vec2z;
 
   const sl::whole pathmap::resolution     = 2;
   const sl::whole pathmap::spawn_distance = 100;
+  const sl::whole pathmap::search_scale   = 10;
 
   sl::index pathmap::n_width  = {};
   sl::index pathmap::n_height = {};
@@ -222,8 +225,9 @@ namespace quadwar_app::object {
     }
   }
 
-  auto pathmap::place(entity en, const vec2z position, const vec2z size,
-                      const span<const int8_t> footprint) noexcept
+  auto pathmap::find_empty(entity en, const vec2z position,
+                           const vec2z              size,
+                           const span<const int8_t> footprint) noexcept
       -> vec2z {
 
     if (size.x() <= 0 || size.y() <= 0) {
@@ -272,25 +276,53 @@ namespace quadwar_app::object {
       return v;
     }();
 
-    const auto p = area.min +
-                   nearest(position - area.min, area_size, area_dst);
+    return area.min + nearest(position - area.min, area_size, area_dst);
+  }
 
-    const auto p0 = p - fp_center;
+  auto pathmap::path_search(entity en, const vec2z origin,
+                            const vec2z target, const vec2z size,
+                            const span<const int8_t> footprint) noexcept
+      -> sl::vector<vec2z> {
 
-    const auto i0 = -max<sl::index>(0, -p0.x());
-    const auto i1 = min(width, p0.x() + size.x()) - p0.x();
+    const auto map_size = vec2z { en.get(n_width), en.get(n_height) };
+    const auto center   = math::div<vec2z>(size, 2);
 
-    const auto j0 = -max<sl::index>(0, -p0.y());
-    const auto j1 = min(height, p0.y() + size.y()) - p0.y();
-
-    for (sl::index j = j0; j < j1; j++) {
-      const auto src = footprint.begin() + (j * size.x());
-
-      en.bytes_write_delta((p0.y() + j) * width + p0.x() + i0,
-                           { src + i0, src + i1 });
+    if (origin.x() - center.x() < 0 ||
+        origin.x() + center.x() >= map_size.x() ||
+        origin.y() - center.y() < 0 ||
+        origin.y() + center.y() >= map_size.y()) {
+      error_("Invalid origin.", __FUNCTION__);
+      return {};
     }
 
-    return p;
+    const auto src = [&]() {
+      auto v = sl::vector<int8_t>(en.bytes_get_size());
+      en.bytes_read(0, v);
+
+      for (sl::index j = 0, k = 0; j < size.y(); j++) {
+        const auto n = (origin.y() - center.y() + j) * map_size.x() +
+                       (origin.x() - center.x());
+
+        for (sl::index i = 0; i < size.x(); i++, k++) {
+          v[n + i] -= footprint[k];
+        }
+      }
+
+      return v;
+    }();
+
+    const auto dst = [&]() {
+      auto v = sl::vector<int8_t>(src.size(), 0);
+      convolve(center, size, footprint, map_size, src, v);
+      return v;
+    }();
+
+    return grid::path_search(
+        map_size, search_scale, dst,
+        [](const int8_t x) {
+          return x < 1;
+        },
+        origin, nearest(target, map_size, dst));
   }
 
   auto pathmap::adjust_rect(const vec2z min, const vec2z max,
@@ -377,7 +409,7 @@ namespace quadwar_app::object {
             if (i < 0 || i >= size.x() || j < 0 || j >= size.y())
               continue;
 
-            dst[j * size.x() + i] += x;
+            dst[j * size.x() + i] = 1;
           }
       }
   }

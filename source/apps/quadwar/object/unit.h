@@ -56,6 +56,14 @@ namespace quadwar_app::object {
     unit(proto_tag);
 
   private:
+    struct footprint_data {
+      engine::vec2z      size;
+      sl::vector<int8_t> bytes;
+    };
+
+    [[nodiscard]] static auto make_footprint(sl::whole radius)
+        -> footprint_data;
+
     static unit m_proto;
 
     static sl::index n_health;
