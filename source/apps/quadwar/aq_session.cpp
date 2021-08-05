@@ -50,8 +50,9 @@ namespace quadwar_app {
   const char     session::default_server_ip[] = "127.0.0.1";
   const uint16_t session::default_port        = network::any_port;
 
-  const float session::sense_move  = 1.5f;
-  const float session::sense_scale = .0003f;
+  const sl::whole session::thread_count = 4;
+  const float     session::sense_move   = 1.5f;
+  const float     session::sense_scale  = .0003f;
 
   session::session() {
     m_lobby.on_abort([this] {
@@ -171,6 +172,8 @@ namespace quadwar_app {
     m_server = server;
     m_world  = server->get_world();
 
+    m_world->set_thread_count(thread_count);
+
     server->set_verbose(true);
     server->set_allowed_commands(allowed_commands);
     server->make_factory<qw_factory>();
@@ -196,6 +199,8 @@ namespace quadwar_app {
 
     m_server = server;
     m_world  = server->get_world();
+
+    m_world->set_thread_count(thread_count);
 
     server->set_verbose(true);
     server->make_factory<qw_factory>();

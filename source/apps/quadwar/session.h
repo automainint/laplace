@@ -27,12 +27,13 @@ namespace quadwar_app {
     using event_done = std::function<void()>;
     using event_quit = std::function<void()>;
 
-    static const uint16_t allowed_commands[];
-    static const char     host_info_file[];
-    static const char     default_server_ip[];
-    static const uint16_t default_port;
-    static const float    sense_move;
-    static const float    sense_scale;
+    static const uint16_t  allowed_commands[];
+    static const char      host_info_file[];
+    static const char      default_server_ip[];
+    static const uint16_t  default_port;
+    static const sl::whole thread_count;
+    static const float     sense_move;
+    static const float     sense_scale;
 
     session();
     ~session();

@@ -20,6 +20,10 @@
 namespace quadwar_app::object {
   class unit : public engine::basic_entity, helper {
   public:
+    enum state : sl::index { s_stand, s_move, s_order_move };
+
+    static const sl::whole default_waypoint_count;
+
     static const engine::intval default_health;
     static const engine::intval default_radius;
     static const engine::intval default_collision_radius;
@@ -64,8 +68,13 @@ namespace quadwar_app::object {
     [[nodiscard]] static auto make_footprint(sl::whole radius)
         -> footprint_data;
 
+    void do_move(world w);
+    void do_order_move(world w);
+    void do_next_waypoint();
+
     static unit m_proto;
 
+    static sl::index n_state;
     static sl::index n_health;
     static sl::index n_radius;
     static sl::index n_collision_radius;
@@ -76,6 +85,9 @@ namespace quadwar_app::object {
     static sl::index n_y;
     static sl::index n_move_x;
     static sl::index n_move_y;
+    static sl::index n_speed_remains;
+    static sl::index n_target_x;
+    static sl::index n_target_y;
     static sl::index n_waypoint_index;
     static sl::index n_waypoint_count;
   };
