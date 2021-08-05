@@ -32,7 +32,7 @@ namespace laplace::network {
       engine::encode, crypto::ecc_rabbit;
 
   const sl::whole udp_server::default_chunk_size        = 2096;
-  const sl::whole udp_server::chunk_size_increment      = 128;
+  const sl::whole udp_server::chunk_size_increment      = 512;
   const sl::whole udp_server::chunk_size_limit          = 0x4000;
   const sl::whole udp_server::default_loss_compensation = 4;
   const uint16_t  udp_server::default_max_command_id    = 400;
@@ -113,6 +113,23 @@ namespace laplace::network {
     if (server_pause::scan(seq)) {
       set_state(server_state::pause);
       return !is_master();
+    }
+
+    if (server_reserve::scan(seq)) {
+      if (get_state() == server_state::prepare) {
+        if (auto w = get_world(); w) {
+          const auto count = server_reserve::get_value(seq);
+
+          for (sl::index n = 0; n < count; n++) { w->reserve(n); }
+        }
+
+      } else {
+        if (is_verbose()) {
+          verb("Network: Ignore reserve command.");
+        }
+      }
+
+      return true;
     }
 
     if (server_clock::scan(seq)) {
@@ -810,17 +827,7 @@ namespace laplace::network {
       }
 
       if (qu.events[n].empty()) {
-        if (is_verbose()) {
-          const auto id = prime_impact::get_id(seq);
-
-          if (id >= 0 && id < ids::_native_count) {
-            verb(fmt(" :: (slot %2zu) %4zu '%s (%hu)'", slot, index,
-                     ids::table[id].data(), id));
-
-          } else {
-            verb(fmt(" :: (slot %2zu) %4zu '%hu'", slot, index, id));
-          }
-        }
+        verb_slot(slot, index, seq);
 
         qu.events[n].assign(seq.begin(), seq.end());
         m_slots[slot].outdate = 0;
@@ -844,11 +851,13 @@ namespace laplace::network {
           add_event(slot, ev);
         } else {
           if (is_verbose()) {
-            if (id >= 0 && id < ids::_native_count) {
-              verb(fmt("Network: Command '%s (%hu)' not allowed.",
-                       ids::table[id].data(), id));
+            const auto s = engine::basic_factory::name_by_id_native(id);
+
+            if (s.empty()) {
+              verb(fmt("Network: Command '%d' not allowed.", (int) id));
             } else {
-              verb(fmt("Network: Command '%hu' not allowed.", id));
+              verb(fmt("Network: Command '%s (%d)' not allowed.",
+                       s.c_str(), (int) id));
             }
           }
         }

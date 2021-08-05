@@ -22,6 +22,9 @@ namespace laplace::engine {
    */
   class basic_factory {
   public:
+    using fn_name_by_id = std::function<std::string(uint16_t)>;
+    using fn_id_by_name = std::function<uint16_t(std::string_view)>;
+
     basic_factory()          = default;
     virtual ~basic_factory() = default;
 
@@ -35,11 +38,14 @@ namespace laplace::engine {
     auto print_multi(std::span<const span_cbyte> seqs) const
         -> std::string;
 
-    static auto parse_native(std::span<const std::string_view> table,
+    static auto id_by_name_native(std::string_view name) -> uint16_t;
+    static auto name_by_id_native(uint16_t id) -> std::string;
+
+    static auto parse_native(fn_id_by_name    id_by_name,
                              std::string_view command) -> vbyte;
 
-    static auto print_native(std::span<const std::string_view> table,
-                             span_cbyte seq) -> std::string;
+    static auto print_native(fn_name_by_id name_by_id, span_cbyte seq)
+        -> std::string;
 
     static auto decode_native(span_cbyte seq) -> ptr_prime_impact;
 

@@ -23,11 +23,11 @@ namespace laplace::engine {
       core::parser;
 
   auto basic_factory::parse(string_view command) const -> vbyte {
-    return parse_native({ ids::table, ids::_native_count }, command);
+    return parse_native(id_by_name_native, command);
   }
 
   auto basic_factory::print(span_cbyte seq) const -> string {
-    return print_native({ ids::table, ids::_native_count }, seq);
+    return print_native(name_by_id_native, seq);
   }
 
   auto basic_factory::decode(span_cbyte seq) const -> ptr_prime_impact {
@@ -70,8 +70,119 @@ namespace laplace::engine {
     return cmds;
   }
 
-  auto basic_factory::parse_native(span<const string_view> table,
-                                   string_view command) -> vbyte {
+  auto basic_factory::id_by_name_native(string_view name) -> uint16_t {
+    if (name == "request-events")
+      return ids::request_events;
+    if (name == "request-token")
+      return ids::request_token;
+    if (name == "session-request")
+      return ids::session_request;
+    if (name == "session-response")
+      return ids::session_response;
+    if (name == "session-token")
+      return ids::session_token;
+    if (name == "ping-request")
+      return ids::ping_request;
+    if (name == "ping-response")
+      return ids::ping_response;
+    if (name == "client-desync")
+      return ids::client_desync;
+    if (name == "server-idle")
+      return ids::server_idle;
+    if (name == "server-init")
+      return ids::server_init;
+    if (name == "server-loading")
+      return ids::server_loading;
+    if (name == "server-launch")
+      return ids::server_launch;
+    if (name == "server-action")
+      return ids::server_action;
+    if (name == "server-pause")
+      return ids::server_pause;
+    if (name == "server-reserve")
+      return ids::server_reserve;
+    if (name == "server-clock")
+      return ids::server_clock;
+    if (name == "server-seed")
+      return ids::server_seed;
+    if (name == "server-quit")
+      return ids::server_quit;
+    if (name == "client-enter")
+      return ids::client_enter;
+    if (name == "client-leave")
+      return ids::client_leave;
+    if (name == "client-ready")
+      return ids::client_ready;
+    if (name == "debug")
+      return ids::debug;
+    if (name == "slot-create")
+      return ids::slot_create;
+    if (name == "slot-remove")
+      return ids::slot_remove;
+
+    return ids::undefined;
+  }
+
+  auto basic_factory::name_by_id_native(uint16_t id) -> string {
+    if (id == ids::request_events)
+      return string("request-events");
+    if (id == ids::request_token)
+      return string("request-token");
+    if (id == ids::session_request)
+      return string("session-request");
+    if (id == ids::session_response)
+      return string("session-response");
+    if (id == ids::session_token)
+      return string("session-token");
+    if (id == ids::ping_request)
+      return string("ping-request");
+    if (id == ids::ping_response)
+      return string("ping-response");
+    if (id == ids::client_desync)
+      return string("client-desync");
+    if (id == ids::server_idle)
+      return string("server-idle");
+    if (id == ids::server_init)
+      return string("server-init");
+    if (id == ids::server_loading)
+      return string("server-loading");
+    if (id == ids::server_launch)
+      return string("server-launch");
+    if (id == ids::server_action)
+      return string("server-action");
+    if (id == ids::server_pause)
+      return string("server-pause");
+    if (id == ids::server_reserve)
+      return string("server-reserve");
+    if (id == ids::server_clock)
+      return string("server-clock");
+    if (id == ids::server_seed)
+      return string("server-seed");
+    if (id == ids::server_quit)
+      return string("server-quit");
+    if (id == ids::client_enter)
+      return string("client-enter");
+    if (id == ids::client_leave)
+      return string("client-leave");
+    if (id == ids::client_ready)
+      return string("client-ready");
+    if (id == ids::debug)
+      return string("debug");
+    if (id == ids::slot_create)
+      return string("slot-create");
+    if (id == ids::slot_remove)
+      return string("slot-remove");
+
+    return {};
+  }
+
+  auto basic_factory::parse_native(fn_id_by_name id_by_name,
+                                   string_view   command) -> vbyte {
+
+    if (!id_by_name) {
+      error_("No id-by-name function.", __FUNCTION__);
+      return {};
+    }
 
     auto in = parser::wrap(command);
 
@@ -87,15 +198,7 @@ namespace laplace::engine {
       return {};
     }
 
-    uint16_t id   = ids::undefined;
-    auto     s_id = to_string(u8_id);
-
-    for (sl::index i = 0; i < table.size(); i++) {
-      if (table[i] == s_id) {
-        id = static_cast<uint16_t>(i);
-        break;
-      }
-    }
+    const auto id = id_by_name(to_string(u8_id));
 
     if (id == ids::undefined) {
       error_(fmt("Unknown command (line %dz, col %dz).", lin, col),
@@ -133,24 +236,34 @@ namespace laplace::engine {
     return seq;
   }
 
-  auto basic_factory::print_native(span<const string_view> table,
-                                   span_cbyte seq) -> string {
+  auto basic_factory::print_native(fn_name_by_id name_by_id,
+                                   span_cbyte    seq) -> string {
+
+    if (!name_by_id) {
+      error_("No name-by-id function.", __FUNCTION__);
+      return {};
+    }
 
     constexpr sl::whole max_id_size = 14;
 
     auto s = string {};
     s.reserve(max_id_size + seq.size() * 3);
 
-    if (seq.size() >= 2) {
-      auto id = prime_impact::get_id_unsafe(seq);
+    if (seq.size() < 2) {
+      return {};
+    }
 
-      if (id < table.size()) {
-        s.append(table[id]);
+    const auto id = prime_impact::get_id(seq);
 
-        for (sl::index i = 2; i < seq.size(); i++) {
-          s.append(fmt(" %02x", seq[i]));
-        }
-      }
+    s = name_by_id(id);
+
+    if (s.empty()) {
+      error_("Invalid id.", __FUNCTION__);
+      return {};
+    }
+
+    for (sl::index i = 2; i < seq.size(); i++) {
+      s.append(fmt(" %02x", seq[i]));
     }
 
     return s;

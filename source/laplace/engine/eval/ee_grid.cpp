@@ -15,7 +15,7 @@
 #include "integral.h"
 
 namespace laplace::engine::eval::grid {
-  using std::span, std::min, std::function, astar::vlink;
+  using std::span, std::min, std::function, astar::vlink, astar::link;
 
   void merge(const vec2z size, const span<int8_t> dst,
              const span<const int8_t> src, const op merge_op) noexcept {
@@ -168,10 +168,20 @@ namespace laplace::engine::eval::grid {
     if (!available(map[p]))
       return {};
 
-    return { { .node = p - width, .distance = scale },
-             { .node = p + width, .distance = scale },
-             { .node = p - 1, .distance = scale },
-             { .node = p + 1, .distance = scale } };
+    auto v = vlink {};
+    v.reserve(4);
+
+    auto add = [&](sl::index n) {
+      if (n >= 0 && n < map.size() && available(map[n]))
+        v.emplace_back(link { .node = n, .distance = scale });
+    };
+
+    add(p - width);
+    add(p + width);
+    add(p - 1);
+    add(p + 1);
+
+    return v;
   }
 
   auto neighbors8(const sl::index width, const intval scale,
@@ -193,14 +203,24 @@ namespace laplace::engine::eval::grid {
 
     const auto d = scale > 1 ? eval::sqrt2(scale) : 1;
 
-    return { { .node = p - width, .distance = scale },
-             { .node = p + width, .distance = scale },
-             { .node = p - 1, .distance = scale },
-             { .node = p + 1, .distance = scale },
-             { .node = p - width - 1, .distance = d },
-             { .node = p - width + 1, .distance = d },
-             { .node = p + width - 1, .distance = d },
-             { .node = p + width + 1, .distance = d } };
+    auto v = vlink {};
+    v.reserve(8);
+
+    auto add = [&](sl::index n, intval d) {
+      if (n >= 0 && n < map.size() && available(map[n]))
+        v.emplace_back(link { .node = n, .distance = d });
+    };
+
+    add(p - width, scale);
+    add(p + width, scale);
+    add(p - 1, scale);
+    add(p + 1, scale);
+    add(p - width - 1, d);
+    add(p - width + 1, d);
+    add(p + width - 1, d);
+    add(p + width + 1, d);
+
+    return v;
   }
 
   auto manhattan(const sl::index width, const intval scale,

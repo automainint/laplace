@@ -99,6 +99,7 @@ namespace laplace::network {
         -> sl::whole;
 
     void verb_queue(sl::index n, span_cbyte seq);
+    void verb_slot(sl::index slot, sl::index n, span_cbyte seq);
     void dump(span_cbyte bytes);
 
   private:

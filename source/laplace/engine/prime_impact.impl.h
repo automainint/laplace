@@ -15,27 +15,29 @@
 
 namespace laplace::engine {
   inline auto prime_impact::encode() const -> vbyte {
-    vbyte seq(get_encoded_size());
+    auto seq = vbyte(get_encoded_size());
     encode_to(seq);
     return seq;
   }
 
-  inline void prime_impact::encode_to(std::span<uint8_t>) const { }
+  inline void prime_impact::encode_to(span_byte) const { }
 
   constexpr auto prime_impact::get_encoded_size() const -> sl::whole {
     return this->m_encoded_size;
   }
 
   constexpr void prime_impact::set_index(span_byte seq, sl::index n) {
-    using namespace protocol;
-
-    if (get_id(seq) >= ids::_unindexed_count)
+    if (!is_unindexed_id(get_id(seq)))
       serial::wr<uint64_t>(seq, n_index, n);
   }
 
-  constexpr auto prime_impact::get_id_unsafe(span_cbyte seq)
-      -> uint16_t {
-    return serial::rd<uint16_t>(seq, n_id);
+  constexpr auto prime_impact::is_unindexed(span_cbyte seq) -> bool {
+    return is_unindexed_id(get_id(seq));
+  }
+
+  constexpr auto prime_impact::is_control(span_cbyte seq) -> bool {
+    const auto id = get_id(seq);
+    return is_unindexed_id(id) || is_control_id(id);
   }
 
   constexpr auto prime_impact::get_index_unsafe(span_cbyte seq)
@@ -54,18 +56,11 @@ namespace laplace::engine {
   }
 
   constexpr auto prime_impact::get_id(span_cbyte seq) -> uint16_t {
-    using namespace protocol;
-
-    if (seq.size() >= sizeof(uint16_t))
-      return get_id_unsafe(seq);
-
-    return ids::undefined;
+    return serial::rd<uint16_t>(seq, n_id, protocol::ids::undefined);
   }
 
   constexpr auto prime_impact::get_index(span_cbyte seq) -> sl::index {
-    using namespace protocol;
-
-    if (get_id(seq) < ids::_unindexed_count) {
+    if (is_unindexed_id(get_id(seq))) {
       return id_undefined;
     }
 
@@ -73,9 +68,7 @@ namespace laplace::engine {
   }
 
   constexpr auto prime_impact::get_time(span_cbyte seq) -> uint64_t {
-    using namespace protocol;
-
-    if (get_id(seq) < ids::_control_count) {
+    if (is_control_id(get_id(seq))) {
       return time_undefined;
     }
 
@@ -83,9 +76,7 @@ namespace laplace::engine {
   }
 
   constexpr auto prime_impact::get_actor(span_cbyte seq) -> sl::index {
-    using namespace protocol;
-
-    if (get_id(seq) < ids::_control_count) {
+    if (is_control_id(get_id(seq))) {
       return id_undefined;
     }
 
@@ -131,6 +122,27 @@ namespace laplace::engine {
 
   constexpr void prime_impact::set_encoded_size(sl::whole size) {
     this->m_encoded_size = size;
+  }
+
+  constexpr auto prime_impact::is_unindexed_id(sl::index id) -> bool {
+    using namespace protocol;
+
+    return id == ids::request_events || id == ids::request_token ||
+           id == ids::session_request ||
+           id == ids::session_response || id == ids::session_token ||
+           id == ids::ping_request || id == ids::ping_response ||
+           id == ids::client_desync || id == ids::server_idle;
+  }
+
+  constexpr auto prime_impact::is_control_id(sl::index id) -> bool {
+    using namespace protocol;
+
+    return id == ids::server_init || id == ids::server_loading ||
+           id == ids::server_launch || id == ids::server_action ||
+           id == ids::server_pause || id == ids::server_reserve ||
+           id == ids::server_clock || id == ids::server_seed ||
+           id == ids::server_quit || id == ids::client_enter ||
+           id == ids::client_leave || id == ids::client_ready;
   }
 
   constexpr sync_prime_impact::sync_prime_impact() {

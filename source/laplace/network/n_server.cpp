@@ -13,7 +13,7 @@
 #include "server.h"
 
 #include "../core/utils.h"
-#include "../engine/prime_impact.h"
+#include "../engine/basic_factory.h"
 #include "../engine/protocol/ids.h"
 #include <iomanip>
 
@@ -24,13 +24,13 @@ namespace laplace::network {
   using std::ostringstream, std::hex, std::setw, std::make_shared,
       engine::ptr_factory, engine::ptr_world, engine::ptr_solver,
       engine::solver, engine::world, engine::seed_type,
-      engine::prime_impact;
+      engine::basic_factory, engine::prime_impact;
 
   const bool      server::default_verbose                 = false;
   const uint64_t  server::default_tick_duration_msec      = 10;
   const uint64_t  server::default_update_timeout_msec     = 10;
   const uint64_t  server::default_ping_timeout_msec       = 100;
-  const uint64_t  server::default_connection_timeout_msec = 5000;
+  const uint64_t  server::default_connection_timeout_msec = 20000;
   const sl::whole server::default_overtake_factor         = 3;
 
   server::~server() {
@@ -204,13 +204,29 @@ namespace laplace::network {
 
   void server::verb_queue(sl::index n, span_cbyte seq) {
     if (m_verbose) {
-      const auto id = prime_impact::get_id(seq);
+      const auto id   = prime_impact::get_id(seq);
+      const auto name = basic_factory::name_by_id_native(id);
 
-      if (id >= 0 && id < ids::_native_count) {
-        verb(fmt(" :: queue %4d '%s (%d)'", (int) n,
-                 ids::table[id].data(), (int) id));
+      if (!name.empty()) {
+        verb(fmt(" :: queue %4d '%s (%d)'", (int) n, name.c_str(),
+                 (int) id));
       } else {
         verb(fmt(" :: queue %4d '%d'", (int) n, (int) id));
+      }
+    }
+  }
+
+  void server::verb_slot(sl::index slot, sl::index n, span_cbyte seq) {
+    if (m_verbose) {
+      const auto id   = prime_impact::get_id(seq);
+      const auto name = basic_factory::name_by_id_native(id);
+
+      if (!name.empty()) {
+        verb(fmt(" :: (slot %2d) %4d '%s (%d)'", (int) slot, (int) n,
+                 name.c_str(), (int) id));
+      } else {
+        verb(fmt(" :: (slot %2d) %4d '%d'", (int) slot, (int) n,
+                 (int) id));
       }
     }
   }

@@ -200,53 +200,51 @@ namespace laplace::engine {
   }
 
   void world::schedule(uint64_t delta) {
-    if (m_scheduler) {
-      if (m_scheduler->get_thread_count() <= 0) {
-        auto _ul = unique_lock(m_lock);
+    if (get_thread_count() <= 0) {
+      auto _ul = unique_lock(m_lock);
 
-        for (uint64_t t = 0; t < delta; t++) {
-          while (!m_sync_queue.empty() || !m_queue.empty()) {
-            for (sl::index i = 0; i < m_sync_queue.size(); i++) {
-              _ul.unlock();
-
-              m_sync_queue[i]->perform({ *this, access::sync });
-
-              _ul.lock();
-            }
-
-            m_sync_queue.clear();
-
-            for (sl::index i = 0; i < m_queue.size(); i++) {
-              _ul.unlock();
-
-              m_queue[i]->perform({ *this, access::async });
-
-              _ul.lock();
-            }
-
-            m_queue.clear();
-          }
-
-          for (sl::index i = 0; i < m_dynamic_ids.size(); i++) {
+      for (uint64_t t = 0; t < delta; t++) {
+        while (!m_sync_queue.empty() || !m_queue.empty()) {
+          for (sl::index i = 0; i < m_sync_queue.size(); i++) {
             _ul.unlock();
 
-            auto &en = m_entities[m_dynamic_ids[i]];
-
-            if (en->clock())
-              en->tick({ *this, access::async });
+            m_sync_queue[i]->perform({ *this, access::sync });
 
             _ul.lock();
           }
 
-          for (auto &e : m_entities) {
-            if (e)
-              e->adjust();
+          m_sync_queue.clear();
+
+          for (sl::index i = 0; i < m_queue.size(); i++) {
+            _ul.unlock();
+
+            m_queue[i]->perform({ *this, access::async });
+
+            _ul.lock();
           }
+
+          m_queue.clear();
         }
 
-      } else {
-        m_scheduler->schedule(delta);
+        for (sl::index i = 0; i < m_dynamic_ids.size(); i++) {
+          _ul.unlock();
+
+          auto &en = m_entities[m_dynamic_ids[i]];
+
+          if (en->clock())
+            en->tick({ *this, access::async });
+
+          _ul.lock();
+        }
+
+        for (auto &e : m_entities) {
+          if (e)
+            e->adjust();
+        }
       }
+
+    } else {
+      m_scheduler->schedule(delta);
     }
   }
 

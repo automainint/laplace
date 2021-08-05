@@ -51,14 +51,17 @@ namespace laplace::engine {
      *  TODO
      *  Make it constexpr.
      */
-    virtual void encode_to(std::span<uint8_t> bytes) const;
+    virtual void encode_to(span_byte bytes) const;
 
     [[nodiscard]] constexpr auto get_encoded_size() const -> sl::whole;
 
     static constexpr void set_index(span_byte seq, sl::index n);
 
-    [[nodiscard]] static constexpr auto get_id_unsafe(span_cbyte seq)
-        -> uint16_t;
+    [[nodiscard]] static constexpr auto is_unindexed(span_cbyte seq)
+        -> bool;
+    [[nodiscard]] static constexpr auto is_control(span_cbyte seq)
+        -> bool;
+
     [[nodiscard]] static constexpr auto get_index_unsafe(span_cbyte seq)
         -> sl::index;
     [[nodiscard]] static constexpr auto get_time_unsafe(span_cbyte seq)
@@ -92,6 +95,11 @@ namespace laplace::engine {
     constexpr void set_encoded_size(sl::whole size);
 
   private:
+    [[nodiscard]] static constexpr auto is_unindexed_id(sl::index id)
+        -> bool;
+    [[nodiscard]] static constexpr auto is_control_id(sl::index id)
+        -> bool;
+
     sl::whole m_encoded_size = 0;
   };
 

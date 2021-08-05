@@ -49,7 +49,8 @@ namespace laplace::engine::eval::astar {
     }
   };
 
-  template <typename _node, typename fn_path, typename fn_sight>
+  template <bool calculate_nearest, typename _node, typename fn_path,
+            typename fn_sight>
   auto _basic_search(const fn_path gen_path, const fn_sight sight,
                      const fn_neighbors neighbors,
                      const fn_heuristic heuristic,
@@ -81,6 +82,10 @@ namespace laplace::engine::eval::astar {
 
     if (source == destination)
       return gen_path({}, 0, source, destination);
+
+    auto nearest          = source;
+    auto nearest_parent   = _invalid_index;
+    auto nearest_distance = intval {};
 
     auto open   = sl::vector<_node> {};
     auto closed = sl::vector<_node> {};
@@ -135,7 +140,27 @@ namespace laplace::engine::eval::astar {
                      n);
       }
 
+      if (calculate_nearest) {
+        if (nearest == source) {
+          nearest          = q.index;
+          nearest_distance = heuristic(nearest, destination);
+
+        } else {
+          const auto distance = heuristic(q.index, destination);
+
+          if (distance < nearest_distance) {
+            nearest          = q.index;
+            nearest_parent   = q.parent;
+            nearest_distance = distance;
+          }
+        }
+      }
+
       closed.emplace_back(q);
+    }
+
+    if (calculate_nearest) {
+      return gen_path(closed, nearest_parent, source, nearest);
     }
 
     return decltype(gen_path({}, 0, 0, 0)) {};
@@ -176,18 +201,18 @@ namespace laplace::engine::eval::astar {
               const fn_heuristic heuristic, const sl::index source,
               const sl::index destination) -> bool {
 
-    const auto gen_path = [](span<const _basic_node> closed,
-                             sl::index parent, sl::index source,
-                             sl::index destination) -> bool {
-      return true;
+    const auto gen_path = [&](span<const _basic_node> closed,
+                              sl::index parent, sl::index source,
+                              sl::index nearest) -> bool {
+      return destination == nearest;
     };
 
     const auto sight = [](const sl::index a, const sl::index b) -> bool {
       return false;
     };
 
-    return _basic_search<_basic_node>(gen_path, sight, neighbors,
-                                      heuristic, source, destination);
+    return _basic_search<false, _basic_node>(
+        gen_path, sight, neighbors, heuristic, source, destination);
   }
 
   auto search(const fn_neighbors neighbors,
@@ -198,9 +223,9 @@ namespace laplace::engine::eval::astar {
       return false;
     };
 
-    return _basic_search<_basic_node>(_basic_path<_basic_node>, sight,
-                                      neighbors, heuristic, source,
-                                      destination);
+    return _basic_search<true, _basic_node>(_basic_path<_basic_node>,
+                                            sight, neighbors, heuristic,
+                                            source, destination);
   }
 
   auto search_theta(const fn_neighbors neighbors,
@@ -208,8 +233,8 @@ namespace laplace::engine::eval::astar {
                     const sl::index source, const sl::index destination)
       -> sl::vector<sl::index> {
 
-    return _basic_search<_node_theta>(_basic_path<_node_theta>, sight,
-                                      neighbors, heuristic, source,
-                                      destination);
+    return _basic_search<true, _node_theta>(_basic_path<_node_theta>,
+                                            sight, neighbors, heuristic,
+                                            source, destination);
   }
 }

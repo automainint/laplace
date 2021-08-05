@@ -55,4 +55,31 @@ namespace laplace::test {
 
     EXPECT_EQ(v.size(), 3u);
   }
+
+  TEST(engine, eval_grid_search_partial) {
+    constexpr auto width  = 7;
+    constexpr auto height = 7;
+    constexpr auto size   = width * height;
+
+    constexpr std::array<int8_t, size> map = { 1, 1, 1, 1, 1, 1, 1, //
+                                               1, 0, 0, 0, 0, 0, 1, //
+                                               1, 1, 1, 1, 1, 0, 1, //
+                                               1, 0, 0, 0, 1, 0, 1, //
+                                               1, 0, 0, 0, 1, 0, 1, //
+                                               1, 0, 0, 0, 1, 0, 1, //
+                                               1, 1, 1, 1, 1, 1, 1 };
+
+    auto v = grid::path_search({ width, height }, 10, map,
+                               [](const int8_t x) {
+                                 return x == 0;
+                               },
+                               { 1, 5 }, { 5, 1 });
+
+    EXPECT_EQ(v.size(), 2u);
+
+    if (v.size() > 1) {
+      EXPECT_EQ(v[1].x(), 3);
+      EXPECT_EQ(v[1].y(), 3);
+    }
+  }
 }

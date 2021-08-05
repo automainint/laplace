@@ -17,37 +17,14 @@
 #include <string>
 
 namespace laplace::engine::protocol::ids {
-  constexpr std::string_view table[] = { "",
-                                         "request-events",
-                                         "request-token",
-                                         "session-request",
-                                         "session-response",
-                                         "session-token",
-                                         "ping-request",
-                                         "ping-response",
-                                         "client-desync",
-                                         "server-idle",
-                                         "server-init",
-                                         "server-loading",
-                                         "server-launch",
-                                         "server-action",
-                                         "server-pause",
-                                         "server-clock",
-                                         "server-seed",
-                                         "server-quit",
-                                         "client-enter",
-                                         "client-leave",
-                                         "client-ready",
-                                         "debug",
-                                         "slot-create",
-                                         "slot-remove" };
-
   enum cipher_id : uint16_t { cipher_plain, cipher_ecc_rabbit };
 
   enum command_id : uint16_t {
     undefined = 0,
 
-    /*  Request to resend specified events.
+    /*  Unindexed control commands.
+     *
+     *  Request to resend specified events.
      *
      *  uint16_t    id
      *  uint64_t[]  events
@@ -97,16 +74,14 @@ namespace laplace::engine::protocol::ids {
      */
     server_idle,
 
-    /*  Unindexed command count.
-     */
-    _unindexed_count,
-
-    /*  Server commands.
+    /*  Indexed control commands
+     *
+     *  Server commands.
      *
      *  uint16_t    id
      *  uint64_t    index
      */
-    server_init = _unindexed_count,
+    server_init,
 
     /*  Custom loading command.
      *
@@ -130,6 +105,14 @@ namespace laplace::engine::protocol::ids {
      *  uint64_t    index
      */
     server_pause,
+
+    /*  Reserve entity ids.
+     *
+     *  uint16_t    id
+     *  uint64_t    index
+     *  uint64_t    entity count
+     */
+    server_reserve,
 
     /*  uint16_t    id
      *  uint64_t    index
@@ -165,13 +148,11 @@ namespace laplace::engine::protocol::ids {
      */
     client_ready,
 
-    /*  Control command count.
+    /*  Timed events.
+     *
+     *  Debug command.
      */
-    _control_count,
-
-    /*  Debug command.
-     */
-    debug = _control_count,
+    debug,
 
     /*  Create new slot.
      *
@@ -191,12 +172,10 @@ namespace laplace::engine::protocol::ids {
      */
     slot_remove,
 
-    /*  Total command count.
+    /*  Total native command count.
      */
     _native_count
   };
-
-  static_assert((sizeof table / sizeof *table) == _native_count);
 }
 
 #endif

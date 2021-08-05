@@ -105,8 +105,9 @@ namespace laplace::engine::protocol {
   using ping_request  = instant_value<ids::ping_request, uint64_t>;
   using ping_response = instant_value<ids::ping_response, uint64_t>;
 
-  using server_clock = basic_value<ids::server_clock, uint64_t>;
-  using server_seed  = basic_value<ids::server_seed, uint64_t>;
+  using server_reserve = basic_value<ids::server_reserve, uint64_t>;
+  using server_clock   = basic_value<ids::server_clock, uint64_t>;
+  using server_seed    = basic_value<ids::server_seed, uint64_t>;
 }
 
 #endif

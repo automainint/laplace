@@ -31,7 +31,7 @@ namespace laplace::engine {
    *
    *  ```
    *  void my_impact::perform(access::world w) const {
-   *      size_t child_count = 0;
+   *      sl::whole child_count = 0;
    *      // ...
    *
    *      //  Create an Impact.
