@@ -10,14 +10,13 @@
  *  the MIT License for more details.
  */
 
-#include "../../laplace/engine/eval/astar.h"
+#include "../../laplace/engine/eval/astar.impl.h"
 #include <gtest/gtest.h>
 
 namespace laplace::test {
   namespace astar = engine::eval::astar;
 
-  using std::max, engine::intval, astar::vlink, astar::link,
-      astar::exists, astar::search, astar::search_theta;
+  using std::max, engine::intval, astar::vlink, astar::link;
 
   TEST(engine, eval_astar_exists) {
     constexpr auto width  = 20;
@@ -37,8 +36,12 @@ namespace laplace::test {
       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
     };
 
+    auto sight = [](const sl::index, const sl::index) {
+      return false;
+    };
+
     auto neighbours = [&](const sl::index node) -> vlink {
-      if (node >= map.size())
+      if (node < 0 || node >= map.size())
         return {};
 
       if (map[node] == 1)
@@ -66,10 +69,28 @@ namespace laplace::test {
       return y * width + x;
     };
 
-    EXPECT_TRUE(exists(neighbours, heuristic, node_index(1, 1),
-                       node_index(11, 8)));
-    EXPECT_FALSE(exists(neighbours, heuristic, node_index(1, 8),
-                        node_index(18, 1)));
+    auto exists = [&](const sl::index source,
+                      const sl::index destination) {
+      auto state = astar::init<false, astar::_basic_node>(source,
+                                                          destination);
+
+      for (;;) {
+        auto s = astar::loop(sight, neighbours, heuristic, state);
+
+        if (s == astar::status::success) {
+          return true;
+        }
+
+        if (s == astar::status::failed) {
+          break;
+        }
+      }
+
+      return false;
+    };
+
+    EXPECT_TRUE(exists(node_index(1, 1), node_index(11, 8)));
+    EXPECT_FALSE(exists(node_index(1, 8), node_index(18, 1)));
   }
 
   TEST(engine, eval_astar_search) {
@@ -90,8 +111,12 @@ namespace laplace::test {
       1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     };
 
+    auto sight = [](const sl::index, const sl::index) {
+      return false;
+    };
+
     auto neighbours = [&](const sl::index node) -> vlink {
-      if (node >= map.size())
+      if (node < 0 || node >= map.size())
         return {};
 
       if (map[node] == 1)
@@ -119,10 +144,31 @@ namespace laplace::test {
       return y * width + x;
     };
 
-    auto path = search(neighbours, heuristic, node_index(1, 8),
-                       node_index(8, 1));
+    auto search =
+        [&](const sl::index source,
+            const sl::index destination) -> sl::vector<sl::index> {
+      auto state = astar::init<false, astar::_basic_node>(source,
+                                                          destination);
 
-    std::array<uint8_t, size> path_map = map;
+      for (;;) {
+        auto s = astar::loop(sight, neighbours, heuristic, state);
+
+        if (s == astar::status::success) {
+          return astar::finish<astar::_basic_node>(
+              state.closed, source, destination);
+        }
+
+        if (s == astar::status::failed) {
+          break;
+        }
+      }
+
+      return {};
+    };
+
+    auto path = search(node_index(1, 8), node_index(8, 1));
+
+    auto path_map = map;
 
     for (auto n : path) { path_map[n] = 2; }
 
@@ -167,7 +213,7 @@ namespace laplace::test {
                                                 1, 1, 1, 1, 1, 1 };
 
     auto neighbours = [&](const sl::index node) -> vlink {
-      if (node >= map.size())
+      if (node < 0 || node >= map.size())
         return {};
 
       if (map[node] == 1)
@@ -205,8 +251,29 @@ namespace laplace::test {
       return y * width + x;
     };
 
-    auto path = search_theta(neighbours, heuristic, sight,
-                             node_index(1, 1), node_index(4, 1));
+    auto search =
+        [&](const sl::index source,
+            const sl::index destination) -> sl::vector<sl::index> {
+      auto state = astar::init<false, astar::_node_theta>(source,
+                                                          destination);
+
+      for (;;) {
+        auto s = astar::loop(sight, neighbours, heuristic, state);
+
+        if (s == astar::status::success) {
+          return astar::finish<astar::_node_theta>(
+              state.closed, source, destination);
+        }
+
+        if (s == astar::status::failed) {
+          break;
+        }
+      }
+
+      return {};
+    };
+
+    auto path = search(node_index(1, 1), node_index(4, 1));
 
     EXPECT_EQ(path.size(), 2u);
   }

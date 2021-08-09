@@ -87,10 +87,9 @@ namespace laplace::engine::access {
     return m_mode > forbidden ? m_entity->bytes_get(n) : defval;
   }
 
-  void entity::bytes_read(sl::index n, span<int8_t> dst) const noexcept {
-    if (m_mode > forbidden) {
-      m_entity->bytes_read(n, dst);
-    }
+  auto entity::bytes_get_all() noexcept -> sl::vector<int8_t> {
+    return m_mode > forbidden ? m_entity->bytes_get_all()
+                              : sl::vector<int8_t> {};
   }
 
   void entity::bytes_set(sl::index n, int8_t value) const noexcept {
@@ -99,17 +98,23 @@ namespace laplace::engine::access {
     }
   }
 
-  void entity::bytes_write(sl::index          n,
-                           span<const int8_t> values) const noexcept {
-    if (m_mode > read_only) {
-      m_entity->bytes_write(n, values);
-    }
-  }
-
   void entity::bytes_apply_delta(sl::index n,
                                  int8_t    delta) const noexcept {
     if (m_mode > read_only) {
       m_entity->bytes_apply_delta(n, delta);
+    }
+  }
+
+  void entity::bytes_read(sl::index n, span<int8_t> dst) const noexcept {
+    if (m_mode > forbidden) {
+      m_entity->bytes_read(n, dst);
+    }
+  }
+
+  void entity::bytes_write(sl::index          n,
+                           span<const int8_t> values) const noexcept {
+    if (m_mode > read_only) {
+      m_entity->bytes_write(n, values);
     }
   }
 
@@ -133,63 +138,97 @@ namespace laplace::engine::access {
     }
   }
 
-  auto entity::vec_get_size() const -> sl::whole {
+  auto entity::vec_get_size() const noexcept -> sl::whole {
     return m_mode > forbidden ? m_entity->vec_get_size() : 0;
   }
 
-  auto entity::vec_get(sl::index n, intval defval) const -> intval {
+  auto entity::vec_get(sl::index n, intval defval) const noexcept
+      -> intval {
     return m_mode > forbidden ? m_entity->vec_get(n) : defval;
   }
 
-  void entity::vec_set(sl::index n, intval value) const {
+  auto entity::vec_get_all() noexcept -> sl::vector<intval> {
+    return m_mode > forbidden ? m_entity->vec_get_all()
+                              : sl::vector<intval> {};
+  }
+
+  void entity::vec_read(sl::index n, span<intval> dst) noexcept {
+    if (m_mode > forbidden) {
+      m_entity->vec_read(n, dst);
+    }
+  }
+
+  void entity::vec_write(sl::index          n,
+                         span<const intval> values) noexcept {
+    if (m_mode > read_only) {
+      m_entity->vec_write(n, values);
+    }
+  }
+
+  void entity::vec_write_delta(sl::index          n,
+                               span<const intval> deltas) noexcept {
+    if (m_mode > read_only) {
+      m_entity->vec_write_delta(n, deltas);
+    }
+  }
+
+  void entity::vec_erase_delta(sl::index          n,
+                               span<const intval> deltas) noexcept {
+    if (m_mode > read_only) {
+      m_entity->vec_erase_delta(n, deltas);
+    }
+  }
+
+  void entity::vec_set(sl::index n, intval value) const noexcept {
     if (m_mode > read_only) {
       m_entity->vec_set(n, value);
     }
   }
 
-  void entity::vec_apply_delta(sl::index n, intval delta) const {
+  void entity::vec_apply_delta(sl::index n,
+                               intval    delta) const noexcept {
     if (m_mode > read_only) {
       m_entity->vec_apply_delta(n, delta);
     }
   }
 
-  void entity::vec_resize(sl::whole size) const {
+  void entity::vec_resize(sl::whole size) const noexcept {
     if (m_mode > async) {
       m_entity->vec_resize(size);
     }
   }
 
-  void entity::vec_add(intval value) const {
+  void entity::vec_add(intval value) const noexcept {
     if (m_mode > async) {
       m_entity->vec_add(value);
     }
   }
-  
-  void entity::vec_add_sorted(intval value) const {
+
+  void entity::vec_add_sorted(intval value) const noexcept {
     if (m_mode > async) {
       m_entity->vec_add_sorted(value);
     }
   }
-  
-  void entity::vec_insert(sl::index n, intval value) const {
+
+  void entity::vec_insert(sl::index n, intval value) const noexcept {
     if (m_mode > async) {
       m_entity->vec_insert(n, value);
     }
   }
-  
-  void entity::vec_erase(sl::index n) const {
+
+  void entity::vec_erase(sl::index n) const noexcept {
     if (m_mode > async) {
       m_entity->vec_erase(n);
     }
   }
-  
-  void entity::vec_erase_by_value(intval value) const {
+
+  void entity::vec_erase_by_value(intval value) const noexcept {
     if (m_mode > async) {
       m_entity->vec_erase_by_value(value);
     }
   }
 
-  void entity::vec_erase_by_value_sorted(intval value) const {
+  void entity::vec_erase_by_value_sorted(intval value) const noexcept {
     if (m_mode > async) {
       m_entity->vec_erase_by_value_sorted(value);
     }

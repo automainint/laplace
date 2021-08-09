@@ -14,7 +14,8 @@
 #include <gtest/gtest.h>
 
 namespace laplace::test {
-  namespace grid = engine::eval::grid;
+  namespace grid  = engine::eval::grid;
+  namespace astar = engine::eval::astar;
 
   TEST(engine, eval_grid_search_straigth) {
     constexpr auto width  = 5;
@@ -27,11 +28,16 @@ namespace laplace::test {
                                                1, 0, 0, 0, 1, //
                                                1, 1, 1, 1, 1 };
 
-    auto v = grid::path_search({ width, height }, 10, map,
-                               [](const int8_t x) {
-                                 return x == 0;
-                               },
-                               { 1, 1 }, { 3, 3 });
+    auto state = grid::path_search_init({ width, height }, 10, map,
+                                        [](const int8_t x) {
+                                          return x == 0;
+                                        },
+                                        { 1, 1 }, { 3, 3 });
+
+    while (grid::path_search_loop(state) == astar::status::progress) {
+    }
+
+    const auto v = grid::path_search_finish(state);
 
     EXPECT_EQ(v.size(), 2u);
   }
@@ -47,11 +53,16 @@ namespace laplace::test {
                                                1, 0, 0, 0, 0, 0, 1, //
                                                1, 1, 1, 1, 1, 1, 1 };
 
-    auto v = grid::path_search({ width, height }, 10, map,
-                               [](const int8_t x) {
-                                 return x == 0;
-                               },
-                               { 1, 1 }, { 5, 1 });
+    auto state = grid::path_search_init({ width, height }, 10, map,
+                                        [](const int8_t x) {
+                                          return x == 0;
+                                        },
+                                        { 1, 1 }, { 5, 1 });
+
+    while (grid::path_search_loop(state) == astar::status::progress) {
+    }
+
+    const auto v = grid::path_search_finish(state);
 
     EXPECT_EQ(v.size(), 3u);
   }
@@ -69,11 +80,16 @@ namespace laplace::test {
                                                1, 0, 0, 0, 1, 0, 1, //
                                                1, 1, 1, 1, 1, 1, 1 };
 
-    auto v = grid::path_search({ width, height }, 10, map,
-                               [](const int8_t x) {
-                                 return x == 0;
-                               },
-                               { 1, 5 }, { 5, 1 });
+    auto state = grid::path_search_init({ width, height }, 10, map,
+                                        [](const int8_t x) {
+                                          return x == 0;
+                                        },
+                                        { 1, 5 }, { 5, 1 });
+
+    while (grid::path_search_loop(state) == astar::status::progress) {
+    }
+
+    const auto v = grid::path_search_finish(state);
 
     EXPECT_EQ(v.size(), 2u);
 

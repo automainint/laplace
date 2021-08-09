@@ -69,10 +69,25 @@ namespace laplace::engine::eval::grid {
                    const fn_available available, const vec2z a,
                    const vec2z b) -> bool;
 
-  auto path_search(const vec2z size, const intval scale,
-                   const std::span<const int8_t> map,
-                   const fn_available available, const vec2z a,
-                   const vec2z b) -> sl::vector<vec2z>;
+  struct _state {
+    astar::_state<true, astar::_node_theta> astar;
+
+    sl::whole width;
+
+    astar::fn_heuristic heuristic;
+    astar::fn_neighbors neighbors;
+    astar::fn_sight     sight;
+  };
+
+  auto path_search_init(const vec2z size, const intval scale,
+                        const std::span<const int8_t> map,
+                        const fn_available            available,
+                        const vec2z source, const vec2z destination)
+      -> _state;
+
+  auto path_search_loop(_state &state) -> astar::status;
+
+  auto path_search_finish(const _state &state) -> sl::vector<vec2z>;
 }
 
 #endif

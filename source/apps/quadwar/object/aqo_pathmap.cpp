@@ -21,7 +21,7 @@ namespace quadwar_app::object {
   namespace grid   = engine::eval::grid;
 
   using std::make_shared, std::min, std::max, std::span, std::array,
-      engine::id_undefined, engine::vec2z;
+      engine::id_undefined, engine::vec2z, engine::eval::astar::status;
 
   const sl::whole pathmap::resolution     = 2;
   const sl::whole pathmap::spawn_distance = 100;
@@ -317,12 +317,16 @@ namespace quadwar_app::object {
       return v;
     }();
 
-    return grid::path_search(
+    auto search = grid::path_search_init(
         map_size, search_scale, dst,
         [](const int8_t x) {
           return x < 1;
         },
         origin, nearest(target, map_size, dst));
+
+    while (grid::path_search_loop(search) == status::progress) { }
+
+    return grid::path_search_finish(search);
   }
 
   auto pathmap::adjust_rect(const vec2z min, const vec2z max,

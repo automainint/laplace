@@ -1,4 +1,4 @@
-/*  laplace/engine/eval/graph.h
+/*  laplace/engine/eval/astar.h
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -16,8 +16,38 @@
 #include "../defs.h"
 
 namespace laplace::engine::eval::astar {
+  enum class status : sl::index { progress, success, failed };
+
+  static constexpr sl::index _invalid_index = -1;
+
+  template <bool _nearest, typename _node>
+  struct _state {
+    sl::index source      = _invalid_index;
+    sl::index destination = _invalid_index;
+
+    sl::vector<_node> open;
+    sl::vector<_node> closed;
+  };
+
+  template <typename _node>
+  struct _state<true, _node> : _state<false, _node> {
+    sl::index nearest  = _invalid_index;
+    intval    distance = -1;
+  };
+
+  struct _basic_node {
+    sl::index index  = _invalid_index;
+    sl::index parent = _invalid_index;
+    intval    f      = 0;
+    intval    g      = 0;
+  };
+
+  struct _node_theta : _basic_node {
+    intval g_parent = 0;
+  };
+
   struct link {
-    sl::index node     = 0;
+    sl::index node     = _invalid_index;
     intval    distance = 0;
   };
 
@@ -31,17 +61,19 @@ namespace laplace::engine::eval::astar {
   using fn_heuristic =
       std::function<intval(const sl::index a, const sl::index b)>;
 
-  auto exists(const fn_neighbors neighbors,
-              const fn_heuristic heuristic, const sl::index source,
-              const sl::index destination) -> bool;
+  template <bool _nearest, typename _node>
+  inline auto init(const sl::index source,
+                   const sl::index destination) noexcept
+      -> _state<_nearest, _node>;
 
-  auto search(const fn_neighbors neighbors,
-              const fn_heuristic heuristic, const sl::index source,
-              const sl::index destination) -> sl::vector<sl::index>;
+  template <bool _nearest, typename _node>
+  inline auto loop(const fn_sight sight, const fn_neighbors neighbors,
+                   const fn_heuristic       heuristic,
+                   _state<_nearest, _node> &state) noexcept -> status;
 
-  auto search_theta(const fn_neighbors neighbors,
-                    const fn_heuristic heuristic, const fn_sight sight,
-                    const sl::index source, const sl::index destination)
+  template <typename _node>
+  inline auto finish(std::span<const _node> closed, sl::index source,
+                     sl::index destination) noexcept
       -> sl::vector<sl::index>;
 }
 

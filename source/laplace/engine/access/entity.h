@@ -51,33 +51,55 @@ namespace laplace::engine::access {
                                  int8_t    defval = {}) const noexcept
         -> int8_t;
 
-    void bytes_read(sl::index n, std::span<int8_t> dst) const noexcept;
+    [[nodiscard]] auto bytes_get_all() noexcept -> sl::vector<int8_t>;
 
     void bytes_set(sl::index n, int8_t value) const noexcept;
+
+    void bytes_apply_delta(sl::index n, int8_t delta) const noexcept;
+
+    void bytes_read(sl::index n, std::span<int8_t> dst) const noexcept;
+
     void bytes_write(sl::index               n,
                      std::span<const int8_t> values) const noexcept;
-    void bytes_apply_delta(sl::index n, int8_t delta) const noexcept;
+
     void bytes_write_delta(sl::index               n,
                            std::span<const int8_t> deltas) const noexcept;
+
     void bytes_erase_delta(sl::index               n,
                            std::span<const int8_t> deltas) const noexcept;
 
     void bytes_resize(sl::whole size) const noexcept;
 
-    [[nodiscard]] auto vec_get_size() const -> sl::whole;
+    [[nodiscard]] auto vec_get_size() const noexcept -> sl::whole;
 
-    [[nodiscard]] auto vec_get(sl::index n, intval defval = {}) const
+    [[nodiscard]] auto vec_get(sl::index n,
+                               intval    defval = {}) const noexcept
         -> intval;
 
-    void vec_set(sl::index n, intval value) const;
-    void vec_apply_delta(sl::index n, intval delta) const;
-    void vec_resize(sl::whole size) const;
-    void vec_add(intval value) const;
-    void vec_add_sorted(intval value) const;
-    void vec_insert(sl::index n, intval value) const;
-    void vec_erase(sl::index n) const;
-    void vec_erase_by_value(intval value) const;
-    void vec_erase_by_value_sorted(intval value) const;
+    [[nodiscard]] auto vec_get_all() noexcept -> sl::vector<intval>;
+
+    void vec_set(sl::index n, intval value) const noexcept;
+
+    void vec_apply_delta(sl::index n, intval delta) const noexcept;
+
+    void vec_read(sl::index n, std::span<intval> dst) noexcept;
+
+    void vec_write(sl::index n, std::span<const intval> values) noexcept;
+
+    void vec_write_delta(sl::index               n,
+                         std::span<const intval> deltas) noexcept;
+
+    void vec_erase_delta(sl::index               n,
+                         std::span<const intval> deltas) noexcept;
+
+    void vec_resize(sl::whole size) const noexcept;
+
+    void vec_add(intval value) const noexcept;
+    void vec_add_sorted(intval value) const noexcept;
+    void vec_insert(sl::index n, intval value) const noexcept;
+    void vec_erase(sl::index n) const noexcept;
+    void vec_erase_by_value(intval value) const noexcept;
+    void vec_erase_by_value_sorted(intval value) const noexcept;
 
     void adjust() const;
 
