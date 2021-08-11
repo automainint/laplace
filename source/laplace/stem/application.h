@@ -42,9 +42,10 @@ namespace laplace::stem {
 
     [[nodiscard]] auto get_window() -> platform::ref_window;
     [[nodiscard]] auto get_gl() -> platform::ref_glcontext;
-    [[nodiscard]] auto get_input() -> platform::ref_input;
+    [[nodiscard]] auto get_input() -> core::cref_input_handler;
 
   private:
+  void wrap_input();
     void load_shaders();
     void adjust_frame_size(sl::whole width, sl::whole height);
 
@@ -61,6 +62,8 @@ namespace laplace::stem {
 
     ui::ptr_context     m_ui;
     render::ptr_context m_render;
+
+    core::input_handler m_input_handler;
   };
 }
 

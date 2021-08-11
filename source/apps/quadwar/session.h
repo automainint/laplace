@@ -15,7 +15,6 @@
 
 #include "../../laplace/network/defs.h"
 #include "../../laplace/network/server.h"
-#include "../../laplace/platform/wrap.h"
 #include "protocol/ids.h"
 #include "qw_factory.h"
 #include "ui/lobby.h"
@@ -41,7 +40,7 @@ namespace quadwar_app {
     void on_done(event_done ev);
     void on_quit(event_quit ev);
 
-    void tick(uint64_t delta_msec, platform::ref_input in);
+    void tick(uint64_t delta_msec, core::cref_input_handler in);
     void render();
 
     void attach_to(ui::ptr_widget w);
@@ -62,7 +61,8 @@ namespace quadwar_app {
         std::string_view default_address) -> std::string;
 
   private:
-    void update_control(uint64_t delta_msec, platform::ref_input in);
+    void update_control(uint64_t                 delta_msec,
+                        core::cref_input_handler in);
     void update_lobby();
     void save_host_info(uint16_t port);
 

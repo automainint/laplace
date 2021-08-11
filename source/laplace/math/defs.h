@@ -13,16 +13,18 @@
 #ifndef laplace_math_defs_h
 #define laplace_math_defs_h
 
-#include <cstdint>
+#include "../core/options.h"
+#include "../core/slib.h"
 #include <cstddef>
+#include <cstdint>
 
 namespace laplace::math {
   using realmax_t = long double;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   class vector;
 
-  template <size_t rows_, size_t cols_, typename type_>
+  template <sl::whole rows_, sl::whole cols_, typename type_>
   class matrix;
 
   template <typename type_>
@@ -39,7 +41,7 @@ namespace laplace::math {
     static constexpr bool is_scalar = true;
   };
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   struct type_helper<vector<size_, type_>> {
     using scalar_type = typename type_helper<type_>::scalar_type;
     using elem_type   = type_;
@@ -47,7 +49,7 @@ namespace laplace::math {
     static constexpr bool is_scalar = false;
   };
 
-  template <size_t rows_, size_t cols_, typename type_>
+  template <sl::whole rows_, sl::whole cols_, typename type_>
   struct type_helper<matrix<rows_, cols_, type_>> {
     using scalar_type = typename type_helper<type_>::scalar_type;
     using elem_type   = type_;

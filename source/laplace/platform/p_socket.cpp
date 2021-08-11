@@ -10,12 +10,13 @@
  *  the MIT License for more details.
  */
 
-#include "../core/defs.h"
 #include "socket.h"
+
+#include "../core/defs.h"
 #include <iostream>
 
 namespace laplace {
-#if !defined(LAPLACE_POSIX_socket_tS) && \
+#if !defined(LAPLACE_POSIX_SOCKETS) && \
     (defined(_WIN32) || defined(_WINDOWS))
   /*  Windows implementation.
    */
@@ -23,10 +24,10 @@ namespace laplace {
   socket_library::socket_library() noexcept {
     m_is_ok = true;
 
-    WORD version = MAKEWORD(
-        winsock_version_major, winsock_version_minor);
+    auto version = MAKEWORD(winsock_version_major,
+                            winsock_version_minor);
 
-    WSAData data;
+    auto data = WSAData {};
 
     if (WSAStartup(version, &data) != ERROR_SUCCESS) {
       error_("WSAStartup failed.", __FUNCTION__);
@@ -54,7 +55,7 @@ namespace laplace {
       return -1;
     }
 
-    u_long flag = 0;
+    auto flag = u_long {};
 
     if (::ioctlsocket(s, FIONBIO, &flag) == -1) {
       return -1;
@@ -68,7 +69,7 @@ namespace laplace {
       return -1;
     }
 
-    u_long flag = 1;
+    auto flag = u_long { 1 };
 
     if (::ioctlsocket(s, FIONBIO, &flag) == -1) {
       return -1;

@@ -12,18 +12,18 @@
 
 #include "button.h"
 
-#include "../../platform/keys.h"
+#include "../../core/keys.h"
 #include "../context.h"
 
 namespace laplace::ui::elem {
-  using platform::ref_input, platform::key_lbutton;
+  using core::cref_input_handler, core::keys::key_lbutton;
 
   void button::on_click(event_button_click ev) {
     m_on_click = ev;
   }
 
-  auto button::tick(uint64_t delta_msec, ref_input in, bool is_handled)
-      -> bool {
+  auto button::tick(uint64_t delta_msec, cref_input_handler in,
+                    bool is_handled) -> bool {
     return is_handled || button_tick(in);
   }
 
@@ -66,7 +66,7 @@ namespace laplace::ui::elem {
 
   auto button::update(ptr_widget object, button::state button_state,
                       event_button_click on_button_click,
-                      ref_input          in) -> update_result {
+                      cref_input_handler in) -> update_result {
     auto event_status = false;
     auto is_pressed   = button_state.is_pressed;
 
@@ -103,7 +103,7 @@ namespace laplace::ui::elem {
     return { event_status, is_pressed, has_cursor };
   }
 
-  auto button::button_tick(ref_input in) -> bool {
+  auto button::button_tick(cref_input_handler in) -> bool {
     auto status = update(shared_from_this(), get_state(), m_on_click,
                          in);
 

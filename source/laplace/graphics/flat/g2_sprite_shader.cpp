@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../../platform/gldef.h"
 #include "sprite_shader.h"
+
+#include "../../platform/gldef.h"
 
 namespace laplace::graphics::flat {
   using namespace gl;

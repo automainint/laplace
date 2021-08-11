@@ -12,14 +12,14 @@
 
 #include "textedit.h"
 
+#include "../../core/keys.h"
 #include "../../core/utf8.h"
-#include "../../platform/keys.h"
 #include "../context.h"
 
 namespace laplace::ui::elem {
-  using std::u8string_view, std::u8string, platform::ref_input,
-      platform::ctrl_delete, platform::ctrl_backspace,
-      platform::key_lbutton, platform::key_tab;
+  using namespace core::keys;
+
+  using std::u8string_view, std::u8string, core::cref_input_handler;
 
   textedit::textedit() {
     set_handler(true);
@@ -29,7 +29,7 @@ namespace laplace::ui::elem {
     m_filter = f;
   }
 
-  auto textedit::tick(uint64_t delta_msec, ref_input in,
+  auto textedit::tick(uint64_t delta_msec, cref_input_handler in,
                       bool is_handled) -> bool {
     return is_handled || textedit_tick(in);
   }
@@ -93,7 +93,7 @@ namespace laplace::ui::elem {
 
   auto textedit::update(ptr_widget       object,
                         textedit::state  textedit_state,
-                        textedit::filter f, ref_input in)
+                        textedit::filter f, cref_input_handler in)
       -> textedit::update_result {
 
     const auto x = in.get_cursor_x();
@@ -148,7 +148,7 @@ namespace laplace::ui::elem {
     return { event_status, has_focus, text, cursor, selection };
   }
 
-  auto textedit::textedit_tick(ref_input in) -> bool {
+  auto textedit::textedit_tick(cref_input_handler in) -> bool {
     if (in.is_key_pressed(key_tab)) {
       if (auto p = get_parent(); p) {
         p->next_tab();

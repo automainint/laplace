@@ -16,31 +16,23 @@
 namespace laplace::math {
   template <typename type_>
   struct _helper {
-
     static constexpr auto size = type_::size;
-
-    static constexpr auto zero = //
-        type_(_helper<elem_type<type_>>::zero);
-
-    static constexpr auto unit = //
-        type_(_helper<elem_type<type_>>::unit);
+    static constexpr auto zero = type_(_helper<elem_type<type_>>::zero);
+    static constexpr auto unit = type_(_helper<elem_type<type_>>::unit);
   };
 
   template <typename type_>
-  requires is_scalar<type_> //
-      struct _helper<type_> {
-
-    static constexpr size_t size = 1;
-    static constexpr auto   zero = type_(0);
-    static constexpr auto   unit = type_(1);
+  requires is_scalar<type_> struct _helper<type_> {
+    static constexpr sl::whole size = 1;
+    static constexpr auto      zero = type_(0);
+    static constexpr auto      unit = type_(1);
   };
 
   template <typename type_>
   struct _get_helper {
-    [[nodiscard]] static constexpr auto get( //
-        const type_  v,                      //
-        const size_t i                       //
-        ) -> elem_type<type_> {
+    [[nodiscard]] static constexpr auto get(const type_     v,
+                                            const sl::index i)
+        -> elem_type<type_> {
 
       if (i < get_size<type_>()) {
         return v.v[i];
@@ -51,13 +43,11 @@ namespace laplace::math {
   };
 
   template <typename type_>
-  requires is_scalar<type_> //
-      struct _get_helper<type_> {
+  requires is_scalar<type_> struct _get_helper<type_> {
 
-    [[nodiscard]] static constexpr auto get( //
-        const type_  v,                      //
-        const size_t i                       //
-        ) -> type_ {
+    [[nodiscard]] static constexpr auto get(const type_     v,
+                                            const sl::index i)
+        -> type_ {
 
       if (i == 0) {
         return v;
@@ -69,10 +59,8 @@ namespace laplace::math {
 
   template <typename type_>
   struct _set_helper {
-    static constexpr void set(    //
-        type_ &                v, //
-        const size_t           i, //
-        const elem_type<type_> x) {
+    static constexpr void set(type_ &v, const sl::index i,
+                              const elem_type<type_> x) {
 
       if (i < get_size<type_>()) {
         v.v[i] = x;
@@ -81,13 +69,10 @@ namespace laplace::math {
   };
 
   template <typename type_>
-  requires is_scalar<type_> //
-      struct _set_helper<type_> {
+  requires is_scalar<type_> struct _set_helper<type_> {
 
-    static constexpr void set( //
-        type_ &      v,        //
-        const size_t i,        //
-        const type_  x) {
+    static constexpr void set(type_ &v, const sl::index i,
+                              const type_ x) {
 
       if (i == 0) {
         v = x;
@@ -106,33 +91,30 @@ namespace laplace::math {
   }
 
   template <typename type_>
-  constexpr auto get_size() -> size_t {
+  constexpr auto get_size() -> sl::whole {
     return _helper<type_>::size;
   }
 
   template <typename type_>
-  constexpr auto get_row_count() -> size_t {
+  constexpr auto get_row_count() -> sl::whole {
     return type_::row_count;
   }
 
   template <typename type_>
-  constexpr auto get_column_count() -> size_t {
+  constexpr auto get_column_count() -> sl::whole {
     return type_::column_count;
   }
 
   template <typename type_>
-  constexpr auto get( //
-      const type_  v, //
-      const size_t i) -> elem_type<type_> {
+  constexpr auto get(const type_ v, const sl::index i)
+      -> elem_type<type_> {
 
     return _get_helper<type_>::get(v, i);
   }
 
   template <typename type_>
-  constexpr void set(           //
-      type_ &                v, //
-      const size_t           i, //
-      const elem_type<type_> x) {
+  constexpr void set(type_ &v, const sl::index i,
+                     const elem_type<type_> x) {
 
     _set_helper<type_>::set(v, i, x);
   }

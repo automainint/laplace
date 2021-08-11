@@ -16,7 +16,7 @@
 #include "vector.h"
 
 namespace laplace::math {
-  template <size_t rows_, size_t cols_, typename type_>
+  template <sl::whole rows_, sl::whole cols_, typename type_>
   class matrix : public basic_vector<rows_ * cols_, type_> {
   public:
     static constexpr auto row_count    = rows_;

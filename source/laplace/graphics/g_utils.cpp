@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../platform/gldef.h"
 #include "utils.h"
+
+#include "../platform/gldef.h"
 
 namespace laplace::graphics {
   using namespace gl;

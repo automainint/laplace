@@ -11,6 +11,7 @@
  */
 
 #include "string.h"
+
 #include "utf8.h"
 #include <cstdarg>
 #include <sstream>

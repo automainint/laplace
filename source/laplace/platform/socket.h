@@ -13,7 +13,7 @@
 #ifndef laplace_platform_socket_h
 #define laplace_platform_socket_h
 
-#if !defined(LAPLACE_POSIX_socket_tS) && \
+#if !defined(LAPLACE_POSIX_SOCKETS) && \
     (defined(_WIN32) || defined(_WINDOWS))
 #  include <winsock2.h>
 #  include <ws2tcpip.h>

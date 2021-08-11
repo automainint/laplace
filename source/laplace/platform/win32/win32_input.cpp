@@ -23,13 +23,13 @@
 
 #include "input.h"
 
+#include "../../core/keys.h"
 #include "../../core/utf8.h"
-#include "../keys.h"
 #include <iostream>
 
 namespace laplace::win32 {
   using std::u8string_view;
-  using namespace platform;
+  using namespace core::keys;
 
   const sl::whole input::char_predelay_msec   = 500;
   const sl::whole input::char_period_msec     = 50;

@@ -10,9 +10,10 @@
  *  the MIT License for more details.
  */
 
+#include "image.h"
+
 #include "binary.h"
 #include "buffer.h"
-#include "image.h"
 #include "text.h"
 
 namespace laplace::format::image {
@@ -21,9 +22,9 @@ namespace laplace::format::image {
   auto extract(const_pack_type pack) -> image::data_type {
     auto result = make_shared<graphics::image>();
 
-    size_t width  = pack["width"].get_uint();
-    size_t height = pack["height"].get_uint();
-    size_t depth  = pack["depth"].get_uint();
+    sl::index width  = pack["width"].get_uint();
+    sl::index height = pack["height"].get_uint();
+    sl::index depth  = pack["depth"].get_uint();
 
     result->set_size(width, height, depth);
 
@@ -57,7 +58,7 @@ namespace laplace::format::image {
     if (read) {
       buffer buf(read);
 
-      auto buffering = [&buf](size_t n) -> vbyte {
+      auto buffering = [&buf](sl::index n) -> vbyte {
         return buf.read(n);
       };
 

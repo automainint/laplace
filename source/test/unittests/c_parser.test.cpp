@@ -35,22 +35,22 @@ namespace laplace::test {
 
     auto p = parser::wrap(s);
 
-    int64_t  i_bin = 0;
-    int64_t  i_oct = 0;
-    int64_t  i_dec = 0;
-    int64_t  i_hex = 0;
-    uint64_t u_bin = 0;
-    uint64_t u_oct = 0;
-    uint64_t u_dec = 0;
-    uint64_t u_hex = 0;
-    double   f     = 0;
-    char32_t c     = 0;
+    auto i_bin = int64_t {};
+    auto i_oct = int64_t {};
+    auto i_dec = int64_t {};
+    auto i_hex = int64_t {};
+    auto u_bin = uint64_t {};
+    auto u_oct = uint64_t {};
+    auto u_dec = uint64_t {};
+    auto u_hex = uint64_t {};
+    auto f     = double {};
+    auto c     = char32_t {};
 
-    u8string str;
-    u8string id;
-    u8string word;
-    u8string path;
-    u8string url;
+    auto str  = u8string {};
+    auto id   = u8string {};
+    auto word = u8string {};
+    auto path = u8string {};
+    auto url  = u8string {};
 
     EXPECT_TRUE(p.parse(
         " %b %o %d %x %B %O %D %X %f %c %s %a %A \"%p\" %u ", //

@@ -10,10 +10,11 @@
  *  the MIT License for more details.
  */
 
-#include "../../core/utils.h"
 #include "ttf.h"
-#include <fstream>
+
+#include "../../core/utils.h"
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <vector>
 
@@ -38,13 +39,13 @@ namespace laplace::ui::text {
     }
   }
 
-  auto ttf_library::new_face(const char *file_name, size_t index)
+  auto ttf_library::new_face(const char *file_name, sl::index n)
       -> FT_Face {
     FT_Face face = nullptr;
 
     if (m_library) {
-      auto e = FT_New_Face(
-          m_library, file_name, static_cast<FT_Long>(index), &face);
+      auto e = FT_New_Face(m_library, file_name,
+                           static_cast<FT_Long>(n), &face);
 
       if (e) {
         error_("FT_New_Face failed.", __FUNCTION__);
@@ -55,14 +56,15 @@ namespace laplace::ui::text {
     return face;
   }
 
-  auto ttf_library::new_memory_face(const uint8_t *bytes, size_t size,
-                                    size_t index) -> FT_Face {
+  auto ttf_library::new_memory_face(const uint8_t *bytes,
+                                    sl::whole size, sl::index n)
+      -> FT_Face {
     FT_Face face = nullptr;
 
     if (m_library) {
       auto e = FT_New_Memory_Face(m_library, bytes,
                                   static_cast<FT_Long>(size),
-                                  static_cast<FT_Long>(index), &face);
+                                  static_cast<FT_Long>(n), &face);
 
       if (e) {
         error_("FT_New_Memory_Face failed.", __FUNCTION__);
@@ -162,7 +164,7 @@ namespace laplace::ui::text {
     }
   }
 
-  void ttf::set_pixel_sizes(size_t width, size_t height) {
+  void ttf::set_pixel_sizes(sl::whole width, sl::whole height) {
     if (m_face) {
       auto e = FT_Set_Pixel_Sizes(m_face, static_cast<FT_UInt>(width),
                                   static_cast<FT_UInt>(height));

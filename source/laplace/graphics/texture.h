@@ -16,12 +16,12 @@
 #include "image.h"
 
 namespace laplace::graphics {
-  class texture : public core::element {
+  class texture {
   public:
     enum wrap { clamp, repeat, mirror };
 
     texture();
-    ~texture() override;
+    ~texture();
 
     texture(texture &&tex) noexcept;
     auto operator=(texture &&tex) noexcept -> texture &;

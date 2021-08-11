@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../platform/gldef.h"
 #include "texture.h"
+
+#include "../platform/gldef.h"
 
 namespace laplace::graphics {
   using namespace gl;
@@ -20,9 +21,6 @@ namespace laplace::graphics {
                                          GL_MIRRORED_REPEAT };
 
   texture::texture() {
-    static element::type type_texture;
-    set_type_id(type_texture.get_id());
-
     m_ok      = true;
     m_wrap[0] = m_wrap[1] = m_wrap[2] = texture::clamp;
     glGenTextures(1, &m_id);

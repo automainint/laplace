@@ -19,10 +19,10 @@
 #include <algorithm>
 
 namespace laplace::ui {
-  using std::vector, graphics::prepare_ui, platform::ref_input;
+  using std::vector, graphics::prepare_ui, core::cref_input_handler;
 
-  auto widget::tick(uint64_t delta_msec, ref_input in, bool is_handled)
-      -> bool {
+  auto widget::tick(uint64_t delta_msec, cref_input_handler in,
+                    bool is_handled) -> bool {
     return widget_tick(delta_msec, in, is_handled);
   }
 
@@ -144,7 +144,7 @@ namespace laplace::ui {
     m_is_changed = false;
   }
 
-  auto widget::widget_tick(uint64_t delta_msec, ref_input in,
+  auto widget::widget_tick(uint64_t delta_msec, cref_input_handler in,
                            bool is_handled) -> bool {
     if (!m_is_attached) {
       m_absolute_x = m_rect.x;
@@ -152,7 +152,7 @@ namespace laplace::ui {
     }
 
     if (m_is_attached || (m_is_visible && m_is_enabled)) {
-      vector<ptr_widget> list;
+      auto list = vector<ptr_widget> {};
 
       for (auto &c : m_childs) {
         if (c->is_visible() && c->is_enabled()) {

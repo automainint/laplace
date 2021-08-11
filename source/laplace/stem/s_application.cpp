@@ -29,7 +29,7 @@ namespace laplace::stem {
       config::k_flat_solid, config::k_flat_sprite, config::k_vertex,
       config::k_fragment, config::k_folder, platform::window,
       platform::input, platform::glcontext, platform::ref_window,
-      platform::ref_input, platform::ref_glcontext,
+      core::cref_input_handler, platform::ref_glcontext,
       graphics::flat::solid_shader, graphics::flat::sprite_shader,
       core::cref_family, std::wstring, std::wstring_view,
       std::unique_ptr, std::istream, std::ifstream,
@@ -59,6 +59,8 @@ namespace laplace::stem {
     }
 
     m_input = make_shared<input>();
+
+    wrap_input();
 
     m_window->set_input(m_input);
     m_window->set_name(to_wstring(m_config[k_caption].get_string()));
@@ -132,8 +134,94 @@ namespace laplace::stem {
     return *m_gl;
   }
 
-  auto application::get_input() -> ref_input {
-    return *m_input;
+  auto application::get_input() -> cref_input_handler {
+    return m_input_handler;
+  }
+
+  void application::wrap_input() {
+    m_input_handler.is_capslock = [&]() {
+      return m_input->is_capslock();
+    };
+
+    m_input_handler.is_numlock = [&]() {
+      return m_input->is_numlock();
+    };
+
+    m_input_handler.is_scrolllock = [&]() {
+      return m_input->is_scrolllock();
+    };
+
+    m_input_handler.is_alt = [&]() {
+      return m_input->is_alt();
+    };
+
+    m_input_handler.is_shift = [&]() {
+      return m_input->is_shift();
+    };
+
+    m_input_handler.is_control = [&]() {
+      return m_input->is_control();
+    };
+
+    m_input_handler.is_key_down = [&](sl::index key) {
+      return m_input->is_key_down(key);
+    };
+
+    m_input_handler.is_key_up = [&](sl::index key) {
+      return m_input->is_key_up(key);
+    };
+
+    m_input_handler.is_key_changed = [&](sl::index key) {
+      return m_input->is_key_changed(key);
+    };
+
+    m_input_handler.is_key_pressed = [&](sl::index key) {
+      return m_input->is_key_pressed(key);
+    };
+
+    m_input_handler.is_key_unpressed = [&](sl::index key) {
+      return m_input->is_key_unpressed(key);
+    };
+
+    m_input_handler.get_mouse_resolution_x = [&]() {
+      return m_input->get_mouse_resolution_x();
+    };
+
+    m_input_handler.get_mouse_resolution_y = [&]() {
+      return m_input->get_mouse_resolution_y();
+    };
+
+    m_input_handler.get_mouse_x = [&]() {
+      return m_input->get_mouse_x();
+    };
+
+    m_input_handler.get_mouse_y = [&]() {
+      return m_input->get_mouse_y();
+    };
+
+    m_input_handler.get_mouse_delta_x = [&]() {
+      return m_input->get_mouse_delta_x();
+    };
+
+    m_input_handler.get_mouse_delta_y = [&]() {
+      return m_input->get_mouse_delta_y();
+    };
+
+    m_input_handler.get_cursor_x = [&]() {
+      return m_input->get_cursor_x();
+    };
+
+    m_input_handler.get_cursor_y = [&]() {
+      return m_input->get_cursor_y();
+    };
+
+    m_input_handler.get_wheel_delta = [&]() {
+      return m_input->get_wheel_delta();
+    };
+
+    m_input_handler.get_text = [&]() {
+      return m_input->get_text();
+    };
   }
 
   void application::load_shaders() {

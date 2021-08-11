@@ -14,11 +14,11 @@
  *  Add bzip2 compression support.
  */
 
+#include "binary.h"
+
 #include "../core/serial.h"
 #include "../core/utils.h"
-#include "binary.h"
 #include "text.h"
-#include <cassert>
 
 namespace laplace::format::binary {
   using std::make_shared, std::vector, std::u8string,
@@ -31,12 +31,12 @@ namespace laplace::format::binary {
     u8"height",       u8"depth",        u8"pixels"
   };
 
-  static auto pack_key(ref_family composite, size_t index) -> bool {
+  static auto pack_key(ref_family composite, sl::index index) -> bool {
     bool result = false;
     auto key    = family(composite.get_key(index));
 
     if (key.is_string()) {
-      for (size_t n = 0; n < table.size(); n++) {
+      for (sl::index n = 0; n < table.size(); n++) {
         if (key.get_string() == table[n]) {
           key = n;
 
@@ -53,7 +53,8 @@ namespace laplace::format::binary {
     return result;
   }
 
-  static auto unpack_key(ref_family composite, size_t index) -> bool {
+  static auto unpack_key(ref_family composite, sl::index index)
+      -> bool {
     bool result = false;
     auto key    = family(composite.get_key(index));
 
@@ -75,13 +76,13 @@ namespace laplace::format::binary {
 
   void pack(ref_family data) {
     if (data.is_composite()) {
-      for (size_t i = 0; i < data.get_size();) {
+      for (sl::index i = 0; i < data.get_size();) {
         i = pack_key(data, i) ? 0 : i + 1;
       }
     }
 
     if (data.is_composite() || data.is_vector()) {
-      for (size_t i = 0; i < data.get_size(); i++) {
+      for (sl::index i = 0; i < data.get_size(); i++) {
         pack(data.value(i));
       }
     }
@@ -89,13 +90,13 @@ namespace laplace::format::binary {
 
   void unpack(ref_family data) {
     if (data.is_composite()) {
-      for (size_t i = 0; i < data.get_size();) {
+      for (sl::index i = 0; i < data.get_size();) {
         i = unpack_key(data, i) ? 0 : i + 1;
       }
     }
 
     if (data.is_composite() || data.is_vector()) {
-      for (size_t i = 0; i < data.get_size(); i++) {
+      for (sl::index i = 0; i < data.get_size(); i++) {
         unpack(data.value(i));
       }
     }
@@ -169,11 +170,16 @@ namespace laplace::format::binary {
 
     value = family {};
 
-    size_t i, n, k;
+    auto i = sl::index {};
+    auto n = sl::index {};
+    auto k = sl::index {};
 
     for (i = 0, n = 0; i < size; n++) {
       for (k = 0; k < 8 && i < size; k++, i++) {
-        assert(n < v.size());
+        if (n >= v.size()) {
+          return false;
+        }
+
         value[i] = (v[n] & (0x80 >> k)) ? true : false;
       }
     }
@@ -193,7 +199,7 @@ namespace laplace::format::binary {
 
     value = family {};
 
-    for (size_t i = 0; i < size; i++) {
+    for (sl::index i = 0; i < size; i++) {
       family field;
 
       if (!read_pack(read, field))
@@ -215,7 +221,7 @@ namespace laplace::format::binary {
 
     value = family {};
 
-    for (size_t i = 0; i < size; i++) {
+    for (sl::index i = 0; i < size; i++) {
       family key;
       family field;
 
@@ -241,7 +247,7 @@ namespace laplace::format::binary {
 
     value = family {};
 
-    for (size_t i = 0; i < size; i++) {
+    for (sl::index i = 0; i < size; i++) {
       family field;
 
       if (!read_pack(read, field))
@@ -312,7 +318,7 @@ namespace laplace::format::binary {
   }
 
   static auto write_int(fn_write write, int64_t value) -> bool {
-    vbyte v(9);
+    auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::integer);
     wr<int64_t>(v, 1, value);
     return write(v) == v.size();
@@ -320,7 +326,7 @@ namespace laplace::format::binary {
 
   static auto write_string(fn_write write, u8string_view value)
       -> bool {
-    vbyte v(9);
+    auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::string);
     wr<uint64_t>(v, 1, value.size());
     v.insert(v.end(), value.begin(), value.end());
@@ -328,14 +334,14 @@ namespace laplace::format::binary {
   }
 
   static auto write_uint(fn_write write, uint64_t value) -> bool {
-    vbyte v(9);
+    auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::uint);
     wr<uint64_t>(v, 1, value);
     return write(v) == v.size();
   }
 
   static auto write_bytes(fn_write write, span_cbyte value) -> bool {
-    vbyte v(9);
+    auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::bytes);
     wr<uint64_t>(v, 1, value.size());
     v.insert(v.end(), value.begin(), value.end());
@@ -344,16 +350,25 @@ namespace laplace::format::binary {
 
   static auto write_bitfield(fn_write write, cref_family value)
       -> bool {
-    assert(value.is_vector());
+
+    if (!value.is_vector()) {
+      error_("Invalid value.", __FUNCTION__);
+      return false;
+    }
 
     auto  size = value.get_size();
     vbyte bytes((size + 7) / 8, 0);
 
-    size_t i, n, k;
+    auto i = sl::index {};
+    auto n = sl::index {};
+    auto k = sl::index {};
 
     for (i = 0, n = 0; i < size; n++) {
       for (k = 0; k < 8 && i < size; k++, i++) {
-        assert(value[i].is_boolean());
+        if (!value[i].is_boolean()) {
+          error_("Invalid value.", __FUNCTION__);
+          return false;
+        }
 
         if (value[i].get_boolean()) {
           bytes[n] |= 0x80 >> k;
@@ -372,7 +387,10 @@ namespace laplace::format::binary {
 
   static auto write_compact_composite(fn_write    write,
                                       cref_family value) -> bool {
-    assert(value.is_composite());
+    if (!value.is_composite()) {
+      error_("Invalid value.", __FUNCTION__);
+      return false;
+    }
 
     vbyte v(9);
     wr<uint8_t>(v, 0, ids::compact_composite);
@@ -382,9 +400,14 @@ namespace laplace::format::binary {
 
     v.resize(8);
 
-    for (size_t i = 0; i < value.get_size(); i++) {
+    for (sl::index i = 0; i < value.get_size(); i++) {
       auto &key = value.get_key(i);
-      assert(key.is_uint());
+
+      if (!key.is_uint()) {
+        error_("Invalid value.", __FUNCTION__);
+        return false;
+      }
+
       wr<uint64_t>(v, 0, key.get_uint());
 
       if (write(v) != v.size())
@@ -398,7 +421,7 @@ namespace laplace::format::binary {
 
   static auto write_vector(fn_write write, cref_family value) -> bool {
     auto is_bitfield = [](cref_family value) -> bool {
-      for (size_t i = 0; i < value.get_size(); i++) {
+      for (sl::index i = 0; i < value.get_size(); i++) {
         if (!value[i].is_boolean())
           return false;
       }
@@ -406,7 +429,10 @@ namespace laplace::format::binary {
       return true;
     };
 
-    assert(value.is_vector());
+    if (!value.is_vector()) {
+      error_("Invalid value.", __FUNCTION__);
+      return false;
+    }
 
     if (is_bitfield(value)) {
       return write_bitfield(write, value);
@@ -418,7 +444,7 @@ namespace laplace::format::binary {
     if (write(v) != v.size())
       return false;
 
-    for (size_t i = 0; i < value.get_size(); i++) {
+    for (sl::index i = 0; i < value.get_size(); i++) {
       if (!writedown(write, value[i]))
         return false;
     }
@@ -429,7 +455,7 @@ namespace laplace::format::binary {
   static auto write_composite(fn_write write, cref_family value)
       -> bool {
     auto is_compact = [](cref_family value) -> bool {
-      for (size_t i = 0; i < value.get_size(); i++) {
+      for (sl::index i = 0; i < value.get_size(); i++) {
         if (!value.get_key(i).is_uint())
           return false;
       }
@@ -437,19 +463,24 @@ namespace laplace::format::binary {
       return true;
     };
 
-    assert(value.is_composite());
+    if (!value.is_composite()) {
+      error_("Invalid value.", __FUNCTION__);
+      return false;
+    }
 
     if (is_compact(value)) {
       return write_compact_composite(write, value);
     }
 
-    vbyte v(9);
+    auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::compact_composite);
     wr<uint64_t>(v, 1, value.get_size());
-    if (write(v) != v.size())
-      return false;
 
-    for (size_t i = 0; i < value.get_size(); i++) {
+    if (write(v) != v.size()) {
+      return false;
+    }
+
+    for (sl::index i = 0; i < value.get_size(); i++) {
       auto &key = value.get_key(i);
       if (!writedown(write, key))
         return false;

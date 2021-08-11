@@ -35,7 +35,7 @@ namespace laplace::ui::elem {
 
     void on_click(event_button_click ev);
 
-    auto tick(uint64_t delta_msec, platform::ref_input in,
+    auto tick(uint64_t delta_msec, core::cref_input_handler in,
               bool is_handled) -> bool final;
     void render() override;
 
@@ -48,11 +48,11 @@ namespace laplace::ui::elem {
     auto get_state() const -> state;
 
     static auto update(ptr_widget object, state button_state,
-                       event_button_click  on_button_click,
-                       platform::ref_input in) -> update_result;
+                       event_button_click       on_button_click,
+                       core::cref_input_handler in) -> update_result;
 
   private:
-    auto button_tick(platform::ref_input in) -> bool;
+    auto button_tick(core::cref_input_handler in) -> bool;
 
     event_button_click m_on_click;
 

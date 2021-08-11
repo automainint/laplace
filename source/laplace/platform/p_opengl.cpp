@@ -12,8 +12,9 @@
  *  the MIT License for more details.
  */
 
-#include "../core/defs.h"
 #include "opengl.h"
+
+#include "../core/defs.h"
 #include "wrap.h"
 #include <algorithm>
 #include <iostream>
@@ -89,8 +90,8 @@ namespace laplace::gl {
   }
 
   auto has(string_view extension) -> bool {
-    auto i = lower_bound(
-        extensions.begin(), extensions.end(), extension);
+    auto i = lower_bound(extensions.begin(), extensions.end(),
+                         extension);
 
     return i != extensions.end() && *i == extension;
   }

@@ -1,4 +1,4 @@
-/*  laplace/platform/keys.h
+/*  laplace/core/keys.h
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -10,12 +10,12 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_platform_keys_h
-#define laplace_platform_keys_h
+#ifndef laplace_core_keys_h
+#define laplace_core_keys_h
 
 #include "../core/slib.h"
 
-namespace laplace::platform {
+namespace laplace::core::keys {
   /*  Input control codes based on ASCII.
    */
   enum input_control : char32_t {

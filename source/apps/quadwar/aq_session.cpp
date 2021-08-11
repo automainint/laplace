@@ -12,12 +12,12 @@
 
 #include "session.h"
 
+#include "../../laplace/core/keys.h"
 #include "../../laplace/core/utils.h"
 #include "../../laplace/engine/protocol/basic_event.h"
 #include "../../laplace/engine/protocol/slot_create.h"
 #include "../../laplace/network/host.h"
 #include "../../laplace/network/remote.h"
-#include "../../laplace/platform/keys.h"
 #include "object/landscape.h"
 #include "object/player.h"
 #include "object/root.h"
@@ -33,11 +33,13 @@ namespace quadwar_app {
   namespace this_thread = std::this_thread;
   namespace ids         = protocol::ids;
 
+  using namespace core::keys;
+
   using std::find, std::make_shared, std::string, std::string_view,
       std::u8string_view, std::ofstream, std::ifstream, network::host,
       network::remote, protocol::qw_player_name, object::root,
       object::landscape, object::player, engine::id_undefined,
-      platform::ref_input, view::vec2, view::real;
+      core::cref_input_handler, view::vec2, view::real;
 
   const uint16_t session::allowed_commands[] = {
     ids::session_request, ids::session_token, ids::request_token,
@@ -88,7 +90,7 @@ namespace quadwar_app {
     m_on_quit = ev;
   }
 
-  void session::tick(uint64_t delta_msec, ref_input in) {
+  void session::tick(uint64_t delta_msec, cref_input_handler in) {
     if (m_server && m_world) {
       m_server->tick(delta_msec);
 
@@ -232,7 +234,8 @@ namespace quadwar_app {
     return string(default_address);
   }
 
-  void session::update_control(uint64_t delta_msec, ref_input in) {
+  void session::update_control(uint64_t           delta_msec,
+                               cref_input_handler in) {
     bool is_moved = false;
     auto delta    = vec2 {};
 
@@ -241,22 +244,22 @@ namespace quadwar_app {
     m_view.set_cursor({ static_cast<real>(in.get_mouse_x()),
                         static_cast<real>(in.get_mouse_y()) });
 
-    if (in.is_key_down(platform::key_left)) {
+    if (in.is_key_down(key_left)) {
       is_moved = true;
       delta.x() -= sense_move * fdelta;
     }
 
-    if (in.is_key_down(platform::key_right)) {
+    if (in.is_key_down(key_right)) {
       is_moved = true;
       delta.x() += sense_move * fdelta;
     }
 
-    if (in.is_key_down(platform::key_up)) {
+    if (in.is_key_down(key_up)) {
       is_moved = true;
       delta.y() -= sense_move * fdelta;
     }
 
-    if (in.is_key_down(platform::key_down)) {
+    if (in.is_key_down(key_down)) {
       is_moved = true;
       delta.y() += sense_move * fdelta;
     }
@@ -266,13 +269,13 @@ namespace quadwar_app {
       m_view.scale(sense_scale * fwheel);
     }
 
-    if (in.is_key_down(platform::key_mbutton)) {
+    if (in.is_key_down(key_mbutton)) {
       is_moved = true;
       delta.x() -= static_cast<real>(in.get_mouse_delta_x());
       delta.y() -= static_cast<real>(in.get_mouse_delta_y());
     }
 
-    if (in.is_key_pressed(platform::key_lbutton)) {
+    if (in.is_key_pressed(key_lbutton)) {
       m_view.click();
     }
 
@@ -280,7 +283,7 @@ namespace quadwar_app {
       m_view.move(delta);
     }
 
-    if (in.is_key_pressed(platform::key_rbutton)) {
+    if (in.is_key_pressed(key_rbutton)) {
       const auto u = m_view.get_unit();
 
       if (u >= 0) {

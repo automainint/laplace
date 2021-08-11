@@ -13,11 +13,11 @@
 #ifndef laplace_graphics_image_h
 #define laplace_graphics_image_h
 
-#include "../core/element.h"
+#include "../core/defs.h"
 #include "pixel.h"
 
 namespace laplace::graphics {
-  class image : public core::element {
+  class image {
   public:
     using ref  = image &;
     using cref = const image &;
