@@ -30,9 +30,11 @@ using socket_t  = SOCKET;
 using socklen_t = int;
 #else
 #  include <arpa/inet.h>
+#  include <cerrno>
 #  include <fcntl.h>
 #  include <netinet/in.h>
 #  include <sys/ioctl.h>
+#  include <sys/select.h>
 #  include <sys/socket.h>
 #  include <sys/types.h>
 #  include <unistd.h>
@@ -66,6 +68,7 @@ namespace laplace {
   auto socket_msgsize() noexcept -> int;
   auto socket_isconn() noexcept -> int;
   auto socket_connreset() noexcept -> int;
+  auto socket_addrinuse() noexcept -> int;
 }
 
 #endif

@@ -20,7 +20,7 @@ Official repository: [GitHub][laplace-link]
 - [google/benchmark][benchmark-link] for benchmarks.
 
 ##  How to build
-To build the project CMake 3.18, Git and Python 3 are required.
+To build the project CMake 3.18, Git and Python 3 are required. Make sure your compiler [supports][compiler-support-link] C++20.
 
 ### With provided build script
 - Execute the build script.
@@ -74,28 +74,29 @@ To contribute, follow these steps:
 3.  Write tests for the issue.
 4.  Implement your solution for the issue.
     - Follow [C++ Core Guidelines][guidelines-link].
-    - Use [ClangFormat][clang-format-link].
+    - Use [ClangFormat][clang-format-link] and `snake_case`.
 5.  Make sure all tests pass and cover your code.
 6.  Make a pull-request to the `dev` branch or to the corresponding feature branch if there is any.
 
 We have just started organizing the project. If you want to help, [contact me][concact-link].
 
-[linux-build-badge]:    https://github.com/automainint/laplace/workflows/linux-build/badge.svg
-[linux-build-link]:     https://github.com/automainint/laplace/actions?query=workflow%3Alinux-build
+[linux-build-badge]: https://github.com/automainint/laplace/workflows/linux-build/badge.svg
+[linux-build-link]:  https://github.com/automainint/laplace/actions?query=workflow%3Alinux-build
 
-[laplace-link]:       https://github.com/automainint/laplace
-[msvc-link]:          https://visualstudio.microsoft.com/vs/features/cplusplus
-[clang-link]:         https://clang.llvm.org
-[gcc-link]:           https://gcc.gnu.org
-[python-link]:        https://www.python.org
-[cmake-link]:         https://cmake.org
-[git-link]:           https://git-scm.com
-[opengl-link]:        https://www.khronos.org/registry/OpenGL/index_gl.php
-[wolfssl-link]:       https://github.com/wolfSSL/wolfssl
-[freetype-link]:      https://gitlab.freedesktop.org/freetype/freetype
-[googletest-link]:    https://github.com/google/googletest
-[benchmark-link]:     https://github.com/google/benchmark
-[clang-format-link]:  https://clang.llvm.org/docs/ClangFormat.html
-[guidelines-link]:    https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines
+[laplace-link]:          https://github.com/automainint/laplace
+[msvc-link]:             https://visualstudio.microsoft.com/vs/features/cplusplus
+[clang-link]:            https://clang.llvm.org
+[gcc-link]:              https://gcc.gnu.org
+[python-link]:           https://www.python.org
+[cmake-link]:            https://cmake.org
+[git-link]:              https://git-scm.com
+[opengl-link]:           https://www.khronos.org/registry/OpenGL/index_gl.php
+[wolfssl-link]:          https://github.com/wolfSSL/wolfssl
+[freetype-link]:         https://gitlab.freedesktop.org/freetype/freetype
+[googletest-link]:       https://github.com/google/googletest
+[benchmark-link]:        https://github.com/google/benchmark
+[compiler-support-link]: https://en.cppreference.com/w/cpp/compiler_support
+[clang-format-link]:     https://clang.llvm.org/docs/ClangFormat.html
+[guidelines-link]:       https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines
 
 [concact-link]: https://guattari.ru/contact

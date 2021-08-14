@@ -97,6 +97,10 @@ namespace laplace {
   auto socket_connreset() noexcept -> int {
     return WSAECONNRESET;
   }
+
+  auto socket_addrinuse() noexcept -> int {
+    return WSAEADDRINUSE;
+  }
 #else
   /*  Default platform implementation. Use POSIX sockets.
    */
@@ -142,6 +146,10 @@ namespace laplace {
 
   auto socket_connreset() noexcept -> int {
     return ECONNRESET;
+  }
+
+  auto socket_addrinuse() noexcept -> int {
+    return EADDRINUSE;
   }
 #endif
 }

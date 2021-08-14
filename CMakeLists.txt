@@ -86,6 +86,12 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
         NAME ${LAPLACE_UNITTESTS}
         COMMAND ${QUADWAR_EXE} --tests
       )
+
+      set_tests_properties(
+        ${LAPLACE_UNITTESTS}
+          PROPERTIES
+            TIMEOUT "40"
+      )
     endif()
   endif()
 
