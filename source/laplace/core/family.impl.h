@@ -105,23 +105,23 @@ namespace laplace::core {
     return this->get_value(family(key));
   }
 
-  auto family::by_key(signed int key) noexcept -> ref_family {
+  inline auto family::by_key(signed int key) noexcept -> ref_family {
     return this->by_key(static_cast<signed long long>(key));
   }
 
-  auto family::by_key(signed long key) noexcept -> ref_family {
+  inline auto family::by_key(signed long key) noexcept -> ref_family {
     return this->by_key(static_cast<signed long long>(key));
   }
 
-  auto family::by_key(unsigned int key) noexcept -> ref_family {
+  inline auto family::by_key(unsigned int key) noexcept -> ref_family {
     return this->by_key(static_cast<signed long long>(key));
   }
 
-  auto family::by_key(unsigned long key) noexcept -> ref_family {
+  inline auto family::by_key(unsigned long key) noexcept -> ref_family {
     return this->by_key(static_cast<signed long long>(key));
   }
 
-  auto family::by_key(unsigned long long key) noexcept -> ref_family {
+  inline auto family::by_key(unsigned long long key) noexcept -> ref_family {
     return this->value(family(key));
   }
 
