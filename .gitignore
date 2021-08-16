@@ -8,7 +8,8 @@
 /.vs/
 *.sln
 *.vcxproj
-*.vcxproj.*
+*.filters
+*.user
 
 /data/lcd.h
 /source/generated/*.cpp
@@ -16,5 +17,3 @@
 /tools/OpenGL-Registry/
 
 /doc/
-!/tools/vs/laplace.sln
-!/tools/vs/laplace.vcxproj

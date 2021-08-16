@@ -5,12 +5,13 @@ import os, shutil
 def build_deps(
   folder: str,
   config: str,
+  libs_suffix: str,
   architecture: str,
   generator: str,
   msvc_runtime: str,
   install_headers: bool
 ):
-  libdir = '../lib/' + config + '-' + architecture
+  libdir = '../lib/' + config + '-' + libs_suffix
   includedir = 'include'
 
   if install_headers:
@@ -44,9 +45,9 @@ def build_deps(
 
 os.chdir('..')
 
-build_deps('build-deps-debug-x86', 'Debug', 'x86', 'Visual Studio 16 2019', 'MultiThreadedDebug', False)
-build_deps('build-deps-debug-x64', 'Debug', 'x64', 'Visual Studio 16 2019', 'MultiThreadedDebug', False)
-build_deps('build-deps-release-x86', 'Release', 'x86', 'Visual Studio 16 2019', 'MultiThreaded', False)
-build_deps('build-deps-release-x64', 'Release', 'x64', 'Visual Studio 16 2019', 'MultiThreaded', True)
+build_deps('build-deps-debug-x86', 'Debug', 'x86', 'Win32', 'Visual Studio 16 2019', 'MultiThreadedDebug', False)
+build_deps('build-deps-debug-x64', 'Debug', 'x64', 'x64', 'Visual Studio 16 2019', 'MultiThreadedDebug', False)
+build_deps('build-deps-release-x86', 'Release', 'x86', 'Win32', 'Visual Studio 16 2019', 'MultiThreaded', False)
+build_deps('build-deps-release-x64', 'Release', 'x64', 'x64', 'Visual Studio 16 2019', 'MultiThreaded', True)
 
 os.chdir('tools')

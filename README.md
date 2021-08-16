@@ -65,6 +65,8 @@ cd ..
 
 Add `source` to the project and build manually. Required headers will be in `include` folder, libraries will be in `lib` folder.
 
+If you want to generate Visual Studio project files, use `tools/gen-vs.py`.
+
 If you change the source code files structure, use `tools/gen-cmake.py` to generate `CMakeLists.txt` files.
 
 ##  Contribution

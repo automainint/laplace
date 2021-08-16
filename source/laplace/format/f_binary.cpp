@@ -58,8 +58,8 @@ namespace laplace::format::binary {
     bool result = false;
     auto key    = family(composite.get_key(index));
 
-    if (key.is_uint()) {
-      auto n = key.get_uint();
+    if (key.is_integer()) {
+      auto n = key.get_integer();
 
       if (n < table.size()) {
         key = table[n];

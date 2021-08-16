@@ -15,6 +15,15 @@
 #ifndef laplace_core_options_h
 #define laplace_core_options_h
 
+static_assert(sizeof(signed char) == 1);
+static_assert(sizeof(signed short) == 2);
+static_assert(sizeof(signed int) == 4);
+static_assert(sizeof(signed long long) == 8);
+static_assert(sizeof(unsigned char) == 1);
+static_assert(sizeof(unsigned short) == 2);
+static_assert(sizeof(unsigned int) == 4);
+static_assert(sizeof(unsigned long long) == 8);
+
 /*  Enable verbose logging.
  */
 //#define LAPLACE_VERBOSE

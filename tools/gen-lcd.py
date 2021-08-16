@@ -36,6 +36,6 @@ if n > 0:
 
 out = open(os.path.join(folder, 'lcd.h'), 'w')
 
-out.write('ptrdiff_t width = ' + str(width) + ';\n')
-out.write('ptrdiff_t height = ' + str(height) + ';\n')
-out.write('uint64_t bits[ ] = { ' + s + ' };\n')
+out.write('ptrdiff_t width   = ' + str(width) + ';\n')
+out.write('ptrdiff_t height  = ' + str(height) + ';\n')
+out.write('uint64_t  bits[ ] = { ' + s + ' };\n')

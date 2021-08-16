@@ -23,218 +23,222 @@ namespace laplace::core {
       std::u32string_view, std::numeric_limits, std::pair,
       std::vector, std::monostate, std::u8string;
 
-  family::family(cref_vfamily value) {
+  family::family(cref_vfamily value) noexcept {
     assign(value);
   }
 
-  family::family(cref_composite value) {
+  family::family(cref_composite value) noexcept {
     assign(value);
   }
 
-  family::family(bool value) {
+  family::family(bool value) noexcept {
     assign(value);
   }
 
-  family::family(int8_t value) {
+  family::family(signed char value) noexcept {
     assign(static_cast<int64_t>(value));
   }
 
-  family::family(int16_t value) {
+  family::family(signed short value) noexcept {
     assign(static_cast<int64_t>(value));
   }
 
-  family::family(int32_t value) {
+  family::family(signed int value) noexcept {
     assign(static_cast<int64_t>(value));
   }
 
-  family::family(int64_t value) {
+  family::family(signed long long value) noexcept {
     assign(static_cast<int64_t>(value));
   }
 
-  family::family(uint8_t value) {
+  family::family(unsigned char value) noexcept {
     assign(static_cast<uint64_t>(value));
   }
 
-  family::family(uint16_t value) {
+  family::family(unsigned short value) noexcept {
     assign(static_cast<uint64_t>(value));
   }
 
-  family::family(uint32_t value) {
+  family::family(unsigned int value) noexcept {
     assign(static_cast<uint64_t>(value));
   }
 
-  family::family(uint64_t value) {
+  family::family(unsigned long long value) noexcept {
     assign(static_cast<uint64_t>(value));
   }
 
-  family::family(float value) {
+  family::family(float value) noexcept {
     assign(static_cast<double>(value));
   }
 
-  family::family(double value) {
+  family::family(double value) noexcept {
     assign(value);
   }
 
-  family::family(string_view value) {
+  family::family(string_view value) noexcept {
     assign(value);
   }
 
-  family::family(wstring_view value) {
+  family::family(wstring_view value) noexcept {
     assign(value);
   }
 
-  family::family(u8string_view value) {
+  family::family(u8string_view value) noexcept {
     assign(value);
   }
 
-  family::family(u16string_view value) {
+  family::family(u16string_view value) noexcept {
     assign(value);
   }
 
-  family::family(u32string_view value) {
+  family::family(u32string_view value) noexcept {
     assign(value);
   }
 
-  family::family(const char *value) {
+  family::family(const char *value) noexcept {
     assign(string_view(value));
   }
 
-  family::family(const wchar_t *value) {
+  family::family(const wchar_t *value) noexcept {
     assign(wstring_view(value));
   }
 
-  family::family(const char8_t *value) {
+  family::family(const char8_t *value) noexcept {
     assign(u8string_view(value));
   }
 
-  family::family(const char16_t *value) {
+  family::family(const char16_t *value) noexcept {
     assign(u16string_view(value));
   }
 
-  family::family(const char32_t *value) {
+  family::family(const char32_t *value) noexcept {
     assign(u32string_view(value));
   }
 
-  family::family(span_cbyte value) {
+  family::family(span_cbyte value) noexcept {
     assign(value);
   }
 
-  auto family::operator=(family::cref_vfamily value) -> ref_family {
-    assign(value);
-    return *this;
-  }
-
-  auto family::operator=(family::cref_composite value) -> ref_family {
+  auto family::operator=(family::cref_vfamily value) noexcept
+      -> ref_family {
     assign(value);
     return *this;
   }
 
-  auto family::operator=(bool value) -> ref_family {
+  auto family::operator=(family::cref_composite value) noexcept
+      -> ref_family {
     assign(value);
     return *this;
   }
 
-  auto family::operator=(int8_t value) -> ref_family {
+  auto family::operator=(bool value) noexcept -> ref_family {
+    assign(value);
+    return *this;
+  }
+
+  auto family::operator=(signed char value) noexcept -> ref_family {
     assign(static_cast<int64_t>(value));
     return *this;
   }
 
-  auto family::operator=(int16_t value) -> ref_family {
+  auto family::operator=(signed short value) noexcept -> ref_family {
     assign(static_cast<int64_t>(value));
     return *this;
   }
 
-  auto family::operator=(int32_t value) -> ref_family {
+  auto family::operator=(signed int value) noexcept -> ref_family {
     assign(static_cast<int64_t>(value));
     return *this;
   }
 
-  auto family::operator=(int64_t value) -> ref_family {
+  auto family::operator=(signed long long value) noexcept
+      -> ref_family {
     assign(value);
     return *this;
   }
 
-  auto family::operator=(uint8_t value) -> ref_family {
+  auto family::operator=(unsigned char value) noexcept -> ref_family {
     assign(static_cast<uint64_t>(value));
     return *this;
   }
 
-  auto family::operator=(uint16_t value) -> ref_family {
+  auto family::operator=(unsigned short value) noexcept -> ref_family {
     assign(static_cast<uint64_t>(value));
     return *this;
   }
 
-  auto family::operator=(uint32_t value) -> ref_family {
+  auto family::operator=(unsigned int value) noexcept -> ref_family {
     assign(static_cast<uint64_t>(value));
     return *this;
   }
 
-  auto family::operator=(uint64_t value) -> ref_family {
+  auto family::operator=(unsigned long long value) noexcept
+      -> ref_family {
     assign(value);
     return *this;
   }
 
-  auto family::operator=(float value) -> ref_family {
+  auto family::operator=(float value) noexcept -> ref_family {
     assign(static_cast<double>(value));
     return *this;
   }
 
-  auto family::operator=(double value) -> ref_family {
+  auto family::operator=(double value) noexcept -> ref_family {
     assign(value);
     return *this;
   }
 
-  auto family::operator=(string_view value) -> ref_family {
+  auto family::operator=(string_view value) noexcept -> ref_family {
     assign(value);
     return *this;
   }
 
-  auto family::operator=(wstring_view value) -> ref_family {
+  auto family::operator=(wstring_view value) noexcept -> ref_family {
     assign(value);
     return *this;
   }
 
-  auto family::operator=(u8string_view value) -> ref_family {
+  auto family::operator=(u8string_view value) noexcept -> ref_family {
     assign(value);
     return *this;
   }
 
-  auto family::operator=(u16string_view value) -> ref_family {
+  auto family::operator=(u16string_view value) noexcept -> ref_family {
     assign(value);
     return *this;
   }
 
-  auto family::operator=(u32string_view value) -> ref_family {
+  auto family::operator=(u32string_view value) noexcept -> ref_family {
     assign(value);
     return *this;
   }
 
-  auto family::operator=(const char *value) -> ref_family {
+  auto family::operator=(const char *value) noexcept -> ref_family {
     assign(string_view(value));
     return *this;
   }
 
-  auto family::operator=(const wchar_t *value) -> ref_family {
+  auto family::operator=(const wchar_t *value) noexcept -> ref_family {
     assign(wstring_view(value));
     return *this;
   }
 
-  auto family::operator=(const char8_t *value) -> ref_family {
+  auto family::operator=(const char8_t *value) noexcept -> ref_family {
     assign(u8string_view(value));
     return *this;
   }
 
-  auto family::operator=(const char16_t *value) -> ref_family {
+  auto family::operator=(const char16_t *value) noexcept -> ref_family {
     assign(u16string_view(value));
     return *this;
   }
 
-  auto family::operator=(const char32_t *value) -> ref_family {
+  auto family::operator=(const char32_t *value) noexcept -> ref_family {
     assign(u32string_view(value));
     return *this;
   }
 
-  auto family::operator=(span_cbyte value) -> ref_family {
+  auto family::operator=(span_cbyte value) noexcept -> ref_family {
     assign(value);
     return *this;
   }
@@ -263,83 +267,106 @@ namespace laplace::core {
     return compare(value) >= 0;
   }
 
-  family::operator bool() const {
+  family::operator bool() const noexcept {
     return get_boolean();
   }
 
-  family::operator int64_t() const {
+  family::operator signed long long() const noexcept {
     return get_integer();
   }
 
-  family::operator double() const {
-    return get_real();
-  }
-
-  family::operator uint64_t() const {
+  family::operator unsigned long long() const noexcept {
     return get_uint();
   }
 
-  family::operator u8string_view() const {
+  family::operator double() const noexcept {
+    return get_real();
+  }
+
+  family::operator u8string_view() const noexcept {
     return get_string();
   }
 
-  auto family::operator[](size_t index) -> ref_family {
+  auto family::operator[](signed int index) noexcept -> ref_family {
     return value(index);
   }
 
-  auto family::operator[](size_t index) const -> cref_family {
+  auto family::operator[](signed int index) const noexcept
+      -> cref_family {
     return get_value(index);
   }
 
-  auto family::operator[](cref_family key) -> ref_family {
+  auto family::operator[](signed long long index) noexcept
+      -> ref_family {
+    return value(index);
+  }
+
+  auto family::operator[](signed long long index) const noexcept
+      -> cref_family {
+    return get_value(index);
+  }
+
+  auto family::operator[](cref_family key) noexcept -> ref_family {
     return value(key);
   }
 
-  auto family::operator[](cref_family key) const -> cref_family {
+  auto family::operator[](cref_family key) const noexcept
+      -> cref_family {
     return get_value(key);
   }
 
-  auto family::is_empty() const -> bool {
+  auto family::is_empty() const noexcept -> bool {
     return m_data.index() == 0;
   }
 
-  auto family::is_boolean() const -> bool {
+  auto family::is_boolean() const noexcept -> bool {
     return m_data.index() == n_bool;
   }
 
-  auto family::is_integer() const -> bool {
+  auto family::is_integer() const noexcept -> bool {
+    constexpr auto max_int = static_cast<uint64_t>(
+        numeric_limits<int64_t>::max());
+
+    if (m_data.index() == n_uint && get<n_uint>(m_data) <= max_int) {
+      return true;
+    }
+
     return m_data.index() == n_int;
   }
 
-  auto family::is_uint() const -> bool {
+  auto family::is_uint() const noexcept -> bool {
+    if (m_data.index() == n_int && get<n_int>(m_data) >= 0) {
+      return true;
+    }
+
     return m_data.index() == n_uint;
   }
 
-  auto family::is_real() const -> bool {
+  auto family::is_real() const noexcept -> bool {
     return m_data.index() == n_real;
   }
 
-  auto family::is_string() const -> bool {
+  auto family::is_string() const noexcept -> bool {
     return m_data.index() == n_string;
   }
 
-  auto family::is_bytes() const -> bool {
+  auto family::is_bytes() const noexcept -> bool {
     return m_data.index() == n_bytes;
   }
 
-  auto family::is_vector() const -> bool {
+  auto family::is_vector() const noexcept -> bool {
     return m_data.index() == n_vector;
   }
 
-  auto family::is_composite() const -> bool {
+  auto family::is_composite() const noexcept -> bool {
     return m_data.index() == n_composite;
   }
 
-  auto family::get_boolean() const -> bool {
+  auto family::get_boolean() const noexcept -> bool {
     return m_data.index() == n_bool ? get<n_bool>(m_data) : false;
   }
 
-  auto family::get_integer() const -> int64_t {
+  auto family::get_integer() const noexcept -> signed long long {
     constexpr auto max_int = static_cast<uint64_t>(
         numeric_limits<int64_t>::max());
 
@@ -350,17 +377,7 @@ namespace laplace::core {
     return m_data.index() == n_int ? get<n_int>(m_data) : 0ll;
   }
 
-  auto family::get_real() const -> double {
-    return m_data.index() == n_real ? get<n_real>(m_data) : .0;
-  }
-
-  auto family::get_string() const -> u8string_view {
-    static const auto nil = u8string(u8"");
-
-    return m_data.index() == n_string ? get<n_string>(m_data) : nil;
-  }
-
-  auto family::get_uint() const -> uint64_t {
+  auto family::get_uint() const noexcept -> unsigned long long {
     if (m_data.index() == n_int && get<n_int>(m_data) >= 0) {
       return static_cast<uint64_t>(get<n_int>(m_data));
     }
@@ -368,13 +385,23 @@ namespace laplace::core {
     return m_data.index() == n_uint ? get<n_uint>(m_data) : 0ull;
   }
 
-  auto family::get_bytes() const -> span_cbyte {
+  auto family::get_real() const noexcept -> double {
+    return m_data.index() == n_real ? get<n_real>(m_data) : .0;
+  }
+
+  auto family::get_string() const noexcept -> u8string_view {
+    static const auto nil = u8string(u8"");
+
+    return m_data.index() == n_string ? get<n_string>(m_data) : nil;
+  }
+
+  auto family::get_bytes() const noexcept -> span_cbyte {
     static const vbyte nil;
 
     return m_data.index() == n_bytes ? get<n_bytes>(m_data) : nil;
   }
 
-  auto family::get_size() const -> sl::whole {
+  auto family::get_size() const noexcept -> sl::whole {
     if (m_data.index() == n_bytes) {
       return get<n_bytes>(m_data).size();
     }
@@ -394,16 +421,19 @@ namespace laplace::core {
     return 0;
   }
 
-  auto family::has(cref_family key) const -> bool {
+  auto family::has(cref_family key) const noexcept -> bool {
     if (m_data.index() != n_composite) {
       return false;
     }
 
     bool result = true;
 
-    auto i = lower_bound(get<n_composite>(m_data).begin(),
-                         get<n_composite>(m_data).end(), key,
-                         op_lower_bound);
+    auto i = lower_bound(
+        get<n_composite>(m_data).begin(),
+        get<n_composite>(m_data).end(), key,
+        [](const pair<family, family> &x, const family &k) {
+          return x.first.compare(k) < 0;
+        });
 
     if (i == get<n_composite>(m_data).end()) {
       result = false;
@@ -414,7 +444,11 @@ namespace laplace::core {
     return result;
   }
 
-  void family::set_key(size_t index, cref_family k) {
+  void family::set_key(signed int index, cref_family k) noexcept {
+    set_key(static_cast<signed long long>(index), k);
+  }
+
+  void family::set_key(signed long long index, cref_family k) noexcept {
     if (m_data.index() != n_composite)
       return;
     if (get<n_composite>(m_data).size() <= index)
@@ -423,9 +457,12 @@ namespace laplace::core {
     get<n_composite>(m_data).erase(get<n_composite>(m_data).begin() +
                                    index);
 
-    auto i = lower_bound(get<n_composite>(m_data).begin(),
-                         get<n_composite>(m_data).end(), k,
-                         op_lower_bound);
+    auto i = lower_bound(
+        get<n_composite>(m_data).begin(),
+        get<n_composite>(m_data).end(), k,
+        [](const pair<family, family> &x, const family &k) {
+          return x.first.compare(k) < 0;
+        });
 
     if (i == get<n_composite>(m_data).end()) {
       get<n_composite>(m_data).emplace_back(pair { k, family() });
@@ -434,14 +471,17 @@ namespace laplace::core {
     }
   }
 
-  void family::key(cref_family k) {
+  void family::key(cref_family k) noexcept {
     if (m_data.index() != n_composite) {
       m_data = vector<pair<family, family>>();
     }
 
-    auto i = lower_bound(get<n_composite>(m_data).begin(),
-                         get<n_composite>(m_data).end(), k,
-                         op_lower_bound);
+    auto i = lower_bound(
+        get<n_composite>(m_data).begin(),
+        get<n_composite>(m_data).end(), k,
+        [](const pair<family, family> &x, const family &k) {
+          return x.first.compare(k) < 0;
+        });
 
     if (i == get<n_composite>(m_data).end()) {
       get<n_composite>(m_data).emplace_back(pair { k, family() });
@@ -450,7 +490,11 @@ namespace laplace::core {
     }
   }
 
-  auto family::value(size_t index) -> ref_family {
+  auto family::value(signed int index) noexcept -> ref_family {
+    return value(static_cast<signed long long>(index));
+  }
+
+  auto family::value(signed long long index) noexcept -> ref_family {
     if (m_data.index() != n_vector) {
       m_data = vector<family>();
     }
@@ -462,14 +506,17 @@ namespace laplace::core {
     return get<n_vector>(m_data)[index];
   }
 
-  auto family::value(cref_family key) -> ref_family {
+  auto family::value(cref_family key) noexcept -> ref_family {
     if (m_data.index() != n_composite) {
       m_data = vector<pair<family, family>>();
     }
 
-    auto i = lower_bound(get<n_composite>(m_data).begin(),
-                         get<n_composite>(m_data).end(), key,
-                         op_lower_bound);
+    auto i = lower_bound(
+        get<n_composite>(m_data).begin(),
+        get<n_composite>(m_data).end(), key,
+        [](const pair<family, family> &x, const family &k) {
+          return x.first.compare(k) < 0;
+        });
 
     if (i == get<n_composite>(m_data).end() || i->first != key) {
       return get<n_composite>(m_data)
@@ -480,7 +527,12 @@ namespace laplace::core {
     return i->second;
   }
 
-  auto family::get_key(size_t index) const -> cref_family {
+  auto family::get_key(signed int index) const noexcept -> cref_family {
+    return get_key(static_cast<signed long long>(index));
+  }
+
+  auto family::get_key(signed long long index) const noexcept
+      -> cref_family {
     if (m_data.index() != n_composite) {
       return logic_error();
     }
@@ -492,7 +544,13 @@ namespace laplace::core {
     return get<n_composite>(m_data)[index].first;
   }
 
-  auto family::get_value(size_t index) const -> cref_family {
+  auto family::get_value(signed int index) const noexcept
+      -> cref_family {
+    return get_value(static_cast<signed long long>(index));
+  }
+
+  auto family::get_value(signed long long index) const noexcept
+      -> cref_family {
     if (m_data.index() != n_vector) {
       return logic_error();
     }
@@ -504,14 +562,18 @@ namespace laplace::core {
     return get<n_vector>(m_data)[index];
   }
 
-  auto family::get_value(cref_family key) const -> cref_family {
+  auto family::get_value(cref_family key) const noexcept
+      -> cref_family {
     if (m_data.index() != n_composite) {
       return logic_error();
     }
 
-    auto i = lower_bound(get<n_composite>(m_data).begin(),
-                         get<n_composite>(m_data).end(), key,
-                         op_lower_bound);
+    auto i = lower_bound(
+        get<n_composite>(m_data).begin(),
+        get<n_composite>(m_data).end(), key,
+        [](const pair<family, family> &x, const family &k) {
+          return x.first.compare(k) < 0;
+        });
 
     if (i == get<n_composite>(m_data).end()) {
       return out_of_range();
@@ -522,14 +584,25 @@ namespace laplace::core {
     return i->second;
   }
 
-  auto family::by_key(size_t key) -> ref_family {
+  auto family::by_key(signed int key) noexcept -> ref_family {
+    return by_key(static_cast<signed long long>(key));
+  }
+
+  auto family::by_key(signed long long key) noexcept -> ref_family {
     if (m_data.index() != n_composite) {
-      m_data = vector<pair<family, family>>();
+      m_data = composite {};
     }
 
-    auto i = lower_bound(get<n_composite>(m_data).begin(),
-                         get<n_composite>(m_data).end(), key,
-                         op_lower_bound_uint);
+    auto i = lower_bound(
+        get<n_composite>(m_data).begin(),
+        get<n_composite>(m_data).end(), key,
+        [](const pair<family, family> &x, signed long long k) {
+          if (x.first.m_data.index() != n_int) {
+            return x.first.m_data.index() < n_int;
+          }
+
+          return get<n_int>(x.first.m_data) < k;
+        });
 
     if (i == get<n_composite>(m_data).end()) {
       return get<n_composite>(m_data)
@@ -544,14 +617,26 @@ namespace laplace::core {
     }
   }
 
-  auto family::by_key(size_t key) const -> cref_family {
+  auto family::by_key(signed int key) const noexcept -> cref_family {
+    return by_key(static_cast<signed long long>(key));
+  }
+
+  auto family::by_key(signed long long key) const noexcept
+      -> cref_family {
     if (m_data.index() != n_composite) {
       return logic_error();
     }
 
-    auto i = lower_bound(get<n_composite>(m_data).begin(),
-                         get<n_composite>(m_data).end(), key,
-                         op_lower_bound_uint);
+    auto i = lower_bound(
+        get<n_composite>(m_data).begin(),
+        get<n_composite>(m_data).end(), key,
+        [](const pair<family, family> &x, signed long long k) {
+          if (x.first.m_data.index() != n_int) {
+            return x.first.m_data.index() < n_int;
+          }
+
+          return get<n_int>(x.first.m_data) < k;
+        });
 
     if (i == get<n_composite>(m_data).end()) {
       return out_of_range();
@@ -611,7 +696,7 @@ namespace laplace::core {
 
       auto n = min(na, nb);
 
-      for (size_t i = 0; i < n; i++) {
+      for (sl::index i = 0; i < n; i++) {
         if (get<n_bytes>(m_data)[i] < get<n_bytes>(value.m_data)[i])
           return -1;
         if (get<n_bytes>(m_data)[i] > get<n_bytes>(value.m_data)[i])
@@ -631,7 +716,7 @@ namespace laplace::core {
 
       auto n = min(na, nb);
 
-      for (size_t i = 0; i < n; i++) {
+      for (sl::index i = 0; i < n; i++) {
         auto x = get<n_vector>(m_data)[i].compare(
             get<n_vector>(value.m_data)[i]);
 
@@ -654,7 +739,7 @@ namespace laplace::core {
 
       auto n = min(na, nb);
 
-      for (size_t i = 0; i < n; i++) {
+      for (sl::index i = 0; i < n; i++) {
         auto x = get<n_composite>(m_data)[i].first.compare(
             get<n_composite>(value.m_data)[i].first);
 
@@ -682,7 +767,7 @@ namespace laplace::core {
     return 0;
   }
 
-  auto family::merge(cref_family f) -> bool {
+  auto family::merge(cref_family f) noexcept -> bool {
     bool result = true;
 
     if (m_data.index() != n_composite) {
@@ -691,7 +776,7 @@ namespace laplace::core {
     }
 
     if (f.is_composite()) {
-      for (size_t i = 0; i < f.get_size(); i++) {
+      for (sl::index i = 0; i < f.get_size(); i++) {
         auto &k = f.get_key(i);
 
         if (has(k)) {
@@ -711,17 +796,17 @@ namespace laplace::core {
     return result;
   }
 
-  auto family::logic_error() -> cref_family {
+  auto family::logic_error() noexcept -> cref_family {
     static const family result;
     return result;
   }
 
-  auto family::out_of_range() -> cref_family {
+  auto family::out_of_range() noexcept -> cref_family {
     static const family result;
     return result;
   }
 
-  void family::assign(family::cref_vfamily value) {
+  void family::assign(family::cref_vfamily value) noexcept {
     if (value.size() > 0) {
       m_data = value;
     } else {
@@ -729,70 +814,59 @@ namespace laplace::core {
     }
   }
 
-  void family::assign(family::cref_composite value) {
+  void family::assign(family::cref_composite value) noexcept {
     if (value.size() > 0) {
       m_data = value;
 
       sort(get<n_composite>(m_data).begin(),
-           get<n_composite>(m_data).end(), op_sort);
+           get<n_composite>(m_data).end(),
+           [](const pair<family, family> &a,
+              const pair<family, family> &b) {
+             return a.first.compare(b.first) < 0;
+           });
+
     } else {
       m_data = monostate();
     }
   }
 
-  void family::assign(bool value) {
+  void family::assign(bool value) noexcept {
     m_data = value;
   }
 
-  void family::assign(int64_t value) {
+  void family::assign(signed long long value) noexcept {
     m_data = value;
   }
 
-  void family::assign(uint64_t value) {
+  void family::assign(unsigned long long value) noexcept {
     m_data = value;
   }
 
-  void family::assign(double value) {
+  void family::assign(double value) noexcept {
     m_data = value;
   }
 
-  void family::assign(string_view value) {
+  void family::assign(string_view value) noexcept {
     m_data = move(to_u8string(value));
   }
 
-  void family::assign(wstring_view value) {
+  void family::assign(wstring_view value) noexcept {
     m_data = move(to_u8string(value));
   }
 
-  void family::assign(u8string_view value) {
+  void family::assign(u8string_view value) noexcept {
     m_data = move(u8string(value));
   }
 
-  void family::assign(u16string_view value) {
+  void family::assign(u16string_view value) noexcept {
     m_data = move(to_u8string(value));
   }
 
-  void family::assign(u32string_view value) {
+  void family::assign(u32string_view value) noexcept {
     m_data = move(to_u8string(value));
   }
 
-  void family::assign(span_cbyte value) {
+  void family::assign(span_cbyte value) noexcept {
     m_data = move(vbyte(value.begin(), value.end()));
-  }
-
-  auto family::op_lower_bound(const pair<family, family> &a,
-                              const family &key) -> bool {
-    return a.first < key;
-  }
-
-  auto family::op_lower_bound_uint(const pair<family, family> &a,
-                                   size_t key) -> bool {
-    return a.first.is_uint() ? a.first.get_uint() < key
-                             : a.first.m_data.index() < n_uint;
-  }
-
-  auto family::op_sort(const pair<family, family> &a,
-                       const pair<family, family> &b) -> bool {
-    return a.first < b.first;
   }
 }
