@@ -47,6 +47,10 @@ namespace laplace::core {
     assign(static_cast<signed long long>(value));
   }
 
+  family::family(signed long value) noexcept {
+    assign(static_cast<signed long long>(value));
+  }
+
   family::family(signed long long value) noexcept {
     assign(value);
   }
@@ -60,6 +64,10 @@ namespace laplace::core {
   }
 
   family::family(unsigned int value) noexcept {
+    assign(static_cast<signed long long>(value));
+  }
+
+  family::family(unsigned long value) noexcept {
     assign(static_cast<signed long long>(value));
   }
 
@@ -151,6 +159,11 @@ namespace laplace::core {
     return *this;
   }
 
+  auto family::operator=(signed long value) noexcept -> ref_family {
+    assign(static_cast<signed long long>(value));
+    return *this;
+  }
+
   auto family::operator=(signed long long value) noexcept
       -> ref_family {
     assign(value);
@@ -168,6 +181,11 @@ namespace laplace::core {
   }
 
   auto family::operator=(unsigned int value) noexcept -> ref_family {
+    assign(static_cast<signed long long>(value));
+    return *this;
+  }
+
+  auto family::operator=(unsigned long value) noexcept -> ref_family {
     assign(static_cast<signed long long>(value));
     return *this;
   }
