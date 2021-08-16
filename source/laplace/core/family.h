@@ -106,8 +106,8 @@ namespace laplace::core {
     operator unsigned long long() const noexcept;
     operator double() const noexcept;
 
-    auto operator[](signed long long index) noexcept -> ref_family;
-    auto operator[](signed long long index) const noexcept
+    auto operator[](signed long long n) noexcept -> ref_family;
+    auto operator[](signed long long n) const noexcept
         -> cref_family;
 
     auto operator[](cref_family key) noexcept -> ref_family;
@@ -185,7 +185,7 @@ namespace laplace::core {
      *
      *  Keys are sorted. Setting a key will change the keys order.
      */
-    void set_key(signed long long index, cref_family k) noexcept;
+    void set_key(signed long long n, cref_family k) noexcept;
 
     /*  Create a new key if needed.
      */
@@ -193,7 +193,7 @@ namespace laplace::core {
 
     /*  Get vector element by index.
      */
-    auto value(signed long long index) noexcept -> ref_family;
+    auto value(signed long long n) noexcept -> ref_family;
 
     /*  Get composite element by key.
      */
@@ -201,11 +201,11 @@ namespace laplace::core {
 
     /*  Get composite key by index.
      */
-    auto get_key(signed long long index) const noexcept -> cref_family;
+    auto get_key(signed long long n) const noexcept -> cref_family;
 
     /*  Get vector element by index.
      */
-    auto get_value(signed long long index) const noexcept
+    auto get_value(signed long long n) const noexcept
         -> cref_family;
 
     /*  Get composite element by key.
@@ -227,30 +227,16 @@ namespace laplace::core {
      */
     auto merge(cref_family f) noexcept -> bool;
 
-    void set_key(signed int index, cref_family k) noexcept;
-    auto value(signed int n) noexcept -> ref_family;
-    auto value(unsigned int n) noexcept -> ref_family;
     auto value(unsigned long long n) noexcept -> ref_family;
     auto value(const char *key) noexcept -> ref_family;
     auto value(const char8_t *key) noexcept -> ref_family;
-    auto get_key(signed int n) const noexcept -> cref_family;
-    auto get_value(signed int n) const noexcept -> cref_family;
-    auto get_value(unsigned int n) const noexcept -> cref_family;
     auto get_value(unsigned long long n) const noexcept -> cref_family;
     auto get_value(const char *key) const noexcept -> cref_family;
     auto get_value(const char8_t *key) const noexcept -> cref_family;
-    auto by_key(signed int key) noexcept -> ref_family;
-    auto by_key(signed int key) const noexcept -> cref_family;
 
     operator signed int() const noexcept;
     operator unsigned int() const noexcept;
     operator float() const noexcept;
-
-    auto operator[](signed int n) noexcept -> ref_family;
-    auto operator[](signed int n) const noexcept -> cref_family;
-
-    auto operator[](unsigned int n) noexcept -> ref_family;
-    auto operator[](unsigned int n) const noexcept -> cref_family;
 
     auto operator[](unsigned long long n) noexcept -> ref_family;
     auto operator[](unsigned long long n) const noexcept -> cref_family;

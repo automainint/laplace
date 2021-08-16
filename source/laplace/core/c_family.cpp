@@ -52,19 +52,19 @@ namespace laplace::core {
   }
 
   family::family(unsigned char value) noexcept {
-    assign(static_cast<unsigned long long>(value));
+    assign(static_cast<signed long long>(value));
   }
 
   family::family(unsigned short value) noexcept {
-    assign(static_cast<unsigned long long>(value));
+    assign(static_cast<signed long long>(value));
   }
 
   family::family(unsigned int value) noexcept {
-    assign(static_cast<unsigned long long>(value));
+    assign(static_cast<signed long long>(value));
   }
 
   family::family(unsigned long long value) noexcept {
-    assign(static_cast<unsigned long long>(value));
+    assign(value);
   }
 
   family::family(float value) noexcept {
@@ -158,17 +158,17 @@ namespace laplace::core {
   }
 
   auto family::operator=(unsigned char value) noexcept -> ref_family {
-    assign(static_cast<unsigned long long>(value));
+    assign(static_cast<signed long long>(value));
     return *this;
   }
 
   auto family::operator=(unsigned short value) noexcept -> ref_family {
-    assign(static_cast<unsigned long long>(value));
+    assign(static_cast<signed long long>(value));
     return *this;
   }
 
   auto family::operator=(unsigned int value) noexcept -> ref_family {
-    assign(static_cast<unsigned long long>(value));
+    assign(static_cast<signed long long>(value));
     return *this;
   }
 
@@ -283,14 +283,13 @@ namespace laplace::core {
     return get_real();
   }
 
-  auto family::operator[](signed long long index) noexcept
-      -> ref_family {
-    return value(index);
+  auto family::operator[](signed long long n) noexcept -> ref_family {
+    return value(n);
   }
 
-  auto family::operator[](signed long long index) const noexcept
+  auto family::operator[](signed long long n) const noexcept
       -> cref_family {
-    return get_value(index);
+    return get_value(n);
   }
 
   auto family::operator[](cref_family key) noexcept -> ref_family {
@@ -431,14 +430,13 @@ namespace laplace::core {
     return result;
   }
 
-  void family::set_key(signed long long index, cref_family k) noexcept {
+  void family::set_key(signed long long n, cref_family k) noexcept {
     if (m_data.index() != n_composite)
       return;
-    if (get<n_composite>(m_data).size() <= index)
+    if (get<n_composite>(m_data).size() <= n)
       return;
 
-    get<n_composite>(m_data).erase(get<n_composite>(m_data).begin() +
-                                   index);
+    get<n_composite>(m_data).erase(get<n_composite>(m_data).begin() + n);
 
     auto i = lower_bound(
         get<n_composite>(m_data).begin(),
@@ -473,16 +471,16 @@ namespace laplace::core {
     }
   }
 
-  auto family::value(signed long long index) noexcept -> ref_family {
+  auto family::value(signed long long n) noexcept -> ref_family {
     if (m_data.index() != n_vector) {
       m_data = vector<family>();
     }
 
-    if (get<n_vector>(m_data).size() <= index) {
-      get<n_vector>(m_data).resize(index + 1);
+    if (get<n_vector>(m_data).size() <= n) {
+      get<n_vector>(m_data).resize(n + 1);
     }
 
-    return get<n_vector>(m_data)[index];
+    return get<n_vector>(m_data)[n];
   }
 
   auto family::value(cref_family key) noexcept -> ref_family {
@@ -506,30 +504,30 @@ namespace laplace::core {
     return i->second;
   }
 
-  auto family::get_key(signed long long index) const noexcept
+  auto family::get_key(signed long long n) const noexcept
       -> cref_family {
     if (m_data.index() != n_composite) {
       return logic_error();
     }
 
-    if (get<n_composite>(m_data).size() <= index) {
+    if (get<n_composite>(m_data).size() <= n) {
       return out_of_range();
     }
 
-    return get<n_composite>(m_data)[index].first;
+    return get<n_composite>(m_data)[n].first;
   }
 
-  auto family::get_value(signed long long index) const noexcept
+  auto family::get_value(signed long long n) const noexcept
       -> cref_family {
     if (m_data.index() != n_vector) {
       return logic_error();
     }
 
-    if (get<n_vector>(m_data).size() <= index) {
+    if (get<n_vector>(m_data).size() <= n) {
       return out_of_range();
     }
 
-    return get<n_vector>(m_data)[index];
+    return get<n_vector>(m_data)[n];
   }
 
   auto family::get_value(cref_family key) const noexcept
