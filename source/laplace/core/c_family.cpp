@@ -36,35 +36,35 @@ namespace laplace::core {
   }
 
   family::family(signed char value) noexcept {
-    assign(static_cast<int64_t>(value));
+    assign(static_cast<signed long long>(value));
   }
 
   family::family(signed short value) noexcept {
-    assign(static_cast<int64_t>(value));
+    assign(static_cast<signed long long>(value));
   }
 
   family::family(signed int value) noexcept {
-    assign(static_cast<int64_t>(value));
+    assign(static_cast<signed long long>(value));
   }
 
   family::family(signed long long value) noexcept {
-    assign(static_cast<int64_t>(value));
+    assign(value);
   }
 
   family::family(unsigned char value) noexcept {
-    assign(static_cast<uint64_t>(value));
+    assign(static_cast<unsigned long long>(value));
   }
 
   family::family(unsigned short value) noexcept {
-    assign(static_cast<uint64_t>(value));
+    assign(static_cast<unsigned long long>(value));
   }
 
   family::family(unsigned int value) noexcept {
-    assign(static_cast<uint64_t>(value));
+    assign(static_cast<unsigned long long>(value));
   }
 
   family::family(unsigned long long value) noexcept {
-    assign(static_cast<uint64_t>(value));
+    assign(static_cast<unsigned long long>(value));
   }
 
   family::family(float value) noexcept {
@@ -137,17 +137,17 @@ namespace laplace::core {
   }
 
   auto family::operator=(signed char value) noexcept -> ref_family {
-    assign(static_cast<int64_t>(value));
+    assign(static_cast<signed long long>(value));
     return *this;
   }
 
   auto family::operator=(signed short value) noexcept -> ref_family {
-    assign(static_cast<int64_t>(value));
+    assign(static_cast<signed long long>(value));
     return *this;
   }
 
   auto family::operator=(signed int value) noexcept -> ref_family {
-    assign(static_cast<int64_t>(value));
+    assign(static_cast<signed long long>(value));
     return *this;
   }
 
@@ -158,17 +158,17 @@ namespace laplace::core {
   }
 
   auto family::operator=(unsigned char value) noexcept -> ref_family {
-    assign(static_cast<uint64_t>(value));
+    assign(static_cast<unsigned long long>(value));
     return *this;
   }
 
   auto family::operator=(unsigned short value) noexcept -> ref_family {
-    assign(static_cast<uint64_t>(value));
+    assign(static_cast<unsigned long long>(value));
     return *this;
   }
 
   auto family::operator=(unsigned int value) noexcept -> ref_family {
-    assign(static_cast<uint64_t>(value));
+    assign(static_cast<unsigned long long>(value));
     return *this;
   }
 
@@ -283,19 +283,6 @@ namespace laplace::core {
     return get_real();
   }
 
-  family::operator u8string_view() const noexcept {
-    return get_string();
-  }
-
-  auto family::operator[](signed int index) noexcept -> ref_family {
-    return value(index);
-  }
-
-  auto family::operator[](signed int index) const noexcept
-      -> cref_family {
-    return get_value(index);
-  }
-
   auto family::operator[](signed long long index) noexcept
       -> ref_family {
     return value(index);
@@ -324,8 +311,8 @@ namespace laplace::core {
   }
 
   auto family::is_integer() const noexcept -> bool {
-    constexpr auto max_int = static_cast<uint64_t>(
-        numeric_limits<int64_t>::max());
+    constexpr auto max_int = static_cast<unsigned long long>(
+        numeric_limits<signed long long>::max());
 
     if (m_data.index() == n_uint && get<n_uint>(m_data) <= max_int) {
       return true;
@@ -367,11 +354,11 @@ namespace laplace::core {
   }
 
   auto family::get_integer() const noexcept -> signed long long {
-    constexpr auto max_int = static_cast<uint64_t>(
-        numeric_limits<int64_t>::max());
+    constexpr auto max_int = static_cast<unsigned long long>(
+        numeric_limits<signed long long>::max());
 
     if (m_data.index() == n_uint && get<n_uint>(m_data) <= max_int) {
-      return static_cast<int64_t>(get<n_uint>(m_data));
+      return static_cast<signed long long>(get<n_uint>(m_data));
     }
 
     return m_data.index() == n_int ? get<n_int>(m_data) : 0ll;
@@ -379,7 +366,7 @@ namespace laplace::core {
 
   auto family::get_uint() const noexcept -> unsigned long long {
     if (m_data.index() == n_int && get<n_int>(m_data) >= 0) {
-      return static_cast<uint64_t>(get<n_int>(m_data));
+      return static_cast<unsigned long long>(get<n_int>(m_data));
     }
 
     return m_data.index() == n_uint ? get<n_uint>(m_data) : 0ull;
@@ -444,10 +431,6 @@ namespace laplace::core {
     return result;
   }
 
-  void family::set_key(signed int index, cref_family k) noexcept {
-    set_key(static_cast<signed long long>(index), k);
-  }
-
   void family::set_key(signed long long index, cref_family k) noexcept {
     if (m_data.index() != n_composite)
       return;
@@ -490,10 +473,6 @@ namespace laplace::core {
     }
   }
 
-  auto family::value(signed int index) noexcept -> ref_family {
-    return value(static_cast<signed long long>(index));
-  }
-
   auto family::value(signed long long index) noexcept -> ref_family {
     if (m_data.index() != n_vector) {
       m_data = vector<family>();
@@ -527,10 +506,6 @@ namespace laplace::core {
     return i->second;
   }
 
-  auto family::get_key(signed int index) const noexcept -> cref_family {
-    return get_key(static_cast<signed long long>(index));
-  }
-
   auto family::get_key(signed long long index) const noexcept
       -> cref_family {
     if (m_data.index() != n_composite) {
@@ -542,11 +517,6 @@ namespace laplace::core {
     }
 
     return get<n_composite>(m_data)[index].first;
-  }
-
-  auto family::get_value(signed int index) const noexcept
-      -> cref_family {
-    return get_value(static_cast<signed long long>(index));
   }
 
   auto family::get_value(signed long long index) const noexcept
@@ -584,10 +554,6 @@ namespace laplace::core {
     return i->second;
   }
 
-  auto family::by_key(signed int key) noexcept -> ref_family {
-    return by_key(static_cast<signed long long>(key));
-  }
-
   auto family::by_key(signed long long key) noexcept -> ref_family {
     if (m_data.index() != n_composite) {
       m_data = composite {};
@@ -615,10 +581,6 @@ namespace laplace::core {
     } else {
       return i->second;
     }
-  }
-
-  auto family::by_key(signed int key) const noexcept -> cref_family {
-    return by_key(static_cast<signed long long>(key));
   }
 
   auto family::by_key(signed long long key) const noexcept
