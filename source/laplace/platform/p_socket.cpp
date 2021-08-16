@@ -105,7 +105,10 @@ namespace laplace {
   /*  Default platform implementation. Use POSIX sockets.
    */
 
-  socket_library::socket_library() noexcept { }
+  socket_library::socket_library() noexcept {
+    std::signal(SIGPIPE, SIG_IGN);
+  }
+
   socket_library::~socket_library() noexcept { }
 
   auto socket_error() noexcept -> int {

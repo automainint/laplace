@@ -31,6 +31,7 @@ using socklen_t = int;
 #else
 #  include <arpa/inet.h>
 #  include <cerrno>
+#  include <csignal>
 #  include <fcntl.h>
 #  include <netinet/in.h>
 #  include <sys/ioctl.h>

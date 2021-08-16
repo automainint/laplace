@@ -1,5 +1,6 @@
 /bin/**
 /lib/**
+/lib-*/**
 /include/**
 /build/**
 /build-*/**
@@ -15,3 +16,5 @@
 /tools/OpenGL-Registry/
 
 /doc/
+!/tools/vs/laplace.sln
+!/tools/vs/laplace.vcxproj

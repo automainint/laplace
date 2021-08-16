@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{39064DF0-EAFB-43C7-A372-6BBF504052EE}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <EnableASAN>true</EnableASAN>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <EnableASAN>true</EnableASAN>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>build-win32\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>build-win32\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>build-win32\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>build-win32\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>build-win32\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>build-win32\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>build-win32\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>build-win32\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>LAPLACE_VERBOSE;_DEBUG;WIN32;_CONSOLE;_WINDOWS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>gtestd.lib;benchmark.lib;bz2_static.lib;freetyped.lib;wolfssl.lib;ws2_32.lib;Shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>lib\$(Configuration)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>LAPLACE_VERBOSE;NDEBUG;WIN32;_CONSOLE;_WINDOWS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>gtest.lib;benchmark.lib;bz2_static.lib;freetype.lib;wolfssl.lib;ws2_32.lib;Shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>lib\$(Configuration)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>LAPLACE_VERBOSE;_DEBUG;WIN32;_CONSOLE;_WINDOWS</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>gtestd.lib;benchmark.lib;bz2_static.lib;freetyped.lib;wolfssl.lib;ws2_32.lib;Shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>lib\$(Configuration)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>LAPLACE_VERBOSE;NDEBUG;WIN32;_CONSOLE;_WINDOWS</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>gtest.lib;benchmark.lib;bz2_static.lib;freetype.lib;wolfssl.lib;ws2_32.lib;Shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>lib\$(Configuration)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="source\apps\quadwar\action\aqa_pathmap_reset.cpp" />
+    <ClCompile Include="source\apps\quadwar\action\aqa_unit_place.cpp" />
+    <ClCompile Include="source\apps\quadwar\aq_main.cpp" />
+    <ClCompile Include="source\apps\quadwar\aq_quadwar.cpp" />
+    <ClCompile Include="source\apps\quadwar\aq_qw_factory.cpp" />
+    <ClCompile Include="source\apps\quadwar\aq_session.cpp" />
+    <ClCompile Include="source\apps\quadwar\object\aqo_game_clock.cpp" />
+    <ClCompile Include="source\apps\quadwar\object\aqo_landscape.cpp" />
+    <ClCompile Include="source\apps\quadwar\object\aqo_pathmap.cpp" />
+    <ClCompile Include="source\apps\quadwar\object\aqo_player.cpp" />
+    <ClCompile Include="source\apps\quadwar\object\aqo_root.cpp" />
+    <ClCompile Include="source\apps\quadwar\object\aqo_unit.cpp" />
+    <ClCompile Include="source\apps\quadwar\protocol\aqp_qw_loading.cpp" />
+    <ClCompile Include="source\apps\quadwar\ui\aqui_lobby.cpp" />
+    <ClCompile Include="source\apps\quadwar\ui\aqui_mainmenu.cpp" />
+    <ClCompile Include="source\apps\quadwar\view\aqv_camera.cpp" />
+    <ClCompile Include="source\apps\quadwar\view\aqv_game.cpp" />
+    <ClCompile Include="source\apps\quadwar\view\aqv_landscape.cpp" />
+    <ClCompile Include="source\apps\quadwar\view\aqv_units.cpp" />
+    <ClCompile Include="source\generated\laplace_embedded.cpp" />
+    <ClCompile Include="source\laplace\core\c_embedded.cpp" />
+    <ClCompile Include="source\laplace\core\c_family.cpp" />
+    <ClCompile Include="source\laplace\core\c_log.cpp" />
+    <ClCompile Include="source\laplace\core\c_parser.cpp" />
+    <ClCompile Include="source\laplace\core\c_string.cpp" />
+    <ClCompile Include="source\laplace\core\c_utf8.cpp" />
+    <ClCompile Include="source\laplace\engine\access\ex_entity.cpp" />
+    <ClCompile Include="source\laplace\engine\access\ex_world.cpp" />
+    <ClCompile Include="source\laplace\engine\eval\ee_geometry.cpp" />
+    <ClCompile Include="source\laplace\engine\eval\ee_grid.cpp" />
+    <ClCompile Include="source\laplace\engine\eval\ee_integral.cpp" />
+    <ClCompile Include="source\laplace\engine\eval\ee_maze.cpp" />
+    <ClCompile Include="source\laplace\engine\eval\ee_random.cpp" />
+    <ClCompile Include="source\laplace\engine\eval\ee_shape.cpp" />
+    <ClCompile Include="source\laplace\engine\e_basic_entity.cpp" />
+    <ClCompile Include="source\laplace\engine\e_basic_factory.cpp" />
+    <ClCompile Include="source\laplace\engine\e_loader.cpp" />
+    <ClCompile Include="source\laplace\engine\e_scheduler.cpp" />
+    <ClCompile Include="source\laplace\engine\e_solver.cpp" />
+    <ClCompile Include="source\laplace\engine\e_world.cpp" />
+    <ClCompile Include="source\laplace\engine\object\eo_actor.cpp" />
+    <ClCompile Include="source\laplace\engine\object\eo_timer.cpp" />
+    <ClCompile Include="source\laplace\engine\protocol\ep_debug.cpp" />
+    <ClCompile Include="source\laplace\format\f_binary.cpp" />
+    <ClCompile Include="source\laplace\format\f_buffer.cpp" />
+    <ClCompile Include="source\laplace\format\f_image.cpp" />
+    <ClCompile Include="source\laplace\format\f_text.cpp" />
+    <ClCompile Include="source\laplace\graphics\flat\g2_framebuffer.cpp" />
+    <ClCompile Include="source\laplace\graphics\flat\g2_solid_buffer.cpp" />
+    <ClCompile Include="source\laplace\graphics\flat\g2_solid_shader.cpp" />
+    <ClCompile Include="source\laplace\graphics\flat\g2_sprite_buffer.cpp" />
+    <ClCompile Include="source\laplace\graphics\flat\g2_sprite_shader.cpp" />
+    <ClCompile Include="source\laplace\graphics\g_color.cpp" />
+    <ClCompile Include="source\laplace\graphics\g_image.cpp" />
+    <ClCompile Include="source\laplace\graphics\g_program.cpp" />
+    <ClCompile Include="source\laplace\graphics\g_texture.cpp" />
+    <ClCompile Include="source\laplace\graphics\g_utils.cpp" />
+    <ClCompile Include="source\laplace\network\crypto\nc_basic_cipher.cpp" />
+    <ClCompile Include="source\laplace\network\crypto\nc_ecc.cpp" />
+    <ClCompile Include="source\laplace\network\crypto\nc_ecc_rabbit.cpp" />
+    <ClCompile Include="source\laplace\network\crypto\nc_rabbit.cpp" />
+    <ClCompile Include="source\laplace\network\crypto\nc_stream_cipher.cpp" />
+    <ClCompile Include="source\laplace\network\n_host.cpp" />
+    <ClCompile Include="source\laplace\network\n_remote.cpp" />
+    <ClCompile Include="source\laplace\network\n_server.cpp" />
+    <ClCompile Include="source\laplace\network\n_transfer.cpp" />
+    <ClCompile Include="source\laplace\network\n_udp_node.cpp" />
+    <ClCompile Include="source\laplace\network\n_udp_server.cpp" />
+    <ClCompile Include="source\laplace\network\n_utils.cpp" />
+    <ClCompile Include="source\laplace\platform\p_opengl.cpp" />
+    <ClCompile Include="source\laplace\platform\p_socket.cpp" />
+    <ClCompile Include="source\laplace\platform\win32\win32_audio.cpp" />
+    <ClCompile Include="source\laplace\platform\win32\win32_glcontext.cpp" />
+    <ClCompile Include="source\laplace\platform\win32\win32_input.cpp" />
+    <ClCompile Include="source\laplace\platform\win32\win32_thread.cpp" />
+    <ClCompile Include="source\laplace\platform\win32\win32_wgl.cpp" />
+    <ClCompile Include="source\laplace\platform\win32\win32_window.cpp" />
+    <ClCompile Include="source\laplace\render\r_context.cpp" />
+    <ClCompile Include="source\laplace\stem\s_application.cpp" />
+    <ClCompile Include="source\laplace\stem\s_app_flat.cpp" />
+    <ClCompile Include="source\laplace\stem\s_config.cpp" />
+    <ClCompile Include="source\laplace\ui\elem\uie_button.cpp" />
+    <ClCompile Include="source\laplace\ui\elem\uie_canvas.cpp" />
+    <ClCompile Include="source\laplace\ui\elem\uie_console.cpp" />
+    <ClCompile Include="source\laplace\ui\elem\uie_panel.cpp" />
+    <ClCompile Include="source\laplace\ui\elem\uie_slider.cpp" />
+    <ClCompile Include="source\laplace\ui\elem\uie_sprite.cpp" />
+    <ClCompile Include="source\laplace\ui\elem\uie_textarea.cpp" />
+    <ClCompile Include="source\laplace\ui\elem\uie_textbutton.cpp" />
+    <ClCompile Include="source\laplace\ui\elem\uie_textedit.cpp" />
+    <ClCompile Include="source\laplace\ui\elem\uie_toggle.cpp" />
+    <ClCompile Include="source\laplace\ui\text\uit_buffer.cpp" />
+    <ClCompile Include="source\laplace\ui\text\uit_font.cpp" />
+    <ClCompile Include="source\laplace\ui\text\uit_lcd.cpp" />
+    <ClCompile Include="source\laplace\ui\text\uit_lcd_data.cpp" />
+    <ClCompile Include="source\laplace\ui\text\uit_painter.cpp" />
+    <ClCompile Include="source\laplace\ui\text\uit_renderer.cpp" />
+    <ClCompile Include="source\laplace\ui\text\uit_ttf.cpp" />
+    <ClCompile Include="source\laplace\ui\text\uit_wrap.cpp" />
+    <ClCompile Include="source\laplace\ui\ui_context.cpp" />
+    <ClCompile Include="source\laplace\ui\ui_frame.cpp" />
+    <ClCompile Include="source\laplace\ui\ui_layout.cpp" />
+    <ClCompile Include="source\laplace\ui\ui_rect.cpp" />
+    <ClCompile Include="source\laplace\ui\ui_widget.cpp" />
+    <ClCompile Include="source\test\benchmarks\e_world.bench.cpp" />
+    <ClCompile Include="source\test\fuzztests\laplace_fuzz.cpp" />
+    <ClCompile Include="source\test\unittests\c_family.test.cpp" />
+    <ClCompile Include="source\test\unittests\c_parser.test.cpp" />
+    <ClCompile Include="source\test\unittests\c_utils.test.cpp" />
+    <ClCompile Include="source\test\unittests\ee_astar.test.cpp" />
+    <ClCompile Include="source\test\unittests\ee_grid.test.cpp" />
+    <ClCompile Include="source\test\unittests\ee_maze.test.cpp" />
+    <ClCompile Include="source\test\unittests\e_entity.test.cpp" />
+    <ClCompile Include="source\test\unittests\e_protocol.test.cpp" />
+    <ClCompile Include="source\test\unittests\e_world.test.cpp" />
+    <ClCompile Include="source\test\unittests\m_basic.test.cpp" />
+    <ClCompile Include="source\test\unittests\m_matrix.test.cpp" />
+    <ClCompile Include="source\test\unittests\m_traits.test.cpp" />
+    <ClCompile Include="source\test\unittests\m_vector.test.cpp" />
+    <ClCompile Include="source\test\unittests\nc_ecc_rabbit.test.cpp" />
+    <ClCompile Include="source\test\unittests\nc_wolfssl.test.cpp" />
+    <ClCompile Include="source\test\unittests\n_server.test.cpp" />
+    <ClCompile Include="source\test\unittests\n_transfer.test.cpp" />
+    <ClCompile Include="source\test\unittests\n_udp.test.cpp" />
+    <ClCompile Include="source\test\unittests\ui_rect.test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\apps\quadwar\action\pathmap_reset.h" />
+    <ClInclude Include="source\apps\quadwar\action\unit_place.h" />
+    <ClInclude Include="source\apps\quadwar\defs.h" />
+    <ClInclude Include="source\apps\quadwar\object\defs.h" />
+    <ClInclude Include="source\apps\quadwar\object\game_clock.h" />
+    <ClInclude Include="source\apps\quadwar\object\landscape.h" />
+    <ClInclude Include="source\apps\quadwar\object\pathmap.h" />
+    <ClInclude Include="source\apps\quadwar\object\player.h" />
+    <ClInclude Include="source\apps\quadwar\object\root.h" />
+    <ClInclude Include="source\apps\quadwar\object\sets.h" />
+    <ClInclude Include="source\apps\quadwar\object\unit.h" />
+    <ClInclude Include="source\apps\quadwar\protocol\defs.h" />
+    <ClInclude Include="source\apps\quadwar\protocol\ids.h" />
+    <ClInclude Include="source\apps\quadwar\protocol\qw_init.h" />
+    <ClInclude Include="source\apps\quadwar\protocol\qw_launch.h" />
+    <ClInclude Include="source\apps\quadwar\protocol\qw_loading.h" />
+    <ClInclude Include="source\apps\quadwar\protocol\qw_order_move.h" />
+    <ClInclude Include="source\apps\quadwar\protocol\qw_player_name.h" />
+    <ClInclude Include="source\apps\quadwar\protocol\qw_slot_create.h" />
+    <ClInclude Include="source\apps\quadwar\protocol\qw_slot_remove.h" />
+    <ClInclude Include="source\apps\quadwar\quadwar.h" />
+    <ClInclude Include="source\apps\quadwar\qw_factory.h" />
+    <ClInclude Include="source\apps\quadwar\session.h" />
+    <ClInclude Include="source\apps\quadwar\ui\defs.h" />
+    <ClInclude Include="source\apps\quadwar\ui\lobby.h" />
+    <ClInclude Include="source\apps\quadwar\ui\mainmenu.h" />
+    <ClInclude Include="source\apps\quadwar\view\camera.h" />
+    <ClInclude Include="source\apps\quadwar\view\defs.h" />
+    <ClInclude Include="source\apps\quadwar\view\game.h" />
+    <ClInclude Include="source\apps\quadwar\view\landscape.h" />
+    <ClInclude Include="source\apps\quadwar\view\units.h" />
+    <ClInclude Include="source\generated\gl\decls.h" />
+    <ClInclude Include="source\generated\gl\enums.h" />
+    <ClInclude Include="source\generated\gl\funcs.impl.h" />
+    <ClInclude Include="source\generated\gl\loads.impl.h" />
+    <ClInclude Include="source\generated\gl\types.h" />
+    <ClInclude Include="source\laplace\core\bytestream.h" />
+    <ClInclude Include="source\laplace\core\defs.h" />
+    <ClInclude Include="source\laplace\core\embedded.h" />
+    <ClInclude Include="source\laplace\core\family.h" />
+    <ClInclude Include="source\laplace\core\family.impl.h" />
+    <ClInclude Include="source\laplace\core\input_handler.h" />
+    <ClInclude Include="source\laplace\core\log.h" />
+    <ClInclude Include="source\laplace\core\options.h" />
+    <ClInclude Include="source\laplace\core\parser.h" />
+    <ClInclude Include="source\laplace\core\serial.h" />
+    <ClInclude Include="source\laplace\core\serial.impl.h" />
+    <ClInclude Include="source\laplace\core\slib.h" />
+    <ClInclude Include="source\laplace\core\string.h" />
+    <ClInclude Include="source\laplace\core\string.impl.h" />
+    <ClInclude Include="source\laplace\core\utf8.h" />
+    <ClInclude Include="source\laplace\core\utils.h" />
+    <ClInclude Include="source\laplace\core\utils.impl.h" />
+    <ClInclude Include="source\laplace\engine\access\entity.h" />
+    <ClInclude Include="source\laplace\engine\access\mode.h" />
+    <ClInclude Include="source\laplace\engine\access\world.h" />
+    <ClInclude Include="source\laplace\engine\access\world.impl.h" />
+    <ClInclude Include="source\laplace\engine\access\world.predef.h" />
+    <ClInclude Include="source\laplace\engine\action\remove.h" />
+    <ClInclude Include="source\laplace\engine\basic_entity.h" />
+    <ClInclude Include="source\laplace\engine\basic_entity.impl.h" />
+    <ClInclude Include="source\laplace\engine\basic_entity.predef.h" />
+    <ClInclude Include="source\laplace\engine\basic_factory.h" />
+    <ClInclude Include="source\laplace\engine\basic_factory.impl.h" />
+    <ClInclude Include="source\laplace\engine\basic_impact.h" />
+    <ClInclude Include="source\laplace\engine\basic_impact.impl.h" />
+    <ClInclude Include="source\laplace\engine\basic_impact.predef.h" />
+    <ClInclude Include="source\laplace\engine\defs.h" />
+    <ClInclude Include="source\laplace\engine\eval\astar.h" />
+    <ClInclude Include="source\laplace\engine\eval\astar.impl.h" />
+    <ClInclude Include="source\laplace\engine\eval\geometry.h" />
+    <ClInclude Include="source\laplace\engine\eval\grid.h" />
+    <ClInclude Include="source\laplace\engine\eval\integral.h" />
+    <ClInclude Include="source\laplace\engine\eval\integral.impl.h" />
+    <ClInclude Include="source\laplace\engine\eval\maze.h" />
+    <ClInclude Include="source\laplace\engine\eval\random.h" />
+    <ClInclude Include="source\laplace\engine\eval\shape.h" />
+    <ClInclude Include="source\laplace\engine\eventorder.h" />
+    <ClInclude Include="source\laplace\engine\eventorder.impl.h" />
+    <ClInclude Include="source\laplace\engine\helper.h" />
+    <ClInclude Include="source\laplace\engine\loader.h" />
+    <ClInclude Include="source\laplace\engine\object\actor.h" />
+    <ClInclude Include="source\laplace\engine\object\sets.h" />
+    <ClInclude Include="source\laplace\engine\object\timer.h" />
+    <ClInclude Include="source\laplace\engine\prime_impact.h" />
+    <ClInclude Include="source\laplace\engine\prime_impact.impl.h" />
+    <ClInclude Include="source\laplace\engine\protocol\all.h" />
+    <ClInclude Include="source\laplace\engine\protocol\basic_event.h" />
+    <ClInclude Include="source\laplace\engine\protocol\basic_value.h" />
+    <ClInclude Include="source\laplace\engine\protocol\debug.h" />
+    <ClInclude Include="source\laplace\engine\protocol\ids.h" />
+    <ClInclude Include="source\laplace\engine\protocol\request_events.h" />
+    <ClInclude Include="source\laplace\engine\protocol\server_idle.h" />
+    <ClInclude Include="source\laplace\engine\protocol\session_request.h" />
+    <ClInclude Include="source\laplace\engine\protocol\session_response.h" />
+    <ClInclude Include="source\laplace\engine\protocol\session_token.h" />
+    <ClInclude Include="source\laplace\engine\protocol\slot_create.h" />
+    <ClInclude Include="source\laplace\engine\protocol\slot_remove.h" />
+    <ClInclude Include="source\laplace\engine\scheduler.h" />
+    <ClInclude Include="source\laplace\engine\solver.h" />
+    <ClInclude Include="source\laplace\engine\world.h" />
+    <ClInclude Include="source\laplace\engine\world.predef.h" />
+    <ClInclude Include="source\laplace\format\binary.h" />
+    <ClInclude Include="source\laplace\format\buffer.h" />
+    <ClInclude Include="source\laplace\format\defs.h" />
+    <ClInclude Include="source\laplace\format\image.h" />
+    <ClInclude Include="source\laplace\format\text.h" />
+    <ClInclude Include="source\laplace\format\utils.h" />
+    <ClInclude Include="source\laplace\format\utils.impl.h" />
+    <ClInclude Include="source\laplace\graphics\color.h" />
+    <ClInclude Include="source\laplace\graphics\defs.h" />
+    <ClInclude Include="source\laplace\graphics\flat\framebuffer.h" />
+    <ClInclude Include="source\laplace\graphics\flat\solid_buffer.h" />
+    <ClInclude Include="source\laplace\graphics\flat\solid_shader.h" />
+    <ClInclude Include="source\laplace\graphics\flat\sprite_buffer.h" />
+    <ClInclude Include="source\laplace\graphics\flat\sprite_shader.h" />
+    <ClInclude Include="source\laplace\graphics\image.h" />
+    <ClInclude Include="source\laplace\graphics\image.impl.h" />
+    <ClInclude Include="source\laplace\graphics\pixel.h" />
+    <ClInclude Include="source\laplace\graphics\pixel.impl.h" />
+    <ClInclude Include="source\laplace\graphics\program.h" />
+    <ClInclude Include="source\laplace\graphics\texture.h" />
+    <ClInclude Include="source\laplace\graphics\utils.h" />
+    <ClInclude Include="source\laplace\math\basic.h" />
+    <ClInclude Include="source\laplace\math\basic.impl.h" />
+    <ClInclude Include="source\laplace\math\complex.h" />
+    <ClInclude Include="source\laplace\math\complex.impl.h" />
+    <ClInclude Include="source\laplace\math\defs.h" />
+    <ClInclude Include="source\laplace\math\matrix.h" />
+    <ClInclude Include="source\laplace\math\matrix.impl.h" />
+    <ClInclude Include="source\laplace\math\quaternion.h" />
+    <ClInclude Include="source\laplace\math\quaternion.impl.h" />
+    <ClInclude Include="source\laplace\math\shortnames.h" />
+    <ClInclude Include="source\laplace\math\spline.h" />
+    <ClInclude Include="source\laplace\math\spline.impl.h" />
+    <ClInclude Include="source\laplace\math\traits.h" />
+    <ClInclude Include="source\laplace\math\traits.impl.h" />
+    <ClInclude Include="source\laplace\math\transform.h" />
+    <ClInclude Include="source\laplace\math\transform.impl.h" />
+    <ClInclude Include="source\laplace\math\vector.h" />
+    <ClInclude Include="source\laplace\math\vector.impl.h" />
+    <ClInclude Include="source\laplace\network\crypto\basic_cipher.h" />
+    <ClInclude Include="source\laplace\network\crypto\ecc.h" />
+    <ClInclude Include="source\laplace\network\crypto\ecc_rabbit.h" />
+    <ClInclude Include="source\laplace\network\crypto\rabbit.h" />
+    <ClInclude Include="source\laplace\network\crypto\stream_cipher.h" />
+    <ClInclude Include="source\laplace\network\defs.h" />
+    <ClInclude Include="source\laplace\network\host.h" />
+    <ClInclude Include="source\laplace\network\remote.h" />
+    <ClInclude Include="source\laplace\network\server.h" />
+    <ClInclude Include="source\laplace\network\transfer.h" />
+    <ClInclude Include="source\laplace\network\udp_node.h" />
+    <ClInclude Include="source\laplace\network\udp_server.h" />
+    <ClInclude Include="source\laplace\network\utils.h" />
+    <ClInclude Include="source\laplace\platform\dummy.h" />
+    <ClInclude Include="source\laplace\platform\events.h" />
+    <ClInclude Include="source\laplace\platform\gldef.h" />
+    <ClInclude Include="source\laplace\core\keys.h" />
+    <ClInclude Include="source\laplace\platform\opengl.h" />
+    <ClInclude Include="source\laplace\platform\socket.h" />
+    <ClInclude Include="source\laplace\platform\thread.h" />
+    <ClInclude Include="source\laplace\platform\win32\audio.h" />
+    <ClInclude Include="source\laplace\platform\win32\clipboard.h" />
+    <ClInclude Include="source\laplace\platform\win32\glcontext.h" />
+    <ClInclude Include="source\laplace\platform\win32\input.h" />
+    <ClInclude Include="source\laplace\platform\win32\thread.h" />
+    <ClInclude Include="source\laplace\platform\win32\wgl.h" />
+    <ClInclude Include="source\laplace\platform\win32\win.predef.h" />
+    <ClInclude Include="source\laplace\platform\win32\window.h" />
+    <ClInclude Include="source\laplace\platform\wrap.h" />
+    <ClInclude Include="source\laplace\render\context.h" />
+    <ClInclude Include="source\laplace\stem\application.h" />
+    <ClInclude Include="source\laplace\stem\app_flat.h" />
+    <ClInclude Include="source\laplace\stem\config.h" />
+    <ClInclude Include="source\laplace\ui\context.h" />
+    <ClInclude Include="source\laplace\ui\elem\button.h" />
+    <ClInclude Include="source\laplace\ui\elem\canvas.h" />
+    <ClInclude Include="source\laplace\ui\elem\console.h" />
+    <ClInclude Include="source\laplace\ui\elem\iconbutton.h" />
+    <ClInclude Include="source\laplace\ui\elem\panel.h" />
+    <ClInclude Include="source\laplace\ui\elem\slider.h" />
+    <ClInclude Include="source\laplace\ui\elem\sprite.h" />
+    <ClInclude Include="source\laplace\ui\elem\textarea.h" />
+    <ClInclude Include="source\laplace\ui\elem\textbutton.h" />
+    <ClInclude Include="source\laplace\ui\elem\textedit.h" />
+    <ClInclude Include="source\laplace\ui\elem\toggle.h" />
+    <ClInclude Include="source\laplace\ui\frame.h" />
+    <ClInclude Include="source\laplace\ui\helper.h" />
+    <ClInclude Include="source\laplace\ui\layout.h" />
+    <ClInclude Include="source\laplace\ui\rect.h" />
+    <ClInclude Include="source\laplace\ui\text\buffer.h" />
+    <ClInclude Include="source\laplace\ui\text\font.h" />
+    <ClInclude Include="source\laplace\ui\text\lcd.h" />
+    <ClInclude Include="source\laplace\ui\text\painter.h" />
+    <ClInclude Include="source\laplace\ui\text\renderer.h" />
+    <ClInclude Include="source\laplace\ui\text\ttf.h" />
+    <ClInclude Include="source\laplace\ui\text\wrap.h" />
+    <ClInclude Include="source\laplace\ui\widget.h" />
+    <ClInclude Include="source\laplace\vm\agent.h" />
+    <ClInclude Include="source\laplace\vm\agent.predef.h" />
+    <ClInclude Include="source\laplace\vm\bitcode.h" />
+    <ClInclude Include="source\laplace\vm\environment.h" />
+    <ClInclude Include="source\laplace\vm\environment.predef.h" />
+    <ClInclude Include="source\laplace\vm\execute.h" />
+    <ClInclude Include="source\laplace\vm\heap.h" />
+    <ClInclude Include="source\laplace\vm\instance.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="doc\2. Execution Protocol.md" />
+    <None Include="doc\1. Implementing Game Logic.md" />
+    <None Include="doc\3. Networking Protocol.md" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
