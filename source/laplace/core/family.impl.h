@@ -146,16 +146,40 @@ namespace laplace::core {
     return this->get_value(family(key));
   }
 
-  inline family::operator float() const noexcept {
-    return static_cast<float>(this->get_real());
+  inline family::operator signed char() const noexcept {
+    return static_cast<signed char>(this->get_integer());
+  }
+
+  inline family::operator signed short() const noexcept {
+    return static_cast<signed short>(this->get_integer());
   }
 
   inline family::operator signed int() const noexcept {
     return static_cast<signed int>(this->get_integer());
   }
 
+  inline family::operator signed long() const noexcept {
+    return static_cast<signed long>(this->get_integer());
+  }
+
+  inline family::operator unsigned char() const noexcept {
+    return static_cast<unsigned char>(this->get_uint());
+  }
+
+  inline family::operator unsigned short() const noexcept {
+    return static_cast<unsigned short>(this->get_uint());
+  }
+
   inline family::operator unsigned int() const noexcept {
     return static_cast<unsigned int>(this->get_uint());
+  }
+
+  inline family::operator unsigned long() const noexcept {
+    return static_cast<unsigned long>(this->get_uint());
+  }
+
+  inline family::operator float() const noexcept {
+    return static_cast<float>(this->get_real());
   }
 
   inline auto family::operator[](signed int n) noexcept -> ref_family {

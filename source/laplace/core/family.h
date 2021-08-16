@@ -265,8 +265,14 @@ namespace laplace::core {
     auto by_key(unsigned long key) const noexcept -> cref_family;
     auto by_key(unsigned long long key) const noexcept -> cref_family;
 
+    operator signed char() const noexcept;
+    operator signed short() const noexcept;
     operator signed int() const noexcept;
+    operator signed long() const noexcept;
+    operator unsigned char() const noexcept;
+    operator unsigned short() const noexcept;
     operator unsigned int() const noexcept;
+    operator unsigned long() const noexcept;
     operator float() const noexcept;
 
     auto operator[](signed int n) noexcept -> ref_family;
