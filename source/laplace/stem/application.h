@@ -45,7 +45,7 @@ namespace laplace::stem {
     [[nodiscard]] auto get_input() -> core::cref_input_handler;
 
   private:
-  void wrap_input();
+    void wrap_input();
     void load_shaders();
     void adjust_frame_size(sl::whole width, sl::whole height);
 

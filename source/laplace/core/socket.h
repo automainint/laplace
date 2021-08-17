@@ -15,6 +15,7 @@
 
 #if !defined(LAPLACE_POSIX_SOCKETS) && \
     (defined(_WIN32) || defined(_WINDOWS))
+
 #  define laplace_windows_header
 #  include <winsock2.h>
 #  include <ws2tcpip.h>
