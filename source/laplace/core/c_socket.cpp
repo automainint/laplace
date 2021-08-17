@@ -1,4 +1,4 @@
-/*  laplace/platform/p_socket.cpp
+/*  laplace/core/p_socket.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -12,7 +12,7 @@
 
 #include "socket.h"
 
-#include "../core/defs.h"
+#include "defs.h"
 #include <iostream>
 
 namespace laplace {
@@ -21,13 +21,28 @@ namespace laplace {
   /*  Windows implementation.
    */
 
+  socket_library::socket_library(socket_library &&s) noexcept {
+    m_is_ok   = s.m_is_ok;
+    s.m_is_ok = false;
+  }
+
+  auto socket_library::operator=(socket_library &&s) noexcept
+      -> socket_library & {
+    if (m_is_ok) {
+      WSACleanup();
+    }
+
+    m_is_ok   = s.m_is_ok;
+    s.m_is_ok = false;
+
+    return *this;
+  }
+
   socket_library::socket_library() noexcept {
     m_is_ok = true;
 
-    auto version = MAKEWORD(winsock_version_major,
-                            winsock_version_minor);
-
-    auto data = WSAData {};
+    auto version = MAKEWORD(2, 2);
+    auto data    = WSAData {};
 
     if (WSAStartup(version, &data) != ERROR_SUCCESS) {
       error_("WSAStartup failed.", __FUNCTION__);

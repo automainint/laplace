@@ -14,7 +14,7 @@
 #define laplace_network_defs_h
 
 #include "../core/defs.h"
-#include "../platform/socket.h"
+#include "../core/socket.h"
 #include <cstdint>
 
 namespace laplace::network {

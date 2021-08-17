@@ -12,7 +12,7 @@
  *  the MIT License for more details.
  */
 
-#define laplace_windows_header_h
+#define laplace_windows_header
 #include <windows.h>
 
 #include "window.h"
@@ -35,6 +35,15 @@ namespace laplace::win32 {
   const sl::whole window::default_frame_width   = 960;
   const sl::whole window::default_frame_height  = 720;
   const sl::whole window::default_frame_rate    = 60;
+
+  const uint32_t window::default_style_ex = WS_EX_ACCEPTFILES;
+
+  const uint32_t window::default_style = WS_OVERLAPPED | WS_SYSMENU |
+                                         WS_CAPTION | WS_MINIMIZEBOX;
+
+  const uint32_t window::mask_fullscreen_style = ~(
+      WS_OVERLAPPED | WS_CAPTION | WS_BORDER | WS_SIZEBOX |
+      WS_MAXIMIZEBOX | WS_MINIMIZEBOX);
 
   void window::init(window::native_handle parent) {
     if (!parent) {

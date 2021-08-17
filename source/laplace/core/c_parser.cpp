@@ -26,11 +26,11 @@
 namespace laplace::core {
   using namespace std;
 
-  parser::parser(parser::input_stream stream) {
+  parser::parser(parser::input_stream stream) noexcept {
     m_stream = stream;
   }
 
-  void parser::push_offset() {
+  void parser::push_offset() noexcept {
     if (!m_buffer_offset.empty()) {
       m_buffer_offset.emplace_back(m_buffer_offset.back());
     } else {
@@ -38,7 +38,7 @@ namespace laplace::core {
     }
   }
 
-  void parser::pop_offset(bool apply) {
+  void parser::pop_offset(bool apply) noexcept {
     if (m_buffer_offset.size() >= 2) {
       if (apply) {
         m_buffer_offset[m_buffer_offset.size() - 2] =
@@ -54,19 +54,19 @@ namespace laplace::core {
     }
   }
 
-  auto parser::wrap(std::string_view s) -> parser {
+  auto parser::wrap(std::string_view s) noexcept -> parser {
     return parser([s, i = sl::index {}]() mutable -> char32_t {
       return i < s.size() ? s[i++] : U'\0';
     });
   }
 
-  auto parser::wrap(std::u8string_view s) -> parser {
+  auto parser::wrap(std::u8string_view s) noexcept -> parser {
     return parser([s, i = sl::index {}]() mutable -> char32_t {
       return i < s.size() ? s[i++] : U'\0';
     });
   }
 
-  void parser::apply(bool is_ok) {
+  void parser::apply(bool is_ok) noexcept {
     if (!m_buffer_offset.empty()) {
       if (is_ok && m_buffer_offset.size() == 1) {
         m_buffer.clear();
@@ -81,7 +81,7 @@ namespace laplace::core {
     }
   }
 
-  auto parser::get_char() -> char32_t {
+  auto parser::get_char() noexcept -> char32_t {
     char32_t result = 0;
 
     if (!m_buffer_offset.empty()) {
@@ -112,7 +112,7 @@ namespace laplace::core {
     return result;
   }
 
-  void parser::unget_char() {
+  void parser::unget_char() noexcept {
     if (!m_buffer_offset.empty() && m_buffer_offset.back().offset != 0) {
       m_buffer_offset.back().offset--;
     } else {
@@ -120,7 +120,7 @@ namespace laplace::core {
     }
   }
 
-  auto parser::is_path(char32_t c) -> bool {
+  auto parser::is_path(char32_t c) noexcept -> bool {
     if (c < 32) {
       return false;
     }
@@ -137,7 +137,7 @@ namespace laplace::core {
     return true;
   }
 
-  auto parser::is_url(char32_t c) -> bool {
+  auto parser::is_url(char32_t c) noexcept -> bool {
     if (c >= '0' && c <= '9') {
       return true;
     }
@@ -162,7 +162,7 @@ namespace laplace::core {
     return false;
   }
 
-  auto parser::is_hex(char32_t c) -> bool {
+  auto parser::is_hex(char32_t c) noexcept -> bool {
     bool result = false;
 
     if (c >= '0' && c <= '9') {
@@ -176,7 +176,7 @@ namespace laplace::core {
     return result;
   }
 
-  auto parser::string_end(char32_t c, const char *p) -> bool {
+  auto parser::string_end(char32_t c, const char *p) noexcept -> bool {
     if (p[1] == '%') {
       switch (p[2]) {
         case c_line_end: return c == '\r' || c == '\n';
@@ -194,8 +194,8 @@ namespace laplace::core {
         case c_id_str:
         case c_word_str:
         case c_file_path:
-        case c_url: //
-          verb("Parser: Invalid sequence.");
+        case c_url:
+          error_("Invalid sequence.", __FUNCTION__);
           return true;
       }
 
@@ -205,7 +205,7 @@ namespace laplace::core {
     return c == static_cast<char32_t>(p[1]);
   }
 
-  auto parser::parse(const char *format, ...) -> bool {
+  auto parser::parse(const char *format, ...) noexcept -> bool {
     va_list ap;
     va_start(ap, format);
 
@@ -888,23 +888,23 @@ namespace laplace::core {
     return result;
   }
 
-  void parser::set_stream(parser::input_stream stream) {
+  void parser::set_stream(parser::input_stream stream) noexcept {
     this->m_stream = stream;
   }
 
-  auto parser::get_stream() const -> parser::input_stream {
+  auto parser::get_stream() const noexcept -> parser::input_stream {
     return this->m_stream;
   }
 
-  auto parser::is_eof() const -> bool {
+  auto parser::is_eof() const noexcept -> bool {
     return m_is_eof;
   }
 
-  auto parser::get_line() const -> sl::index {
+  auto parser::get_line() const noexcept -> sl::index {
     return m_line;
   }
 
-  auto parser::get_column() const -> sl::index {
+  auto parser::get_column() const noexcept -> sl::index {
     return m_column;
   }
 }

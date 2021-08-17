@@ -17,9 +17,11 @@
 
 #include <cstdint>
 
-using BOOL   = int32_t;
-using WPARAM = uint64_t;
-using LPARAM = int64_t;
+using BOOL    = int32_t;
+using WPARAM  = uint64_t;
+using LPARAM  = int64_t;
+using UINT    = uint32_t;
+using LRESULT = int64_t;
 
 using HWND      = struct HWND__ *;
 using HINSTANCE = struct HINSTANCE__ *;

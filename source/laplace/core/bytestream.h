@@ -21,7 +21,7 @@
 namespace laplace {
   class bytestreambuf : public std::streambuf {
   public:
-    bytestreambuf(span_cbyte bytes) {
+    bytestreambuf(span_cbyte bytes) noexcept {
       auto p = const_cast<char *>(
           reinterpret_cast<const char *>(bytes.data()));
 
@@ -55,7 +55,7 @@ namespace laplace {
    */
   class ibytestream final : private bytestreambuf, public std::istream {
   public:
-    ibytestream(span_cbyte bytes) :
+    ibytestream(span_cbyte bytes) noexcept :
         bytestreambuf(bytes), std::istream(
                                   static_cast<std::streambuf *>(this)) {
     }

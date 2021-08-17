@@ -24,10 +24,10 @@ namespace laplace::core {
     parser(parser &) = delete;
     auto operator=(parser &) -> parser & = delete;
 
-    parser(parser &&) = default;
-    auto operator=(parser &&) -> parser & = default;
+    parser(parser &&) noexcept = default;
+    auto operator=(parser &&) noexcept -> parser & = default;
 
-    parser(input_stream stream = nullptr);
+    parser(input_stream stream = nullptr) noexcept;
 
     /*  "% "    - one whitespace
      *  "%n"    - one line end
@@ -47,24 +47,24 @@ namespace laplace::core {
      *  "%p"    - file path     - u8string *
      *  "%u"    - URL           - u8string *
      */
-    auto parse(const char *format, ...) -> bool;
+    auto parse(const char *format, ...) noexcept -> bool;
 
-    void set_stream(input_stream stream);
-    auto get_stream() const -> input_stream;
+    void set_stream(input_stream stream) noexcept;
+    auto get_stream() const noexcept -> input_stream;
 
-    auto is_eof() const -> bool;
+    auto is_eof() const noexcept -> bool;
 
-    auto get_line() const -> sl::index;
-    auto get_column() const -> sl::index;
+    auto get_line() const noexcept -> sl::index;
+    auto get_column() const noexcept -> sl::index;
 
-    void push_offset();
+    void push_offset() noexcept;
 
     /*  apply - if true, reverts saved offset.
      */
-    void pop_offset(bool apply);
+    void pop_offset(bool apply) noexcept;
 
-    static auto wrap(std::string_view s) -> parser;
-    static auto wrap(std::u8string_view s) -> parser;
+    static auto wrap(std::string_view s) noexcept -> parser;
+    static auto wrap(std::u8string_view s) noexcept -> parser;
 
   private:
     enum control_chars : char {
@@ -88,15 +88,15 @@ namespace laplace::core {
       c_url         = 'u'
     };
 
-    void apply(bool is_ok);
-    auto get_char() -> char32_t;
-    void unget_char();
+    void apply(bool is_ok) noexcept;
+    auto get_char() noexcept -> char32_t;
+    void unget_char() noexcept;
 
-    static auto is_path(char32_t c) -> bool;
-    static auto is_url(char32_t c) -> bool;
-    static auto is_hex(char32_t c) -> bool;
+    static auto is_path(char32_t c) noexcept -> bool;
+    static auto is_url(char32_t c) noexcept -> bool;
+    static auto is_hex(char32_t c) noexcept -> bool;
 
-    static auto string_end(char32_t c, const char *p) -> bool;
+    static auto string_end(char32_t c, const char *p) noexcept -> bool;
 
     struct position {
       sl::index line   = 0;

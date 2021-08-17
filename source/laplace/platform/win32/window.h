@@ -114,19 +114,13 @@ namespace laplace::win32 {
     void accept_files(void *drop_data);
     auto process(UINT message, WPARAM wparam, LPARAM lparam) -> LRESULT;
 
-    static auto CALLBACK window_proc(HWND window_handle, UINT message,
-                                     WPARAM wparam, LPARAM lparam)
-        -> LRESULT;
+    static auto __stdcall window_proc(HWND window_handle,
+                                      UINT message, WPARAM wparam,
+                                      LPARAM lparam) -> LRESULT;
 
-    static constexpr uint32_t default_style_ex = WS_EX_ACCEPTFILES;
-
-    static constexpr uint32_t default_style = WS_OVERLAPPED |
-                                              WS_SYSMENU | WS_CAPTION |
-                                              WS_MINIMIZEBOX;
-
-    static constexpr uint32_t mask_fullscreen_style = ~(
-        WS_OVERLAPPED | WS_CAPTION | WS_BORDER | WS_SIZEBOX |
-        WS_MAXIMIZEBOX | WS_MINIMIZEBOX);
+    static const uint32_t default_style_ex;
+    static const uint32_t default_style;
+    static const uint32_t mask_fullscreen_style;
 
     std::shared_ptr<input> m_input;
 

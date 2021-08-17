@@ -1,4 +1,4 @@
-/*  laplace/platform/socket.h
+/*  laplace/core/socket.h
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -10,21 +10,17 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_platform_socket_h
-#define laplace_platform_socket_h
+#ifndef laplace_core_socket_h
+#define laplace_core_socket_h
 
 #if !defined(LAPLACE_POSIX_SOCKETS) && \
     (defined(_WIN32) || defined(_WINDOWS))
+#  define laplace_windows_header
 #  include <winsock2.h>
 #  include <ws2tcpip.h>
 
 #  undef min
 #  undef max
-
-namespace laplace {
-  static constexpr int winsock_version_major = 2;
-  static constexpr int winsock_version_minor = 2;
-}
 
 using socket_t  = SOCKET;
 using socklen_t = int;
@@ -46,6 +42,9 @@ using socket_t = int;
 namespace laplace {
   class socket_library {
   public:
+    socket_library(socket_library &&s) noexcept;
+    auto operator=(socket_library &&s) noexcept -> socket_library &;
+
     socket_library(const socket_library &) = delete;
     auto operator=(const socket_library &) -> socket_library & = delete;
 

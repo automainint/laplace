@@ -10,7 +10,7 @@
  *  the MIT License for more details.
  */
 
-#include "../../laplace/platform/socket.h"
+#include "../../laplace/core/socket.h"
 #include "../../laplace/platform/wrap.h"
 #include "../../laplace/stem/config.h"
 #include "quadwar.h"
