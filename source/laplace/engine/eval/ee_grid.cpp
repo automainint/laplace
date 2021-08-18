@@ -16,7 +16,7 @@
 #include "integral.h"
 
 namespace laplace::engine::eval::grid {
-  using std::span, std::min, std::function, astar::vlink, astar::link;
+  using std::span, std::min, std::function, astar::link;
 
   void merge(const vec2z size, const span<int8_t> dst,
              const span<const int8_t> src, const op merge_op) noexcept {
@@ -154,80 +154,85 @@ namespace laplace::engine::eval::grid {
 
   auto neighbors4(const sl::index width, const intval scale,
                   const span<const int8_t> map,
-                  const fn_available available, const sl::index p)
-      -> vlink {
+                  const fn_available       available,
+                  const sl::index position, const sl::index n) -> link {
 
-    if (p < 0 || p >= map.size()) {
+    if (position < 0 || position >= map.size()) {
       return {};
     }
 
-    const auto x = p % width;
-    const auto y = p / width;
+    const auto x = position % width;
+    const auto y = position / width;
 
     if (x <= 0 || y <= 0 || x >= width - 1) {
       return {};
     }
 
-    if (!available(map[p])) {
+    if (!available(map[position])) {
       return {};
     }
 
-    auto v = vlink {};
-    v.reserve(4);
+    auto check = [&](sl::index p) -> link {
+      if (p < 0 || p >= map.size() || !available(map[p]))
+        return { .node = link::skip };
 
-    auto add = [&](sl::index n) {
-      if (n >= 0 && n < map.size() && available(map[n]))
-        v.emplace_back(link { .node = n, .distance = scale });
+      return link { .node = p, .distance = scale };
     };
 
-    add(p - width);
-    add(p + width);
-    add(p - 1);
-    add(p + 1);
+    switch (n) {
+      case 0: return check(position - width);
+      case 1: return check(position + width);
+      case 2: return check(position - 1);
+      case 3: return check(position + 1);
+    }
 
-    return v;
+    return {};
   }
 
   auto neighbors8(const sl::index width, const intval scale,
                   const span<const int8_t> map,
-                  const fn_available available, const sl::index p)
-      -> vlink {
+                  const fn_available       available,
+                  const sl::index position, const sl::index n) -> link {
 
-    if (p < 0 || p >= map.size()) {
+    if (position < 0 || position >= map.size()) {
       return {};
     }
 
-    const auto x = p % width;
-    const auto y = p / width;
+    const auto x = position % width;
+    const auto y = position / width;
 
     if (x <= 0 || y <= 0 || x >= width - 1) {
       return {};
     }
 
-    if (!available(map[p])) {
+    if (!available(map[position])) {
       return {};
+    }
+
+    auto check = [&](sl::index p, intval distance) -> link {
+      if (p < 0 || p >= map.size() || !available(map[p]))
+        return { .node = link::skip };
+
+      return link { .node = p, .distance = distance };
+    };
+
+    switch (n) {
+      case 0: return check(position - width, scale);
+      case 1: return check(position + width, scale);
+      case 2: return check(position - 1, scale);
+      case 3: return check(position + 1, scale);
     }
 
     const auto d = scale > 1 ? eval::sqrt2(scale) : 1;
 
-    auto v = vlink {};
-    v.reserve(8);
+    switch (n) {
+      case 4: return check(position - width - 1, d);
+      case 5: return check(position - width + 1, d);
+      case 6: return check(position + width - 1, d);
+      case 7: return check(position + width + 1, d);
+    }
 
-    auto add = [&](sl::index n, intval d) {
-      if (n >= 0 && n < map.size() && available(map[n]))
-        v.emplace_back(link { .node = n, .distance = d });
-    };
-
-    add(p - width, scale);
-    add(p + width, scale);
-    add(p - 1, scale);
-    add(p + 1, scale);
-    add(p - width - 1, d);
-    add(p - width + 1, d);
-    add(p + width - 1, d);
-    add(p + width + 1, d);
-
-    return v;
+    return {};
   }
 
   auto manhattan(const sl::index width, const intval scale,
@@ -309,8 +314,9 @@ namespace laplace::engine::eval::grid {
     };
 
     const auto neighbors = [width, &map,
-                            &available](const sl::index p) -> vlink {
-      return neighbors8(width, 1, map, available, p);
+                            &available](const sl::index p,
+                                        const sl::index n) -> link {
+      return neighbors8(width, 1, map, available, p, n);
     };
 
     const auto index_of = [width](const vec2z p) {
@@ -368,9 +374,9 @@ namespace laplace::engine::eval::grid {
       return euclidean(width, scale, a, b);
     };
 
-    s.neighbors = [width, scale, map,
-                   available](const sl::index p) -> vlink {
-      return neighbors8(width, scale, map, available, p);
+    s.neighbors = [width, scale, map, available](
+                      const sl::index p, const sl::index n) -> link {
+      return neighbors8(width, scale, map, available, p, n);
     };
 
     s.sight = [size, available, map](const sl::index a,

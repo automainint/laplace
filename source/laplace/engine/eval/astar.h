@@ -47,16 +47,16 @@ namespace laplace::engine::eval::astar {
   };
 
   struct link {
-    sl::index node     = _invalid_index;
+    enum node_value : sl::index { invalid = -1, skip = -2 };
+    sl::index node     = invalid;
     intval    distance = 0;
   };
-
-  using vlink = sl::vector<link>;
 
   using fn_sight =
       std::function<bool(const sl::index a, const sl::index b)>;
 
-  using fn_neighbors = std::function<vlink(const sl::index node)>;
+  using fn_neighbors =
+      std::function<link(const sl::index node, const sl::index n)>;
 
   using fn_heuristic =
       std::function<intval(const sl::index a, const sl::index b)>;

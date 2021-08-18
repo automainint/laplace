@@ -25,9 +25,8 @@ namespace quadwar_app::object {
   game_clock::game_clock(basic_entity::proto_tag) :
       basic_entity(tick_period) {
 
-    setup_sets(                             //
-        { { .id    = sets::game_clock_time, //
-            .scale = sets::scale_time } });
+    setup_sets({ { .id    = sets::game_clock_time,
+                   .scale = sets::scale_time } });
 
     n_clock_time = index_of(sets::game_clock_time);
   }

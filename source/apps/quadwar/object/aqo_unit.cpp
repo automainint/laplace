@@ -374,6 +374,7 @@ namespace quadwar_app::object {
         path, { x0, y0 }, { x1, y1 }, foot.size, foot.bytes);
 
     if (waypoints.size() < 2) {
+      set(n_state, s_stand);
       return;
     }
 

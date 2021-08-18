@@ -47,13 +47,15 @@ namespace laplace::engine::eval::grid {
 
   auto neighbors4(const sl::index width, const intval scale,
                   const std::span<const int8_t> map,
-                  const fn_available available, const sl::index p)
-      -> astar::vlink;
+                  const fn_available            available,
+                  const sl::index position, const sl::index n)
+      -> astar::link;
 
   auto neighbors8(const sl::index width, const intval scale,
                   const std::span<const int8_t> map,
-                  const fn_available available, const sl::index p)
-      -> astar::vlink;
+                  const fn_available            available,
+                  const sl::index position, const sl::index n)
+      -> astar::link;
 
   auto manhattan(const sl::index width, const intval scale,
                  const sl::index a, const sl::index b) -> intval;

@@ -60,19 +60,6 @@ namespace laplace::engine::eval::astar {
                    const fn_heuristic       heuristic,
                    _state<_nearest, _node> &state) noexcept -> status {
 
-    const auto make_neighs = [&](const sl::index index) {
-      const auto ns    = neighbors(index);
-      auto       nodes = sl::vector<_node>(ns.size());
-
-      for (sl::index i = 0; i < ns.size(); i++) {
-        nodes[i].index  = ns[i].node;
-        nodes[i].g      = ns[i].distance;
-        nodes[i].parent = index;
-      }
-
-      return nodes;
-    };
-
     if (state.open.empty()) {
       return status::failed;
     }
@@ -80,9 +67,24 @@ namespace laplace::engine::eval::astar {
     _node q = state.open.back();
     state.open.pop_back();
 
-    auto neigs = make_neighs(q.index);
+    auto n = _node {};
 
-    for (auto &n : neigs) {
+    for (auto k = 0;; k++) {
+      const auto l = neighbors(q.index, k);
+
+      if (l.node == link::skip) {
+        continue;
+      }
+
+      if (l.node == link::invalid) {
+        break;
+      }
+
+      n        = _node {};
+      n.index  = l.node;
+      n.parent = q.index;
+      n.g      = l.distance;
+
       auto is_sight = [&]() {
         return q.parent != _invalid_index && sight(q.parent, n.index);
       };

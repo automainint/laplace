@@ -16,7 +16,7 @@
 namespace laplace::test {
   namespace astar = engine::eval::astar;
 
-  using std::max, engine::intval, astar::vlink, astar::link;
+  using std::max, engine::intval, astar::link;
 
   TEST(engine, eval_astar_exists) {
     constexpr auto width  = 20;
@@ -40,17 +40,22 @@ namespace laplace::test {
       return false;
     };
 
-    auto neighbours = [&](const sl::index node) -> vlink {
+    auto neighbours = [&](const sl::index node,
+                          const sl::index n) -> link {
       if (node < 0 || node >= map.size())
         return {};
 
       if (map[node] == 1)
         return {};
 
-      return { link { .node = node - 1, .distance = 1 },
-               link { .node = node + 1, .distance = 1 },
-               link { .node = node - width, .distance = 1 },
-               link { .node = node + width, .distance = 1 } };
+      switch (n) {
+        case 0: return { .node = node - 1, .distance = 1 };
+        case 1: return { .node = node + 1, .distance = 1 };
+        case 2: return { .node = node - width, .distance = 1 };
+        case 3: return { .node = node + width, .distance = 1 };
+      }
+
+      return {};
     };
 
     auto heuristic = [&](const sl::index a,
@@ -115,17 +120,22 @@ namespace laplace::test {
       return false;
     };
 
-    auto neighbours = [&](const sl::index node) -> vlink {
+    auto neighbours = [&](const sl::index node,
+                          const sl::index n) -> link {
       if (node < 0 || node >= map.size())
         return {};
 
       if (map[node] == 1)
         return {};
 
-      return { link { .node = node - 1, .distance = 10 },
-               link { .node = node + 1, .distance = 10 },
-               link { .node = node - width, .distance = 10 },
-               link { .node = node + width, .distance = 10 } };
+      switch (n) {
+        case 0: return { .node = node - 1, .distance = 10 };
+        case 1: return { .node = node + 1, .distance = 10 };
+        case 2: return { .node = node - width, .distance = 10 };
+        case 3: return { .node = node + width, .distance = 10 };
+      };
+
+      return {};
     };
 
     auto heuristic = [&](const sl::index a,
@@ -212,17 +222,22 @@ namespace laplace::test {
                                                 1, 0, 0, 0, 0, 1, //
                                                 1, 1, 1, 1, 1, 1 };
 
-    auto neighbours = [&](const sl::index node) -> vlink {
+    auto neighbours = [&](const sl::index node,
+                          const sl::index n) -> link {
       if (node < 0 || node >= map.size())
         return {};
 
       if (map[node] == 1)
         return {};
 
-      return { link { .node = node - 1, .distance = 10 },
-               link { .node = node + 1, .distance = 10 },
-               link { .node = node - width, .distance = 10 },
-               link { .node = node + width, .distance = 10 } };
+      switch (n) {
+        case 0: return { .node = node - 1, .distance = 10 };
+        case 1: return { .node = node + 1, .distance = 10 };
+        case 2: return { .node = node - width, .distance = 10 };
+        case 3: return { .node = node + width, .distance = 10 };
+      };
+
+      return {};
     };
 
     auto heuristic = [&](const sl::index a,
