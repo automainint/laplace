@@ -50,6 +50,11 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR args, int) -> int {
   int  status = 0;
   bool run    = true;
 
+  laplace::platform::set_thread_priority(
+      laplace::platform::priority::highest);
+
+  laplace::platform::set_realtime_mode(true);
+
   if (scan_flag(argc, argv, f_tests, a_tests)) {
     run    = false;
     status = run_tests(argc, argv);

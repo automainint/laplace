@@ -16,10 +16,16 @@
 #include "../core/slib.h"
 #include "events.h"
 #include "opengl.h"
+#include "thread.h"
 #include <cstdint>
 #include <string>
 
 namespace laplace::platform::dummy {
+  inline void set_background_mode(bool is_background_mode) { }
+  inline void set_realtime_mode(bool is_realtime_mode) { }
+  inline void set_thread_priority(int priority) { }
+  inline void set_thread_priority(std::thread &th, int priority) { }
+
   inline auto gl_init() -> bool {
     return false;
   }
