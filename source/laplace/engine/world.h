@@ -26,7 +26,7 @@
 namespace laplace::engine {
   class world : public std::enable_shared_from_this<world> {
   public:
-    static constexpr bool default_allow_relaxed_spawn = false;
+    static const bool default_allow_relaxed_spawn;
 
     world(const world &) = delete;
     auto operator=(const world &) -> world & = delete;

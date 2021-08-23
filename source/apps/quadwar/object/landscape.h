@@ -64,49 +64,21 @@ namespace quadwar_app::object {
     static void set_start_loc(entity en, sl::index n,
                               engine::vec2z start_loc);
 
-    static void set_tiles(entity en, const sl::vector<int8_t> &tiles);
+    static void set_tiles(entity en, std::span<const int8_t> tiles);
 
     static void set_size(entity en, sl::whole width, sl::whole height);
 
     static void set_start_locs(entity                         en,
                                std::span<const engine::vec2z> locs);
 
-  protected:
-    auto do_request(sl::index id, span_cbyte args) const
-        -> vbyte override;
-    void do_modify(sl::index id, span_cbyte args) override;
-
   private:
-    enum args_offset : sl::index {
-      args_x           = 0,
-      args_y           = args_x + sizeof(sl::index),
-      args_tile        = args_y + sizeof(sl::index),
-      args_width       = 0,
-      args_height      = args_width + sizeof(sl::index),
-      args_start_loc   = 0,
-      args_start_loc_x = args_start_loc + sizeof(sl::index),
-      args_start_loc_y = args_start_loc_x + sizeof(sl::index)
-    };
-
     landscape(proto_tag);
-
-    [[nodiscard]] auto get_tile(sl::index x, sl::index y) const
-        -> int8_t;
-    [[nodiscard]] auto get_start_loc(sl::index index) const
-        -> engine::vec2z;
-
-    void set_tile(sl::index x, sl::index y, int8_t value);
-    void set_size(sl::index width, sl::index height);
-    void set_start_loc(sl::index index, const engine::vec2z loc);
 
     static sl::index n_version;
     static sl::index n_width;
     static sl::index n_height;
 
     static landscape m_proto;
-
-    sl::vector<int8_t>        m_tiles;
-    sl::vector<engine::vec2z> m_start_locs;
   };
 }
 

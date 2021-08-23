@@ -11,6 +11,7 @@
  */
 
 #include "string.h"
+
 #include "utf8.h"
 #include <cstdarg>
 #include <sstream>
@@ -81,7 +82,7 @@ namespace laplace {
     auto result = string {};
     auto c      = char32_t {};
 
-    for (size_t i = 0; decode(s, i, c);) {
+    for (sl::index i = 0; decode(s, i, c);) {
       if ((c & 0xffffff00) == 0) {
         result.append(1, static_cast<char>(c));
       } else {
@@ -96,7 +97,7 @@ namespace laplace {
     auto result = wstring {};
     auto c      = char32_t {};
 
-    for (size_t i = 0; decode(s, i, c);) {
+    for (sl::index i = 0; decode(s, i, c);) {
       if ((c & 0xffff0000) == 0) {
         result.append(1, static_cast<wchar_t>(c));
       } else {
@@ -111,7 +112,7 @@ namespace laplace {
     auto buf = string(s);
     auto ss  = istringstream(buf);
 
-    int64_t n;
+    auto n = int64_t {};
     ss >> n;
 
     return n;
@@ -121,7 +122,7 @@ namespace laplace {
     auto buf = string(as_ascii_string(s));
     auto ss  = istringstream(buf);
 
-    int64_t n;
+    auto n = int64_t {};
     ss >> n;
 
     return n;
@@ -131,7 +132,7 @@ namespace laplace {
     auto buf = string(s);
     auto ss  = istringstream(buf);
 
-    uint64_t n;
+    auto n = uint64_t {};
     ss >> n;
 
     return n;
@@ -141,7 +142,7 @@ namespace laplace {
     auto buf = string(as_ascii_string(s));
     auto ss  = istringstream(buf);
 
-    uint64_t n;
+    auto n = uint64_t {};
     ss >> n;
 
     return n;
@@ -151,7 +152,7 @@ namespace laplace {
     auto buf = string(s);
     auto ss  = istringstream(buf);
 
-    double f;
+    auto f = double {};
     ss >> f;
 
     return f;
@@ -161,7 +162,7 @@ namespace laplace {
     auto buf = string(as_ascii_string(s));
     auto ss  = istringstream(buf);
 
-    double f;
+    auto f = double {};
     ss >> f;
 
     return f;

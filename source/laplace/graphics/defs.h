@@ -13,6 +13,7 @@
 #ifndef laplace_graphics_defs_h
 #define laplace_graphics_defs_h
 
+#include "../core/slib.h"
 #include "../math/matrix.h"
 #include "../math/quaternion.h"
 #include "../math/vector.h"

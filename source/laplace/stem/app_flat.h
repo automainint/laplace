@@ -21,8 +21,8 @@
 namespace laplace::stem {
   class app_flat : public application {
   public:
-    static constexpr graphics::vec4 clear_color = //
-        { .1f, .09f, .12f, 1.f };
+    static constexpr graphics::vec4 clear_color = { .1f, .09f, .12f,
+                                                    1.f };
 
     app_flat(int argc, char **argv, core::cref_family def_cfg);
     ~app_flat() override;
@@ -32,7 +32,7 @@ namespace laplace::stem {
     void cleanup() override;
     void update(uint64_t delta_msec) override;
     void render() override;
-    void adjust_layout(int width, int height) override;
+    void adjust_layout(sl::whole width, sl::whole height) override;
 
     ui::ptr_frame m_ui;
   };

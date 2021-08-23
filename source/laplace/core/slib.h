@@ -44,6 +44,10 @@ namespace laplace::sl {
    */
   using whole = ptrdiff_t;
 
+  /*  Integer time value.
+   */
+  using time = int64_t;
+
   using index64 = int64_t;
   using whole64 = int64_t;
 }

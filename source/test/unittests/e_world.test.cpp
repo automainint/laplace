@@ -46,12 +46,12 @@ namespace laplace::test {
     }
 
   private:
-    size_t n_value = 0;
+    sl::index n_value = 0;
   };
 
   class my_additioner : public basic_impact {
   public:
-    my_additioner(size_t id_entity, int64_t delta) {
+    my_additioner(sl::index id_entity, int64_t delta) {
       m_id    = id_entity;
       m_delta = delta;
     }
@@ -64,8 +64,8 @@ namespace laplace::test {
     }
 
   private:
-    size_t  m_id    = 0;
-    int64_t m_delta = 0;
+    sl::index m_id    = 0;
+    int64_t   m_delta = 0;
   };
 
   TEST(engine, world_single_thread) {
@@ -110,12 +110,12 @@ namespace laplace::test {
 
     const auto id = a->spawn(e, id_undefined);
 
-    for (size_t i = 0; i < 100; i++) {
+    for (sl::index i = 0; i < 100; i++) {
       a->queue(make_shared<my_additioner>(id, 1));
       a->queue(make_shared<my_additioner>(id, -1));
     }
 
-    for (size_t i = 0; i < 100; i++) {
+    for (sl::index i = 0; i < 100; i++) {
       a->queue(make_shared<my_additioner>(id, 1));
     }
 

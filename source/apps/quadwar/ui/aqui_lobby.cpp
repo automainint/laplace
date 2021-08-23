@@ -57,7 +57,7 @@ namespace quadwar_app::ui {
     }
   }
 
-  void lobby::adjust_layout(int width, int height) {
+  void lobby::adjust_layout(sl::whole width, sl::whole height) {
     m_info->set_rect({ side_size + spacing,
                        height - line_height * 2 + spacing,
                        width - spacing * 2 - side_size * 2,

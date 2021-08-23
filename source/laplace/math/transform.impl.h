@@ -13,8 +13,6 @@
 #ifndef laplace_math_transform_impl_h
 #define laplace_math_transform_impl_h
 
-namespace laplace::math {
-
-}
+namespace laplace::math { }
 
 #endif

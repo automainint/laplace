@@ -10,12 +10,15 @@
  *  the MIT License for more details.
  */
 
-#include "basic_impact.h"
 #include "world.h"
+
+#include "basic_impact.h"
 #include <algorithm>
 
 namespace laplace::engine {
   using std::make_shared, std::unique_lock, std::shared_lock;
+
+  const bool world::default_allow_relaxed_spawn = false;
 
   world::world() {
     m_scheduler = make_unique<scheduler>(*this);
@@ -197,53 +200,51 @@ namespace laplace::engine {
   }
 
   void world::schedule(uint64_t delta) {
-    if (m_scheduler) {
-      if (m_scheduler->get_thread_count() <= 0) {
-        auto _ul = unique_lock(m_lock);
+    if (get_thread_count() <= 0) {
+      auto _ul = unique_lock(m_lock);
 
-        for (uint64_t t = 0; t < delta; t++) {
-          while (!m_sync_queue.empty() || !m_queue.empty()) {
-            for (sl::index i = 0; i < m_sync_queue.size(); i++) {
-              _ul.unlock();
-
-              m_sync_queue[i]->perform({ *this, access::sync });
-
-              _ul.lock();
-            }
-
-            m_sync_queue.clear();
-
-            for (sl::index i = 0; i < m_queue.size(); i++) {
-              _ul.unlock();
-
-              m_queue[i]->perform({ *this, access::async });
-
-              _ul.lock();
-            }
-
-            m_queue.clear();
-          }
-
-          for (sl::index i = 0; i < m_dynamic_ids.size(); i++) {
+      for (uint64_t t = 0; t < delta; t++) {
+        while (!m_sync_queue.empty() || !m_queue.empty()) {
+          for (sl::index i = 0; i < m_sync_queue.size(); i++) {
             _ul.unlock();
 
-            auto &en = m_entities[m_dynamic_ids[i]];
-
-            if (en->clock())
-              en->tick({ *this, access::async });
+            m_sync_queue[i]->perform({ *this, access::sync });
 
             _ul.lock();
           }
 
-          for (auto &e : m_entities) {
-            if (e)
-              e->adjust();
+          m_sync_queue.clear();
+
+          for (sl::index i = 0; i < m_queue.size(); i++) {
+            _ul.unlock();
+
+            m_queue[i]->perform({ *this, access::async });
+
+            _ul.lock();
           }
+
+          m_queue.clear();
         }
 
-      } else {
-        m_scheduler->schedule(delta);
+        for (sl::index i = 0; i < m_dynamic_ids.size(); i++) {
+          _ul.unlock();
+
+          auto &en = m_entities[m_dynamic_ids[i]];
+
+          if (en->clock())
+            en->tick({ *this, access::async });
+
+          _ul.lock();
+        }
+
+        for (auto &e : m_entities) {
+          if (e)
+            e->adjust();
+        }
       }
+
+    } else {
+      m_scheduler->schedule(delta);
     }
   }
 
@@ -294,11 +295,11 @@ namespace laplace::engine {
   auto world::get_entity(sl::index id) -> ptr_entity {
     auto _sl = shared_lock(m_lock);
 
-    if (id < m_entities.size()) {
-      return m_entities[id];
+    if (id < 0 || id >= m_entities.size()) {
+      return {};
     }
 
-    return {};
+    return m_entities[id];
   }
 
   void world::desync() {
@@ -322,15 +323,15 @@ namespace laplace::engine {
   }
 
   void world::locked_add_dynamic(sl::index id) {
-    auto it = lower_bound(
-        m_dynamic_ids.begin(), m_dynamic_ids.end(), id);
+    auto it = lower_bound(m_dynamic_ids.begin(), m_dynamic_ids.end(),
+                          id);
 
     m_dynamic_ids.emplace(it, id);
   }
 
   void world::locked_erase_dynamic(sl::index id) {
-    auto it = lower_bound(
-        m_dynamic_ids.begin(), m_dynamic_ids.end(), id);
+    auto it = lower_bound(m_dynamic_ids.begin(), m_dynamic_ids.end(),
+                          id);
 
     if (it != m_dynamic_ids.end() && *it == id) {
       m_dynamic_ids.erase(it);
@@ -341,9 +342,9 @@ namespace laplace::engine {
     auto _ul = unique_lock(m_lock);
 
     if (m_index <= m_sync_queue.size()) {
-      m_sync_queue.erase(
-          m_sync_queue.begin(),
-          m_sync_queue.begin() + static_cast<ptrdiff_t>(m_index));
+      m_sync_queue.erase(m_sync_queue.begin(),
+                         m_sync_queue.begin() +
+                             static_cast<ptrdiff_t>(m_index));
 
       m_index = 0;
     }

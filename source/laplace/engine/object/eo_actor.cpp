@@ -11,10 +11,11 @@
  */
 
 #include "actor.h"
+
 #include "sets.h"
 
 namespace laplace::engine::object {
-  size_t actor::n_is_local = 0;
+  sl::index actor::n_is_local = 0;
 
   actor::actor(dummy_tag) : basic_entity(actor::dummy) { }
 

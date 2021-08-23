@@ -14,27 +14,27 @@
 #define laplace_graphics_image_impl_h
 
 namespace laplace::graphics {
-  inline auto image::get_mip_count() const -> size_t {
+  inline auto image::get_mip_count() const -> sl::whole {
     return this->m_mip_count;
   }
 
-  inline auto image::get_width() const -> size_t {
+  inline auto image::get_width() const -> sl::whole {
     return this->m_width;
   }
 
-  inline auto image::get_height() const -> size_t {
+  inline auto image::get_height() const -> sl::whole {
     return this->m_height;
   }
 
-  inline auto image::get_depth() const -> size_t {
+  inline auto image::get_depth() const -> sl::whole {
     return this->m_depth;
   }
 
-  inline auto image::get_plane() const -> size_t {
+  inline auto image::get_plane() const -> sl::whole {
     return this->m_plane;
   }
 
-  inline auto image::get_size_bytes() const -> size_t {
+  inline auto image::get_size_bytes() const -> sl::whole {
     return m_width * m_height * m_depth * sizeof(pixel);
   }
 

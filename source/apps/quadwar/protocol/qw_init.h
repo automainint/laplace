@@ -20,8 +20,7 @@ namespace quadwar_app::protocol {
   using init_lambda = decltype([](world w) {
     verb(" :: event  Quadwar/server_init");
 
-    auto root = std::make_shared<object::root>();
-    w.set_root(w.spawn(root, engine::id_undefined));
+    object::root::create(w);
   });
 
   using qw_init = event_handler<server_init, init_lambda>;

@@ -13,7 +13,7 @@
 #ifndef laplace_ui_widget_h
 #define laplace_ui_widget_h
 
-#include "../platform/wrap.h"
+#include "../core/input_handler.h"
 #include "layout.h"
 #include <memory>
 #include <vector>
@@ -35,36 +35,35 @@ namespace laplace::ui {
     /*  Widget live loop. Returns true if
      *  any event was handled.
      */
-    virtual auto tick(                  //
-        uint64_t            delta_msec, //
-        platform::ref_input in,         //
-        bool                is_handled) -> bool;
+    virtual auto tick(uint64_t delta_msec, core::cref_input_handler in,
+                      bool is_handled) -> bool;
 
     virtual void render();
 
     /*  Check if the widget allowed to handle
      *  an event in specified location.
      */
-    [[nodiscard]] virtual auto event_allowed(int x, int y) -> bool;
+    [[nodiscard]] virtual auto event_allowed(sl::index x, sl::index y)
+        -> bool;
 
     void set_layout(layout fn);
-    void set_level(size_t level);
+    void set_level(sl::index level);
     void set_rect(cref_rect r);
     void set_visible(bool state);
     void set_enabled(bool state);
     void set_focus(bool has_focus);
-    void move_to(int x, int y);
+    void move_to(sl::index x, sl::index y);
 
     void clear();
-    auto attach(ptr_widget child) -> size_t;
+    auto attach(ptr_widget child) -> sl::index;
     void detach(ptr_widget child);
-    void detach(size_t child_index);
+    void detach(sl::index child_index);
 
-    [[nodiscard]] auto get_level() const -> size_t;
+    [[nodiscard]] auto get_level() const -> sl::index;
     [[nodiscard]] auto get_rect() const -> cref_rect;
 
-    [[nodiscard]] auto get_absolute_x() const -> int;
-    [[nodiscard]] auto get_absolute_y() const -> int;
+    [[nodiscard]] auto get_absolute_x() const -> sl::index;
+    [[nodiscard]] auto get_absolute_y() const -> sl::index;
     [[nodiscard]] auto get_absolute_rect() const -> rect;
 
     /*  Set focus to next enabled
@@ -90,7 +89,7 @@ namespace laplace::ui {
     [[nodiscard]] auto is_enabled() const -> bool;
     [[nodiscard]] auto is_attached() const -> bool;
     [[nodiscard]] auto has_focus() const -> bool;
-    [[nodiscard]] auto get_child_count() const -> size_t;
+    [[nodiscard]] auto get_child_count() const -> sl::whole;
 
     /*  Get parent widget.
      */
@@ -98,7 +97,7 @@ namespace laplace::ui {
 
     /*  Get child widget by index.
      */
-    [[nodiscard]] auto get_child(size_t index) const -> ptr_widget;
+    [[nodiscard]] auto get_child(sl::index index) const -> ptr_widget;
 
     static void prepare();
 
@@ -112,36 +111,34 @@ namespace laplace::ui {
     void draw_childs();
     void up_to_date();
 
-    auto widget_tick(                   //
-        uint64_t            delta_msec, //
-        platform::ref_input in,         //
-        bool                is_handled) -> bool;
+    auto widget_tick(uint64_t delta_msec, core::cref_input_handler in,
+                     bool is_handled) -> bool;
 
     void widget_render();
 
     [[nodiscard]] auto is_widget_changed() -> bool;
 
   private:
-    void update_indices(size_t begin);
+    void update_indices(sl::index begin);
     void adjust_layout();
     void refresh_childs();
 
     bool m_expired        = true;
     bool m_expired_childs = true;
 
-    layout m_layout;
-    size_t m_level = 0;
-    rect   m_rect;
-    int    m_absolute_x   = 0;
-    int    m_absolute_y   = 0;
-    bool   m_is_changed   = true;
-    bool   m_is_visible   = true;
-    bool   m_is_enabled   = true;
-    bool   m_is_handler   = false;
-    bool   m_is_attached  = false;
-    bool   m_has_focus    = false;
-    size_t m_attach_index = 0;
-    size_t m_focus_index  = 0;
+    layout    m_layout;
+    sl::index m_level = 0;
+    rect      m_rect;
+    sl::index m_absolute_x   = 0;
+    sl::index m_absolute_y   = 0;
+    bool      m_is_changed   = true;
+    bool      m_is_visible   = true;
+    bool      m_is_enabled   = true;
+    bool      m_is_handler   = false;
+    bool      m_is_attached  = false;
+    bool      m_has_focus    = false;
+    sl::index m_attach_index = 0;
+    sl::index m_focus_index  = 0;
 
     vptr_widget           m_childs;
     std::weak_ptr<widget> m_parent;

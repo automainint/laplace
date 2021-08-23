@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../core/string.h"
 #include "udp_node.h"
+
+#include "../core/string.h"
 #include "utils.h"
 
 namespace laplace::network {
@@ -68,9 +69,9 @@ namespace laplace::network {
     }
   }
 
-  auto udp_node::receive_to(uint8_t *p, size_t count, io_mode mode)
-      -> size_t {
-    size_t size = 0;
+  auto udp_node::receive_to(uint8_t *p, sl::whole count, io_mode mode)
+      -> sl::whole {
+    sl::whole size = 0;
 
     m_is_msgsize   = false;
     m_is_connreset = false;
@@ -113,8 +114,8 @@ namespace laplace::network {
 
       if (is_sync) {
         if (!set_mode(m_socket, async)) {
-          verb(fmt(
-              "UDP: ioctlsocket failed (code %d).", socket_error()));
+          verb(fmt("UDP: ioctlsocket failed (code %d).",
+                   socket_error()));
         }
       }
     }
@@ -122,7 +123,7 @@ namespace laplace::network {
     return size;
   }
 
-  auto udp_node::receive(size_t count, io_mode mode) -> vbyte {
+  auto udp_node::receive(sl::whole count, io_mode mode) -> vbyte {
     vbyte seq;
 
     if (m_socket != -1) {
@@ -134,8 +135,8 @@ namespace laplace::network {
   }
 
   auto udp_node::send_to(string_view address, uint16_t port,
-                         span_cbyte seq) -> size_t {
-    size_t result = 0;
+                         span_cbyte seq) -> sl::whole {
+    sl::whole result = 0;
 
     sockaddr_in name;
     memset(&name, 0, sizeof name);
@@ -143,8 +144,8 @@ namespace laplace::network {
     name.sin_family = AF_INET;
     name.sin_port   = ::htons(port);
 
-    const auto status = ::inet_pton(
-        AF_INET, address.data(), &name.sin_addr.s_addr);
+    const auto status = ::inet_pton(AF_INET, address.data(),
+                                    &name.sin_addr.s_addr);
 
     if (status != 1) {
       verb(fmt("UDP: inet_pton failed (code %d).", socket_error()));
@@ -191,8 +192,8 @@ namespace laplace::network {
   }
 
   auto udp_node::send_internal(const sockaddr_in &name, span_cbyte seq)
-      -> size_t {
-    size_t count = 0;
+      -> sl::whole {
+    sl::whole count = 0;
 
     if (m_socket != -1) {
       auto buf     = reinterpret_cast<const char *>(seq.data());
@@ -202,8 +203,8 @@ namespace laplace::network {
       for (; count < seq.size();) {
         auto part = clamp_chunk(seq.size() - count);
 
-        auto n = ::sendto(
-            m_socket, buf + count, part, 0, addr, sizeof name);
+        auto n = ::sendto(m_socket, buf + count, part, 0, addr,
+                          sizeof name);
 
         if (n != -1) {
           if (n <= 0) {
@@ -230,8 +231,8 @@ namespace laplace::network {
 
       if (is_sync) {
         if (!set_mode(m_socket, async)) {
-          verb(fmt(
-              "UDP: ioctlsocket failed (code %d).", socket_error()));
+          verb(fmt("UDP: ioctlsocket failed (code %d).",
+                   socket_error()));
         }
       }
     }

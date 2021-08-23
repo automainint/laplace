@@ -10,18 +10,19 @@
  *  the MIT License for more details.
  */
 
-#include "../action/remove.h"
 #include "timer.h"
+
+#include "../action/remove.h"
 
 namespace laplace::engine::object {
   timer timer::m_proto(timer::proto);
 
   timer::timer(proto_tag) : basic_entity(default_tick_period) { }
 
-  timer::timer(impact_gen gen, uint64_t period, size_t count) {
+  timer::timer(impact_gen gen, intval period, sl::whole count) {
     *this = m_proto;
 
-    init(n_tick_period, static_cast<int64_t>(period));
+    init(n_tick_period, period);
 
     reset_clock();
 

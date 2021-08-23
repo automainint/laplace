@@ -22,15 +22,15 @@ namespace laplace::ui::text {
     return { 0, 0, 0 };
   }
 
-  void renderer::render(int x, int y, u8string_view text) { }
+  void renderer::render(sl::index x, sl::index y, u8string_view text) {
+  }
 
   auto renderer::get_default() -> ptr_renderer {
     auto p = m_default.lock();
 
     if (!p) {
-      p = make_shared<wrap>(      //
-          painter::get_default(), //
-          ptr_context()           /* late init */
+      p = make_shared<wrap>(painter::get_default(),
+                            ptr_context() /* late init */
       );
 
       m_default = p;

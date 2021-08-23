@@ -21,12 +21,12 @@ namespace laplace::network {
 
   class server {
   public:
-    static constexpr bool     default_verbose                 = false;
-    static constexpr uint64_t default_tick_duration_msec      = 10;
-    static constexpr uint64_t default_update_timeout_msec     = 10;
-    static constexpr uint64_t default_ping_timeout_msec       = 100;
-    static constexpr uint64_t default_connection_timeout_msec = 5000;
-    static constexpr size_t   default_overtake_factor         = 3;
+    static const bool      default_verbose;
+    static const uint64_t  default_tick_duration_msec;
+    static const uint64_t  default_update_timeout_msec;
+    static const uint64_t  default_ping_timeout_msec;
+    static const uint64_t  default_connection_timeout_msec;
+    static const sl::whole default_overtake_factor;
 
     server() = default;
     virtual ~server();
@@ -46,11 +46,11 @@ namespace laplace::network {
     [[nodiscard]] auto get_ping() const noexcept -> uint64_t;
 
     [[nodiscard]] auto get_state() const noexcept -> server_state;
-    [[nodiscard]] auto get_tick_duration() noexcept -> size_t;
+    [[nodiscard]] auto get_tick_duration() noexcept -> sl::whole;
 
-    [[nodiscard]] auto get_bytes_sent() const noexcept -> size_t;
-    [[nodiscard]] auto get_bytes_received() const noexcept -> size_t;
-    [[nodiscard]] auto get_bytes_loss() const noexcept -> size_t;
+    [[nodiscard]] auto get_bytes_sent() const noexcept -> sl::whole;
+    [[nodiscard]] auto get_bytes_received() const noexcept -> sl::whole;
+    [[nodiscard]] auto get_bytes_loss() const noexcept -> sl::whole;
 
     [[nodiscard]] auto is_connected() const noexcept -> bool;
     [[nodiscard]] auto is_quit() const noexcept -> bool;
@@ -80,9 +80,9 @@ namespace laplace::network {
     void set_state(server_state state) noexcept;
 
     void reset_tick() noexcept;
-    void add_bytes_sent(size_t count) noexcept;
-    void add_bytes_received(size_t count) noexcept;
-    void add_bytes_loss(size_t count) noexcept;
+    void add_bytes_sent(sl::whole count) noexcept;
+    void add_bytes_received(sl::whole count) noexcept;
+    void add_bytes_loss(sl::whole count) noexcept;
 
     /*  Update tick timer. Returns time
      *  delta in ticks.
@@ -95,8 +95,11 @@ namespace laplace::network {
 
     [[nodiscard]] auto get_update_timeout() const noexcept -> uint64_t;
     [[nodiscard]] auto get_ping_timeout() const noexcept -> uint64_t;
-    [[nodiscard]] auto get_overtake_factor() const noexcept -> size_t;
+    [[nodiscard]] auto get_overtake_factor() const noexcept
+        -> sl::whole;
 
+    void verb_queue(sl::index n, span_cbyte seq);
+    void verb_slot(sl::index slot, sl::index n, span_cbyte seq);
     void dump(span_cbyte bytes);
 
   private:
@@ -112,17 +115,17 @@ namespace laplace::network {
     uint64_t m_tick_clock_msec         = 0;
     uint64_t m_tick_duration_msec      = default_tick_duration_msec;
     uint64_t m_connection_timeout_msec = default_connection_timeout_msec;
-    uint64_t m_update_timeout_msec     = default_update_timeout_msec;
-    uint64_t m_ping_timeout_msec       = default_ping_timeout_msec;
-    size_t   m_overtake_factor         = default_overtake_factor;
+    uint64_t  m_update_timeout_msec    = default_update_timeout_msec;
+    uint64_t  m_ping_timeout_msec      = default_ping_timeout_msec;
+    sl::whole m_overtake_factor        = default_overtake_factor;
 
-    size_t m_bytes_sent     = 0;
-    size_t m_bytes_received = 0;
-    size_t m_bytes_loss     = 0;
+    sl::whole m_bytes_sent     = 0;
+    sl::whole m_bytes_received = 0;
+    sl::whole m_bytes_loss     = 0;
 
-    size_t m_total_sent     = 0;
-    size_t m_total_received = 0;
-    size_t m_total_loss     = 0;
+    sl::whole m_total_sent     = 0;
+    sl::whole m_total_received = 0;
+    sl::whole m_total_loss     = 0;
 
     server_state m_state = server_state::prepare;
   };

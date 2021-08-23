@@ -21,7 +21,7 @@
 namespace laplace {
   class bytestreambuf : public std::streambuf {
   public:
-    bytestreambuf(span_cbyte bytes) {
+    bytestreambuf(span_cbyte bytes) noexcept {
       auto p = const_cast<char *>(
           reinterpret_cast<const char *>(bytes.data()));
 
@@ -29,10 +29,8 @@ namespace laplace {
     }
 
   protected:
-    auto seekoff(                    //
-        off_type                off, //
-        std::ios_base::seekdir  dir, //
-        std::ios_base::openmode which) -> pos_type override {
+    auto seekoff(off_type off, std::ios_base::seekdir dir,
+                 std::ios_base::openmode which) -> pos_type override {
 
       if (dir == std::ios_base::cur) {
         gbump(static_cast<int>(off));
@@ -45,14 +43,11 @@ namespace laplace {
       return gptr() - eback();
     }
 
-    auto seekpos(                   //
-        pos_type                sp, //
-        std::ios_base::openmode which) -> pos_type override {
+    auto seekpos(pos_type sp, std::ios_base::openmode which)
+        -> pos_type override {
 
-      return seekoff(                 //
-          sp - pos_type(off_type(0)), //
-          std::ios_base::beg,         //
-          which);
+      return seekoff(sp - pos_type(off_type(0)), std::ios_base::beg,
+                     which);
     }
   };
 
@@ -60,9 +55,10 @@ namespace laplace {
    */
   class ibytestream final : private bytestreambuf, public std::istream {
   public:
-    ibytestream(span_cbyte bytes) :
-        bytestreambuf(bytes), //
-        std::istream(static_cast<std::streambuf *>(this)) { }
+    ibytestream(span_cbyte bytes) noexcept :
+        bytestreambuf(bytes), std::istream(
+                                  static_cast<std::streambuf *>(this)) {
+    }
   };
 }
 

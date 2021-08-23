@@ -18,10 +18,10 @@ namespace laplace::test {
       engine::protocol::slot_create, engine::eventorder;
 
   TEST(engine, protocol_slot_create) {
-    constexpr size_t   index    = 1;
-    constexpr uint64_t time     = 45;
-    constexpr size_t   actor    = 5;
-    constexpr bool     is_local = true;
+    constexpr sl::index index    = 1;
+    constexpr uint64_t  time     = 45;
+    constexpr sl::index actor    = 5;
+    constexpr bool      is_local = true;
 
     auto seq = encode<slot_create>(index, time, actor, is_local);
 

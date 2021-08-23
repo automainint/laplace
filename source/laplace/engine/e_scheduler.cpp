@@ -1,7 +1,5 @@
 /*  laplace/engine/e_scheduler.cpp
  *
- *      The World multithreading scheduler. Full thread-safe.
- *
  *  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
@@ -12,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "basic_impact.h"
 #include "scheduler.h"
+
+#include "basic_impact.h"
 #include "world.h"
 #include <mutex>
 #include <sstream>
@@ -22,13 +21,16 @@ namespace laplace::engine {
   using std::unique_lock, std::lock, std::adopt_lock, std::jthread,
       std::thread, std::function, std::ostringstream;
 
+  const sl::whole scheduler::overthreading_limit = 8;
+  const sl::whole scheduler::concurrency_limit   = 0x1000;
+
   scheduler::scheduler(world &w) : m_world(w) { }
 
   scheduler::~scheduler() {
     set_done();
   }
 
-  void scheduler::schedule(size_t delta) {
+  void scheduler::schedule(sl::whole delta) {
     lock(m_lock_ex, m_lock_in);
     auto _ul_ex = unique_lock(m_lock_ex, adopt_lock);
     auto _ul    = unique_lock(m_lock_in, adopt_lock);
@@ -84,7 +86,7 @@ namespace laplace::engine {
       count = thread_count_limit;
     }
 
-    auto n = m_threads.size();
+    sl::whole n = m_threads.size();
 
     if (count < n) {
       m_done = true;

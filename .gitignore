@@ -1,5 +1,6 @@
 /bin/**
 /lib/**
+/lib-*/**
 /include/**
 /build/**
 /build-*/**
@@ -7,9 +8,12 @@
 /.vs/
 *.sln
 *.vcxproj
-*.vcxproj.*
+*.filters
+*.user
 
 /data/lcd.h
 /source/generated/*.cpp
 /source/generated/gl/*.h
 /tools/OpenGL-Registry/
+
+/doc/

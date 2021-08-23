@@ -18,12 +18,12 @@
 #include <initializer_list>
 
 namespace laplace::math {
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   class basic_vector {
   public:
     typedef type_ type;
 
-    static constexpr size_t size = size_;
+    static constexpr sl::whole size = size_;
 
     type v[size] = {};
 
@@ -33,21 +33,21 @@ namespace laplace::math {
     constexpr explicit basic_vector(const type x) noexcept;
   };
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   class vector : public basic_vector<size_, type_> {
   public:
     using basic_vector<size_, type_>::basic_vector;
 
-    [[nodiscard]] constexpr auto operator[](size_t index) noexcept
+    [[nodiscard]] constexpr auto operator[](sl::whole index) noexcept
         -> type_ &;
-    [[nodiscard]] constexpr auto operator[](size_t index) const noexcept
+    [[nodiscard]] constexpr auto operator[](sl::whole index) const noexcept
         -> type_;
   };
 
   template <typename type_>
   class vector<2, type_> : public basic_vector<2, type_> {
   public:
-    enum _indices : size_t { n_x = 0, n_y };
+    enum _indices : sl::whole { n_x = 0, n_y };
 
     using basic_vector<2, type_>::basic_vector;
 
@@ -57,17 +57,17 @@ namespace laplace::math {
     [[nodiscard]] constexpr auto x() const noexcept -> type_;
     [[nodiscard]] constexpr auto y() const noexcept -> type_;
 
-    [[nodiscard]] constexpr auto operator[](size_t index) noexcept
+    [[nodiscard]] constexpr auto operator[](sl::whole index) noexcept
         -> type_ &;
 
-    [[nodiscard]] constexpr auto operator[](size_t index) const noexcept
+    [[nodiscard]] constexpr auto operator[](sl::whole index) const noexcept
         -> type_;
   };
 
   template <typename type_>
   class vector<3, type_> : public basic_vector<3, type_> {
   public:
-    enum _indices : size_t { n_x = 0, n_y, n_z };
+    enum _indices : sl::whole { n_x = 0, n_y, n_z };
 
     using basic_vector<3, type_>::basic_vector;
 
@@ -79,17 +79,17 @@ namespace laplace::math {
     [[nodiscard]] constexpr auto y() const noexcept -> type_;
     [[nodiscard]] constexpr auto z() const noexcept -> type_;
 
-    [[nodiscard]] constexpr auto operator[](size_t index) noexcept
+    [[nodiscard]] constexpr auto operator[](sl::whole index) noexcept
         -> type_ &;
 
-    [[nodiscard]] constexpr auto operator[](size_t index) const noexcept
+    [[nodiscard]] constexpr auto operator[](sl::whole index) const noexcept
         -> type_;
   };
 
   template <typename type_>
   class vector<4, type_> : public basic_vector<4, type_> {
   public:
-    enum _indices : size_t { n_x = 0, n_y, n_z, n_w };
+    enum _indices : sl::whole { n_x = 0, n_y, n_z, n_w };
 
     using basic_vector<4, type_>::basic_vector;
 
@@ -103,90 +103,90 @@ namespace laplace::math {
     [[nodiscard]] constexpr auto z() const noexcept -> type_;
     [[nodiscard]] constexpr auto w() const noexcept -> type_;
 
-    [[nodiscard]] constexpr auto operator[](size_t index) noexcept
+    [[nodiscard]] constexpr auto operator[](sl::whole index) noexcept
         -> type_ &;
 
-    [[nodiscard]] constexpr auto operator[](size_t index) const noexcept
+    [[nodiscard]] constexpr auto operator[](sl::whole index) const noexcept
         -> type_;
   };
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   [[nodiscard]] constexpr auto operator==( //
       const vector<size_, type_> a,        //
       const vector<size_, type_> b         //
       ) noexcept -> bool;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   [[nodiscard]] constexpr auto operator!=( //
       const vector<size_, type_> a,        //
       const vector<size_, type_> b         //
       ) noexcept -> bool;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   [[nodiscard]] constexpr auto operator+( //
       const vector<size_, type_> a        //
       ) noexcept -> vector<size_, type_>;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   [[nodiscard]] constexpr auto operator-( //
       const vector<size_, type_> a        //
       ) noexcept -> vector<size_, type_>;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   [[nodiscard]] constexpr auto operator+( //
       const vector<size_, type_> a,       //
       const vector<size_, type_> b        //
       ) noexcept -> vector<size_, type_>;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   [[nodiscard]] constexpr auto operator-( //
       const vector<size_, type_> a,       //
       const vector<size_, type_> b        //
       ) noexcept -> vector<size_, type_>;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   [[nodiscard]] constexpr auto operator*( //
       const vector<size_, type_> a,       //
       const type_                b        //
       ) noexcept -> vector<size_, type_>;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   [[nodiscard]] constexpr auto operator/( //
       const vector<size_, type_> a,       //
       const type_                b        //
       ) noexcept -> vector<size_, type_>;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   [[nodiscard]] constexpr auto operator*( //
       const type_                a,       //
       const vector<size_, type_> b        //
       ) noexcept -> vector<size_, type_>;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   [[nodiscard]] constexpr auto operator/( //
       const type_                a,       //
       const vector<size_, type_> b        //
       ) noexcept -> vector<size_, type_>;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator+=(        //
       vector<size_, type_> &     a, //
       const vector<size_, type_> b  //
       ) noexcept -> vector<size_, type_> &;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator-=(        //
       vector<size_, type_> &     a, //
       const vector<size_, type_> b  //
       ) noexcept -> vector<size_, type_> &;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator*=(   //
       vector<size_, type_> &a, //
       const type_           b  //
       ) noexcept -> vector<size_, type_> &;
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator/=(   //
       vector<size_, type_> &a, //
       const type_           b  //

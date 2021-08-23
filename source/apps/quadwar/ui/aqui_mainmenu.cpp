@@ -10,9 +10,10 @@
  *  the MIT License for more details.
  */
 
+#include "mainmenu.h"
+
 #include "../../../laplace/core/utils.h"
 #include "../session.h"
-#include "mainmenu.h"
 
 namespace quadwar_app::ui {
   using ui::column_layout, ui::rect, std::u8string, std::u8string_view;
@@ -248,7 +249,7 @@ namespace quadwar_app::ui {
     }
   }
 
-  void mainmenu::adjust_layout(int width, int height) {
+  void mainmenu::adjust_layout(sl::whole width, sl::whole height) {
     auto lines_height    = line_height * line_count;
     auto full_height     = lines_height + info_height;
     auto half_menu_width = menu_width / 2;

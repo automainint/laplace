@@ -15,13 +15,13 @@
 
 namespace laplace::format {
   inline auto wrap(std::istream &in) -> fn_read {
-    return [&in](size_t n) -> vbyte {
+    return [&in](sl::index n) -> vbyte {
       if (in) {
         auto v = vbyte(n);
         auto p = in.tellg();
         in.read(reinterpret_cast<char *>(v.data()),
                 static_cast<ptrdiff_t>(n));
-        v.resize(static_cast<size_t>(in.tellg() - p));
+        v.resize(static_cast<sl::index>(in.tellg() - p));
         return v;
       }
 
@@ -30,12 +30,12 @@ namespace laplace::format {
   }
 
   inline auto wrap(std::ostream &out) -> fn_write {
-    return [&out](span_cbyte data) -> size_t {
+    return [&out](span_cbyte data) -> sl::index {
       if (out) {
         auto p = out.tellp();
         out.write(reinterpret_cast<const char *>(data.data()),
                   static_cast<ptrdiff_t>(data.size()));
-        return static_cast<size_t>(out.tellp() - p);
+        return static_cast<sl::index>(out.tellp() - p);
       }
 
       return 0;

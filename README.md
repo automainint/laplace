@@ -12,17 +12,15 @@ Official repository: [GitHub][laplace-link]
 
 ### Dependencies
 - C++20 [MSVC][msvc-link]/[Clang][clang-link]/[GCC][gcc-link] for the compilation;
-- [Python3][python-link], [Cmake][cmake-link], [Git][git-link] for the building and tools;
+- [Python3][python-link], [Cmake][cmake-link], [Git][git-link] for building and tools;
 - [OpenGL][opengl-link] for all the graphics;
 - [wolfSSL][wolfssl-link] for encryption algorithms (ECC/Rabbit);
-- [FreeType2][freetype-link] for the font rendering;
-- [bzip2][bzip2-link] for the archivation;
+- [FreeType2][freetype-link] for font rendering;
 - [googletest][googletest-link] for the test suite;
-- [google/benchmark][benchmark-link] for the benchmarks;
-- [Blender][blender-link] for the content creating.
+- [google/benchmark][benchmark-link] for benchmarks.
 
 ##  How to build
-To build the project CMake 3.18 and Python 3 are required.
+To build the project CMake 3.18, Git and Python 3 are required. Make sure your compiler [supports][compiler-support-link] C++20.
 
 ### With provided build script
 - Execute the build script.
@@ -49,13 +47,13 @@ Laplace CMake configuration options:
 
 Tests will be created if `LAPLACE_ENABLE_TESTING` or `LAPLACE_ENABLE_COVERAGE` is `ON`.
 
-To build only the dependencies set `LAPLACE_ENABLE_EXE` to `OFF`.
+To build only dependencies set `LAPLACE_ENABLE_EXE` to `OFF`.
 
 ##  Hacking
 If you want to build the source code by hand, follow the instructions below:
-- Use `tools/build-deps.py` to build the dependencies.
-- Use `tools/gen-gl.py` to generate the OpenGL interface files.
-- Use `tools/embed.py` to generate the embedded data source files.
+- Use `tools/build-deps.py` to build dependencies.
+- Use `tools/gen-gl.py` to generate OpenGL interface files.
+- Use `tools/embed.py` to generate embedded data source files.
 
 ```shell
 cd tools
@@ -67,7 +65,9 @@ cd ..
 
 Add `source` to the project and build manually. Required headers will be in `include` folder, libraries will be in `lib` folder.
 
-If you change the source code files structure, use `tools/gen-cmake.py` to generate the `CMakeLists.txt` files.
+If you want to generate Visual Studio project files, use `tools/gen-vs.py`.
+
+If you change the source code files structure, use `tools/gen-cmake.py` to generate `CMakeLists.txt` files.
 
 ##  Contribution
 To contribute, follow these steps:
@@ -76,30 +76,29 @@ To contribute, follow these steps:
 3.  Write tests for the issue.
 4.  Implement your solution for the issue.
     - Follow [C++ Core Guidelines][guidelines-link].
-    - Use [ClangFormat][clang-format-link].
+    - Use [ClangFormat][clang-format-link] and `snake_case`.
 5.  Make sure all tests pass and cover your code.
 6.  Make a pull-request to the `dev` branch or to the corresponding feature branch if there is any.
 
 We have just started organizing the project. If you want to help, [contact me][concact-link].
 
-[linux-build-badge]:    https://github.com/automainint/laplace/workflows/linux-build/badge.svg
-[linux-build-link]:     https://github.com/automainint/laplace/actions?query=workflow%3Alinux-build
+[linux-build-badge]: https://github.com/automainint/laplace/workflows/linux-build/badge.svg
+[linux-build-link]:  https://github.com/automainint/laplace/actions?query=workflow%3Alinux-build
 
-[laplace-link]:       https://github.com/automainint/laplace
-[msvc-link]:          https://visualstudio.microsoft.com/vs/features/cplusplus
-[clang-link]:         https://clang.llvm.org
-[gcc-link]:           https://gcc.gnu.org
-[python-link]:        https://www.python.org
-[cmake-link]:         https://cmake.org
-[git-link]:           https://git-scm.com
-[opengl-link]:        https://www.khronos.org/registry/OpenGL/index_gl.php
-[wolfssl-link]:       https://github.com/wolfSSL/wolfssl
-[freetype-link]:      https://gitlab.freedesktop.org/freetype/freetype
-[bzip2-link]:         https://gitlab.com/federicomenaquintero/bzip2
-[googletest-link]:    https://github.com/google/googletest
-[benchmark-link]:     https://github.com/google/benchmark
-[blender-link]:       https://www.blender.org
-[clang-format-link]:  https://clang.llvm.org/docs/ClangFormat.html
-[guidelines-link]:    https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines
+[laplace-link]:          https://github.com/automainint/laplace
+[msvc-link]:             https://visualstudio.microsoft.com/vs/features/cplusplus
+[clang-link]:            https://clang.llvm.org
+[gcc-link]:              https://gcc.gnu.org
+[python-link]:           https://www.python.org
+[cmake-link]:            https://cmake.org
+[git-link]:              https://git-scm.com
+[opengl-link]:           https://www.khronos.org/registry/OpenGL/index_gl.php
+[wolfssl-link]:          https://github.com/wolfSSL/wolfssl
+[freetype-link]:         https://gitlab.freedesktop.org/freetype/freetype
+[googletest-link]:       https://github.com/google/googletest
+[benchmark-link]:        https://github.com/google/benchmark
+[compiler-support-link]: https://en.cppreference.com/w/cpp/compiler_support
+[clang-format-link]:     https://clang.llvm.org/docs/ClangFormat.html
+[guidelines-link]:       https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines
 
 [concact-link]: https://guattari.ru/contact

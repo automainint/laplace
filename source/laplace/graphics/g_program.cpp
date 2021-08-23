@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../platform/gldef.h"
 #include "program.h"
+
+#include "../platform/gldef.h"
 
 namespace laplace::graphics {
   using std::string_view, std::string, std::istringstream, std::vector;

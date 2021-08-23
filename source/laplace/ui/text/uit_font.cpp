@@ -10,9 +10,10 @@
  *  the MIT License for more details.
  */
 
-#include "../../core/utf8.h"
-#include "../../core/string.h"
 #include "font.h"
+
+#include "../../core/string.h"
+#include "../../core/utf8.h"
 #include <algorithm>
 
 namespace laplace::ui::text {
@@ -28,14 +29,14 @@ namespace laplace::ui::text {
   }
 
   auto font::adjust(u8string_view text) -> painter::area {
-    int top         = 0;
-    int width       = 0;
-    int width_total = 0;
-    int height      = 0;
+    auto top         = sl::index {};
+    auto width       = sl::index {};
+    auto width_total = sl::index {};
+    auto height      = sl::index {};
 
-    char32_t code = 0;
+    auto code = char32_t {};
 
-    for (size_t i = 0; utf8::decode(text, i, code);) {
+    for (sl::index i = 0; utf8::decode(text, i, code);) {
       if (m_face.load_char_metrics(code)) {
         auto slot = m_face.get_glyph();
 
@@ -53,17 +54,18 @@ namespace laplace::ui::text {
       }
     }
 
-    top    = max(0, top);
-    width  = max(0, width_total);
-    height = max(0, height);
+    top    = max<sl::index>(0, top);
+    width  = max<sl::index>(0, width_total);
+    height = max<sl::index>(0, height);
 
     return { top, width, height };
   }
 
-  void font::print(ref_image img, int x, int y, u8string_view text) {
-    char32_t code = 0;
+  void font::print(ref_image img, sl::index x, sl::index y,
+                   u8string_view text) {
+    auto code = char32_t {};
 
-    for (size_t i = 0; utf8::decode(text, i, code);) {
+    for (sl::index i = 0; utf8::decode(text, i, code);) {
       if (m_face.load_char_render(code)) {
         auto slot = m_face.get_glyph();
 
@@ -75,15 +77,15 @@ namespace laplace::ui::text {
     }
   }
 
-  void font::draw(ref_image img, int x0, int y0, cref_bitmap bitmap,
-                  cref_pixel color) {
-    for (size_t y = 0; y < bitmap.rows; y++) {
-      size_t row = bitmap.pitch > 0 ? y : (bitmap.rows - (y + 1));
+  void font::draw(ref_image img, sl::index x0, sl::index y0,
+                  cref_bitmap bitmap, cref_pixel color) {
+    for (sl::index y = 0; y < bitmap.rows; y++) {
+      sl::index row = bitmap.pitch > 0 ? y : (bitmap.rows - (y + 1));
 
       auto p = static_cast<const uint8_t *>(bitmap.buffer +
                                             row * abs(bitmap.pitch));
 
-      for (size_t x = 0; x < bitmap.width; x++) {
+      for (sl::index x = 0; x < bitmap.width; x++) {
         auto i = x0 + x;
         auto j = y0 + y;
         auto s = img.get_pixel(i, j);

@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../../math/basic.h"
 #include "geometry.h"
+
+#include "../../math/basic.h"
 #include "integral.h"
 #include <algorithm>
 #include <numeric>

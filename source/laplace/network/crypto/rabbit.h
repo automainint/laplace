@@ -34,19 +34,17 @@ namespace laplace::network::crypto {
 
     auto setup() -> bool override;
 
-    auto do_encrypt(            //
-        span_cbyte         src, //
-        std::span<uint8_t> dst) -> bool override;
+    auto do_encrypt(span_cbyte src, std::span<uint8_t> dst)
+        -> bool override;
 
-    auto do_decrypt(            //
-        span_cbyte         src, //
-        std::span<uint8_t> dst) -> bool override;
+    auto do_decrypt(span_cbyte src, std::span<uint8_t> dst)
+        -> bool override;
 
     auto rewind_decryption() -> bool override;
 
   private:
-    static constexpr size_t key_size  = 24;
-    static constexpr size_t key_extra = 16;
+    static const sl::whole key_size;
+    static const sl::whole key_extra;
 
     Rabbit m_encrypt = { 0 };
     Rabbit m_decrypt = { 0 };

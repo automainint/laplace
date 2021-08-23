@@ -12,12 +12,13 @@
  *  the MIT License for more details.
  */
 
-#pragma once
+#ifndef laplace_platform_win32_clipboard_h
+#define laplace_platform_win32_clipboard_h
 
-namespace laplace::win32
-{
-    class clipboard
-    {
-    public:
-    };
+namespace laplace::win32 {
+  class clipboard {
+  public:
+  };
 }
+
+#endif

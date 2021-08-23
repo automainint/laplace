@@ -104,11 +104,11 @@ namespace laplace::engine::eval {
     if (tree.childs.index() == 0) {
       auto &v = get<0>(tree.childs);
 
-      for (size_t i = 0; i < v.size();) {
+      for (sl::index i = 0; i < v.size();) {
         cleanup(v[i]);
 
         if (is_empty(v[i])) {
-          v.erase(v.begin() + static_cast<ptrdiff_t>(i));
+          v.erase(v.begin() + i);
         } else {
           i++;
         }

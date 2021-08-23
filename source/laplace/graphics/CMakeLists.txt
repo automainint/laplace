@@ -8,4 +8,3 @@ target_sources(
       program.h texture.h utils.h
 )
 add_subdirectory(flat)
-add_subdirectory(tridi)

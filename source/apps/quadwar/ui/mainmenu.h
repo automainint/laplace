@@ -76,7 +76,7 @@ namespace quadwar_app::ui {
     void set_unit_count(size_t unit_count);
 
     void attach_to(ui::ptr_widget w);
-    void adjust_layout(int width, int height);
+    void adjust_layout(sl::whole width, sl::whole height);
 
   private:
     enum class page { root, create, join };

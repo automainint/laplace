@@ -15,6 +15,7 @@
 #ifndef laplace_platform_win32_window_h
 #define laplace_platform_win32_window_h
 
+#include "../../core/options.h"
 #include "../events.h"
 #include "input.h"
 #include "win.predef.h"
@@ -29,15 +30,13 @@ namespace laplace::win32 {
   public:
     using native_handle = HWND;
 
-    static constexpr auto class_name =
-        L"{46DA795E-8CD4-4F46-8462-86A47ED257DC}";
-    static constexpr auto default_window_name =
-        L"Laplace Application";
-    static constexpr bool   default_is_visible    = false;
-    static constexpr bool   default_is_fullscreen = false;
-    static constexpr size_t default_frame_width   = 960;
-    static constexpr size_t default_frame_height  = 720;
-    static constexpr size_t default_frame_rate    = 60;
+    static const wchar_t   class_name[];
+    static const wchar_t   default_window_name[];
+    static const bool      default_is_visible;
+    static const bool      default_is_fullscreen;
+    static const sl::whole default_frame_width;
+    static const sl::whole default_frame_height;
+    static const sl::whole default_frame_rate;
 
     window();
     window(native_handle parent);
@@ -58,12 +57,13 @@ namespace laplace::win32 {
     void set_fullscreen(bool is_fullscreen);
 
     void set_centered();
-    void set_position(size_t x, size_t y);
-    void set_size(size_t frame_width, size_t frame_height);
+    void set_position(sl::index x, sl::index y);
+    void set_size(sl::whole frame_width, sl::whole frame_height);
 
     void set_fullscreen_windowed();
-    void set_fullscreen_mode(size_t frame_width, size_t frame_height,
-                             size_t frame_frequency);
+    void set_fullscreen_mode(sl::whole frame_width,
+                             sl::whole frame_height,
+                             sl::whole frame_frequency);
 
     void set_input(std::shared_ptr<input> in);
 
@@ -73,20 +73,20 @@ namespace laplace::win32 {
     auto message_loop() -> int;
     void quit(int code = 0);
 
-    auto get_screen_width() const -> size_t;
-    auto get_screen_height() const -> size_t;
+    auto get_screen_width() const -> sl::whole;
+    auto get_screen_height() const -> sl::whole;
 
-    auto get_fullscreen_width() const -> size_t;
-    auto get_fullscreen_height() const -> size_t;
+    auto get_fullscreen_width() const -> sl::whole;
+    auto get_fullscreen_height() const -> sl::whole;
 
-    auto get_x() const -> size_t;
-    auto get_y() const -> size_t;
+    auto get_x() const -> sl::index;
+    auto get_y() const -> sl::index;
 
-    auto get_width() const -> size_t;
-    auto get_height() const -> size_t;
+    auto get_width() const -> sl::whole;
+    auto get_height() const -> sl::whole;
 
-    auto get_frame_width() const -> size_t;
-    auto get_frame_height() const -> size_t;
+    auto get_frame_width() const -> sl::whole;
+    auto get_frame_height() const -> sl::whole;
 
     auto is_visible() const -> bool;
     auto is_fullscreen() const -> bool;
@@ -100,8 +100,8 @@ namespace laplace::win32 {
 
   private:
     void init(native_handle parent);
-    auto get_style_ex() const -> size_t;
-    auto get_style() const -> size_t;
+    auto get_style_ex() const -> sl::whole;
+    auto get_style() const -> sl::whole;
     void get_exe_file_name();
     void load_icon(HICON &icon, HICON &icon_sm);
     auto register_class() -> bool;
@@ -114,22 +114,13 @@ namespace laplace::win32 {
     void accept_files(void *drop_data);
     auto process(UINT message, WPARAM wparam, LPARAM lparam) -> LRESULT;
 
-    static auto CALLBACK window_proc( //
-        HWND   window_handle,         //
-        UINT   message,               //
-        WPARAM wparam,                //
-        LPARAM lparam                 //
-        ) -> LRESULT;
+    static auto __stdcall window_proc(HWND window_handle,
+                                      UINT message, WPARAM wparam,
+                                      LPARAM lparam) -> LRESULT;
 
-    static constexpr uint32_t default_style_ex = WS_EX_ACCEPTFILES;
-
-    static constexpr uint32_t default_style = WS_OVERLAPPED |
-                                              WS_SYSMENU | WS_CAPTION |
-                                              WS_MINIMIZEBOX;
-
-    static constexpr uint32_t mask_fullscreen_style = ~(
-        WS_OVERLAPPED | WS_CAPTION | WS_BORDER | WS_SIZEBOX |
-        WS_MAXIMIZEBOX | WS_MINIMIZEBOX);
+    static const uint32_t default_style_ex;
+    static const uint32_t default_style;
+    static const uint32_t mask_fullscreen_style;
 
     std::shared_ptr<input> m_input;
 
@@ -137,8 +128,8 @@ namespace laplace::win32 {
     std::wstring m_class_name  = class_name;
     std::wstring m_window_name = default_window_name;
 
-    size_t m_style_ex = default_style_ex;
-    size_t m_style    = default_style;
+    sl::whole m_style_ex = default_style_ex;
+    sl::whole m_style    = default_style;
 
     event_init      m_on_init;
     event_cleanup   m_on_cleanup;
@@ -147,19 +138,19 @@ namespace laplace::win32 {
     event_focus     m_on_focus;
     event_drop_file m_on_drop_file;
 
-    size_t m_screen_x          = 0;
-    size_t m_screen_y          = 0;
-    size_t m_screen_width      = 0;
-    size_t m_screen_height     = 0;
-    size_t m_fullscreen_width  = default_frame_width;
-    size_t m_fullscreen_height = default_frame_height;
-    size_t m_x                 = 0;
-    size_t m_y                 = 0;
-    size_t m_width             = 0;
-    size_t m_height            = 0;
-    size_t m_frame_width       = 0;
-    size_t m_frame_height      = 0;
-    size_t m_frame_rate        = default_frame_rate;
+    sl::index m_screen_x          = 0;
+    sl::index m_screen_y          = 0;
+    sl::whole m_screen_width      = 0;
+    sl::whole m_screen_height     = 0;
+    sl::whole m_fullscreen_width  = default_frame_width;
+    sl::whole m_fullscreen_height = default_frame_height;
+    sl::index m_x                 = 0;
+    sl::index m_y                 = 0;
+    sl::whole m_width             = 0;
+    sl::whole m_height            = 0;
+    sl::whole m_frame_width       = 0;
+    sl::whole m_frame_height      = 0;
+    sl::whole m_frame_rate        = default_frame_rate;
 
     bool m_is_inited     = false;
     bool m_is_visible    = default_is_visible;

@@ -64,8 +64,8 @@ def process_file(file_name, incs = list()):
   if file_name in incs:
     print('Error: Recursive include in \'' + incs[len(incs)-1] + '\'.')
     return ''
-  f = open(file_name, 'r')
   if is_code(file_name):
+    f = open(file_name, 'rt', encoding='utf-8')
     chars = ''
     for line in f:
       inc_file = get_include_file(line)
@@ -79,8 +79,9 @@ def process_file(file_name, incs = list()):
       else:
         chars += line
         chars += '\n'
-    return chars
+    return bytes(chars, 'ascii')
   else:
+    f = open(file_name, 'rb')
     return f.read()
 
 data_folder = os.path.join('..', 'data')
@@ -123,8 +124,7 @@ k = 0
 for alias in aliases:
   s = ''
   file_name = os.path.join(data_folder, rejoin_alias(alias))
-  chars = process_file(file_name)
-  buf = bytes(chars, 'ascii')
+  buf = process_file(file_name)
   n = 0
   for x in buf:
     s += format(x, '#04x')

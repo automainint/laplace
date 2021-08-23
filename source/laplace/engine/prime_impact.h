@@ -15,6 +15,7 @@
 
 #include "../core/serial.h"
 #include "basic_impact.h"
+#include "protocol/ids.h"
 
 namespace laplace::engine {
   /*  Basic class for any impact that can be serialized.
@@ -28,10 +29,10 @@ namespace laplace::engine {
       n_actor = 18
     };
 
-    using basic_impact::set_index;
     using basic_impact::get_actor;
     using basic_impact::get_index;
     using basic_impact::get_time;
+    using basic_impact::set_index;
 
     /*  Max encoded impact size.
      */
@@ -50,14 +51,17 @@ namespace laplace::engine {
      *  TODO
      *  Make it constexpr.
      */
-    virtual void encode_to(std::span<uint8_t> bytes) const;
+    virtual void encode_to(span_byte bytes) const;
 
     [[nodiscard]] constexpr auto get_encoded_size() const -> sl::whole;
 
     static constexpr void set_index(span_byte seq, sl::index n);
 
-    [[nodiscard]] static constexpr auto get_id_unsafe(span_cbyte seq)
-        -> uint16_t;
+    [[nodiscard]] static constexpr auto is_unindexed(span_cbyte seq)
+        -> bool;
+    [[nodiscard]] static constexpr auto is_control(span_cbyte seq)
+        -> bool;
+
     [[nodiscard]] static constexpr auto get_index_unsafe(span_cbyte seq)
         -> sl::index;
     [[nodiscard]] static constexpr auto get_time_unsafe(span_cbyte seq)
@@ -74,19 +78,28 @@ namespace laplace::engine {
     [[nodiscard]] static constexpr auto get_actor(span_cbyte seq)
         -> sl::index;
 
+    [[nodiscard]] static constexpr auto get_intval(span_cbyte seq,
+                                                   sl::index  offset)
+        -> intval;
+
     [[nodiscard]] static inline auto get_string(span_cbyte seq,
-                                                size_t     offset)
+                                                sl::index  offset)
         -> std::u8string_view;
 
     [[nodiscard]] static inline auto get_string(span_cbyte seq,
-                                                size_t     offset,
-                                                size_t     size)
+                                                sl::index  offset,
+                                                sl::whole  size)
         -> std::u8string_view;
 
   protected:
     constexpr void set_encoded_size(sl::whole size);
 
   private:
+    [[nodiscard]] static constexpr auto is_unindexed_id(sl::index id)
+        -> bool;
+    [[nodiscard]] static constexpr auto is_control_id(sl::index id)
+        -> bool;
+
     sl::whole m_encoded_size = 0;
   };
 

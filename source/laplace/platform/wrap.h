@@ -17,16 +17,6 @@
 
 #include "../core/defs.h"
 
-#if !defined(LAPLACE_POSIX_SOCKETS) && \
-    (defined(_WIN32) || defined(_WINDOWS))
-#  include <winsock2.h>
-#  include <ws2tcpip.h>
-#else
-#  include <netinet/in.h>
-#  include <sys/socket.h>
-#  include <sys/types.h>
-#endif
-
 #if !defined(LAPLACE_PLATFORM_DUMMY) && \
     (defined(_WIN32) || defined(_WINDOWS))
 

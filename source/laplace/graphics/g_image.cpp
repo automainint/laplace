@@ -11,12 +11,14 @@
  */
 
 #include "image.h"
+
 #include <algorithm>
+#include <cmath>
 
 namespace laplace::graphics {
   using std::make_shared, std::min, std::max, std::copy;
 
-  image::image(size_t width, size_t height, size_t depth) {
+  image::image(sl::whole width, sl::whole height, sl::whole depth) {
     set_size(width, height, depth);
   }
 
@@ -30,7 +32,8 @@ namespace laplace::graphics {
     m_data.clear();
   }
 
-  void image::set_size(size_t width, size_t height, size_t depth) {
+  void image::set_size(sl::whole width, sl::whole height,
+                       sl::whole depth) {
     m_width  = width;
     m_height = height;
     m_depth  = depth;
@@ -56,7 +59,7 @@ namespace laplace::graphics {
     }
   }
 
-  void image::set_size_radix2(size_t width, size_t height) {
+  void image::set_size_radix2(sl::whole width, sl::whole height) {
     m_mip_count = 1;
     m_mip_size  = 1;
 
@@ -84,65 +87,63 @@ namespace laplace::graphics {
          m_data.begin());
   }
 
-  void image::set_pixel(size_t index, cref_pixel value) {
-    if (index < m_data.size()) {
-      m_data[index] = value;
+  void image::set_pixel(sl::index n, cref_pixel value) {
+    if (n >= 0 && n < m_data.size()) {
+      m_data[n] = value;
     }
   }
 
-  auto image::get_pixel(size_t index) const -> pixel {
-    pixel p;
-
-    if (index < m_data.size()) {
-      p = m_data[index];
+  auto image::get_pixel(sl::index n) const -> pixel {
+    if (n >= 0 && n < m_data.size()) {
+      return m_data[n];
     }
 
-    return p;
+    return {};
   }
 
-  void image::set_pixel(size_t x, size_t y, cref_pixel value) {
-    if (x < m_width && y < m_height) {
+  void image::set_pixel(sl::index x, sl::index y, cref_pixel value) {
+    if (x >= 0 && y >= 0 && x < m_width && y < m_height) {
       m_data[y * m_width + x] = value;
     }
   }
 
-  auto image::get_pixel(size_t x, size_t y) const -> pixel {
-    pixel p;
-
-    if (x < m_width && y < m_height) {
-      p = m_data[y * m_width + x];
+  auto image::get_pixel(sl::index x, sl::index y) const -> pixel {
+    if (x >= 0 && y >= 0 && x < m_width && y < m_height) {
+      return m_data[y * m_width + x];
     }
 
-    return p;
+    return {};
   }
 
-  void image::set_pixel(size_t x, size_t y, size_t z, cref_pixel value) {
-    if (x < m_width && y < m_height && z < m_depth) {
+  void image::set_pixel(sl::index x, sl::index y, sl::index z,
+                        cref_pixel value) {
+    if (x >= 0 && y >= 0 && z >= 0 && x < m_width && y < m_height &&
+        z < m_depth) {
       m_data[z * m_plane + y * m_width + x] = value;
     }
   }
 
-  auto image::get_pixel(size_t x, size_t y, size_t z) const -> pixel {
-    pixel p;
-
-    if (x < m_width && y < m_height) {
-      p = m_data[z * m_plane + y * m_width + x];
+  auto image::get_pixel(sl::index x, sl::index y, sl::index z) const
+      -> pixel {
+    if (x >= 0 && y >= 0 && z >= 0 && x < m_width && y < m_height &&
+        z < m_depth) {
+      return m_data[z * m_plane + y * m_width + x];
     }
 
-    return p;
+    return {};
   }
 
-  auto image::get_mip_size(size_t level) const -> size_t {
+  auto image::get_mip_size(sl::index level) const -> size_t {
     auto size = m_mip_size;
 
-    for (size_t i = 0; i < level; i++) { size >>= 1; }
+    for (sl::index i = 0; i < level; i++) { size >>= 1; }
 
     return size;
   }
 
-  auto image::get_average(size_t x0, size_t y0, size_t x1, size_t y1,
-                          size_t z) const -> pixel {
-    pixel value;
+  auto image::get_average(sl::index x0, sl::index y0, sl::index x1,
+                          sl::index y1, sl::index z) const -> pixel {
+    auto value = pixel {};
 
     x0 = min(x0, m_width);
     y0 = min(y0, m_height);
@@ -152,13 +153,13 @@ namespace laplace::graphics {
     const auto count = (x1 - x0) * (y1 - y0);
 
     if (count > 0) {
-      double red   = 0;
-      double green = 0;
-      double blue  = 0;
-      double alpha = 0;
+      auto red   = double {};
+      auto green = double {};
+      auto blue  = double {};
+      auto alpha = double {};
 
-      for (size_t y = y0; y < y1; y++) {
-        for (size_t x = x0; x < x1; x++) {
+      for (sl::index y = y0; y < y1; y++) {
+        for (sl::index x = x0; x < x1; x++) {
           auto p = get_pixel(x, y, z);
 
           red += static_cast<double>(p.red);
@@ -186,24 +187,24 @@ namespace laplace::graphics {
     return value;
   }
 
-  auto image::mip(size_t level, size_t z) const -> image::ptr {
-    ptr result = make_shared<image>();
+  auto image::mip(sl::index level, sl::index z) const -> image::ptr {
+    auto result = make_shared<image>();
 
     const auto size  = get_mip_size(level);
     const auto fsize = static_cast<double>(size);
 
     result->set_size(size, size);
 
-    for (size_t j = 0; j < size; j++) {
-      for (size_t i = 0; i < size; i++) {
-        auto x0 = static_cast<size_t>(
-            static_cast<double>(i * m_width) / fsize);
-        auto y0 = static_cast<size_t>(
-            static_cast<double>(j * m_height) / fsize);
-        auto x1 = static_cast<size_t>(
-            static_cast<double>((i + 1) * m_width) / fsize);
-        auto y1 = static_cast<size_t>(
-            static_cast<double>((j + 1) * m_height) / fsize);
+    for (sl::index j = 0; j < size; j++) {
+      for (sl::index i = 0; i < size; i++) {
+        auto x0 = static_cast<sl::index>(
+            round(static_cast<double>(i * m_width) / fsize));
+        auto y0 = static_cast<sl::index>(
+            round(static_cast<double>(j * m_height) / fsize));
+        auto x1 = static_cast<sl::index>(
+            round(static_cast<double>((i + 1) * m_width) / fsize));
+        auto y1 = static_cast<sl::index>(
+            round(static_cast<double>((j + 1) * m_height) / fsize));
 
         result->set_pixel(i, j, get_average(x0, y0, x1, y1, z));
       }

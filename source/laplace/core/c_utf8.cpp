@@ -15,18 +15,18 @@
 namespace laplace::utf8 {
   using std::u8string_view, std::u8string, std::vector;
 
-  auto length(u8string_view bytes) noexcept -> size_t {
-    size_t   n = 0, i = 0;
-    char32_t code = 0;
+  auto length(u8string_view bytes) noexcept -> sl::whole {
+    sl::index n = 0, i = 0;
+    char32_t  code = 0;
 
     for (; decode(bytes, i, code); n++) { }
 
     return n;
   }
 
-  auto decode(u8string_view bytes, ref_uint offset,
-              ref_char32 code) noexcept -> bool {
-    if (offset >= bytes.size() || bytes[offset] == 0xFF) {
+  auto decode(u8string_view bytes, sl::index &offset,
+              char32_t &code) noexcept -> bool {
+    if (offset < 0 || offset >= bytes.size() || bytes[offset] == 0xFF) {
       return false;
     } else if ((bytes[offset] & 0x80) == 0x00) {
       code = bytes[offset];
@@ -51,7 +51,7 @@ namespace laplace::utf8 {
         return false;
       }
 
-      for (size_t j = 1; j < 2; j++) {
+      for (sl::index j = 1; j < 2; j++) {
         if ((bytes[offset + j] & 0xC0) != 0x80) {
           return false;
         }
@@ -67,7 +67,7 @@ namespace laplace::utf8 {
         return false;
       }
 
-      for (size_t j = 1; j < 3; j++) {
+      for (sl::index j = 1; j < 3; j++) {
         if ((bytes[offset + j] & 0xC0) != 0x80) {
           return false;
         }
@@ -84,20 +84,19 @@ namespace laplace::utf8 {
     return true;
   }
 
-  auto encode(char32_t code, u8string &bytes, ref_uint offset) noexcept
-      -> bool {
-    if (offset > bytes.size()) {
+  auto encode(char32_t code, u8string &bytes,
+              sl::index &offset) noexcept -> bool {
+    if (offset < 0 || offset > bytes.size()) {
       return false;
     }
 
     if (code <= 0x7Fu) {
-      bytes.insert(bytes.begin() + static_cast<ptrdiff_t>(offset),
-                   static_cast<uint8_t>(code));
+      bytes.insert(bytes.begin() + offset, static_cast<uint8_t>(code));
       offset++;
       return true;
     }
 
-    auto temp = vector<uint8_t> {};
+    auto temp = sl::vector<uint8_t> {};
     temp.reserve(4);
 
     if (code <= 0x07FF) {
@@ -122,8 +121,7 @@ namespace laplace::utf8 {
       return false;
     }
 
-    bytes.insert(bytes.begin() + static_cast<ptrdiff_t>(offset),
-                 temp.begin(), temp.end());
+    bytes.insert(bytes.begin() + offset, temp.begin(), temp.end());
     offset += temp.size();
 
     return true;

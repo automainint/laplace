@@ -19,11 +19,6 @@ namespace laplace::engine {
   inline auto basic_entity::get_by_id(sl::index id) -> intval {
     return this->get(this->index_of(id));
   }
-
-  inline auto basic_entity::locked_get_by_id(sl::index id) const
-      -> intval {
-    return this->locked_get(this->index_of(id));
-  }
 }
 
 #endif

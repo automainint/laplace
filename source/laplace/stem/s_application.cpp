@@ -12,15 +12,16 @@
  *  the MIT License for more details.
  */
 
+#include "application.h"
+
 #include "../core/embedded.h"
 #include "../core/utils.h"
 #include "../graphics/flat/solid_shader.h"
 #include "../graphics/flat/sprite_shader.h"
 #include "../graphics/utils.h"
-#include "application.h"
 #include "config.h"
-#include <fstream>
 #include <filesystem>
+#include <fstream>
 
 namespace laplace::stem {
   using std::make_shared, std::make_unique, config::load,
@@ -28,10 +29,11 @@ namespace laplace::stem {
       config::k_flat_solid, config::k_flat_sprite, config::k_vertex,
       config::k_fragment, config::k_folder, platform::window,
       platform::input, platform::glcontext, platform::ref_window,
-      platform::ref_input, platform::ref_glcontext,
+      core::cref_input_handler, platform::ref_glcontext,
       graphics::flat::solid_shader, graphics::flat::sprite_shader,
       core::cref_family, std::wstring, std::wstring_view,
-      std::unique_ptr, std::istream, std::ifstream, std::filesystem::path;
+      std::unique_ptr, std::istream, std::ifstream,
+      std::filesystem::path;
 
   application::application(int argc, char **argv, cref_family def_cfg) {
     m_config = load(argc, argv, def_cfg);
@@ -42,9 +44,9 @@ namespace laplace::stem {
   }
 
   auto application::run() -> int {
-    size_t frame_width  = m_config[k_frame][0];
-    size_t frame_height = m_config[k_frame][1];
-    size_t frame_rate   = m_config[k_frame][2];
+    sl::whole frame_width  = m_config[k_frame][0];
+    sl::whole frame_height = m_config[k_frame][1];
+    sl::whole frame_rate   = m_config[k_frame][2];
 
     gl::require_extensions({ "GL_ARB_framebuffer_object" });
 
@@ -58,11 +60,13 @@ namespace laplace::stem {
 
     m_input = make_shared<input>();
 
+    wrap_input();
+
     m_window->set_input(m_input);
     m_window->set_name(to_wstring(m_config[k_caption].get_string()));
     m_window->set_size(frame_width, frame_height);
-    m_window->set_fullscreen_mode(
-        frame_width, frame_height, frame_rate);
+    m_window->set_fullscreen_mode(frame_width, frame_height,
+                                  frame_rate);
 
     m_window->on_init([this]() {
       init();
@@ -108,8 +112,8 @@ namespace laplace::stem {
     m_gl->swap_buffers();
   }
 
-  void application::set_frame_size(size_t width, size_t height) {
-    adjust_layout(static_cast<int>(width), static_cast<int>(height));
+  void application::set_frame_size(sl::whole width, sl::whole height) {
+    adjust_layout(width, height);
 
     graphics::viewport(0, 0, width, height);
 
@@ -118,7 +122,7 @@ namespace laplace::stem {
     }
   }
 
-  void application::adjust_layout(int width, int height) {
+  void application::adjust_layout(sl::whole width, sl::whole height) {
     adjust_frame_size(width, height);
   }
 
@@ -130,8 +134,94 @@ namespace laplace::stem {
     return *m_gl;
   }
 
-  auto application::get_input() -> ref_input {
-    return *m_input;
+  auto application::get_input() -> cref_input_handler {
+    return m_input_handler;
+  }
+
+  void application::wrap_input() {
+    m_input_handler.is_capslock = [&]() {
+      return m_input->is_capslock();
+    };
+
+    m_input_handler.is_numlock = [&]() {
+      return m_input->is_numlock();
+    };
+
+    m_input_handler.is_scrolllock = [&]() {
+      return m_input->is_scrolllock();
+    };
+
+    m_input_handler.is_alt = [&]() {
+      return m_input->is_alt();
+    };
+
+    m_input_handler.is_shift = [&]() {
+      return m_input->is_shift();
+    };
+
+    m_input_handler.is_control = [&]() {
+      return m_input->is_control();
+    };
+
+    m_input_handler.is_key_down = [&](sl::index key) {
+      return m_input->is_key_down(key);
+    };
+
+    m_input_handler.is_key_up = [&](sl::index key) {
+      return m_input->is_key_up(key);
+    };
+
+    m_input_handler.is_key_changed = [&](sl::index key) {
+      return m_input->is_key_changed(key);
+    };
+
+    m_input_handler.is_key_pressed = [&](sl::index key) {
+      return m_input->is_key_pressed(key);
+    };
+
+    m_input_handler.is_key_unpressed = [&](sl::index key) {
+      return m_input->is_key_unpressed(key);
+    };
+
+    m_input_handler.get_mouse_resolution_x = [&]() {
+      return m_input->get_mouse_resolution_x();
+    };
+
+    m_input_handler.get_mouse_resolution_y = [&]() {
+      return m_input->get_mouse_resolution_y();
+    };
+
+    m_input_handler.get_mouse_x = [&]() {
+      return m_input->get_mouse_x();
+    };
+
+    m_input_handler.get_mouse_y = [&]() {
+      return m_input->get_mouse_y();
+    };
+
+    m_input_handler.get_mouse_delta_x = [&]() {
+      return m_input->get_mouse_delta_x();
+    };
+
+    m_input_handler.get_mouse_delta_y = [&]() {
+      return m_input->get_mouse_delta_y();
+    };
+
+    m_input_handler.get_cursor_x = [&]() {
+      return m_input->get_cursor_x();
+    };
+
+    m_input_handler.get_cursor_y = [&]() {
+      return m_input->get_cursor_y();
+    };
+
+    m_input_handler.get_wheel_delta = [&]() {
+      return m_input->get_wheel_delta();
+    };
+
+    m_input_handler.get_text = [&]() {
+      return m_input->get_text();
+    };
   }
 
   void application::load_shaders() {
@@ -158,7 +248,8 @@ namespace laplace::stem {
     }
   }
 
-  void application::adjust_frame_size(int width, int height) {
+  void application::adjust_frame_size(sl::whole width,
+                                      sl::whole height) {
     if (width != 0 && height != 0) {
       if (m_render)
         m_render->adjust_frame_size(width, height);

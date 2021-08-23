@@ -21,18 +21,23 @@
 #undef min
 #undef max
 
-#include "../../core/utf8.h"
-#include "../keys.h"
 #include "input.h"
-#include <cassert>
+
+#include "../../core/keys.h"
+#include "../../core/utf8.h"
 #include <iostream>
 
 namespace laplace::win32 {
   using std::u8string_view;
-  using namespace platform;
+  using namespace core::keys;
+
+  const sl::whole input::char_predelay_msec   = 500;
+  const sl::whole input::char_period_msec     = 50;
+  const sl::whole input::default_resolution_x = 2000;
+  const sl::whole input::default_resolution_y = 1500;
 
   input::input() {
-    for (size_t i = 0; i < key_count; i++) {
+    for (sl::index i = 0; i < key_count; i++) {
       m_keymap[i] = static_cast<uint8_t>(i);
 
       m_keyboard_state[i].is_down    = false;
@@ -66,7 +71,7 @@ namespace laplace::win32 {
     m_is_cursor_enabled = is_enabled;
   }
 
-  void input::set_mouse_resolution(size_t x, size_t y) {
+  void input::set_mouse_resolution(sl::whole x, sl::whole y) {
     m_res_x = x;
     m_res_y = y;
   }
@@ -100,66 +105,86 @@ namespace laplace::win32 {
     return m_keyboard_state[key_control].is_down;
   }
 
-  auto input::is_key_down(int code) const -> bool {
-    assert(code >= 0 && code < key_count);
-    return m_keyboard_state[static_cast<size_t>(code)].is_down;
+  auto input::is_key_down(sl::index code) const -> bool {
+    if (code < 0 || code >= key_count) {
+      error_("Invalid key code.", __FUNCTION__);
+      return false;
+    }
+
+    return m_keyboard_state[code].is_down;
   }
 
-  auto input::is_key_up(int code) const -> bool {
-    assert(code >= 0 && code < key_count);
-    return !m_keyboard_state[static_cast<size_t>(code)].is_down;
+  auto input::is_key_up(sl::index code) const -> bool {
+    if (code < 0 || code >= key_count) {
+      error_("Invalid key code.", __FUNCTION__);
+      return false;
+    }
+
+    return !m_keyboard_state[code].is_down;
   }
 
-  auto input::is_key_changed(int code) const -> bool {
-    assert(code >= 0 && code < key_count);
-    return m_keyboard_state[static_cast<size_t>(code)].is_changed;
+  auto input::is_key_changed(sl::index code) const -> bool {
+    if (code < 0 || code >= key_count) {
+      error_("Invalid key code.", __FUNCTION__);
+      return false;
+    }
+
+    return m_keyboard_state[code].is_changed;
   }
 
-  auto input::is_key_pressed(int code) const -> bool {
-    assert(code >= 0 && code < key_count);
-    return m_keyboard_state[static_cast<size_t>(code)].is_down &&
-           m_keyboard_state[static_cast<size_t>(code)].is_changed;
+  auto input::is_key_pressed(sl::index code) const -> bool {
+    if (code < 0 || code >= key_count) {
+      error_("Invalid key code.", __FUNCTION__);
+      return false;
+    }
+
+    return m_keyboard_state[code].is_down &&
+           m_keyboard_state[code].is_changed;
   }
 
-  auto input::is_key_unpressed(int code) const -> bool {
-    assert(code >= 0 && code < key_count);
-    return !m_keyboard_state[static_cast<size_t>(code)].is_down &&
-           m_keyboard_state[static_cast<size_t>(code)].is_changed;
+  auto input::is_key_unpressed(sl::index code) const -> bool {
+    if (code < 0 || code >= key_count) {
+      error_("Invalid key code.", __FUNCTION__);
+      return false;
+    }
+
+    return !m_keyboard_state[code].is_down &&
+           m_keyboard_state[code].is_changed;
   }
 
-  auto input::get_mouse_resolution_x() const -> size_t {
+  auto input::get_mouse_resolution_x() const -> sl::whole {
     return m_use_system_cursor ? m_window_width : m_res_x;
   }
 
-  auto input::get_mouse_resolution_y() const -> size_t {
+  auto input::get_mouse_resolution_y() const -> sl::whole {
     return m_use_system_cursor ? m_window_height : m_res_y;
   }
 
-  auto input::get_mouse_x() const -> int {
+  auto input::get_mouse_x() const -> sl::index {
     return m_mouse_state.x;
   }
 
-  auto input::get_mouse_y() const -> int {
+  auto input::get_mouse_y() const -> sl::index {
     return m_mouse_state.y;
   }
 
-  auto input::get_mouse_delta_x() const -> int {
+  auto input::get_mouse_delta_x() const -> sl::index {
     return m_mouse_state.delta_x;
   }
 
-  auto input::get_mouse_delta_y() const -> int {
+  auto input::get_mouse_delta_y() const -> sl::index {
     return m_mouse_state.delta_y;
   }
 
-  auto input::get_cursor_x() const -> int {
+  auto input::get_cursor_x() const -> sl::index {
     return m_mouse_state.cursor_x;
   }
 
-  auto input::get_cursor_y() const -> int {
+  auto input::get_cursor_y() const -> sl::index {
     return m_mouse_state.cursor_y;
   }
 
-  auto input::get_wheel_delta() const -> int {
+  auto input::get_wheel_delta() const -> sl::index {
     return m_mouse_state.wheel_delta;
   }
 
@@ -177,11 +202,11 @@ namespace laplace::win32 {
     for (auto &k : m_keyboard_state) { k.is_changed = false; }
   }
 
-  void input::set_window_rect(size_t x, size_t y, size_t width,
-                              size_t height) {
+  void input::set_window_rect(sl::index x, sl::index y,
+                              sl::whole width, sl::whole height) {
 
-    m_center_x = static_cast<int>(x + width / 2);
-    m_center_y = static_cast<int>(y + height / 2);
+    m_center_x = x + width / 2;
+    m_center_y = y + height / 2;
 
     m_window_width  = width;
     m_window_height = height;
@@ -205,7 +230,7 @@ namespace laplace::win32 {
        */
 
       if (m_use_system_cursor) {
-        POINT p;
+        auto p = POINT {};
         GetCursorPos(&p);
         ScreenToClient(m_handle, &p);
 
@@ -214,8 +239,8 @@ namespace laplace::win32 {
       } else {
         ShowCursor(false);
 
-        m_mouse_state.x = static_cast<int>(m_res_x / 2);
-        m_mouse_state.y = static_cast<int>(m_res_y / 2);
+        m_mouse_state.x = m_res_x / 2;
+        m_mouse_state.y = m_res_y / 2;
       }
 
       /*  Register input devices.
@@ -243,10 +268,10 @@ namespace laplace::win32 {
 
     GetRawInputData(raw_input, RID_INPUT, nullptr, &size, header_size);
 
-    vbyte bytes(size);
+    auto bytes = vbyte(size);
 
-    auto n = GetRawInputData(
-        raw_input, RID_INPUT, bytes.data(), &size, header_size);
+    auto n = GetRawInputData(raw_input, RID_INPUT, bytes.data(),
+                             &size, header_size);
 
     if (n == size) {
       const auto &raw = reinterpret_cast<const RAWINPUT &>(
@@ -265,7 +290,7 @@ namespace laplace::win32 {
   void input::tick(uint64_t delta_msec) {
     if (m_is_char_pressed) {
       if (m_char_period_msec <= delta_msec) {
-        size_t offset = m_text.length();
+        sl::whole offset = m_text.length();
         if (!utf8::encode(m_last_char, m_text, offset))
           error_("Unable to encode UTF-8 string.", __FUNCTION__);
         m_char_period_msec += char_period_msec > delta_msec
@@ -278,7 +303,7 @@ namespace laplace::win32 {
   }
 
   void input::reset() {
-    for (size_t i = 0; i < key_count; i++) {
+    for (sl::whole i = 0; i < key_count; i++) {
       const auto is_changed = m_keyboard_state[i].is_down;
 
       m_keyboard_state[i].is_down    = false;
@@ -367,7 +392,7 @@ namespace laplace::win32 {
     auto raw = *reinterpret_cast<const RAWMOUSE *>(raw_data);
 
     if (m_use_system_cursor) {
-      POINT p;
+      auto p = POINT {};
       GetCursorPos(&p);
       ScreenToClient(m_handle, &p);
 
@@ -381,11 +406,11 @@ namespace laplace::win32 {
         /*  Absolute cursor position.
          */
 
-        auto x = static_cast<int>(
+        auto x = static_cast<sl::index>(
             (static_cast<double>(raw.lLastX) / 65535.) *
             static_cast<double>(m_res_x));
 
-        auto y = static_cast<int>(
+        auto y = static_cast<sl::index>(
             (static_cast<double>(raw.lLastY) / 65535.) *
             static_cast<double>(m_res_y));
 
@@ -394,6 +419,7 @@ namespace laplace::win32 {
 
         m_mouse_state.x = x;
         m_mouse_state.y = y;
+
       } else {
         /*  Relative cursor position.
          */
@@ -407,39 +433,34 @@ namespace laplace::win32 {
         if (m_clamp_x) {
           if (x < 0)
             x = 0;
-          else if (x >= static_cast<int>(m_res_x))
-            x = static_cast<int>(m_res_x - 1);
+          else if (x >= m_res_x)
+            x = m_res_x - 1;
         } else if (m_res_x > 0) {
-          while (x < 0) { x += static_cast<int>(m_res_x); }
-          while (x >= static_cast<int>(m_res_x)) {
-            x -= static_cast<int>(m_res_x);
-          }
+          while (x < 0) { x += m_res_x; }
+          while (x >= m_res_x) { x -= m_res_x; }
         }
 
         if (m_clamp_y) {
           if (y < 0)
             y = 0;
-          else if (y >= static_cast<int>(m_res_y))
-            y = static_cast<int>(m_res_y - 1);
+          else if (y >= m_res_y)
+            y = m_res_y - 1;
         } else if (m_res_y > 0) {
-          while (y < 0) { y += static_cast<int>(m_res_x); }
-          while (y >= static_cast<int>(m_res_y)) {
-            y -= static_cast<int>(m_res_x);
-          }
+          while (y < 0) { y += m_res_x; }
+          while (y >= m_res_y) { y -= m_res_x; }
         }
 
         m_mouse_state.x = x;
         m_mouse_state.y = y;
 
         if (m_is_cursor_enabled) {
-          m_mouse_state.cursor_x = static_cast<int>(
-              (x * m_window_width) / m_res_x);
-          m_mouse_state.cursor_y = static_cast<int>(
-              (y * m_window_height) / m_res_y);
+          m_mouse_state.cursor_x = (x * m_window_width) / m_res_x;
+          m_mouse_state.cursor_y = (y * m_window_height) / m_res_y;
         }
       }
 
-      SetCursorPos(m_center_x, m_center_y);
+      SetCursorPos(static_cast<int>(m_center_x),
+                   static_cast<int>(m_center_y));
     }
 
     if (has(raw.usButtonFlags, RI_MOUSE_WHEEL)) {
@@ -532,7 +553,7 @@ namespace laplace::win32 {
       m_char_period_msec = char_predelay_msec;
 
       if (is_down) {
-        auto offset = m_text.length();
+        sl::index offset = m_text.length();
 
         if (!utf8::encode(c, m_text, offset))
           error_("Unable to encode UTF-8 string.", __FUNCTION__);

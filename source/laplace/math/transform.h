@@ -20,9 +20,7 @@
 #include <cmath>
 #include <utility>
 
-namespace laplace::math {
-
-}
+namespace laplace::math { }
 
 #include "transform.impl.h"
 

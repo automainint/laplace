@@ -36,7 +36,7 @@ namespace quadwar_app::ui {
     void on_start(event_start ev);
 
     void attach_to(ui::ptr_widget w);
-    void adjust_layout(int width, int height);
+    void adjust_layout(sl::whole width, sl::whole height);
 
     void show_info(std::u8string_view text);
     void show_loading();

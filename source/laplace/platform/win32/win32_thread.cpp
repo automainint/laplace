@@ -16,8 +16,9 @@
 #define laplace_windows_header
 #include <windows.h>
 
-#include "../../core/defs.h"
 #include "thread.h"
+
+#include "../../core/defs.h"
 #include <algorithm>
 
 #undef min
@@ -53,10 +54,10 @@ namespace laplace::win32 {
         /*  For Windows XP.
          */
 
-        SetThreadPriority(
-            GetCurrentThread(), is_background_mode
-                                    ? THREAD_MODE_BACKGROUND_BEGIN
-                                    : THREAD_MODE_BACKGROUND_END);
+        SetThreadPriority(GetCurrentThread(),
+                          is_background_mode
+                              ? THREAD_MODE_BACKGROUND_BEGIN
+                              : THREAD_MODE_BACKGROUND_END);
       }
 
       in_background = is_background_mode;

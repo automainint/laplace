@@ -13,5 +13,7 @@
 #include "ecc_rabbit.h"
 
 namespace laplace::network::crypto {
+  const sl::whole ecc_rabbit::key_size = 32;
+
   ecc_rabbit::ecc_rabbit() : ecc(key_size) { }
 }

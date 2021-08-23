@@ -10,14 +10,28 @@
  *  the MIT License for more details.
  */
 
-#include "../core/utils.h"
 #include "server.h"
+
+#include "../core/utils.h"
+#include "../engine/basic_factory.h"
+#include "../engine/protocol/ids.h"
 #include <iomanip>
 
 namespace laplace::network {
+  namespace pro = engine::protocol;
+  namespace ids = pro::ids;
+
   using std::ostringstream, std::hex, std::setw, std::make_shared,
       engine::ptr_factory, engine::ptr_world, engine::ptr_solver,
-      engine::solver, engine::world, engine::seed_type;
+      engine::solver, engine::world, engine::seed_type,
+      engine::basic_factory, engine::prime_impact;
+
+  const bool      server::default_verbose                 = false;
+  const uint64_t  server::default_tick_duration_msec      = 10;
+  const uint64_t  server::default_update_timeout_msec     = 10;
+  const uint64_t  server::default_ping_timeout_msec       = 100;
+  const uint64_t  server::default_connection_timeout_msec = 20000;
+  const sl::whole server::default_overtake_factor         = 3;
 
   server::~server() {
     if (is_verbose()) {
@@ -64,19 +78,19 @@ namespace laplace::network {
     return m_state;
   }
 
-  auto server::get_tick_duration() noexcept -> size_t {
+  auto server::get_tick_duration() noexcept -> sl::whole {
     return m_tick_duration_msec;
   }
 
-  auto server::get_bytes_sent() const noexcept -> size_t {
+  auto server::get_bytes_sent() const noexcept -> sl::whole {
     return m_bytes_sent;
   }
 
-  auto server::get_bytes_received() const noexcept -> size_t {
+  auto server::get_bytes_received() const noexcept -> sl::whole {
     return m_bytes_received;
   }
 
-  auto server::get_bytes_loss() const noexcept -> size_t {
+  auto server::get_bytes_loss() const noexcept -> sl::whole {
     return m_bytes_loss;
   }
 
@@ -149,15 +163,15 @@ namespace laplace::network {
     m_bytes_loss     = 0;
   }
 
-  void server::add_bytes_sent(size_t count) noexcept {
+  void server::add_bytes_sent(sl::whole count) noexcept {
     m_bytes_sent += count;
   }
 
-  void server::add_bytes_received(size_t count) noexcept {
+  void server::add_bytes_received(sl::whole count) noexcept {
     m_bytes_received += count;
   }
 
-  void server::add_bytes_loss(size_t count) noexcept {
+  void server::add_bytes_loss(sl::whole count) noexcept {
     m_bytes_loss += count;
   }
 
@@ -184,15 +198,44 @@ namespace laplace::network {
     return m_ping_timeout_msec;
   }
 
-  auto server::get_overtake_factor() const noexcept -> size_t {
+  auto server::get_overtake_factor() const noexcept -> sl::whole {
     return m_overtake_factor;
+  }
+
+  void server::verb_queue(sl::index n, span_cbyte seq) {
+    if (m_verbose) {
+      const auto id   = prime_impact::get_id(seq);
+      const auto name = basic_factory::name_by_id_native(id);
+
+      if (!name.empty()) {
+        verb(fmt(" :: queue %4d '%s (%d)'", (int) n, name.c_str(),
+                 (int) id));
+      } else {
+        verb(fmt(" :: queue %4d '%d'", (int) n, (int) id));
+      }
+    }
+  }
+
+  void server::verb_slot(sl::index slot, sl::index n, span_cbyte seq) {
+    if (m_verbose) {
+      const auto id   = prime_impact::get_id(seq);
+      const auto name = basic_factory::name_by_id_native(id);
+
+      if (!name.empty()) {
+        verb(fmt(" :: (slot %2d) %4d '%s (%d)'", (int) slot, (int) n,
+                 name.c_str(), (int) id));
+      } else {
+        verb(fmt(" :: (slot %2d) %4d '%d'", (int) slot, (int) n,
+                 (int) id));
+      }
+    }
   }
 
   void server::dump(span_cbyte bytes) {
     if (m_verbose) {
       auto ss = ostringstream {};
       ss << " ";
-      for (size_t i = 0; i < bytes.size(); i++) {
+      for (sl::index i = 0; i < bytes.size(); i++) {
         ss << " " << setw(2) << hex << static_cast<unsigned>(bytes[i]);
         if ((i % 16) == 15)
           ss << "\n ";

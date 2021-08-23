@@ -13,14 +13,14 @@
 #ifndef laplace_ui_rect_h
 #define laplace_ui_rect_h
 
-#include <cstdint>
+#include "../core/slib.h"
 
 namespace laplace::ui {
   struct rect {
-    int x      = 0;
-    int y      = 0;
-    int width  = 0;
-    int height = 0;
+    sl::index x      = 0;
+    sl::index y      = 0;
+    sl::whole width  = 0;
+    sl::whole height = 0;
   };
 
   struct rectf {
@@ -34,7 +34,7 @@ namespace laplace::ui {
   using cref_rectf = const rectf &;
 
   auto compare(cref_rect a, cref_rect b) -> bool;
-  auto contains(cref_rect a, int x, int y) -> bool;
+  auto contains(cref_rect a, sl::index x, sl::index y) -> bool;
   auto contains(cref_rect a, cref_rect b) -> bool;
   auto intersects(cref_rect a, cref_rect b) -> bool;
 

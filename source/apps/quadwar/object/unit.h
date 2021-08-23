@@ -14,14 +14,19 @@
 #define quadwar_object_unit_h
 
 #include "../../../laplace/engine/basic_entity.h"
+#include "../../../laplace/engine/eval/grid.h"
 #include "../view/defs.h"
 #include "defs.h"
 
 namespace quadwar_app::object {
   class unit : public engine::basic_entity, helper {
   public:
-    static constexpr engine::intval default_health = 100;
-    static constexpr engine::intval default_radius = 1;
+    enum order : sl::index { o_move };
+
+    static const engine::intval default_health;
+    static const engine::intval default_radius;
+    static const engine::intval default_collision_radius;
+    static const engine::intval default_movement_speed;
 
     unit();
     ~unit() override = default;
@@ -31,24 +36,22 @@ namespace quadwar_app::object {
     static auto spawn_start_units(world w, sl::whole unit_count)
         -> std::vector<sl::index>;
 
-    static void set_actor(entity en, sl::index id_actor);
-    static void set_x(entity en, engine::intval x);
-    static void set_y(entity en, engine::intval y);
-    static void set_position(entity en, engine::vec2i p);
-    static void set_radius(entity en, engine::intval radius);
-    static void set_health(entity en, engine::intval health);
+    static void place_footprint(world w, sl::index id_unit);
+
+    static void order_move(
+        world         w,
+        sl::index     id_actor,
+        sl::index     id_unit,
+        engine::vec2i target);
 
     [[nodiscard]] static auto get_actor(entity en) -> sl::index;
+    [[nodiscard]] static auto get_color(entity en) -> sl::index;
     [[nodiscard]] static auto get_x(entity en) -> engine::intval;
     [[nodiscard]] static auto get_y(entity en) -> engine::intval;
-    [[nodiscard]] static auto get_position(entity en) -> engine::vec2i;
+    [[nodiscard]] static auto get_position(entity en)
+        -> engine::vec2i;
     [[nodiscard]] static auto get_radius(entity en) -> engine::intval;
     [[nodiscard]] static auto get_health(entity en) -> engine::intval;
-
-    [[nodiscard]] static auto scale_of_x(entity en) -> engine::intval;
-    [[nodiscard]] static auto scale_of_y(entity en) -> engine::intval;
-    [[nodiscard]] static auto scale_of_radius(entity en)
-        -> engine::intval;
 
     [[nodiscard]] static auto get_position_scaled(entity en)
         -> view::vec2;
@@ -60,13 +63,40 @@ namespace quadwar_app::object {
     unit(proto_tag);
 
   private:
+    struct footprint_data {
+      engine::vec2z      size;
+      engine::vec2z      center;
+      sl::vector<int8_t> bytes;
+    };
+
+    [[nodiscard]] static auto make_footprint(sl::whole radius)
+        -> footprint_data;
+
+    void do_search(entity map) noexcept;
+    void do_movement(entity map) noexcept;
+
     static unit m_proto;
 
+    static sl::index n_health;
+    static sl::index n_radius;
+    static sl::index n_collision_radius;
+    static sl::index n_movement_speed;
     static sl::index n_actor;
+    static sl::index n_color;
     static sl::index n_x;
     static sl::index n_y;
-    static sl::index n_radius;
-    static sl::index n_health;
+    static sl::index n_target_order;
+    static sl::index n_target_x;
+    static sl::index n_target_y;
+
+    bool                       m_searching = false;
+    bool                       m_movement  = false;
+    sl::index                  m_current   = {};
+    engine::vec2z              m_destination;
+    engine::eval::grid::_state m_search;
+    sl::vector<int8_t>         m_pathmap;
+    engine::vec2z              m_size;
+    sl::vector<engine::vec2z>  m_waypoints;
   };
 }
 

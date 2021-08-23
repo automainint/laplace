@@ -16,12 +16,12 @@
 #define laplace_engine_eventorder_impl_h
 
 namespace laplace::engine {
-  constexpr eventorder::eventorder(size_t index) {
+  constexpr eventorder::eventorder(sl::index index) {
     this->m_indices[0] = index;
     this->m_size       = 1;
   }
 
-  constexpr auto eventorder::spawn(ref_uint child_count) const
+  constexpr auto eventorder::spawn(sl::whole &child_count) const
       -> eventorder {
     return eventorder(*this, child_count++);
   }
@@ -34,7 +34,7 @@ namespace laplace::engine {
     if (order.m_size == 0)
       return this->m_size > 0;
 
-    for (size_t i = 0; i < this->m_size && i < order.m_size; i++) {
+    for (sl::index i = 0; i < this->m_size && i < order.m_size; i++) {
       if (this->m_indices[i] < order.m_indices[i])
         return true;
     }
@@ -42,12 +42,12 @@ namespace laplace::engine {
     return false;
   }
 
-  constexpr auto eventorder::get_index() const -> size_t {
+  constexpr auto eventorder::get_index() const -> sl::index {
     return this->m_size > 0 ? this->m_indices[0] : -1;
   }
 
   constexpr eventorder::eventorder(const eventorder &parent,
-                                   size_t            child_index) {
+                                   sl::index         child_index) {
     if (parent.m_size == eventorder::max_depth) {
       this->m_size = 0;
       return;

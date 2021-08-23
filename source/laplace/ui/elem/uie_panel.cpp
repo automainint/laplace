@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../context.h"
 #include "panel.h"
+
+#include "../context.h"
 
 namespace laplace::ui::elem {
   void panel::set_context(ptr_context cont) {

@@ -10,9 +10,10 @@
  *  the MIT License for more details.
  */
 
+#include "text.h"
+
 #include "../core/parser.h"
 #include "../core/utils.h"
-#include "text.h"
 #include <iomanip>
 #include <sstream>
 
@@ -21,13 +22,13 @@ namespace laplace::format::text {
       core::family, std::function, std::ostringstream, std::hex;
 
   static bool parse(parser &in, family &f) {
-    bool   result = true;
-    family field;
+    bool result = true;
+    auto field  = family {};
 
-    uint64_t x_u64 = {};
-    int64_t  x_64  = {};
-    double   x_f   = {};
-    u8string x_s;
+    auto x_u64 = uint64_t {};
+    auto x_64  = int64_t {};
+    auto x_f   = double {};
+    auto x_s   = u8string {};
 
     if (in.parse(" true ")) {
       field = true;
@@ -50,7 +51,7 @@ namespace laplace::format::text {
         field[text::s_function] = id;
 
         if (!in.parse(" ) ")) {
-          family args;
+          auto args = family {};
 
           if (!parse(in, args)) {
             result = false;
@@ -68,7 +69,7 @@ namespace laplace::format::text {
         field = id;
       }
     } else if (in.parse(" ( ")) {
-      family v;
+      auto v = family {};
 
       if (!parse(in, v)) {
         result = false;
@@ -87,7 +88,8 @@ namespace laplace::format::text {
           continue;
         }
 
-        family key, value;
+        auto key   = family {};
+        auto value = family {};
 
         if (!parse(in, key)) {
           result = false;
@@ -126,7 +128,7 @@ namespace laplace::format::text {
         field[key] = value;
       }
     } else if (in.parse(" :: { ")) {
-      vbyte v;
+      auto v = vbyte {};
 
       while (!in.parse(" } ")) {
         if (uint64_t x; in.parse(" %X ", &x) && x <= 0xff) {
@@ -165,10 +167,10 @@ namespace laplace::format::text {
   }
 
   auto decode(fn_read read) -> pack_type {
-    pack_type result;
+    auto result = pack_type {};
 
     if (read) {
-      parser in([read]() -> char32_t {
+      auto in = parser([read]() -> char32_t {
         auto c = read(1);
         if (c.size() == 1)
           return c[0];
@@ -186,7 +188,7 @@ namespace laplace::format::text {
   }
 
   static bool printdown(function<bool(const char *)> print,
-                        const family &f, size_t indent = 0) {
+                        const family &f, sl::whole indent = 0) {
     if (f.is_boolean()) {
       return print(f ? "true" : "false");
     } else if (f.is_integer()) {
@@ -210,8 +212,8 @@ namespace laplace::format::text {
 
       auto size = f.get_size();
 
-      for (size_t i = 0; i < size; i++) {
-        ostringstream out;
+      for (sl::index i = 0; i < size; i++) {
+        auto out = ostringstream {};
         out.width(2);
         out << hex;
         out << f.get_bytes()[i] << " ";
@@ -222,7 +224,7 @@ namespace laplace::format::text {
     } else if (f.is_vector()) {
       auto size = f.get_size();
 
-      for (size_t i = 0; i < size; i++) {
+      for (sl::index i = 0; i < size; i++) {
         if (i > 0 && !print(", "))
           return false;
         if (!printdown(print, f[i], indent))
@@ -234,8 +236,8 @@ namespace laplace::format::text {
 
       auto size = f.get_size();
 
-      for (size_t i = 0; i < size; i++) {
-        for (size_t n = 0; n <= indent; n++)
+      for (sl::index i = 0; i < size; i++) {
+        for (sl::index n = 0; n <= indent; n++)
           if (!print("  "))
             return false;
         const auto &k = f.get_key(i);
@@ -256,7 +258,7 @@ namespace laplace::format::text {
 
     if (data) {
       auto print = [write](const char *s) -> bool {
-        vbyte v(strlen(s));
+        auto v = vbyte(strlen(s));
         memcpy(v.data(), s, v.size());
         return write(v) == v.size();
       };

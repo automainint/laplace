@@ -22,11 +22,16 @@ namespace quadwar_app::object {
     player(bool is_local = false);
     ~player() override = default;
 
+    static void init_indices(world w);
     static void set_name(entity en, std::u8string_view name);
+    static void set_index(entity en, sl::index n);
     static auto get_name(entity en) -> std::u8string;
+    static auto get_index(entity en) -> sl::index;
 
   private:
     player(proto_tag);
+
+    static sl::index n_player_index;
 
     static player m_proto;
   };

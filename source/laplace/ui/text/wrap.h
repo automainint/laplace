@@ -29,7 +29,7 @@ namespace laplace::ui::text {
     void set_context(ptr_context cont);
 
     auto adjust(std::u8string_view text) -> area final;
-    void render(int x, int y, std::u8string_view text) final;
+    void render(sl::index x, sl::index y, std::u8string_view text) final;
 
   private:
     ptr_context m_context;

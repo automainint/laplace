@@ -11,6 +11,7 @@
  */
 
 #include "buffer.h"
+
 #include <algorithm>
 
 namespace laplace::format {
@@ -19,9 +20,12 @@ namespace laplace::format {
     m_offset = 0;
   }
 
-  buffer::~buffer() { }
+  auto buffer::read(sl::whole count) -> vbyte {
+    if (count < 0) {
+      error_("Invalid count.", __FUNCTION__);
+      return {};
+    }
 
-  auto buffer::read(size_t count) -> vbyte {
     auto piece = m_data.size() - m_offset;
 
     if (count > piece) {
@@ -29,10 +33,10 @@ namespace laplace::format {
       m_data.insert(m_data.end(), v.begin(), v.end());
     }
 
-    auto p = m_data.begin() + static_cast<ptrdiff_t>(m_offset);
+    auto p = m_data.begin() + m_offset;
     m_offset += m_data.size();
 
-    return vbyte(p, p + static_cast<ptrdiff_t>(count));
+    return vbyte(p, p + count);
   }
 
   void buffer::keep() {

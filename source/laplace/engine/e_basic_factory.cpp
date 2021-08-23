@@ -1,7 +1,5 @@
 /*  laplace/engine/e_basic_factory.cpp
  *
- *      Basic factory implementation.
- *
  *  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
@@ -12,34 +10,24 @@
  *  the MIT License for more details.
  */
 
+#include "basic_factory.h"
+
 #include "../core/parser.h"
 #include "../core/utils.h"
-#include "basic_factory.h"
-#include "protocol/basic_event.h"
-#include "protocol/client_desync.h"
-#include "protocol/debug.h"
-#include "protocol/ids.h"
-#include "protocol/ping.h"
-#include "protocol/public_key.h"
-#include "protocol/request_events.h"
-#include "protocol/server_clock.h"
-#include "protocol/server_idle.h"
-#include "protocol/server_seed.h"
-#include "protocol/slot_create.h"
-#include "protocol/slot_remove.h"
+#include "protocol/all.h"
 
 namespace laplace::engine {
   using namespace protocol;
 
-  using std::string_view, std::string, std::vector, std::span,
-      std::u8string, core::parser;
+  using std::string_view, std::string, std::span, std::u8string,
+      core::parser;
 
   auto basic_factory::parse(string_view command) const -> vbyte {
-    return parse_native({ ids::table, ids::_native_count }, command);
+    return parse_native(id_by_name_native, command);
   }
 
   auto basic_factory::print(span_cbyte seq) const -> string {
-    return print_native({ ids::table, ids::_native_count }, seq);
+    return print_native(name_by_id_native, seq);
   }
 
   auto basic_factory::decode(span_cbyte seq) const -> ptr_prime_impact {
@@ -47,20 +35,22 @@ namespace laplace::engine {
   }
 
   auto basic_factory::parse_multi(std::string_view commands) const
-      -> vector<vbyte> {
-    constexpr size_t avg_command_size = 20;
+      -> sl::vector<vbyte> {
 
-    vector<vbyte> result;
-    size_t        index = 0;
+    constexpr sl::whole avg_command_size = 20;
+
+    auto result = sl::vector<vbyte> {};
+    auto n      = sl::index {};
 
     result.reserve(commands.size() / avg_command_size);
 
-    for (size_t i = 0; i < commands.size(); i++) {
+    for (sl::index i = 0; i < commands.size(); i++) {
       if (commands[i] == '\n') {
         result.emplace_back(
-            parse({ commands.data() + index, i - index }));
+            parse({ commands.data() + n,
+                    static_cast<string_view::size_type>(i - n) }));
 
-        index = i + 1;
+        n = i + 1;
       }
     }
 
@@ -69,7 +59,8 @@ namespace laplace::engine {
 
   auto basic_factory::print_multi(span<const span_cbyte> seqs) const
       -> string {
-    string cmds;
+
+    auto cmds = string {};
 
     for (auto &seq : seqs) {
       cmds.append(print(seq));
@@ -79,13 +70,123 @@ namespace laplace::engine {
     return cmds;
   }
 
-  auto basic_factory::parse_native(  //
-      span<const string_view> table, //
-      string_view             command) -> vbyte {
+  auto basic_factory::id_by_name_native(string_view name) -> uint16_t {
+    if (name == "request-events")
+      return ids::request_events;
+    if (name == "request-token")
+      return ids::request_token;
+    if (name == "session-request")
+      return ids::session_request;
+    if (name == "session-response")
+      return ids::session_response;
+    if (name == "session-token")
+      return ids::session_token;
+    if (name == "ping-request")
+      return ids::ping_request;
+    if (name == "ping-response")
+      return ids::ping_response;
+    if (name == "client-desync")
+      return ids::client_desync;
+    if (name == "server-idle")
+      return ids::server_idle;
+    if (name == "server-init")
+      return ids::server_init;
+    if (name == "server-loading")
+      return ids::server_loading;
+    if (name == "server-launch")
+      return ids::server_launch;
+    if (name == "server-action")
+      return ids::server_action;
+    if (name == "server-pause")
+      return ids::server_pause;
+    if (name == "server-reserve")
+      return ids::server_reserve;
+    if (name == "server-clock")
+      return ids::server_clock;
+    if (name == "server-seed")
+      return ids::server_seed;
+    if (name == "server-quit")
+      return ids::server_quit;
+    if (name == "client-enter")
+      return ids::client_enter;
+    if (name == "client-leave")
+      return ids::client_leave;
+    if (name == "client-ready")
+      return ids::client_ready;
+    if (name == "debug")
+      return ids::debug;
+    if (name == "slot-create")
+      return ids::slot_create;
+    if (name == "slot-remove")
+      return ids::slot_remove;
+
+    return ids::undefined;
+  }
+
+  auto basic_factory::name_by_id_native(uint16_t id) -> string {
+    if (id == ids::request_events)
+      return string("request-events");
+    if (id == ids::request_token)
+      return string("request-token");
+    if (id == ids::session_request)
+      return string("session-request");
+    if (id == ids::session_response)
+      return string("session-response");
+    if (id == ids::session_token)
+      return string("session-token");
+    if (id == ids::ping_request)
+      return string("ping-request");
+    if (id == ids::ping_response)
+      return string("ping-response");
+    if (id == ids::client_desync)
+      return string("client-desync");
+    if (id == ids::server_idle)
+      return string("server-idle");
+    if (id == ids::server_init)
+      return string("server-init");
+    if (id == ids::server_loading)
+      return string("server-loading");
+    if (id == ids::server_launch)
+      return string("server-launch");
+    if (id == ids::server_action)
+      return string("server-action");
+    if (id == ids::server_pause)
+      return string("server-pause");
+    if (id == ids::server_reserve)
+      return string("server-reserve");
+    if (id == ids::server_clock)
+      return string("server-clock");
+    if (id == ids::server_seed)
+      return string("server-seed");
+    if (id == ids::server_quit)
+      return string("server-quit");
+    if (id == ids::client_enter)
+      return string("client-enter");
+    if (id == ids::client_leave)
+      return string("client-leave");
+    if (id == ids::client_ready)
+      return string("client-ready");
+    if (id == ids::debug)
+      return string("debug");
+    if (id == ids::slot_create)
+      return string("slot-create");
+    if (id == ids::slot_remove)
+      return string("slot-remove");
+
+    return {};
+  }
+
+  auto basic_factory::parse_native(fn_id_by_name id_by_name,
+                                   string_view   command) -> vbyte {
+
+    if (!id_by_name) {
+      error_("No id-by-name function.", __FUNCTION__);
+      return {};
+    }
 
     auto in = parser::wrap(command);
 
-    u8string u8_id;
+    auto u8_id = u8string {};
 
     auto lin = in.get_line();
     auto col = in.get_column();
@@ -97,15 +198,7 @@ namespace laplace::engine {
       return {};
     }
 
-    uint16_t id   = ids::undefined;
-    string   s_id = to_string(u8_id);
-
-    for (size_t i = 0; i < table.size(); i++) {
-      if (table[i] == s_id) {
-        id = static_cast<uint16_t>(i);
-        break;
-      }
-    }
+    const auto id = id_by_name(to_string(u8_id));
 
     if (id == ids::undefined) {
       error_(fmt("Unknown command (line %dz, col %dz).", lin, col),
@@ -113,10 +206,10 @@ namespace laplace::engine {
       return {};
     }
 
-    vbyte seq(2);
+    auto seq = vbyte(2);
     serial::wr<uint16_t>(seq, 0, id);
 
-    uint64_t x;
+    auto x = uint64_t {};
 
     lin = in.get_line();
     col = in.get_column();
@@ -143,24 +236,34 @@ namespace laplace::engine {
     return seq;
   }
 
-  auto basic_factory::print_native(  //
-      span<const string_view> table, //
-      span_cbyte              seq) -> string {
+  auto basic_factory::print_native(fn_name_by_id name_by_id,
+                                   span_cbyte    seq) -> string {
 
-    constexpr size_t max_id_size = 14;
-    string           s;
+    if (!name_by_id) {
+      error_("No name-by-id function.", __FUNCTION__);
+      return {};
+    }
+
+    constexpr sl::whole max_id_size = 14;
+
+    auto s = string {};
     s.reserve(max_id_size + seq.size() * 3);
 
-    if (seq.size() >= 2) {
-      auto id = prime_impact::get_id_unsafe(seq);
+    if (seq.size() < 2) {
+      return {};
+    }
 
-      if (id < table.size()) {
-        s.append(table[id]);
+    const auto id = prime_impact::get_id(seq);
 
-        for (size_t i = 2; i < seq.size(); i++) {
-          s.append(fmt(" %02x", seq[i]));
-        }
-      }
+    s = name_by_id(id);
+
+    if (s.empty()) {
+      error_("Invalid id.", __FUNCTION__);
+      return {};
+    }
+
+    for (sl::index i = 2; i < seq.size(); i++) {
+      s.append(fmt(" %02x", seq[i]));
     }
 
     return s;
@@ -169,12 +272,22 @@ namespace laplace::engine {
   auto basic_factory::decode_native(span_cbyte seq)
       -> ptr_prime_impact {
 
-    if (public_key::scan(seq))
-      return make<public_key>(seq);
-    if (client_desync::scan(seq))
-      return make<client_desync>(seq);
     if (request_events::scan(seq))
       return make<request_events>(seq);
+    if (request_token::scan(seq))
+      return make<request_token>(seq);
+    if (session_request::scan(seq))
+      return make<session_request>(seq);
+    if (session_response::scan(seq))
+      return make<session_response>(seq);
+    if (session_token::scan(seq))
+      return make<session_token>(seq);
+    if (ping_request::scan(seq))
+      return make<ping_request>(seq);
+    if (ping_response::scan(seq))
+      return make<ping_response>(seq);
+    if (client_desync::scan(seq))
+      return make<client_desync>(seq);
     if (server_idle::scan(seq))
       return make<server_idle>(seq);
     if (server_init::scan(seq))
@@ -191,10 +304,6 @@ namespace laplace::engine {
       return make<server_seed>(seq);
     if (server_quit::scan(seq))
       return make<server_quit>(seq);
-    if (ping_request::scan(seq))
-      return make<ping_request>(seq);
-    if (ping_response::scan(seq))
-      return make<ping_response>(seq);
     if (client_enter::scan(seq))
       return make<client_enter>(seq);
     if (client_leave::scan(seq))

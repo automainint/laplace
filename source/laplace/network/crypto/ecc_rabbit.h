@@ -19,7 +19,7 @@
 namespace laplace::network::crypto {
   class ecc_rabbit : public ecc, public rabbit {
   public:
-    static constexpr sl::whole key_size = 32;
+    static const sl::whole key_size;
 
     ecc_rabbit();
     ~ecc_rabbit() override = default;

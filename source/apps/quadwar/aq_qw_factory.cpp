@@ -13,6 +13,7 @@
 #include "protocol/qw_init.h"
 #include "protocol/qw_launch.h"
 #include "protocol/qw_loading.h"
+#include "protocol/qw_order_move.h"
 #include "protocol/qw_player_name.h"
 #include "protocol/qw_slot_create.h"
 #include "protocol/qw_slot_remove.h"
@@ -36,6 +37,8 @@ namespace quadwar_app {
       return make<qw_launch>(seq);
     if (qw_loading::scan(seq))
       return make<qw_loading>(seq);
+    if (qw_order_move::scan(seq))
+      return make<qw_order_move>(seq);
 
     return decode_native(seq);
   }

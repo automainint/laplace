@@ -18,7 +18,6 @@
 #include "../core/utils.h"
 #include "access/world.h"
 #include "eventorder.h"
-#include "protocol/ids.h"
 
 namespace laplace::engine {
   /*  World event compute atom. Impacts can be SEQUENTIALLY
@@ -32,7 +31,7 @@ namespace laplace::engine {
    *
    *  ```
    *  void my_impact::perform(access::world w) const {
-   *      size_t child_count = 0;
+   *      sl::whole child_count = 0;
    *      // ...
    *
    *      //  Create an Impact.
@@ -99,7 +98,7 @@ namespace laplace::engine {
 
   protected:
     constexpr void set_async(bool is_async);
-    constexpr auto order_of_child(ref_uint count) const -> eventorder;
+    constexpr auto order_of_child(sl::whole &count) const -> eventorder;
 
   private:
     eventorder m_order;

@@ -10,22 +10,27 @@
  *  the MIT License for more details.
  */
 
-#include "../../core/serial.h"
-#include "../transfer.h"
 #include "stream_cipher.h"
+
+#include "../../core/serial.h"
+#include "../../core/utils.h"
+#include "../transfer.h"
 
 namespace laplace::network::crypto {
   using std::min, std::tuple, std::span, serial::rd, serial::wr;
+
+  const sl::whole stream_cipher::block_size        = 64;
+  const sl::whole stream_cipher::max_offset_change = 10000;
 
   auto stream_cipher::encrypt(span_cbyte bytes) -> vbyte {
 
     uint8_t block[block_size] = {};
 
-    vbyte  buf;
-    size_t n = 0;
+    auto buf = vbyte {};
+    auto n   = sl::index {};
 
     while (n < bytes.size()) {
-      const auto size = min(block_size, bytes.size() - n);
+      const auto size = min<sl::index>(block_size, bytes.size() - n);
 
       const auto n_buf = buf.size();
       buf.resize(n_buf + n_data + block_size);
@@ -36,12 +41,13 @@ namespace laplace::network::crypto {
       memcpy(block, bytes.data() + n, size);
       memset(block + size, 0, block_size - size);
 
-      if (!do_encrypt(
-              block, { buf.data() + n_buf + n_data, block_size }))
+      if (!do_encrypt(block,
+                      { buf.data() + n_buf + n_data, block_size }))
         break;
 
       const auto sum = transfer::check_sum(
-          { buf.data() + n_buf + n_data, size });
+          { buf.data() + n_buf + n_data,
+            static_cast<span_cbyte::size_type>(size) });
 
       wr<uint64_t>(buf, n_buf + n_sum, sum);
 
@@ -58,18 +64,14 @@ namespace laplace::network::crypto {
 
     uint8_t block[block_size] = {};
 
-    vbyte  buf;
-    size_t n = 0;
+    auto buf = vbyte {};
+    auto n   = sl::index {};
 
     while (n < bytes.size()) {
-      const auto offset = static_cast<size_t>(
-          rd<uint64_t>(bytes, n + n_offset));
+      const auto offset = as_index(rd<uint64_t>(bytes, n + n_offset));
+      const auto size   = as_index(rd<uint64_t>(bytes, n + n_size));
 
-      const auto size = static_cast<size_t>(
-          rd<uint64_t>(bytes, n + n_size));
-
-      if (scan({ bytes.begin() + static_cast<ptrdiff_t>(n),
-                 bytes.end() })) {
+      if (scan({ bytes.begin() + n, bytes.end() })) {
 
         if (offset != m_dec_offset) {
           if (!rewind_decryption()) {
@@ -125,15 +127,19 @@ namespace laplace::network::crypto {
     return false;
   }
 
-  auto stream_cipher::pass_decryption(size_t offset) -> bool {
+  auto stream_cipher::pass_decryption(sl::index offset) -> bool {
     const uint8_t src[block_size] = { 0 };
     uint8_t       dst[block_size] = { 0 };
 
-    for (size_t i = 0; i < offset; i += block_size) {
-      const size_t delta = min(block_size, offset - i);
+    for (sl::index i = 0; i < offset; i += block_size) {
+      const auto delta = min<sl::index>(block_size, offset - i);
 
-      if (!do_decrypt({ src, delta }, { dst, delta }))
+      if (!do_decrypt(
+              { src, static_cast<span_cbyte::size_type>(delta) },
+              { dst, static_cast<span_byte::size_type>(delta) })) {
+
         return false;
+      }
     }
 
     return true;
@@ -160,9 +166,7 @@ namespace laplace::network::crypto {
       return false;
     }
 
-    if (sum != transfer::check_sum(        //
-                   { data.data() + n_data, //
-                     size })) {
+    if (sum != transfer::check_sum({ data.data() + n_data, size })) {
       verb_error("Stream cipher", "Wrong check sum.");
       return false;
     }

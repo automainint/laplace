@@ -27,9 +27,11 @@ namespace laplace::ui::text {
     ttf_library();
     ~ttf_library();
 
-    auto new_face(const char *file_name, size_t index) -> FT_Face;
-    auto new_memory_face(const uint8_t *bytes, size_t size,
-                         size_t index) -> FT_Face;
+    [[nodiscard]] auto new_face(const char *file_name, sl::index n)
+        -> FT_Face;
+    [[nodiscard]] auto new_memory_face(const uint8_t *bytes,
+                                       sl::whole size, sl::index n)
+        -> FT_Face;
     void done_face(FT_Face face);
 
   private:
@@ -51,10 +53,11 @@ namespace laplace::ui::text {
     void done();
 
     void set_char_size(double width, double height);
-    void set_pixel_sizes(size_t width, size_t height);
-    auto load_char_render(char32_t c) -> bool;
-    auto load_char_metrics(char32_t c) -> bool;
-    auto get_glyph() -> FT_GlyphSlot;
+    void set_pixel_sizes(sl::whole width, sl::whole height);
+
+    [[nodiscard]] auto load_char_render(char32_t c) -> bool;
+    [[nodiscard]] auto load_char_metrics(char32_t c) -> bool;
+    [[nodiscard]] auto get_glyph() -> FT_GlyphSlot;
 
   private:
     std::shared_ptr<ttf_library> m_lib;

@@ -10,18 +10,20 @@
  *  the MIT License for more details.
  */
 
+#include "session.h"
+
+#include "../../laplace/core/keys.h"
 #include "../../laplace/core/utils.h"
 #include "../../laplace/engine/protocol/basic_event.h"
 #include "../../laplace/engine/protocol/slot_create.h"
 #include "../../laplace/network/host.h"
 #include "../../laplace/network/remote.h"
-#include "../../laplace/platform/keys.h"
 #include "object/landscape.h"
 #include "object/player.h"
 #include "object/root.h"
 #include "protocol/qw_loading.h"
+#include "protocol/qw_order_move.h"
 #include "protocol/qw_player_name.h"
-#include "session.h"
 #include <filesystem>
 #include <fstream>
 #include <thread>
@@ -29,12 +31,30 @@
 namespace quadwar_app {
   namespace access      = engine::access;
   namespace this_thread = std::this_thread;
+  namespace ids         = protocol::ids;
+
+  using namespace core::keys;
 
   using std::find, std::make_shared, std::string, std::string_view,
       std::u8string_view, std::ofstream, std::ifstream, network::host,
       network::remote, protocol::qw_player_name, object::root,
       object::landscape, object::player, engine::id_undefined,
-      platform::ref_input, view::vec2, view::real;
+      core::cref_input_handler, view::vec2, view::real;
+
+  const uint16_t session::allowed_commands[] = {
+    ids::session_request, ids::session_token, ids::request_token,
+    ids::request_events,  ids::ping_request,  ids::ping_response,
+    ids::client_enter,    ids::client_leave,  ids::client_ready,
+    ids::player_name,     ids::order_move
+  };
+
+  const char     session::host_info_file[]    = ".host";
+  const char     session::default_server_ip[] = "127.0.0.1";
+  const uint16_t session::default_port        = network::any_port;
+
+  const sl::whole session::thread_count = 4;
+  const float     session::sense_move   = 1.5f;
+  const float     session::sense_scale  = .0003f;
 
   session::session() {
     m_lobby.on_abort([this] {
@@ -70,7 +90,7 @@ namespace quadwar_app {
     m_on_quit = ev;
   }
 
-  void session::tick(uint64_t delta_msec, ref_input in) {
+  void session::tick(uint64_t delta_msec, cref_input_handler in) {
     if (m_server && m_world) {
       m_server->tick(delta_msec);
 
@@ -83,9 +103,8 @@ namespace quadwar_app {
         if (m_on_done) {
           m_on_done();
         }
-      } else {
-        this_thread::yield();
 
+      } else {
         verb("Session: Trying to reconnect...");
 
         m_server->reconnect();
@@ -105,7 +124,7 @@ namespace quadwar_app {
     m_lobby.attach_to(w);
   }
 
-  void session::adjust_layout(int width, int height) {
+  void session::adjust_layout(sl::whole width, sl::whole height) {
     m_lobby.adjust_layout(width, height);
     m_view.adjust_layout(width, height);
   }
@@ -155,6 +174,8 @@ namespace quadwar_app {
     m_server = server;
     m_world  = server->get_world();
 
+    m_world->set_thread_count(thread_count);
+
     server->set_verbose(true);
     server->set_allowed_commands(allowed_commands);
     server->make_factory<qw_factory>();
@@ -181,6 +202,8 @@ namespace quadwar_app {
     m_server = server;
     m_world  = server->get_world();
 
+    m_world->set_thread_count(thread_count);
+
     server->set_verbose(true);
     server->make_factory<qw_factory>();
 
@@ -202,17 +225,8 @@ namespace quadwar_app {
       f >> port;
 
       if (f) {
-        verb(fmt(
-            "Host address found: %s:%hu", network::localhost, port));
-        return fmt("%s:%hu", network::localhost, port);
-      }
-    } else if (auto f2 = ifstream(session::host_info_file_debug); f2) {
-      auto port = network::any_port;
-      f2 >> port;
-
-      if (f2) {
-        verb(fmt(
-            "Host address found: %s:%hu", network::localhost, port));
+        verb(fmt("Host address found: %s:%hu", network::localhost,
+                 port));
         return fmt("%s:%hu", network::localhost, port);
       }
     }
@@ -220,28 +234,32 @@ namespace quadwar_app {
     return string(default_address);
   }
 
-  void session::update_control(uint64_t delta_msec, ref_input in) {
+  void session::update_control(uint64_t           delta_msec,
+                               cref_input_handler in) {
     bool is_moved = false;
-    vec2 delta;
+    auto delta    = vec2 {};
 
     const auto fdelta = static_cast<real>(delta_msec);
 
-    if (in.is_key_down(platform::key_left)) {
+    m_view.set_cursor({ static_cast<real>(in.get_mouse_x()),
+                        static_cast<real>(in.get_mouse_y()) });
+
+    if (in.is_key_down(key_left)) {
       is_moved = true;
       delta.x() -= sense_move * fdelta;
     }
 
-    if (in.is_key_down(platform::key_right)) {
+    if (in.is_key_down(key_right)) {
       is_moved = true;
       delta.x() += sense_move * fdelta;
     }
 
-    if (in.is_key_down(platform::key_up)) {
+    if (in.is_key_down(key_up)) {
       is_moved = true;
       delta.y() -= sense_move * fdelta;
     }
 
-    if (in.is_key_down(platform::key_down)) {
+    if (in.is_key_down(key_down)) {
       is_moved = true;
       delta.y() += sense_move * fdelta;
     }
@@ -251,14 +269,29 @@ namespace quadwar_app {
       m_view.scale(sense_scale * fwheel);
     }
 
-    if (in.is_key_down(platform::key_mbutton)) {
+    if (in.is_key_down(key_mbutton)) {
       is_moved = true;
       delta.x() -= static_cast<real>(in.get_mouse_delta_x());
       delta.y() -= static_cast<real>(in.get_mouse_delta_y());
     }
 
+    if (in.is_key_pressed(key_lbutton)) {
+      m_view.click();
+    }
+
     if (is_moved) {
       m_view.move(delta);
+    }
+
+    if (in.is_key_pressed(key_rbutton)) {
+      const auto u = m_view.get_unit();
+
+      if (u >= 0) {
+        const auto target = m_view.get_grid_position();
+
+        m_server->emit<protocol::qw_order_move>(
+            m_id_actor, u, target.x(), target.y());
+      }
     }
   }
 
@@ -268,9 +301,11 @@ namespace quadwar_app {
 
     auto world = access::world({ *m_world, access::read_only });
 
-    auto r = world.get_entity(world.get_root());
+    auto r     = world.get_entity(world.get_root());
+    auto slots = world.get_entity(root::get_slots(r));
 
-    const auto ver = root::get_version(r);
+    const auto ver        = root::get_version(r);
+    const auto slot_count = slots.vec_get_size();
 
     if (m_root_ver < ver) {
       m_root_ver = ver;
@@ -279,11 +314,10 @@ namespace quadwar_app {
         m_lobby.set_visible(false);
         m_show_game = true;
 
-        auto       slot_index = sl::index {};
-        const auto slot_count = root::get_slot_count(r);
+        auto slot_index = sl::index {};
 
         for (sl::index i = 0; i < slot_count; i++) {
-          if (root::get_slot(r, i) == m_id_actor) {
+          if (slots.vec_get(i) == m_id_actor) {
             slot_index = i;
             break;
           }
@@ -305,16 +339,15 @@ namespace quadwar_app {
         return;
       }
 
-      const auto count = root::get_slot_count(r);
+      for (sl::index i = 0; i < slot_count; i++) {
 
-      for (size_t i = 0; i < count; i++) {
-
-        const auto id_actor = root::get_slot(r, i);
+        const auto id_actor = slots.vec_get(i);
         const auto actor    = world.get_entity(id_actor);
         const auto is_local = player::is_local(actor);
 
-        if (is_local)
+        if (is_local) {
           m_id_actor = id_actor;
+        }
 
         auto name = player::get_name(actor);
 
@@ -329,7 +362,7 @@ namespace quadwar_app {
         m_lobby.set_slot(i, id_actor, name);
       }
 
-      for (size_t i = count; i < m_lobby.get_slot_count(); i++) {
+      for (sl::index i = slot_count; i < m_lobby.get_slot_count(); i++) {
         m_lobby.remove_slot(i);
       }
     }

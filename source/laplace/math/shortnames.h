@@ -13,14 +13,15 @@
 #ifndef laplace_math_shortnames_h
 #define laplace_math_shortnames_h
 
+#include "../core/slib.h"
 #include <cstddef>
 #include <cstdint>
 
 namespace laplace::math {
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   class vector;
 
-  template <size_t rows_, size_t cols_, typename type_>
+  template <sl::whole rows_, sl::whole cols_, typename type_>
   class matrix;
 
   template <typename type_>

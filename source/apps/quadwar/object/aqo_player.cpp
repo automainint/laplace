@@ -10,20 +10,43 @@
  *  the MIT License for more details.
  */
 
-#include "../../../laplace/core/serial.h"
 #include "player.h"
+
+#include "../../../laplace/core/serial.h"
+#include "../../../laplace/core/utils.h"
+#include "root.h"
 
 namespace quadwar_app::object {
   using std::u8string_view, std::u8string;
 
-  player player::m_proto(player::proto);
+  sl::index player::n_player_index = {};
 
-  player::player(proto_tag) : object::actor(player::proto) { }
+  player player::m_proto(proto);
 
-  player::player(bool is_local) : object::actor(player::dummy) {
+  player::player(proto_tag) : actor(proto) {
+    setup_sets({ { .id = sets::player_index, .scale = 1 } });
+
+    n_player_index = index_of(sets::player_index);
+  }
+
+  player::player(bool is_local) : actor(dummy) {
     *this = m_proto;
 
     init(n_is_local, is_local);
+  }
+
+  void player::init_indices(world w) {
+    const auto r     = w.get_entity(w.get_root());
+    const auto slots = w.get_entity(root::get_slots(r));
+
+    const auto count = slots.vec_get_size();
+
+    for (sl::index i = 0; i < count; i++) {
+      const auto p = w.get_entity(as_index(slots.vec_get(i)));
+
+      player::set_index(p, i);
+      p.adjust();
+    }
   }
 
   void player::set_name(entity en, u8string_view name) {
@@ -36,6 +59,10 @@ namespace quadwar_app::object {
     en.adjust();
   }
 
+  void player::set_index(entity en, sl::index n) {
+    en.set(n_player_index, n);
+  }
+
   auto player::get_name(entity en) -> u8string {
     auto name = u8string {};
 
@@ -44,5 +71,9 @@ namespace quadwar_app::object {
     }
 
     return name;
+  }
+
+  auto player::get_index(entity en) -> sl::index {
+    return en.get(n_player_index, -1);
   }
 }

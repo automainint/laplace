@@ -12,11 +12,12 @@
  *  the MIT License for more details.
  */
 
-#define laplace_windows_header_h
+#define laplace_windows_header
 #include <windows.h>
 
-#include "../../core/defs.h"
 #include "window.h"
+
+#include "../../core/defs.h"
 #include <chrono>
 #include <iostream>
 
@@ -24,6 +25,25 @@ namespace laplace::win32 {
   using std::make_unique, std::string_view, std::wstring_view,
       std::shared_ptr, std::unique_lock, std::chrono::duration_cast,
       std::chrono::milliseconds;
+
+  const wchar_t window::class_name[] =
+      L"{46DA795E-8CD4-4F46-8462-86A47ED257DC}";
+  const wchar_t window::default_window_name[] =
+      L"Laplace Application";
+  const bool      window::default_is_visible    = false;
+  const bool      window::default_is_fullscreen = false;
+  const sl::whole window::default_frame_width   = 960;
+  const sl::whole window::default_frame_height  = 720;
+  const sl::whole window::default_frame_rate    = 60;
+
+  const uint32_t window::default_style_ex = WS_EX_ACCEPTFILES;
+
+  const uint32_t window::default_style = WS_OVERLAPPED | WS_SYSMENU |
+                                         WS_CAPTION | WS_MINIMIZEBOX;
+
+  const uint32_t window::mask_fullscreen_style = ~(
+      WS_OVERLAPPED | WS_CAPTION | WS_BORDER | WS_SIZEBOX |
+      WS_MAXIMIZEBOX | WS_MINIMIZEBOX);
 
   void window::init(window::native_handle parent) {
     if (!parent) {
@@ -37,8 +57,10 @@ namespace laplace::win32 {
 
     get_exe_file_name();
 
-    m_screen_width = static_cast<size_t>(GetSystemMetrics(SM_CXSCREEN));
-    m_screen_height = static_cast<size_t>(GetSystemMetrics(SM_CYSCREEN));
+    m_screen_width = static_cast<sl::whole>(
+        GetSystemMetrics(SM_CXSCREEN));
+    m_screen_height = static_cast<sl::whole>(
+        GetSystemMetrics(SM_CYSCREEN));
 
     set_size(default_frame_width, default_frame_height);
     set_centered();
@@ -137,14 +159,14 @@ namespace laplace::win32 {
     update_rect();
   }
 
-  void window::set_position(size_t x, size_t y) {
+  void window::set_position(sl::index x, sl::index y) {
     m_x = x;
     m_y = y;
 
     update_rect();
   }
 
-  void window::set_size(size_t frame_width, size_t frame_height) {
+  void window::set_size(sl::whole frame_width, sl::whole frame_height) {
     if (frame_width > 0 && frame_height > 0) {
       m_frame_width  = frame_width;
       m_frame_height = frame_height;
@@ -161,9 +183,9 @@ namespace laplace::win32 {
     set_fullscreen_mode(0, 0, m_frame_rate);
   }
 
-  void window::set_fullscreen_mode(size_t frame_width,
-                                   size_t frame_height,
-                                   size_t frame_rate) {
+  void window::set_fullscreen_mode(sl::whole frame_width,
+                                   sl::whole frame_height,
+                                   sl::whole frame_rate) {
     m_fullscreen_width  = frame_width;
     m_fullscreen_height = frame_height;
     m_frame_rate        = frame_rate;
@@ -179,8 +201,8 @@ namespace laplace::win32 {
     if (m_input) {
       m_input->attach(m_handle);
 
-      m_input->set_window_rect(
-          get_x(), get_y(), get_width(), get_height());
+      m_input->set_window_rect(get_x(), get_y(), get_width(),
+                               get_height());
     }
   }
 
@@ -219,7 +241,7 @@ namespace laplace::win32 {
     int  code = 0;
     bool quit = false;
 
-    MSG msg;
+    auto msg = MSG {};
     memset(&msg, 0, sizeof msg);
 
     if (m_on_init) {
@@ -250,7 +272,7 @@ namespace laplace::win32 {
       }
 
       auto delta = duration_cast<milliseconds>(clock::now() - time);
-      auto delta_msec = static_cast<size_t>(delta.count());
+      auto delta_msec = static_cast<sl::whole>(delta.count());
 
       if (m_input) {
         m_input->tick(delta_msec);
@@ -343,22 +365,23 @@ namespace laplace::win32 {
     AdjustWindowRectEx(&rc, static_cast<DWORD>(get_style()), false,
                        static_cast<DWORD>(get_style_ex()));
 
-    m_width  = static_cast<size_t>(static_cast<int64_t>(rc.right) -
-                                  rc.left);
-    m_height = static_cast<size_t>(static_cast<int64_t>(rc.bottom) -
-                                   rc.top);
+    m_width  = static_cast<sl::whole>(static_cast<int64_t>(rc.right) -
+                                     rc.left);
+    m_height = static_cast<sl::whole>(
+        static_cast<int64_t>(rc.bottom) - rc.top);
   }
 
   void window::update_rect() {
     if (m_handle) {
-      size_t x      = get_x();
-      size_t y      = get_y();
-      size_t width  = get_width();
-      size_t height = get_height();
+      const auto x      = get_x();
+      const auto y      = get_y();
+      const auto width  = get_width();
+      const auto height = get_height();
 
-      MoveWindow(m_handle, static_cast<int>(x), static_cast<int>(y),
-                 static_cast<int>(width), static_cast<int>(height),
-                 m_is_visible);
+      MoveWindow(m_handle, static_cast<int>(get_x()),
+                 static_cast<int>(get_y()),
+                 static_cast<int>(get_width()),
+                 static_cast<int>(get_height()), m_is_visible);
 
       if (m_input) {
         m_input->set_window_rect(x, y, width, height);
@@ -380,7 +403,7 @@ namespace laplace::win32 {
                      !is_fullscreen_windowed();
 
     if (toggle_on) {
-      DEVMODE mode;
+      auto mode = DEVMODE {};
       memset(&mode, 0, sizeof mode);
 
       mode.dmSize   = sizeof mode;
@@ -394,8 +417,8 @@ namespace laplace::win32 {
 
       if (ChangeDisplaySettings(&mode, CDS_FULLSCREEN) !=
           DISP_CHANGE_SUCCESSFUL) {
-        error_(
-            "Toggle on. ChangeDisplaySettings failed.", __FUNCTION__);
+        error_("Toggle on. ChangeDisplaySettings failed.",
+               __FUNCTION__);
       }
     } else {
       /*  Reset to default settings.
@@ -423,12 +446,12 @@ namespace laplace::win32 {
     auto drop = reinterpret_cast<HDROP>(drop_data);
 
     if (m_on_drop_file) {
-      size_t count = DragQueryFileW(drop, 0xFFFFFFFF, nullptr, 0);
+      sl::whole count = DragQueryFileW(drop, 0xFFFFFFFF, nullptr, 0);
 
-      for (size_t i = 0; i < count; i++) {
-        size_t length = DragQueryFileW(
-            drop, static_cast<UINT>(i), nullptr, 0);
-        auto file_name = make_unique<wchar_t[]>(length + 1);
+      for (sl::index i = 0; i < count; i++) {
+        sl::whole length = DragQueryFileW(drop, static_cast<UINT>(i),
+                                          nullptr, 0);
+        auto      file_name = make_unique<wchar_t[]>(length + 1);
 
         auto n = DragQueryFileW(drop, static_cast<UINT>(i),
                                 file_name.get(),
@@ -454,8 +477,8 @@ namespace laplace::win32 {
 
       case WM_SIZE:
         if (m_on_size && m_is_inited) {
-          auto width  = static_cast<size_t>(LOWORD(lparam));
-          auto height = static_cast<size_t>(HIWORD(lparam));
+          auto width  = static_cast<sl::whole>(LOWORD(lparam));
+          auto height = static_cast<sl::whole>(HIWORD(lparam));
 
           m_on_size(width, height);
         }
@@ -510,25 +533,25 @@ namespace laplace::win32 {
     return 0;
   }
 
-  auto window::get_screen_width() const -> size_t {
+  auto window::get_screen_width() const -> sl::whole {
     return m_screen_width;
   }
 
-  auto window::get_screen_height() const -> size_t {
+  auto window::get_screen_height() const -> sl::whole {
     return m_screen_height;
   }
 
-  auto window::get_fullscreen_width() const -> size_t {
+  auto window::get_fullscreen_width() const -> sl::whole {
     return m_fullscreen_width == 0 ? get_screen_width()
                                    : m_fullscreen_width;
   }
 
-  auto window::get_fullscreen_height() const -> size_t {
+  auto window::get_fullscreen_height() const -> sl::whole {
     return m_fullscreen_height == 0 ? get_screen_height()
                                     : m_fullscreen_height;
   }
 
-  auto window::get_style_ex() const -> size_t {
+  auto window::get_style_ex() const -> sl::whole {
     auto style_ex = m_style_ex;
 
     if (m_is_fullscreen) {
@@ -538,7 +561,7 @@ namespace laplace::win32 {
     return style_ex;
   }
 
-  auto window::get_style() const -> size_t {
+  auto window::get_style() const -> sl::whole {
     auto style = m_style;
 
     if (m_is_fullscreen) {
@@ -549,27 +572,27 @@ namespace laplace::win32 {
     return style;
   }
 
-  auto window::get_x() const -> size_t {
+  auto window::get_x() const -> sl::index {
     return m_is_fullscreen ? m_screen_x : m_x;
   }
 
-  auto window::get_y() const -> size_t {
+  auto window::get_y() const -> sl::index {
     return m_is_fullscreen ? m_screen_y : m_y;
   }
 
-  auto window::get_width() const -> size_t {
+  auto window::get_width() const -> sl::whole {
     return m_is_fullscreen ? get_fullscreen_width() : m_width;
   }
 
-  auto window::get_height() const -> size_t {
+  auto window::get_height() const -> sl::whole {
     return m_is_fullscreen ? get_fullscreen_height() : m_height;
   }
 
-  auto window::get_frame_width() const -> size_t {
+  auto window::get_frame_width() const -> sl::whole {
     return m_frame_width;
   }
 
-  auto window::get_frame_height() const -> size_t {
+  auto window::get_frame_height() const -> sl::whole {
     return m_frame_height;
   }
 

@@ -11,6 +11,7 @@
  */
 
 #include "embedded.h"
+
 #include <algorithm>
 #include <shared_mutex>
 
@@ -30,12 +31,12 @@ namespace laplace::embedded {
     if (!is_ready) {
       auto size = aliases.size();
 
-      auto indices = vuint(size);
+      auto indices = sl::vector<sl::index>(size);
 
-      for (size_t i = 0; i < size; i++) indices[i] = i;
+      for (sl::index i = 0; i < size; i++) indices[i] = i;
 
       sort(indices.begin(), indices.end(),
-           [](size_t i, size_t j) -> bool {
+           [](sl::index i, sl::index j) -> bool {
              return aliases[i] < aliases[j];
            });
 
@@ -45,7 +46,7 @@ namespace laplace::embedded {
       if (bytes.size() != size)
         bytes.resize(size);
 
-      for (size_t i = 0; i < size; i++) {
+      for (sl::index i = 0; i < size; i++) {
         auto n = indices[i];
 
         sorted_aliases[i] = aliases[n];
@@ -80,7 +81,7 @@ namespace laplace::embedded {
     auto i = lower_bound(aliases.begin(), aliases.end(), file_name);
 
     if (i != aliases.end() && *i == file_name) {
-      return bytes[static_cast<size_t>(i - aliases.begin())];
+      return bytes[i - aliases.begin()];
     }
 
     return {};

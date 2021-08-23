@@ -15,20 +15,40 @@
 #ifndef laplace_core_options_h
 #define laplace_core_options_h
 
+/*  Make sure all integer types are correct.
+ */
+static_assert(sizeof(signed char) == 1);
+static_assert(sizeof(signed short) == 2);
+static_assert(sizeof(signed int) == 4);
+static_assert(sizeof(signed long long) == 8);
+static_assert(sizeof(unsigned char) == 1);
+static_assert(sizeof(unsigned short) == 2);
+static_assert(sizeof(unsigned int) == 4);
+static_assert(sizeof(unsigned long long) == 8);
+
 /*  Enable verbose logging.
  */
-//#define LAPLACE_VERBOSE
+//  #define LAPLACE_VERBOSE
 
 /*  Force to use POSIX sockets.
  */
-//#define LAPLACE_POSIX_SOCKETS
+//  #define LAPLACE_POSIX_SOCKETS
 
 /*  Disable platform-dependent features.
  */
-//#define LAPLACE_PLATFORM_DUMMY
+//  #define LAPLACE_PLATFORM_DUMMY
+
+/*  Windows preprocessor definitions.
+ */
+//  #define _WIN32 1
+//  #define _WINDOWS 1
+
+/*  Console application preprocessor definitions.
+ */
+//  #define _CONSOLE 1
 
 #ifdef _MSC_VER
-#  pragma warning(disable : 4018 4100 4389 4245 4250)
+#  pragma warning(disable : 4018 4100 4245 4250 4389 26812)
 #endif
 
 #endif

@@ -14,35 +14,35 @@
 #define laplace_math_vector_impl_h
 
 namespace laplace::math {
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr basic_vector<size_, type_>::basic_vector() noexcept {
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr basic_vector<size_, type_>::basic_vector(
       std::initializer_list<type> v_) noexcept {
 
     if (v_.size() == 1) {
-      for (size_t i = 0; i < this->size; i++) {
+      for (sl::whole i = 0; i < this->size; i++) {
         this->v[i] = *v_.begin();
       }
     } else {
-      for (size_t i = 0; i < v_.size() && i < this->size; i++) {
+      for (sl::whole i = 0; i < v_.size() && i < this->size; i++) {
         this->v[i] = v_.begin()[i];
       }
     }
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr basic_vector<size_, type_>::basic_vector( //
       const type x                                    //
       ) noexcept {
 
-    for (size_t i = 0; i < this->size; i++) { this->v[i] = x; }
+    for (sl::whole i = 0; i < this->size; i++) { this->v[i] = x; }
   }
 
-  template <size_t size_, typename type_>
-  constexpr auto vector<size_, type_>::operator[](size_t index) noexcept
+  template <sl::whole size_, typename type_>
+  constexpr auto vector<size_, type_>::operator[](sl::whole index) noexcept
       -> type_ & {
 
     if (index >= size_) {
@@ -52,9 +52,9 @@ namespace laplace::math {
     return this->v[index];
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto vector<size_, type_>::operator[](
-      size_t index) const noexcept -> type_ {
+      sl::whole index) const noexcept -> type_ {
 
     return get(*this, index);
   }
@@ -80,7 +80,7 @@ namespace laplace::math {
   }
 
   template <typename type_>
-  constexpr auto vector<2, type_>::operator[](size_t index) noexcept
+  constexpr auto vector<2, type_>::operator[](sl::whole index) noexcept
       -> type_ & {
 
     if (index >= 2) {
@@ -91,7 +91,7 @@ namespace laplace::math {
   }
 
   template <typename type_>
-  constexpr auto vector<2, type_>::operator[](size_t index) const noexcept
+  constexpr auto vector<2, type_>::operator[](sl::whole index) const noexcept
       -> type_ {
 
     return get(*this, index);
@@ -128,7 +128,7 @@ namespace laplace::math {
   }
 
   template <typename type_>
-  constexpr auto vector<3, type_>::operator[](size_t index) noexcept
+  constexpr auto vector<3, type_>::operator[](sl::whole index) noexcept
       -> type_ & {
 
     if (index >= 3) {
@@ -139,7 +139,7 @@ namespace laplace::math {
   }
 
   template <typename type_>
-  constexpr auto vector<3, type_>::operator[](size_t index) const noexcept
+  constexpr auto vector<3, type_>::operator[](sl::whole index) const noexcept
       -> type_ {
 
     return get(*this, index);
@@ -186,7 +186,7 @@ namespace laplace::math {
   }
 
   template <typename type_>
-  constexpr auto vector<4, type_>::operator[](size_t index) noexcept
+  constexpr auto vector<4, type_>::operator[](sl::whole index) noexcept
       -> type_ & {
 
     if (index >= 4) {
@@ -197,13 +197,13 @@ namespace laplace::math {
   }
 
   template <typename type_>
-  constexpr auto vector<4, type_>::operator[](size_t index) const noexcept
+  constexpr auto vector<4, type_>::operator[](sl::whole index) const noexcept
       -> type_ {
 
     return get(*this, index);
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator==(        //
       const vector<size_, type_> a, //
       const vector<size_, type_> b  //
@@ -212,7 +212,7 @@ namespace laplace::math {
     return equals(a, b);
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator!=(        //
       const vector<size_, type_> a, //
       const vector<size_, type_> b  //
@@ -221,7 +221,7 @@ namespace laplace::math {
     return !equals(a, b);
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator+(        //
       const vector<size_, type_> a //
       ) noexcept -> vector<size_, type_> {
@@ -229,17 +229,17 @@ namespace laplace::math {
     return a;
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator-(        //
       const vector<size_, type_> a //
       ) noexcept -> vector<size_, type_> {
 
     vector<size_, type_> x;
-    for (size_t i = 0; i < size_; i++) { x.v[i] = -a.v[i]; }
+    for (sl::whole i = 0; i < size_; i++) { x.v[i] = -a.v[i]; }
     return x;
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator+(         //
       const vector<size_, type_> a, //
       const vector<size_, type_> b  //
@@ -248,7 +248,7 @@ namespace laplace::math {
     return add(a, b);
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator-(         //
       const vector<size_, type_> a, //
       const vector<size_, type_> b  //
@@ -257,7 +257,7 @@ namespace laplace::math {
     return sub(a, b);
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator*(         //
       const vector<size_, type_> a, //
       const type_                b  //
@@ -266,7 +266,7 @@ namespace laplace::math {
     return mul(a, b);
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator/(         //
       const vector<size_, type_> a, //
       const type_                b  //
@@ -275,7 +275,7 @@ namespace laplace::math {
     return div(a, b);
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator*(         //
       const type_                a, //
       const vector<size_, type_> b  //
@@ -284,7 +284,7 @@ namespace laplace::math {
     return mul(a, b);
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator/(         //
       const type_                a, //
       const vector<size_, type_> b  //
@@ -293,7 +293,7 @@ namespace laplace::math {
     return div(a, b);
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator+=(        //
       vector<size_, type_> &     a, //
       const vector<size_, type_> b  //
@@ -302,7 +302,7 @@ namespace laplace::math {
     return a = add(a, b);
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator-=(        //
       vector<size_, type_> &     a, //
       const vector<size_, type_> b  //
@@ -311,7 +311,7 @@ namespace laplace::math {
     return a = sub(a, b);
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator*=(   //
       vector<size_, type_> &a, //
       const type_           b  //
@@ -320,7 +320,7 @@ namespace laplace::math {
     return a = mul(a, b);
   }
 
-  template <size_t size_, typename type_>
+  template <sl::whole size_, typename type_>
   constexpr auto operator/=(   //
       vector<size_, type_> &a, //
       const type_           b  //
@@ -337,7 +337,7 @@ namespace laplace::math {
 
     auto v = type_ {};
 
-    for (size_t i = 0; i < get_size<type_>(); i++) {
+    for (sl::whole i = 0; i < get_size<type_>(); i++) {
       set(v, i, get(a, i) + get(b, i));
     }
 
@@ -352,7 +352,7 @@ namespace laplace::math {
 
     auto v = type_ {};
 
-    for (size_t i = 0; i < get_size<type_>(); i++) {
+    for (sl::whole i = 0; i < get_size<type_>(); i++) {
       set(v, i, get(a, i) - get(b, i));
     }
 
@@ -367,7 +367,7 @@ namespace laplace::math {
 
     auto v = type_ {};
 
-    for (size_t i = 0; i < get_size<type_>(); i++) {
+    for (sl::whole i = 0; i < get_size<type_>(); i++) {
       set(v, i, get(a, i) * b);
     }
 
@@ -382,7 +382,7 @@ namespace laplace::math {
 
     auto v = type_ {};
 
-    for (size_t i = 0; i < get_size<type_>(); i++) {
+    for (sl::whole i = 0; i < get_size<type_>(); i++) {
       set(v, i, get(a, i) / b);
     }
 
@@ -397,7 +397,7 @@ namespace laplace::math {
 
     auto v = type_ {};
 
-    for (size_t i = 0; i < get_size<type_>(); i++) {
+    for (sl::whole i = 0; i < get_size<type_>(); i++) {
       set(v, i, a * get(b, i));
     }
 
@@ -412,7 +412,7 @@ namespace laplace::math {
 
     auto v = type_ {};
 
-    for (size_t i = 0; i < get_size<type_>(); i++) {
+    for (sl::whole i = 0; i < get_size<type_>(); i++) {
       set(v, i, a / get(b, i));
     }
 
@@ -427,7 +427,7 @@ namespace laplace::math {
 
     auto v = type_ {};
 
-    for (size_t i = 0; i < get_size<type_>(); i++) {
+    for (sl::whole i = 0; i < get_size<type_>(); i++) {
       set(v, i, get(a, i) * get(b, i));
     }
 
@@ -442,7 +442,7 @@ namespace laplace::math {
 
     auto v = type_ {};
 
-    for (size_t i = 0; i < get_size<type_>(); i++) {
+    for (sl::whole i = 0; i < get_size<type_>(); i++) {
       set(v, i, get(a, i) / get(b, i));
     }
 
@@ -457,7 +457,7 @@ namespace laplace::math {
 
     auto x = elem_type<type_> {};
 
-    for (size_t i = 0; i < get_size<type_>(); i++) {
+    for (sl::whole i = 0; i < get_size<type_>(); i++) {
       x += get(a, i) * get(b, i);
     }
 

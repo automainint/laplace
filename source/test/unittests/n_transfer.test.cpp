@@ -21,12 +21,12 @@ namespace laplace::test {
     constexpr auto test_count = 4;
 
     auto rdev = std::random_device {};
-    auto dist = std::uniform_int_distribution<size_t>(1, 50);
+    auto dist = std::uniform_int_distribution<sl::index>(1, 50);
 
-    for (size_t n = 0; n < test_count; n++) {
+    for (sl::index n = 0; n < test_count; n++) {
       auto msg = vbyte(dist(rdev));
 
-      for (size_t i = 0; i < msg.size(); i++)
+      for (sl::index i = 0; i < msg.size(); i++)
         msg[i] = static_cast<uint8_t>(rdev());
 
       vector<span_cbyte> msgs;

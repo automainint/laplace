@@ -10,13 +10,14 @@
  *  the MIT License for more details.
  */
 
+#include "config.h"
+
 #include "../core/embedded.h"
 #include "../core/utils.h"
 #include "../format/text.h"
 #include "../format/utils.h"
-#include "config.h"
-#include <fstream>
 #include <filesystem>
+#include <fstream>
 
 namespace laplace::stem::config {
   namespace text = format::text;
@@ -27,9 +28,9 @@ namespace laplace::stem::config {
       core::cref_family, platform::window, format::wrap;
 
   auto scan_flag(int argc, char **argv, char c) -> bool {
-    for (int i = 0; i < argc; i++) {
+    for (auto i = 0; i < argc; i++) {
       if (argv[i] && argv[i][0] == '-') {
-        for (size_t k = 1; argv[i][k]; k++) {
+        for (auto k = 1; argv[i][k]; k++) {
           if (argv[i][k] == c)
             return true;
         }
@@ -40,9 +41,9 @@ namespace laplace::stem::config {
   }
 
   auto scan_flag(int argc, char **argv, string_view name) -> bool {
-    for (int i = 0; i < argc; i++) {
+    for (auto i = 0; i < argc; i++) {
       if (argv[i] && argv[i][0] == '-' && argv[i][1] == '-') {
-        if (string(argv[i] + 2) == name)
+        if (string { argv[i] + 2 } == name)
           return true;
       }
     }
@@ -55,8 +56,8 @@ namespace laplace::stem::config {
     return scan_flag(argc, argv, c) || scan_flag(argc, argv, name);
   }
 
-  static constexpr size_t argv_size        = 64;
-  static constexpr size_t argv_string_size = 256;
+  static constexpr auto argv_size        = 64;
+  static constexpr auto argv_string_size = 256;
 
   static int   g_argc                                   = 0;
   static char *g_argv[argv_size]                        = { 0 };
@@ -64,10 +65,10 @@ namespace laplace::stem::config {
 
   auto parse_cmdline(const char *args) -> pair<int, char **> {
     if (args) {
-      for (size_t i = 0; args[i]; i++) {
+      for (auto i = 0; args[i]; i++) {
         if (args[i] != ' ') {
-          size_t j     = i + 1;
-          bool   quote = false;
+          auto j     = i + 1;
+          bool quote = false;
 
           for (; args[j] && args[j] != ' ' && !quote; j++) {
             if (args[j] == '\\' && args[j + 1]) {
@@ -126,12 +127,11 @@ namespace laplace::stem::config {
     return cfg;
   }
 
-  auto read_config(char **tag, char **end, ref_family cfg) -> size_t {
+  auto read_config(char **tag, char **end, ref_family cfg) -> int {
     if (tag < end && tag[0]) {
-      cfg[k_file] = string(tag[0]);
+      cfg[k_file] = string { tag[0] };
 
-      ifstream in(tag[0]);
-
+      auto in   = ifstream { tag[0] };
       auto data = text::decode(wrap(in));
 
       if (data) {
@@ -142,8 +142,7 @@ namespace laplace::stem::config {
     return 1;
   }
 
-  auto read_frame_size(char **tag, char **end, ref_family cfg)
-      -> size_t {
+  auto read_frame_size(char **tag, char **end, ref_family cfg) -> int {
     if (tag + 2 < end && tag[0] && tag[1] && tag[2]) {
       cfg[k_frame][0] = atoi(tag[0]);
       cfg[k_frame][1] = atoi(tag[1]);
@@ -178,7 +177,7 @@ namespace laplace::stem::config {
             log(fmt("Unknown command line argument '%s'.", tag));
           }
         } else {
-          for (size_t i = 1; tag[i]; i++) {
+          for (auto i = 1; tag[i]; i++) {
             if (tag[i] == f_tests) {
               /*  Run unit-tests. Handles by the user.
                */

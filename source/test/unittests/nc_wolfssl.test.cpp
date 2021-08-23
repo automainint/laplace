@@ -25,11 +25,11 @@ namespace laplace::test {
   using std::string, std::array, std::vector;
 
   TEST(network, wolfssl_ecc) {
-    constexpr size_t test_count = 1;
-    constexpr size_t key_size   = 32;
-    constexpr size_t buf_size   = 0x1000;
+    constexpr int test_count = 1;
+    constexpr int key_size   = 32;
+    constexpr int buf_size   = 0x1000;
 
-    for (size_t i = 0; i < test_count; i++) {
+    for (int i = 0; i < test_count; i++) {
       WC_RNG  alice_random  = {};
       ecc_key alice_private = {};
       ecc_key alice_public  = {};
@@ -75,8 +75,8 @@ namespace laplace::test {
         std::cerr << "wc_ecc_set_rng failed (code: " << _n << ").\n";
 #endif
 
-      if (auto _n = wc_ecc_make_key(
-              &alice_random, key_size, &alice_private);
+      if (auto _n = wc_ecc_make_key(&alice_random, key_size,
+                                    &alice_private);
           _n != 0)
         std::cerr << "wc_ecc_make_key failed (code: " << _n << ").\n";
 
@@ -107,8 +107,8 @@ namespace laplace::test {
                   << ").\n";
       }
 
-      if (auto _n = wc_ecc_import_x963(
-              bob_public_buffer.data(), bob_public_size, &bob_public);
+      if (auto _n = wc_ecc_import_x963(bob_public_buffer.data(),
+                                       bob_public_size, &bob_public);
           _n != 0)
         std::cerr << "wc_ecc_import_x963 failed (code: " << _n
                   << ").\n";
@@ -146,16 +146,16 @@ namespace laplace::test {
   }
 
   TEST(network, wolfssl_rabbit) {
-    constexpr size_t test_count = 1;
+    constexpr int test_count = 1;
 
     std::random_device rdev;
 
-    for (size_t i = 0; i < test_count; i++) {
+    for (int i = 0; i < test_count; i++) {
       Rabbit alice = { 0 };
       Rabbit bob   = { 0 };
 
       uint8_t key[16] = { 0 };
-      for (size_t j = 0; j < 16; j++) {
+      for (int j = 0; j < 16; j++) {
         key[j] = static_cast<uint8_t>(rdev());
       }
 

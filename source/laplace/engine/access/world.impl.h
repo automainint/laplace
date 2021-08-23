@@ -18,7 +18,7 @@ namespace laplace::engine::access {
   inline auto world::random(dist_ &dist) const ->
       typename dist_::result_type {
 
-    if (this->m_mode > async) {
+    if (is_allowed(sync, m_mode)) {
       return dist(get_random_engine());
     }
 

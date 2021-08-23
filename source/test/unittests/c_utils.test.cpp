@@ -43,7 +43,7 @@ namespace laplace::test {
   }
 
   TEST(core, utils_identefier) {
-    if constexpr (sizeof(size_t) == 8) {
+    if constexpr (sizeof(sl::index) == 8) {
       uint64_t a = 0x1020304050607080;
       uint64_t b = 0x2030405060708090;
 
@@ -51,7 +51,7 @@ namespace laplace::test {
       EXPECT_EQ(as_index(b), 0x2030405060708090ull);
     }
 
-    if constexpr (sizeof(size_t) == 4) {
+    if constexpr (sizeof(sl::index) == 4) {
       uint64_t a = 0x10203040;
       uint64_t b = 0x20304050;
 

@@ -22,24 +22,15 @@
 #include <shared_mutex>
 #include <thread>
 
-#undef min
-#undef max
-#undef near
-#undef far
-
 namespace laplace::win32 {
   class audio : public std::enable_shared_from_this<audio> {
   public:
-    using ref  = audio &;
-    using cref = const audio &;
-    using ptr  = std::shared_ptr<audio>;
-
     using fn_read = std::function<void(span_byte buffer)>;
 
     struct format {
-      size_t channel_count;
-      size_t sample_rate_hz;
-      size_t sample_bits;
+      sl::whole channel_count;
+      sl::whole sample_rate_hz;
+      sl::whole sample_bits;
     };
 
     static constexpr format default_format_request = { 2, 44100, 32 };
@@ -63,33 +54,33 @@ namespace laplace::win32 {
 
     /*  1 - mono, 2 - stereo.
      */
-    auto get_channel_count() -> size_t;
+    auto get_channel_count() -> sl::index;
 
     /*  Samples per second for
      *  one channel.
      */
-    auto get_sample_rate() -> size_t;
+    auto get_sample_rate() -> sl::index;
 
     /*  Sample bits:
      *  8-bit, 16-bit, 24-bit - integers,
      *  32-bit - floats.
      */
-    auto get_sample_bits() -> size_t;
+    auto get_sample_bits() -> sl::index;
 
     auto get_errors() -> std::vector<std::string>;
 
   private:
-    auto adjust_offset() -> size_t;
-    auto adjust_bytes(size_t size) -> size_t;
-    auto buffer_size() -> size_t;
-    void buffer_adjust(size_t size_required);
-    void buffer_write(span_cbyte samples, size_t size);
+    auto adjust_offset() -> sl::index;
+    auto adjust_bytes(sl::whole size) -> sl::whole;
+    auto buffer_size() -> sl::whole;
+    void buffer_adjust(sl::whole size_required);
+    void buffer_write(span_cbyte samples, sl::whole size);
 
-    void set_format(size_t channel_count, size_t sample_rate_hz,
-                    size_t sample_bits);
-    void render_buffer(uint8_t *data, size_t size);
+    void set_format(sl::whole channel_count, sl::whole sample_rate_hz,
+                    sl::whole sample_bits);
+    void render_buffer(uint8_t *data, sl::whole size);
 
-    static void render_thread(ref a);
+    static void render_thread(audio &a);
 
     std::atomic_bool m_done;
     std::atomic_bool m_active;
@@ -100,19 +91,15 @@ namespace laplace::win32 {
 
     std::vector<std::string> m_errors;
 
-    vbyte  m_buffer;
-    size_t m_read;
-    size_t m_write;
+    vbyte     m_buffer;
+    sl::index m_read;
+    sl::index m_write;
 
-    size_t m_channel_count;
-    size_t m_sample_rate_hz;
-    size_t m_sample_bits;
-    size_t m_sample_bytes_total;
+    sl::whole m_channel_count;
+    sl::whole m_sample_rate_hz;
+    sl::whole m_sample_bits;
+    sl::whole m_sample_bytes_total;
   };
-
-  using ref_audio  = audio::ref;
-  using cref_audio = audio::cref;
-  using ptr_audio  = audio::ptr;
 }
 
 #endif

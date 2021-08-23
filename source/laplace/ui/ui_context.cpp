@@ -24,7 +24,7 @@ namespace laplace::ui {
     m_font = font;
   }
 
-  void context::set_frame_size(size_t width, size_t height) {
+  void context::set_frame_size(sl::whole width, sl::whole height) {
     m_frame_width  = width;
     m_frame_height = height;
   }
@@ -71,9 +71,9 @@ namespace laplace::ui {
 
   void context::render(button::state button_state) {
     if (m_render) {
-      const size_t n0 = button_state.is_enabled ? 0u : 4u;
+      const sl::whole n0 = button_state.is_enabled ? 0 : 4;
 
-      size_t n_color = 0;
+      sl::whole n_color = 0;
 
       if (button_state.is_pressed) {
         n_color = n0 + 2;
@@ -112,19 +112,19 @@ namespace laplace::ui {
 
     auto a = m_font->adjust(textedit_state.text);
 
-    int dy = textedit_state.rect.height - a.height;
+    auto dy = textedit_state.rect.height - a.height;
 
-    int x = textedit_state.rect.x + dy / 2;
-    int y = textedit_state.rect.y + dy / 2;
+    auto x = textedit_state.rect.x + dy / 2;
+    auto y = textedit_state.rect.y + dy / 2;
 
     m_font->render(x, y, textedit_state.text);
   }
 
-  auto context::get_frame_width() const -> size_t {
+  auto context::get_frame_width() const -> sl::whole {
     return m_frame_width;
   }
 
-  auto context::get_frame_height() const -> size_t {
+  auto context::get_frame_height() const -> sl::whole {
     return m_frame_height;
   }
 

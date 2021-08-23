@@ -29,64 +29,68 @@ namespace laplace::core {
     using cref_vfamily   = const vfamily &;
     using cref_composite = const composite &;
 
-    family()  = default;
-    ~family() = default;
+    family() noexcept  = default;
+    ~family() noexcept = default;
 
-    family(cref_family)        = default;
-    family(family &&) noexcept = default;
+    family(cref_family) noexcept = default;
+    family(family &&) noexcept   = default;
 
-    auto operator=(cref_family) -> ref_family = default;
+    auto operator=(cref_family) noexcept -> ref_family = default;
     auto operator=(family &&) noexcept -> ref_family = default;
 
-    family(cref_vfamily value);
-    family(cref_composite value);
-    family(bool value);
-    family(int8_t value);
-    family(int16_t value);
-    family(int32_t value);
-    family(int64_t value);
-    family(uint8_t value);
-    family(uint16_t value);
-    family(uint32_t value);
-    family(uint64_t value);
-    family(float value);
-    family(double value);
-    family(std::string_view value);
-    family(std::wstring_view value);
-    family(std::u8string_view value);
-    family(std::u16string_view value);
-    family(std::u32string_view value);
-    family(const char *value);
-    family(const wchar_t *value);
-    family(const char8_t *value);
-    family(const char16_t *value);
-    family(const char32_t *value);
-    family(span_cbyte value);
+    family(cref_vfamily value) noexcept;
+    family(cref_composite value) noexcept;
+    family(bool value) noexcept;
+    family(signed char value) noexcept;
+    family(signed short value) noexcept;
+    family(signed int value) noexcept;
+    family(signed long value) noexcept;
+    family(signed long long value) noexcept;
+    family(unsigned char value) noexcept;
+    family(unsigned short value) noexcept;
+    family(unsigned int value) noexcept;
+    family(unsigned long value) noexcept;
+    family(unsigned long long value) noexcept;
+    family(float value) noexcept;
+    family(double value) noexcept;
+    family(std::string_view value) noexcept;
+    family(std::wstring_view value) noexcept;
+    family(std::u8string_view value) noexcept;
+    family(std::u16string_view value) noexcept;
+    family(std::u32string_view value) noexcept;
+    family(const char *value) noexcept;
+    family(const wchar_t *value) noexcept;
+    family(const char8_t *value) noexcept;
+    family(const char16_t *value) noexcept;
+    family(const char32_t *value) noexcept;
+    family(span_cbyte value) noexcept;
 
-    auto operator=(cref_vfamily value) -> ref_family;
-    auto operator=(cref_composite value) -> ref_family;
-    auto operator=(bool value) -> ref_family;
-    auto operator=(int8_t value) -> ref_family;
-    auto operator=(int16_t value) -> ref_family;
-    auto operator=(int32_t value) -> ref_family;
-    auto operator=(int64_t value) -> ref_family;
-    auto operator=(uint8_t value) -> ref_family;
-    auto operator=(uint16_t value) -> ref_family;
-    auto operator=(uint32_t value) -> ref_family;
-    auto operator=(uint64_t value) -> ref_family;
-    auto operator=(float value) -> ref_family;
-    auto operator=(double value) -> ref_family;
-    auto operator=(std::string_view value) -> ref_family;
-    auto operator=(std::wstring_view value) -> ref_family;
-    auto operator=(std::u8string_view value) -> ref_family;
-    auto operator=(std::u16string_view value) -> ref_family;
-    auto operator=(std::u32string_view value) -> ref_family;
-    auto operator=(const char *value) -> ref_family;
-    auto operator=(const wchar_t *value) -> ref_family;
-    auto operator=(const char8_t *value) -> ref_family;
-    auto operator=(const char16_t *value) -> ref_family;
-    auto operator=(const char32_t *value) -> ref_family;
-    auto operator=(span_cbyte value) -> ref_family;
+    auto operator=(cref_vfamily value) noexcept -> ref_family;
+    auto operator=(cref_composite value) noexcept -> ref_family;
+    auto operator=(bool value) noexcept -> ref_family;
+    auto operator=(signed char value) noexcept -> ref_family;
+    auto operator=(signed short value) noexcept -> ref_family;
+    auto operator=(signed int value) noexcept -> ref_family;
+    auto operator=(signed long value) noexcept -> ref_family;
+    auto operator=(signed long long value) noexcept -> ref_family;
+    auto operator=(unsigned char value) noexcept -> ref_family;
+    auto operator=(unsigned short value) noexcept -> ref_family;
+    auto operator=(unsigned int value) noexcept -> ref_family;
+    auto operator=(unsigned long value) noexcept -> ref_family;
+    auto operator=(unsigned long long value) noexcept -> ref_family;
+    auto operator=(float value) noexcept -> ref_family;
+    auto operator=(double value) noexcept -> ref_family;
+    auto operator=(std::string_view value) noexcept -> ref_family;
+    auto operator=(std::wstring_view value) noexcept -> ref_family;
+    auto operator=(std::u8string_view value) noexcept -> ref_family;
+    auto operator=(std::u16string_view value) noexcept -> ref_family;
+    auto operator=(std::u32string_view value) noexcept -> ref_family;
+    auto operator=(const char *value) noexcept -> ref_family;
+    auto operator=(const wchar_t *value) noexcept -> ref_family;
+    auto operator=(const char8_t *value) noexcept -> ref_family;
+    auto operator=(const char16_t *value) noexcept -> ref_family;
+    auto operator=(const char32_t *value) noexcept -> ref_family;
+    auto operator=(span_cbyte value) noexcept -> ref_family;
 
     [[nodiscard]] auto operator==(cref_family value) const noexcept
         -> bool;
@@ -101,106 +105,213 @@ namespace laplace::core {
     [[nodiscard]] auto operator>=(cref_family value) const noexcept
         -> bool;
 
-    operator bool() const;
-    operator int64_t() const;
-    operator double() const;
-    operator uint64_t() const;
-    operator std::u8string_view() const;
+    operator bool() const noexcept;
+    operator signed long long() const noexcept;
+    operator unsigned long long() const noexcept;
+    operator double() const noexcept;
 
-    auto operator[](size_t index) -> ref_family;
-    auto operator[](size_t index) const -> cref_family;
+    auto operator[](signed long long n) noexcept -> ref_family;
+    auto operator[](signed long long n) const noexcept -> cref_family;
 
-    auto operator[](cref_family key) -> ref_family;
-    auto operator[](cref_family key) const -> cref_family;
+    auto operator[](cref_family key) noexcept -> ref_family;
+    auto operator[](cref_family key) const noexcept -> cref_family;
 
-    auto is_empty() const -> bool;
-    auto is_boolean() const -> bool;
-    auto is_integer() const -> bool;
-    auto is_uint() const -> bool;
-    auto is_real() const -> bool;
-    auto is_string() const -> bool;
-    auto is_bytes() const -> bool;
-    auto is_vector() const -> bool;
-    auto is_composite() const -> bool;
-
-    auto get_boolean() const -> bool;
-    auto get_integer() const -> int64_t;
-    auto get_real() const -> double;
-    auto get_string() const -> std::u8string_view;
-    auto get_uint() const -> uint64_t;
-    auto get_bytes() const -> span_cbyte;
-
-    auto get_size() const -> size_t;
-    auto has(cref_family key) const -> bool;
-
-    /*  Keys are sorted. Setting a key
-     *  will change the keys order.
+    /*  Returns true if empty.
      */
-    void set_key(size_t index, cref_family k);
+    auto is_empty() const noexcept -> bool;
+
+    /*  Returns true if is boolean.
+     */
+    auto is_boolean() const noexcept -> bool;
+
+    /*  Returns true if is integer.
+     */
+    auto is_integer() const noexcept -> bool;
+
+    /*  Returns true if is unsigned integer.
+     */
+    auto is_uint() const noexcept -> bool;
+
+    /*  Returns true if is floating-point number.
+     */
+    auto is_real() const noexcept -> bool;
+
+    /*  Returns true if is string.
+     */
+    auto is_string() const noexcept -> bool;
+
+    /*  Returns true if is byte array.
+     */
+    auto is_bytes() const noexcept -> bool;
+
+    /*  Returns true if is vector.
+     */
+    auto is_vector() const noexcept -> bool;
+
+    /*  Returns true if is composite.
+     */
+    auto is_composite() const noexcept -> bool;
+
+    /*  Returns boolean value.
+     */
+    auto get_boolean() const noexcept -> bool;
+
+    /*  Returns integer value.
+     */
+    auto get_integer() const noexcept -> signed long long;
+
+    /*  Returns unsigned integer value.
+     */
+    auto get_uint() const noexcept -> unsigned long long;
+
+    /*  Returns floating-point number value.
+     */
+    auto get_real() const noexcept -> double;
+
+    /*  Returns string value.
+     */
+    auto get_string() const noexcept -> std::u8string_view;
+
+    /*  Returns byte array.
+     */
+    auto get_bytes() const noexcept -> span_cbyte;
+
+    /*  Return vector or composite size in elements.
+     */
+    auto get_size() const noexcept -> sl::whole;
+
+    /*  Return true if composite has element by key.
+     */
+    auto has(cref_family key) const noexcept -> bool;
+
+    /*  Set composite key by index.
+     *
+     *  Keys are sorted. Setting a key will change the keys order.
+     */
+    void set_key(signed long long n, cref_family k) noexcept;
 
     /*  Create a new key if needed.
      */
-    void key(cref_family k);
+    void key(cref_family k) noexcept;
 
-    auto value(size_t index) -> ref_family;
-    auto value(cref_family key) -> ref_family;
+    /*  Get vector element by index.
+     */
+    auto value(signed long long n) noexcept -> ref_family;
 
-    auto get_key(size_t index) const -> cref_family;
-    auto get_value(size_t index) const -> cref_family;
-    auto get_value(cref_family key) const -> cref_family;
+    /*  Get composite element by key.
+     */
+    auto value(cref_family key) noexcept -> ref_family;
 
-    auto by_key(size_t key) -> ref_family;
-    auto by_key(size_t key) const -> cref_family;
+    /*  Get composite key by index.
+     */
+    auto get_key(signed long long n) const noexcept -> cref_family;
+
+    /*  Get vector element by index.
+     */
+    auto get_value(signed long long n) const noexcept -> cref_family;
+
+    /*  Get composite element by key.
+     */
+    auto get_value(cref_family key) const noexcept -> cref_family;
+
+    /*  Get composite element by key.
+     */
+    auto by_key(signed long long key) noexcept -> ref_family;
+
+    /*  Get composite element by key.
+     */
+    auto by_key(signed long long key) const noexcept -> cref_family;
 
     [[nodiscard]] auto compare(cref_family value) const noexcept -> int;
-
-    auto value(int index) -> ref_family;
-    auto value(const char *key) -> ref_family;
-
-    auto get_value(int index) const -> cref_family;
-    auto get_value(const char *key) const -> cref_family;
 
     /*  Merge composite data. Returns false
      *  if any field has been overwritten.
      */
-    auto merge(cref_family f) -> bool;
+    auto merge(cref_family f) noexcept -> bool;
 
-    operator float() const;
-    operator int32_t() const;
-    operator uint32_t() const;
+    auto value(signed int n) noexcept -> ref_family;
+    auto value(signed long n) noexcept -> ref_family;
+    auto value(unsigned int n) noexcept -> ref_family;
+    auto value(unsigned long n) noexcept -> ref_family;
+    auto value(unsigned long long n) noexcept -> ref_family;
 
-    auto operator[](int index) -> ref_family;
-    auto operator[](int index) const -> cref_family;
+    auto value(const char *key) noexcept -> ref_family;
+    auto value(const char8_t *key) noexcept -> ref_family;
 
-    auto operator[](const char *key) -> ref_family;
-    auto operator[](const char *key) const -> cref_family;
+    auto get_key(signed int n) const noexcept -> cref_family;
+    auto get_key(signed long n) const noexcept -> cref_family;
+    auto get_key(unsigned int n) const noexcept -> cref_family;
+    auto get_key(unsigned long n) const noexcept -> cref_family;
+    auto get_key(unsigned long long n) const noexcept -> cref_family;
 
-    auto operator[](const char8_t *key) -> ref_family;
-    auto operator[](const char8_t *key) const -> cref_family;
+    auto get_value(signed int n) const noexcept -> cref_family;
+    auto get_value(signed long n) const noexcept -> cref_family;
+    auto get_value(unsigned int n) const noexcept -> cref_family;
+    auto get_value(unsigned long n) const noexcept -> cref_family;
+    auto get_value(unsigned long long n) const noexcept -> cref_family;
 
-    static auto logic_error() -> cref_family;
-    static auto out_of_range() -> cref_family;
+    auto get_value(const char *key) const noexcept -> cref_family;
+    auto get_value(const char8_t *key) const noexcept -> cref_family;
+
+    auto by_key(signed int key) noexcept -> ref_family;
+    auto by_key(signed long key) noexcept -> ref_family;
+    auto by_key(unsigned int key) noexcept -> ref_family;
+    auto by_key(unsigned long key) noexcept -> ref_family;
+    auto by_key(unsigned long long key) noexcept -> ref_family;
+
+    auto by_key(signed int key) const noexcept -> cref_family;
+    auto by_key(signed long key) const noexcept -> cref_family;
+    auto by_key(unsigned int key) const noexcept -> cref_family;
+    auto by_key(unsigned long key) const noexcept -> cref_family;
+    auto by_key(unsigned long long key) const noexcept -> cref_family;
+
+    operator signed char() const noexcept;
+    operator signed short() const noexcept;
+    operator signed int() const noexcept;
+    operator signed long() const noexcept;
+    operator unsigned char() const noexcept;
+    operator unsigned short() const noexcept;
+    operator unsigned int() const noexcept;
+    operator unsigned long() const noexcept;
+    operator float() const noexcept;
+
+    auto operator[](signed int n) noexcept -> ref_family;
+    auto operator[](signed int n) const noexcept -> cref_family;
+
+    auto operator[](signed long n) noexcept -> ref_family;
+    auto operator[](signed long n) const noexcept -> cref_family;
+
+    auto operator[](unsigned int n) noexcept -> ref_family;
+    auto operator[](unsigned int n) const noexcept -> cref_family;
+
+    auto operator[](unsigned long n) noexcept -> ref_family;
+    auto operator[](unsigned long n) const noexcept -> cref_family;
+
+    auto operator[](unsigned long long n) noexcept -> ref_family;
+    auto operator[](unsigned long long n) const noexcept -> cref_family;
+
+    auto operator[](const char *key) noexcept -> ref_family;
+    auto operator[](const char *key) const noexcept -> cref_family;
+
+    auto operator[](const char8_t *key) noexcept -> ref_family;
+    auto operator[](const char8_t *key) const noexcept -> cref_family;
+
+    static auto logic_error() noexcept -> cref_family;
+    static auto out_of_range() noexcept -> cref_family;
 
   private:
-    void assign(cref_vfamily value);
-    void assign(cref_composite value);
-    void assign(bool value);
-    void assign(int64_t value);
-    void assign(uint64_t value);
-    void assign(double value);
-    void assign(std::string_view value);
-    void assign(std::wstring_view value);
-    void assign(std::u8string_view value);
-    void assign(std::u16string_view value);
-    void assign(std::u32string_view value);
-    void assign(span_cbyte value);
-
-    static auto op_lower_bound(const std::pair<family, family> &a,
-                               const family &key) -> bool;
-    static auto op_lower_bound_uint(const std::pair<family, family> &a,
-                                    size_t key) -> bool;
-    static auto op_sort(const std::pair<family, family> &a,
-                        const std::pair<family, family> &b) -> bool;
+    void assign(cref_vfamily value) noexcept;
+    void assign(cref_composite value) noexcept;
+    void assign(bool value) noexcept;
+    void assign(signed long long value) noexcept;
+    void assign(unsigned long long value) noexcept;
+    void assign(double value) noexcept;
+    void assign(std::string_view value) noexcept;
+    void assign(std::wstring_view value) noexcept;
+    void assign(std::u8string_view value) noexcept;
+    void assign(std::u16string_view value) noexcept;
+    void assign(std::u32string_view value) noexcept;
+    void assign(span_cbyte value) noexcept;
 
     enum type_index : sl::index {
       n_uint = 1,

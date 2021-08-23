@@ -12,52 +12,91 @@
 
 #include "unit.h"
 
-#include "../action/unit_move.h"
+#include "../../../laplace/core/utils.h"
+#include "../../../laplace/engine/eval/integral.h"
 #include "landscape.h"
+#include "pathmap.h"
+#include "player.h"
 #include "root.h"
 
 namespace quadwar_app::object {
   namespace access = engine::access;
+  namespace eval   = engine::eval;
+  namespace grid   = eval::grid;
 
-  using std::vector, engine::intval, engine::vec2i,
-      engine::id_undefined, std::make_shared, action::unit_move;
+  using std::min, std::max, std::span, std::vector, engine::intval,
+      engine::vec2i, engine::vec2z, engine::id_undefined,
+      std::shared_ptr, std::make_shared;
 
-  sl::index unit::n_actor  = {};
-  sl::index unit::n_x      = {};
-  sl::index unit::n_y      = {};
-  sl::index unit::n_radius = {};
-  sl::index unit::n_health = {};
+  const engine::intval unit::default_health           = 100;
+  const engine::intval unit::default_radius           = 1200;
+  const engine::intval unit::default_collision_radius = 600;
+  const engine::intval unit::default_movement_speed   = 200;
+
+  sl::index unit::n_health           = {};
+  sl::index unit::n_radius           = {};
+  sl::index unit::n_collision_radius = {};
+  sl::index unit::n_movement_speed   = {};
+  sl::index unit::n_actor            = {};
+  sl::index unit::n_color            = {};
+  sl::index unit::n_x                = {};
+  sl::index unit::n_y                = {};
+  sl::index unit::n_target_order     = {};
+  sl::index unit::n_target_x         = {};
+  sl::index unit::n_target_y         = {};
 
   unit unit::m_proto(unit::proto);
 
   unit::unit(proto_tag) : basic_entity(1) {
     setup_sets(
-        { { .id = sets::unit_actor, .scale = 1 },
+        { { .id = sets::unit_health, .scale = sets::scale_points },
+          { .id = sets::unit_radius, .scale = sets::scale_real },
+          { .id    = sets::unit_collision_radius,
+            .scale = sets::scale_real },
+          { .id    = sets::unit_movement_speed,
+            .scale = sets::scale_real },
+          { .id = sets::unit_actor, .scale = 1 },
+          { .id = sets::unit_color, .scale = 1 },
           { .id = sets::unit_x, .scale = sets::scale_real },
           { .id = sets::unit_y, .scale = sets::scale_real },
-          { .id = sets::unit_radius, .scale = sets::scale_real },
-          { .id = sets::unit_health, .scale = sets::scale_points } });
+          { .id = sets::unit_target_order, .scale = 1 },
+          { .id = sets::unit_target_x, .scale = sets::scale_real },
+          { .id = sets::unit_target_y, .scale = sets::scale_real } });
 
-    n_actor  = index_of(sets::unit_actor);
-    n_x      = index_of(sets::unit_x);
-    n_y      = index_of(sets::unit_y);
-    n_radius = index_of(sets::unit_radius);
-    n_health = index_of(sets::unit_health);
+    n_health           = index_of(sets::unit_health);
+    n_radius           = index_of(sets::unit_radius);
+    n_collision_radius = index_of(sets::unit_collision_radius);
+    n_movement_speed   = index_of(sets::unit_movement_speed);
+    n_actor            = index_of(sets::unit_actor);
+    n_color            = index_of(sets::unit_color);
+    n_x                = index_of(sets::unit_x);
+    n_y                = index_of(sets::unit_y);
+    n_target_order     = index_of(sets::unit_target_order);
+    n_target_x         = index_of(sets::unit_target_x);
+    n_target_y         = index_of(sets::unit_target_y);
   }
 
   unit::unit() : basic_entity(dummy) {
     *this = m_proto;
   }
 
-  void unit::tick(access::world w) { }
+  void unit::tick(access::world w) {
+    auto r   = w.get_entity(w.get_root());
+    auto map = w.get_entity(root::get_pathmap(r));
+
+    do_search(map);
+    do_movement(map);
+  }
 
   auto unit::spawn_start_units(world w, sl::whole unit_count)
       -> vector<sl::index> {
-
     auto ids = vector<sl::index> {};
 
-    auto r    = w.get_entity(w.get_root());
-    auto land = w.get_entity(root::get_landscape(r));
+    auto r     = w.get_entity(w.get_root());
+    auto land  = w.get_entity(root::get_landscape(r));
+    auto slots = w.get_entity(root::get_slots(r));
+    auto units = w.get_entity(root::get_units(r));
+
     auto locs = landscape::get_start_locs(land);
 
     if (!land.exist()) {
@@ -65,7 +104,7 @@ namespace quadwar_app::object {
       return {};
     }
 
-    auto player_count = root::get_slot_count(r);
+    auto player_count = slots.vec_get_size();
 
     if (locs.size() < player_count) {
       if (locs.empty())
@@ -77,68 +116,102 @@ namespace quadwar_app::object {
 
     ids.reserve(unit_count * player_count);
 
+    auto create_unit =
+        [&](const sl::index id_actor, const sl::index color,
+            const intval x, const intval y) -> shared_ptr<unit> {
+      auto u = unit {};
+
+      u.init(n_health, default_health * sets::scale_points);
+      u.init(n_radius, default_radius);
+      u.init(n_collision_radius, default_collision_radius);
+      u.init(n_movement_speed, default_movement_speed);
+      u.init(n_actor, id_actor);
+      u.init(n_color, color);
+      u.init(n_x, x * sets::scale_real);
+      u.init(n_y, y * sets::scale_real);
+
+      return make_shared<unit>(u);
+    };
+
     for (sl::index i = 0; i < player_count; i++) {
-      const auto u = [&r, &locs, &i]() -> unit {
-        auto u = unit {};
+      const auto id_actor = as_index(slots.vec_get(i));
+      const auto color    = player::get_index(w.get_entity(id_actor));
 
-        const auto id_actor = root::get_slot(r, i);
-
-        const auto x      = locs[i].x();
-        const auto y      = locs[i].y();
-        const auto radius = default_radius;
-        const auto health = default_health;
-
-        const auto sx = u.scale_of(n_x);
-        const auto sy = u.scale_of(n_y);
-        const auto sr = u.scale_of(n_radius);
-        const auto sh = u.scale_of(n_health);
-
-        u.init(n_actor, id_actor);
-        u.init(n_x, x * sx);
-        u.init(n_y, y * sy);
-        u.init(n_radius, radius * sr);
-        u.init(n_health, health * sh);
-
-        return u;
-      }();
+      const auto x = locs[i].x();
+      const auto y = locs[i].y();
 
       for (sl::index j = 0; j < unit_count; j++) {
-        const auto id = w.spawn(make_shared<unit>(u), id_undefined);
-        root::unit_create(r, id);
+        const auto id = w.spawn(
+            create_unit(id_actor, color, x, y), id_undefined);
         ids.emplace_back(id);
       }
+    }
+
+    for (sl::index i = 0; i < ids.size(); i++) {
+      units.vec_add_sorted(ids[i]);
     }
 
     return ids;
   }
 
-  void unit::set_actor(entity en, sl::index id_actor) {
-    en.set(n_actor, static_cast<int64_t>(id_actor));
+  void unit::place_footprint(world w, sl::index id_unit) {
+    if (pathmap::resolution == 0) {
+      error_("Invalid pathmap resolution.", __FUNCTION__);
+      return;
+    }
+
+    const auto scale = sets::scale_real / pathmap::resolution;
+
+    if (scale == 0) {
+      error_("Invalid scale.", __FUNCTION__);
+      return;
+    }
+
+    auto r    = w.get_entity(w.get_root());
+    auto u    = w.get_entity(id_unit);
+    auto path = w.get_entity(root::get_pathmap(r));
+
+    const auto x0    = as_index(eval::div(u.get(n_x), scale, 1));
+    const auto y0    = as_index(eval::div(u.get(n_y), scale, 1));
+    const auto r_max = as_index(eval::div(u.get(n_radius), scale, 1));
+    const auto r_min = as_index(
+        eval::div(u.get(n_collision_radius), scale, 1));
+
+    const auto foot_max = make_footprint(r_max);
+    const auto foot_min = make_footprint(r_min);
+
+    auto p = pathmap::find_empty(
+        path, { x0, y0 }, foot_max.size, foot_max.bytes);
+    pathmap::add(path, p, foot_min.size, foot_min.bytes);
+
+    u.set(n_x, p.x() * scale);
+    u.set(n_y, p.y() * scale);
+
+    path.adjust();
+    u.adjust();
   }
 
-  void unit::set_x(entity en, intval x) {
-    en.set(n_x, x);
-  }
+  void unit::order_move(
+      world w, sl::index id_actor, sl::index id_unit, vec2i target) {
 
-  void unit::set_y(entity en, intval y) {
-    en.set(n_y, y);
-  }
+    auto u = w.get_entity(id_unit);
 
-  void unit::set_position(entity en, vec2i p) {
-    set_x(en, p.x());
-    set_y(en, p.y());
-  }
+    if (get_actor(u) != id_actor) {
+      return;
+    }
 
-  void unit::set_radius(entity en, intval radius) {
-    en.set(n_radius, radius);
-  }
-
-  void unit::set_health(entity en, intval health) {
-    en.set(n_health, health);
+    u.set(n_target_order, 1);
+    u.set(n_target_x, target.x());
+    u.set(n_target_y, target.y());
+    u.adjust();
   }
 
   auto unit::get_actor(entity en) -> sl::index {
     return as_index(en.get(n_actor));
+  }
+
+  auto unit::get_color(entity en) -> sl::index {
+    return as_index(en.get(n_color));
   }
 
   auto unit::get_x(entity en) -> intval {
@@ -161,34 +234,215 @@ namespace quadwar_app::object {
     return en.get(n_health);
   }
 
-  auto unit::scale_of_x(entity en) -> engine::intval {
-    return en.scale_of(n_x);
-  }
-
-  auto unit::scale_of_y(entity en) -> engine::intval {
-    return en.scale_of(n_y);
-  }
-
-  auto unit::scale_of_radius(entity en) -> engine::intval {
-    return en.scale_of(n_radius);
-  }
-
   auto unit::get_position_scaled(entity en) -> view::vec2 {
-    const auto sx = en.scale_of(n_x);
-    const auto sy = en.scale_of(n_y);
-
-    if (sx == 0 || sy == 0)
-      return {};
-
-    return { static_cast<view::real>(get_x(en)) / sx,
-             static_cast<view::real>(get_y(en)) / sy };
+    return { static_cast<view::real>(get_x(en)) / sets::scale_real,
+             static_cast<view::real>(get_y(en)) / sets::scale_real };
   }
+
   auto unit::get_radius_scaled(entity en) -> view::real {
-    const auto s = en.scale_of(n_radius);
+    return static_cast<view::real>(get_radius(en)) / sets::scale_real;
+  }
 
-    if (s == 0)
-      return {};
+  auto unit::make_footprint(sl::whole radius) -> footprint_data {
+    const auto size = 1 + radius * 2;
 
-    return static_cast<view::real>(get_radius(en)) / s;
+    return { .size   = { size, size },
+             .center = { radius, radius },
+             .bytes  = sl::vector<int8_t>(size * size, 1) };
+  }
+
+  void unit::do_search(entity map) noexcept {
+    if (pathmap::resolution == 0) {
+      error_("Invalid pathmap resolution.", __FUNCTION__);
+      return;
+    }
+
+    const auto scale = sets::scale_real / pathmap::resolution;
+
+    const auto x0 = as_index(eval::div(get(n_x), scale, 1));
+    const auto y0 = as_index(eval::div(get(n_y), scale, 1));
+    const auto p0 = vec2z { x0, y0 };
+
+    if (get(n_target_order) > 0) {
+      const auto x1 = as_index(eval::div(get(n_target_x), scale, 1));
+      const auto y1 = as_index(eval::div(get(n_target_y), scale, 1));
+      const auto p1 = vec2z { x1, y1 };
+
+      const auto width  = as_index(pathmap::get_width(map));
+      const auto height = as_index(pathmap::get_height(map));
+
+      m_size = vec2z { width, height };
+
+      const auto radius = as_index(
+          eval::div(get(n_radius), scale, 1));
+
+      const auto footprint = make_footprint(radius);
+
+      const auto src = [&]() {
+        auto v = map.bytes_get_all();
+
+        const auto cx = footprint.center.x();
+        const auto cy = footprint.center.y();
+
+        const auto sx = footprint.size.x();
+        const auto sy = footprint.size.y();
+
+        const auto px0 = x0 - cx;
+        const auto py0 = y0 - cy;
+
+        const auto i0 = max<sl::index>(0, px0) - px0;
+        const auto j0 = max<sl::index>(0, py0) - py0;
+        const auto i1 = min<sl::index>(width, px0 + sx) - px0;
+        const auto j1 = min<sl::index>(height, py0 + sy) - py0;
+
+        for (sl::index j = j0; j < j1; j++)
+          for (sl::index i = i0; i < i1; i++) {
+            v[(py0 + j) * width + px0 + i] -=
+                footprint.bytes[j * sx + i];
+          }
+
+        return v;
+      }();
+
+      m_pathmap.resize(width * height);
+      for (auto &x : m_pathmap) { x = 0; }
+
+      grid::convolve(m_size, m_pathmap, src, footprint.size,
+                     footprint.center, footprint.bytes);
+
+      m_destination = grid::nearest(p1, m_size, m_pathmap);
+
+      m_search = grid::path_search_init(
+          m_size, 16, m_pathmap,
+          [](const int8_t x) { return x <= 0; }, p0, m_destination);
+
+      m_searching = true;
+      m_movement  = true;
+
+      apply_delta(n_target_order, -1);
+    }
+
+    if (!m_searching) {
+      return;
+    }
+
+    for (sl::index i = 0; i < 20; i++)
+      if (grid::path_search_loop(m_search) !=
+          eval::astar::status::progress) {
+        m_searching = false;
+        break;
+      }
+
+    m_current   = -1;
+    m_waypoints = grid::path_search_finish(m_search);
+
+    for (sl::index i = m_waypoints.size() - 1; i >= 0; i--)
+      if (grid::trace_line(
+              m_size, p0, m_waypoints[i], [&](const vec2z p) {
+                if (p.x() < 0 || p.y() < 0 || p.x() >= m_size.x() ||
+                    p.y() >= m_size.y()) {
+                  return false;
+                }
+
+                return m_pathmap[p.y() * m_size.x() + p.x()] <= 0;
+              })) {
+        m_current = i;
+        break;
+      }
+
+    if (m_current < 0) {
+      apply_delta(n_target_order, 1);
+    }
+  }
+
+  void unit::do_movement(entity map) noexcept {
+    if (!m_movement) {
+      return;
+    }
+
+    if (pathmap::resolution == 0) {
+      error_("Invalid pathmap resolution.", __FUNCTION__);
+      return;
+    }
+
+    const auto scale = sets::scale_real / pathmap::resolution;
+
+    auto delta = get(n_movement_speed);
+
+    const auto ox0 = get(n_x);
+    const auto oy0 = get(n_y);
+
+    auto ox = ox0;
+    auto oy = oy0;
+
+    while (delta > 0) {
+      if (m_current < 0 || m_current >= m_waypoints.size()) {
+        m_movement = m_searching;
+        break;
+      }
+
+      const auto ox1 = m_waypoints[m_current].x() * scale;
+      const auto oy1 = m_waypoints[m_current].y() * scale;
+
+      const auto odx = ox1 - ox;
+      const auto ody = oy1 - oy;
+
+      const auto dx = eval::div(odx, scale, 1);
+      const auto dy = eval::div(ody, scale, 1);
+
+      if (dx == 0 && dy == 0) {
+        m_current++;
+        continue;
+      }
+
+      const auto distance = eval::sqrt(odx * odx + ody * ody, 1);
+
+      if (delta < distance) {
+        ox = eval::div(ox * distance + odx * delta, distance, 1);
+        oy = eval::div(oy * distance + ody * delta, distance, 1);
+        break;
+      }
+
+      ox = ox1;
+      oy = oy1;
+
+      delta -= distance;
+    }
+
+    if (ox != ox0 || oy != oy0) {
+      const auto x0 = as_index(eval::div(ox0, scale, 1));
+      const auto y0 = as_index(eval::div(oy0, scale, 1));
+
+      const auto x = as_index(eval::div(ox, scale, 1));
+      const auto y = as_index(eval::div(oy, scale, 1));
+
+      if (x0 != x || y0 != y) {
+        const auto radius_min = as_index(
+            eval::div(get(n_collision_radius), scale, 1));
+
+        const auto radius_max = as_index(
+            eval::div(get(n_radius), scale, 1));
+
+        const auto foot_max = make_footprint(radius_max);
+        const auto foot_min = make_footprint(radius_min);
+
+        if (!pathmap::check_move(
+                map, { x0, y0 }, foot_max.size, foot_max.bytes,
+                { x, y }, foot_min.size, foot_min.bytes)) {
+          /*  Collision.
+           */
+          m_searching = false;
+          m_movement  = false;
+          return;
+        }
+
+        pathmap::subtract(
+            map, { x0, y0 }, foot_min.size, foot_min.bytes);
+        pathmap::add(map, { x, y }, foot_min.size, foot_min.bytes);
+      }
+
+      set(n_x, ox);
+      set(n_y, oy);
+    }
   }
 }

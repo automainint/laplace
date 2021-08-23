@@ -23,12 +23,14 @@
 namespace laplace {
   /*  Convert unsigned integer value to an index.
    *  All indices are sl::index values.
-   *
-   *  Returns -1 for invalid index.
    */
-  [[nodiscard]] constexpr auto as_index(uint64_t value) noexcept -> sl::index;
+  [[nodiscard]] constexpr auto as_index(uint64_t value,
+                                        sl::index invalid = -1) noexcept
+      -> sl::index;
 
-  [[nodiscard]] constexpr auto as_index(int64_t value) noexcept -> sl::index;
+  [[nodiscard]] constexpr auto as_index(int64_t   value,
+                                        sl::index invalid = -1) noexcept
+      -> sl::index;
 }
 
 #include "utils.impl.h"

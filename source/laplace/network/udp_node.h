@@ -25,19 +25,13 @@ namespace laplace::network {
 
     void bind(uint16_t port = any_port);
 
-    [[nodiscard]] auto receive_to( //
-        uint8_t *p,                //
-        size_t   count,            //
-        io_mode  mode) -> size_t;
+    [[nodiscard]] auto receive_to(uint8_t *p, sl::whole count,
+                                  io_mode mode) -> sl::whole;
 
-    [[nodiscard]] auto receive( //
-        size_t  count,          //
-        io_mode mode) -> vbyte;
+    [[nodiscard]] auto receive(sl::whole count, io_mode mode) -> vbyte;
 
-    [[nodiscard]] auto send_to(   //
-        std::string_view address, //
-        uint16_t         port,    //
-        span_cbyte       seq) -> size_t;
+    [[nodiscard]] auto send_to(std::string_view address, uint16_t port,
+                               span_cbyte seq) -> sl::whole;
 
     [[nodiscard]] auto get_port() const -> uint16_t;
     [[nodiscard]] auto get_remote_address() const -> std::string;
@@ -49,11 +43,10 @@ namespace laplace::network {
   private:
     void init();
 
-    [[nodiscard]] auto send_internal( //
-        const sockaddr_in &name,      //
-        span_cbyte         seq) -> size_t;
+    [[nodiscard]] auto send_internal(const sockaddr_in &name,
+                                     span_cbyte seq) -> sl::whole;
 
-    socket_t      m_socket;
+    socket_t    m_socket;
     uint16_t    m_port = 0;
     sockaddr_in m_remote;
     bool        m_is_msgsize   = false;

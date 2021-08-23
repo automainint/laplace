@@ -19,9 +19,10 @@
 #undef min
 #undef max
 
+#include "wgl.h"
+
 #include "../../core/utils.h"
 #include "../gldef.h"
-#include "wgl.h"
 #include <iostream>
 
 #define LOAD(a)                                                      \
@@ -126,7 +127,7 @@ namespace laplace::win32 {
       int32_t num_extensions = 0;
       gl::glGetIntegerv(gl::GL_NUM_EXTENSIONS, &num_extensions);
 
-      gl::extensions.reserve(static_cast<size_t>(num_extensions));
+      gl::extensions.reserve(num_extensions);
 
       for (int32_t i = 0; i < num_extensions; i++) {
         auto p = reinterpret_cast<const char *>(gl::glGetStringi(
@@ -135,10 +136,9 @@ namespace laplace::win32 {
         if (p) {
           auto name = std::string(p);
 
-          gl::extensions.emplace(
-              lower_bound(
-                  gl::extensions.begin(), gl::extensions.end(), name),
-              name);
+          gl::extensions.emplace(lower_bound(gl::extensions.begin(),
+                                             gl::extensions.end(), name),
+                                 name);
         }
       }
     }

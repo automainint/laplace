@@ -51,7 +51,7 @@ namespace laplace {
   template <typename view_type>
   inline auto to_u8string(view_type s) -> std::u8string {
     auto result = std::u8string {};
-    auto offset = size_t {};
+    auto offset = sl::index {};
 
     for (auto &c : s) {
       if (!utf8::encode(c, result, offset)) {

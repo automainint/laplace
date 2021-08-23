@@ -30,25 +30,24 @@ namespace laplace::test {
   };
 
   TEST(engine, entity_multithreading) {
-    shared_ptr<my_entity> obj = make_shared<my_entity>();
-    auto n_value = obj->index_of(sets::debug_value);
+    shared_ptr<my_entity> obj     = make_shared<my_entity>();
+    auto                  n_value = obj->index_of(sets::debug_value);
 
     auto fn_inc10 = [=]() {
-      for (size_t i = 0; i < 10; i++)
-        obj->apply_delta(n_value, 1);
+      for (sl::index i = 0; i < 10; i++) obj->apply_delta(n_value, 1);
     };
 
     auto fn_inc100 = [=]() {
-      for (size_t i = 0; i < 100; i++)
+      for (sl::index i = 0; i < 100; i++)
         obj->apply_delta(n_value, 1);
     };
 
     vector<unique_ptr<thread>> threads_10(10);
 
-    for (size_t i = 0; i < threads_10.size(); i++)
+    for (sl::index i = 0; i < threads_10.size(); i++)
       threads_10[i] = make_unique<thread>(fn_inc10);
 
-    for (size_t i = 0; i < threads_10.size(); i++)
+    for (sl::index i = 0; i < threads_10.size(); i++)
       threads_10[i]->join();
 
     obj->adjust();
@@ -59,10 +58,10 @@ namespace laplace::test {
 
     vector<unique_ptr<thread>> threads_4(4);
 
-    for (size_t i = 0; i < threads_4.size(); i++)
+    for (sl::index i = 0; i < threads_4.size(); i++)
       threads_4[i] = make_unique<thread>(fn_inc100);
 
-    for (size_t i = 0; i < threads_4.size(); i++)
+    for (sl::index i = 0; i < threads_4.size(); i++)
       threads_4[i]->join();
 
     obj->adjust();

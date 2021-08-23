@@ -11,9 +11,12 @@
  */
 
 #include "solver.h"
+
 #include <algorithm>
 
 namespace laplace::engine {
+  const bool solver::default_allow_rewind = false;
+
   void solver::set_world(ptr_world w) {
     if (m_world != w) {
       m_world = w;
@@ -39,23 +42,20 @@ namespace laplace::engine {
           auto time = m_time;
           rewind_to(imp->get_time());
 
-          m_history.emplace(
-              m_history.begin() + static_cast<ptrdiff_t>(m_position),
-              imp);
+          m_history.emplace(m_history.begin() + m_position, imp);
 
           rewind_to(time);
         } else {
-          error_(
-              "Rewind is not allowed. Impact ignored.", __FUNCTION__);
+          error_("Rewind is not allowed. Impact ignored.",
+                 __FUNCTION__);
         }
       } else {
         auto op = [](const ptr_impact &a, uint64_t b) -> bool {
           return a->get_time() < b;
         };
 
-        auto it = lower_bound(
-            m_history.begin() + static_cast<ptrdiff_t>(m_position),
-            m_history.end(), imp->get_time(), op);
+        auto it = lower_bound(m_history.begin() + m_position,
+                              m_history.end(), imp->get_time(), op);
 
         m_history.emplace(it, imp);
       }
@@ -64,11 +64,6 @@ namespace laplace::engine {
 
   void solver::rewind_to(uint64_t time) {
     adjust(time);
-    join();
-  }
-
-  void solver::solve(uint64_t delta) {
-    schedule(delta);
     join();
   }
 
@@ -94,7 +89,7 @@ namespace laplace::engine {
     return m_time;
   }
 
-  auto solver::get_position() const -> size_t {
+  auto solver::get_position() const -> sl::index {
     return m_position;
   }
 
@@ -117,17 +112,21 @@ namespace laplace::engine {
     m_history.clear();
   }
 
-  auto solver::get_history_count() const -> size_t {
+  auto solver::get_history_count() const -> sl::whole {
     return m_history.size();
   }
 
-  auto solver::get_history(size_t index) const -> ptr_impact {
-    return index < m_history.size() ? m_history[index] : ptr_impact();
+  auto solver::get_history(sl::index index) const -> ptr_impact {
+    if (index < 0 || index >= m_history.size()) {
+      return {};
+    }
+
+    return m_history[index];
   }
 
   auto solver::generate_seed() -> seed_type {
-    std::random_device                       dev;
-    std::uniform_int_distribution<seed_type> dist;
+    auto dev  = std::random_device {};
+    auto dist = std::uniform_int_distribution<seed_type> {};
 
     return dist(dev);
   }
@@ -148,15 +147,12 @@ namespace laplace::engine {
         return a->get_time() < b;
       };
 
-      auto i_end = lower_bound(
-          m_history.begin() + static_cast<ptrdiff_t>(m_position),
-          m_history.end(), time, op);
+      auto i_end = lower_bound(m_history.begin() + m_position,
+                               m_history.end(), time, op);
 
       auto t0 = m_time;
 
-      for (auto i =
-               m_history.begin() + static_cast<ptrdiff_t>(m_position);
-           i != i_end; i++) {
+      for (auto i = m_history.begin() + m_position; i != i_end; i++) {
         auto t1 = (*i)->get_time();
 
         if (t0 < t1) {

@@ -11,6 +11,7 @@
  */
 
 #include "log.h"
+
 #include "string.h"
 #include <cstdarg>
 #include <iostream>

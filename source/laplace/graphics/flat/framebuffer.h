@@ -27,7 +27,7 @@ namespace laplace::graphics::flat {
     framebuffer();
     ~framebuffer();
 
-    void set_size(size_t width, size_t height);
+    void set_size(sl::whole width, sl::whole height);
 
     void render(std::function<void()> op);
 

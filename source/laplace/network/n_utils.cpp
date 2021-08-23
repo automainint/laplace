@@ -11,13 +11,15 @@
  */
 
 #include "utils.h"
+
 #include <algorithm>
 
 namespace laplace::network {
-  using std::min, std::string;
+  using std::min, std::max, std::string;
 
-  auto clamp_chunk(size_t size) noexcept -> int {
-    return static_cast<int>(min(size, max_chunk_size));
+  auto clamp_chunk(sl::whole size) noexcept -> int {
+    return static_cast<int>(
+        max<sl::whole>(0, min(size, max_chunk_size)));
   }
 
   auto to_string(const sockaddr &a) noexcept -> string {

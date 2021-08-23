@@ -23,8 +23,8 @@
 namespace laplace::engine {
   class scheduler {
   public:
-    static constexpr sl::whole overthreading_limit = 8;
-    static constexpr sl::whole concurrency_limit   = 0x1000;
+    static const sl::whole overthreading_limit;
+    static const sl::whole concurrency_limit;
 
     scheduler(const scheduler &) = delete;
     auto operator=(const scheduler &) -> scheduler & = delete;
@@ -32,7 +32,7 @@ namespace laplace::engine {
     scheduler(world &w);
     ~scheduler();
 
-    void schedule(size_t delta);
+    void schedule(sl::whole delta);
     void join();
 
     void set_thread_count(const sl::whole thread_count);
@@ -51,10 +51,10 @@ namespace laplace::engine {
     std::condition_variable   m_sync;
     std::vector<std::jthread> m_threads;
 
-    bool   m_done       = false;
-    size_t m_in         = 0;
-    size_t m_out        = 0;
-    size_t m_tick_count = 0;
+    bool      m_done       = false;
+    sl::whole m_in         = 0;
+    sl::whole m_out        = 0;
+    sl::whole m_tick_count = 0;
   };
 }
 

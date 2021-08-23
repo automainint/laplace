@@ -13,10 +13,17 @@
 #ifndef laplace_engine_access_mode_h
 #define laplace_engine_access_mode_h
 
+#include "../../core/options.h"
 #include <cstdint>
 
 namespace laplace::engine::access {
   enum mode : uint8_t { forbidden, read_only, async, sync, data };
+
+  [[nodiscard]] constexpr auto is_allowed(const mode operation,
+                                          const mode status) noexcept
+      -> bool {
+    return operation <= status;
+  }
 }
 
 #endif

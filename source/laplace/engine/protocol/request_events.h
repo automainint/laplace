@@ -18,13 +18,13 @@
 namespace laplace::engine::protocol {
   class request_events final : public prime_impact {
   public:
-    enum encoding_offset : size_t { n_events = 2 };
+    enum encoding_offset : sl::index { n_events = 2 };
 
-    static constexpr uint16_t id         = ids::request_events;
-    static constexpr auto     event_size = sizeof(uint64_t);
+    static constexpr uint16_t  id         = ids::request_events;
+    static constexpr sl::whole event_size = sizeof(sl::index64);
 
-    static constexpr auto max_event_count = (max_size - n_events) /
-                                            event_size;
+    static constexpr sl::whole max_event_count = (max_size - n_events) /
+                                                 event_size;
 
     ~request_events() final = default;
 
@@ -32,7 +32,7 @@ namespace laplace::engine::protocol {
       set_encoded_size(n_events);
     }
 
-    inline request_events(span_cuint events) {
+    inline request_events(std::span<const sl::index> events) {
       set_encoded_size(n_events + events.size() * event_size);
 
       m_events.assign(events.begin(), events.end());
@@ -48,11 +48,13 @@ namespace laplace::engine::protocol {
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
-      std::vector<uint64_t> events(m_events.size());
-      for (size_t i = 0; i < events.size(); i++)
+      auto events = sl::vector<sl::index64>(m_events.size());
+      for (sl::index i = 0; i < events.size(); i++) {
         events[i] = m_events[i];
+      }
 
-      serial::write_bytes(bytes, id, std::span<const uint64_t>(events));
+      serial::write_bytes(bytes, id,
+                          std::span<const sl::index64>(events));
     }
 
     static constexpr auto scan(span_cbyte seq) {
@@ -60,16 +62,17 @@ namespace laplace::engine::protocol {
     }
 
     static inline auto decode(span_cbyte seq) {
-      vuint events(get_event_count(seq));
+      auto events = sl::vector<sl::index>(get_event_count(seq));
 
-      for (size_t i = 0; i < events.size(); i++)
+      for (sl::index i = 0; i < events.size(); i++) {
         events[i] = get_event(seq, i);
+      }
 
       return request_events { events };
     }
 
   private:
-    vuint m_events;
+    sl::vector<sl::index> m_events;
   };
 }
 

@@ -20,16 +20,16 @@
 namespace quadwar_app::view {
   class landscape : engine::helper {
   public:
-    static constexpr auto tile_border = .2f;
+    static const real tile_border;
 
     void render(const camera &cam, world w);
 
   private:
     using vertex = graphics::flat::solid_shader::vertex;
 
-    size_t m_state_version = 0;
-    size_t m_width         = 0;
-    size_t m_height        = 0;
+    sl::index m_state_version = 0;
+    sl::whole m_width         = 0;
+    sl::whole m_height        = 0;
 
     std::vector<vertex> m_vertices;
   };
