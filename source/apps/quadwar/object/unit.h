@@ -14,15 +14,14 @@
 #define quadwar_object_unit_h
 
 #include "../../../laplace/engine/basic_entity.h"
+#include "../../../laplace/engine/eval/grid.h"
 #include "../view/defs.h"
 #include "defs.h"
 
 namespace quadwar_app::object {
   class unit : public engine::basic_entity, helper {
   public:
-    enum state : sl::index { s_stand, s_move, s_order_move };
-
-    static const sl::whole default_waypoint_count;
+    enum order : sl::index { o_move };
 
     static const engine::intval default_health;
     static const engine::intval default_radius;
@@ -39,14 +38,18 @@ namespace quadwar_app::object {
 
     static void place_footprint(world w, sl::index id_unit);
 
-    static void order_move(world w, sl::index id_actor,
-                           sl::index id_unit, engine::vec2i target);
+    static void order_move(
+        world         w,
+        sl::index     id_actor,
+        sl::index     id_unit,
+        engine::vec2i target);
 
     [[nodiscard]] static auto get_actor(entity en) -> sl::index;
     [[nodiscard]] static auto get_color(entity en) -> sl::index;
     [[nodiscard]] static auto get_x(entity en) -> engine::intval;
     [[nodiscard]] static auto get_y(entity en) -> engine::intval;
-    [[nodiscard]] static auto get_position(entity en) -> engine::vec2i;
+    [[nodiscard]] static auto get_position(entity en)
+        -> engine::vec2i;
     [[nodiscard]] static auto get_radius(entity en) -> engine::intval;
     [[nodiscard]] static auto get_health(entity en) -> engine::intval;
 
@@ -62,19 +65,18 @@ namespace quadwar_app::object {
   private:
     struct footprint_data {
       engine::vec2z      size;
+      engine::vec2z      center;
       sl::vector<int8_t> bytes;
     };
 
     [[nodiscard]] static auto make_footprint(sl::whole radius)
         -> footprint_data;
 
-    void do_move(world w);
-    void do_order_move(world w);
-    void do_next_waypoint();
+    void do_search(entity map) noexcept;
+    void do_movement(entity map) noexcept;
 
     static unit m_proto;
 
-    static sl::index n_state;
     static sl::index n_health;
     static sl::index n_radius;
     static sl::index n_collision_radius;
@@ -83,13 +85,17 @@ namespace quadwar_app::object {
     static sl::index n_color;
     static sl::index n_x;
     static sl::index n_y;
-    static sl::index n_move_x;
-    static sl::index n_move_y;
-    static sl::index n_speed_remains;
+    static sl::index n_target_order;
     static sl::index n_target_x;
     static sl::index n_target_y;
-    static sl::index n_waypoint_index;
-    static sl::index n_waypoint_count;
+
+    bool                       m_searching = false;
+    bool                       m_movement  = false;
+    sl::index                  m_current   = {};
+    engine::vec2z              m_destination;
+    engine::eval::grid::_state m_search;
+    sl::vector<int8_t>         m_pathmap;
+    sl::vector<engine::vec2z>  m_waypoints;
   };
 }
 

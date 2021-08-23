@@ -1,4 +1,4 @@
-/*  test/unittests/ee_astar.test.cpp
+/*  test/unittests/ee_grid.test.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -22,17 +22,17 @@ namespace laplace::test {
     constexpr auto height = 5;
     constexpr auto size   = width * height;
 
-    constexpr std::array<int8_t, size> map = { 1, 1, 1, 1, 1, //
-                                               1, 0, 0, 0, 1, //
-                                               1, 0, 0, 0, 1, //
-                                               1, 0, 0, 0, 1, //
-                                               1, 1, 1, 1, 1 };
+    constexpr std::array<int8_t, size> map = {
+      1, 1, 1, 1, 1, //
+      1, 0, 0, 0, 1, //
+      1, 0, 0, 0, 1, //
+      1, 0, 0, 0, 1, //
+      1, 1, 1, 1, 1
+    };
 
-    auto state = grid::path_search_init({ width, height }, 10, map,
-                                        [](const int8_t x) {
-                                          return x == 0;
-                                        },
-                                        { 1, 1 }, { 3, 3 });
+    auto state = grid::path_search_init(
+        { width, height }, 10, map,
+        [](const int8_t x) { return x == 0; }, { 1, 1 }, { 3, 3 });
 
     while (grid::path_search_loop(state) == astar::status::progress) {
     }
@@ -47,17 +47,17 @@ namespace laplace::test {
     constexpr auto height = 5;
     constexpr auto size   = width * height;
 
-    constexpr std::array<int8_t, size> map = { 1, 1, 1, 1, 1, 1, 1, //
-                                               1, 0, 0, 1, 0, 0, 1, //
-                                               1, 0, 0, 1, 0, 0, 1, //
-                                               1, 0, 0, 0, 0, 0, 1, //
-                                               1, 1, 1, 1, 1, 1, 1 };
+    constexpr std::array<int8_t, size> map = {
+      1, 1, 1, 1, 1, 1, 1, //
+      1, 0, 0, 1, 0, 0, 1, //
+      1, 0, 0, 1, 0, 0, 1, //
+      1, 0, 0, 0, 0, 0, 1, //
+      1, 1, 1, 1, 1, 1, 1
+    };
 
-    auto state = grid::path_search_init({ width, height }, 10, map,
-                                        [](const int8_t x) {
-                                          return x == 0;
-                                        },
-                                        { 1, 1 }, { 5, 1 });
+    auto state = grid::path_search_init(
+        { width, height }, 10, map,
+        [](const int8_t x) { return x == 0; }, { 1, 1 }, { 5, 1 });
 
     while (grid::path_search_loop(state) == astar::status::progress) {
     }
@@ -72,19 +72,19 @@ namespace laplace::test {
     constexpr auto height = 7;
     constexpr auto size   = width * height;
 
-    constexpr std::array<int8_t, size> map = { 1, 1, 1, 1, 1, 1, 1, //
-                                               1, 0, 0, 0, 0, 0, 1, //
-                                               1, 1, 1, 1, 1, 0, 1, //
-                                               1, 0, 0, 0, 1, 0, 1, //
-                                               1, 0, 0, 0, 1, 0, 1, //
-                                               1, 0, 0, 0, 1, 0, 1, //
-                                               1, 1, 1, 1, 1, 1, 1 };
+    constexpr std::array<int8_t, size> map = {
+      1, 1, 1, 1, 1, 1, 1, //
+      1, 0, 0, 0, 0, 0, 1, //
+      1, 1, 1, 1, 1, 0, 1, //
+      1, 0, 0, 0, 1, 0, 1, //
+      1, 0, 0, 0, 1, 0, 1, //
+      1, 0, 0, 0, 1, 0, 1, //
+      1, 1, 1, 1, 1, 1, 1
+    };
 
-    auto state = grid::path_search_init({ width, height }, 10, map,
-                                        [](const int8_t x) {
-                                          return x == 0;
-                                        },
-                                        { 1, 5 }, { 5, 1 });
+    auto state = grid::path_search_init(
+        { width, height }, 10, map,
+        [](const int8_t x) { return x == 0; }, { 1, 5 }, { 5, 1 });
 
     while (grid::path_search_loop(state) == astar::status::progress) {
     }
@@ -97,5 +97,149 @@ namespace laplace::test {
       EXPECT_EQ(v[1].x(), 3);
       EXPECT_EQ(v[1].y(), 3);
     }
+  }
+
+  TEST(engine, eval_grid_convole_empty) {
+    constexpr auto width     = 3;
+    constexpr auto height    = 3;
+    constexpr auto size      = width * height;
+    constexpr auto fp_width  = 3;
+    constexpr auto fp_height = 3;
+    constexpr auto center_x  = 1;
+    constexpr auto center_y  = 1;
+
+    constexpr auto map = std::array<int8_t, size> {
+      0, 0, 0, //
+      0, 0, 0, //
+      0, 0, 0
+    };
+
+    constexpr auto footprint = std::array<int8_t, size> {
+      0, 0, 0, //
+      0, 0, 0, //
+      0, 0, 0
+    };
+
+    auto res = std::array<int8_t, size> {
+      0, 0, 0, //
+      0, 0, 0, //
+      0, 0, 0
+    };
+
+    auto dst = std::array<int8_t, size> {};
+
+    grid::convolve(
+        { width, height }, dst, map, { fp_width, fp_height },
+        { center_x, center_y }, footprint);
+
+    EXPECT_EQ(dst, res);
+  }
+
+  TEST(engine, eval_grid_convole_single) {
+    constexpr auto width     = 3;
+    constexpr auto height    = 3;
+    constexpr auto size      = width * height;
+    constexpr auto fp_width  = 3;
+    constexpr auto fp_height = 3;
+    constexpr auto center_x  = 1;
+    constexpr auto center_y  = 1;
+
+    constexpr auto map = std::array<int8_t, size> {
+      0, 0, 0, //
+      0, 1, 0, //
+      0, 0, 0
+    };
+
+    constexpr auto footprint = std::array<int8_t, size> {
+      1, 0, 0, //
+      1, 0, 1, //
+      1, 0, 1
+    };
+
+    auto res = std::array<int8_t, size> {
+      1, 0, 0, //
+      1, 0, 1, //
+      1, 0, 1
+    };
+
+    auto dst = std::array<int8_t, size> {};
+
+    grid::convolve(
+        { width, height }, dst, map, { fp_width, fp_height },
+        { center_x, center_y }, footprint);
+
+    EXPECT_EQ(dst, res);
+  }
+
+  TEST(engine, eval_grid_convole_multiple) {
+    constexpr auto width     = 3;
+    constexpr auto height    = 3;
+    constexpr auto size      = width * height;
+    constexpr auto fp_width  = 3;
+    constexpr auto fp_height = 3;
+    constexpr auto center_x  = 1;
+    constexpr auto center_y  = 1;
+
+    constexpr auto map = std::array<int8_t, size> {
+      1, 1, 1, //
+      1, 0, 1, //
+      1, 1, 1
+    };
+
+    constexpr auto footprint = std::array<int8_t, size> {
+      0, 0, 0, //
+      0, 1, 0, //
+      0, 0, 0
+    };
+
+    auto res = std::array<int8_t, size> {
+      1, 1, 1, //
+      1, 0, 1, //
+      1, 1, 1
+    };
+
+    auto dst = std::array<int8_t, size> {};
+
+    grid::convolve(
+        { width, height }, dst, map, { fp_width, fp_height },
+        { center_x, center_y }, footprint);
+
+    EXPECT_EQ(dst, res);
+  }
+
+  TEST(engine, eval_grid_convole_offset) {
+    constexpr auto width     = 3;
+    constexpr auto height    = 3;
+    constexpr auto size      = width * height;
+    constexpr auto fp_width  = 3;
+    constexpr auto fp_height = 3;
+    constexpr auto center_x  = 1;
+    constexpr auto center_y  = 1;
+
+    constexpr auto map = std::array<int8_t, size> {
+      1, 1, 1, //
+      1, 0, 1, //
+      1, 1, 1
+    };
+
+    constexpr auto footprint = std::array<int8_t, size> {
+      0, 0, 0, //
+      0, 0, 1, //
+      0, 0, 0
+    };
+
+    auto res = std::array<int8_t, size> {
+      0, 1, 1, //
+      0, 1, 0, //
+      0, 1, 1
+    };
+
+    auto dst = std::array<int8_t, size> {};
+
+    grid::convolve(
+        { width, height }, dst, map, { fp_width, fp_height },
+        { center_x, center_y }, footprint);
+
+    EXPECT_EQ(dst, res);
   }
 }

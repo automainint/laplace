@@ -53,7 +53,6 @@ namespace laplace {
   socket_library::~socket_library() noexcept {
     if (m_is_ok) {
       WSACleanup();
-      m_is_ok = false;
     }
   }
 

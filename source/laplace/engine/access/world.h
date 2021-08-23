@@ -31,6 +31,7 @@ namespace laplace::engine::access {
     ~world() = default;
 
     /*  Set the desync flag.
+     *  Async.
      */
     void desync() const;
 
@@ -75,17 +76,17 @@ namespace laplace::engine::access {
     void set_root(sl::index id_root) const;
 
     /*  Get the root entity id.
-     *  Async.
+     *  Read.
      */
     [[nodiscard]] auto get_root() const -> sl::index;
 
     /*  If the world has an entity.
-     *  Async.
+     *  Read.
      */
     [[nodiscard]] auto has_entity(sl::index id) const -> bool;
 
     /*  Get an entity.
-     *  Async.
+     *  Read.
      */
     [[nodiscard]] auto get_entity(sl::index id) const -> access::entity;
 

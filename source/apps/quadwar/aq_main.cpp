@@ -25,7 +25,7 @@ using cfg::scan_flag, cfg::f_tests, cfg::a_tests, cfg::f_benchmarks,
 
 auto run_tests(int &argc, char **argv) -> int {
   testing::InitGoogleTest(&argc, argv);
-  socket_library sockets;
+  auto _ = socket_library {};
   return RUN_ALL_TESTS();
 }
 
@@ -50,10 +50,10 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR args, int) -> int {
   int  status = 0;
   bool run    = true;
 
+  laplace::platform::set_realtime_mode(true);
+
   laplace::platform::set_thread_priority(
       laplace::platform::priority::highest);
-
-  laplace::platform::set_realtime_mode(true);
 
   if (scan_flag(argc, argv, f_tests, a_tests)) {
     run    = false;
@@ -70,12 +70,12 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR args, int) -> int {
   }
 
   if (status == 0 && run) {
-    socket_library sockets;
+    auto _ = socket_library {};
     status = quadwar(argc, argv).run();
   }
 
 #if defined(_CONSOLE) && defined(LAPLACE_VERBOSE)
-  std::cout << "\n  Press Enter... ";
+  std::cout << "\n  Press Enter...\n";
   std::ignore = getchar();
 #endif
 

@@ -11,15 +11,14 @@ MaxEmptyLinesToKeep: 1
 SpacesBeforeTrailingComments: 1
 AccessModifierOffset: -2
 PenaltyBreakAssignment: 100
-PenaltyExcessCharacter: 10
-# PenaltyIndentedWhitespace: 5
+PenaltyIndentedWhitespace: 5
 PenaltyReturnTypeOnItsOwnLine: 200
 
 IndentCaseLabels: true
 IndentExternBlock: Indent
 IndentGotoLabels: false
 IndentPPDirectives: AfterHash
-# IndentRequires: true
+IndentRequires: true
 IndentWrappedFunctionNames: false
 NamespaceIndentation: All
 
@@ -45,7 +44,7 @@ AlignConsecutiveAssignments: true
 AlignConsecutiveBitFields: true
 AlignConsecutiveDeclarations: true
 AlignEscapedNewlines: Left
-AllowShortLambdasOnASingleLine: Empty
+AllowShortLambdasOnASingleLine: All
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: true
@@ -54,10 +53,12 @@ AllowAllArgumentsOnNextLine: true
 AllowAllConstructorInitializersOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AlwaysBreakTemplateDeclarations: Yes
-# BreakBeforeConceptDeclarations: true
+BinPackArguments: true
+BinPackParameters: false
+BreakBeforeConceptDeclarations: true
 BreakConstructorInitializers: AfterColon
 Cpp11BracedListStyle: false
-# EmptyLineBeforeAccessModifier: LogicalBlock
+EmptyLineBeforeAccessModifier: LogicalBlock
 FixNamespaceComments: false
 PointerAlignment: Right
 ReflowComments: true

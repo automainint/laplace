@@ -52,18 +52,19 @@ namespace laplace::math {
   };
 
   template <typename type_>
-  concept matrix_type = vector_type<type_> &&requires {
+  concept matrix_type = vector_type<type_> && requires {
     (void) get_row_count<type_>();
-  }
-  &&requires {
+  } && requires {
     (void) get_column_count<type_>();
   };
 
   template <typename type_>
-  concept complex_type = vector_type<type_> &&get_size<type_>() == 2;
+  concept complex_type = vector_type<type_> && get_size<type_>()
+  == 2;
 
   template <typename type_>
-  concept quaternion_type = vector_type<type_> &&get_size<type_>() == 4;
+  concept quaternion_type = vector_type<type_> && get_size<type_>()
+  == 4;
 }
 
 #include "traits.impl.h"

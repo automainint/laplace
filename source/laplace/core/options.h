@@ -48,7 +48,7 @@ static_assert(sizeof(unsigned long long) == 8);
 //  #define _CONSOLE 1
 
 #ifdef _MSC_VER
-#  pragma warning(disable : 4018 4100 4245 4250 4389)
+#  pragma warning(disable : 4018 4100 4245 4250 4389 26812)
 #endif
 
 #endif

@@ -56,12 +56,6 @@ namespace quadwar_app::object {
         const std::span<const int8_t> footprint) noexcept
         -> engine::vec2z;
 
-    [[nodiscard]] static auto path_search(
-        entity en, const engine::vec2z origin,
-        const engine::vec2z target, const engine::vec2z fp_size,
-        const std::span<const int8_t> footprint) noexcept
-        -> sl::vector<engine::vec2z>;
-
   private:
     pathmap(proto_tag);
 
@@ -73,13 +67,6 @@ namespace quadwar_app::object {
     [[nodiscard]] static auto adjust_rect(
         const engine::vec2z min, const engine::vec2z max,
         const engine::vec2z bounds) noexcept -> adjust_rect_result;
-
-    static void convolve(const engine::vec2z           center,
-                         const engine::vec2z           fp_size,
-                         const std::span<const int8_t> footprint,
-                         const engine::vec2z           size,
-                         const std::span<const int8_t> src,
-                         const std::span<int8_t>       dst) noexcept;
 
     [[nodiscard]] static auto nearest(
         const engine::vec2z center, const engine::vec2z size,

@@ -21,7 +21,8 @@ namespace quadwar_app::object {
   namespace grid   = engine::eval::grid;
 
   using std::make_shared, std::min, std::max, std::span, std::array,
-      engine::id_undefined, engine::vec2z, engine::eval::astar::status;
+      engine::id_undefined, engine::vec2z,
+      engine::eval::astar::status;
 
   const sl::whole pathmap::resolution     = 2;
   const sl::whole pathmap::spawn_distance = 100;
@@ -55,9 +56,11 @@ namespace quadwar_app::object {
     return id;
   }
 
-  void pathmap::set_tiles(entity en, const sl::whole width,
-                          const sl::whole               height,
-                          const std::span<const int8_t> tiles) {
+  void pathmap::set_tiles(
+      entity                        en,
+      const sl::whole               width,
+      const sl::whole               height,
+      const std::span<const int8_t> tiles) {
 
     if (width < 0 || height < 0) {
       error_("Invalid size.", __FUNCTION__);
@@ -96,10 +99,12 @@ namespace quadwar_app::object {
     return v;
   }
 
-  auto pathmap::check_move(entity en, const vec2z position,
-                           const vec2z new_position, const vec2z size,
-                           const span<const int8_t> footprint) noexcept
-      -> bool {
+  auto pathmap::check_move(
+      entity                   en,
+      const vec2z              position,
+      const vec2z              new_position,
+      const vec2z              size,
+      const span<const int8_t> footprint) noexcept -> bool {
 
     if (size.x() <= 0 || size.y() <= 0) {
       error_("Invalid size.", __FUNCTION__);
@@ -152,8 +157,11 @@ namespace quadwar_app::object {
     return true;
   }
 
-  void pathmap::add(entity en, const vec2z position, const vec2z size,
-                    const span<const int8_t> footprint) noexcept {
+  void pathmap::add(
+      entity                   en,
+      const vec2z              position,
+      const vec2z              size,
+      const span<const int8_t> footprint) noexcept {
 
     if (size.x() <= 0 || size.y() <= 0) {
       error_("Invalid size.", __FUNCTION__);
@@ -182,15 +190,18 @@ namespace quadwar_app::object {
     }
 
     for (sl::index j = 0; j < size.y(); j++) {
-      en.bytes_write_delta((y0 + j) * width + x0,
-                           { footprint.begin() + (j * size.x()),
-                             footprint.begin() + ((j + 1) * size.x()) });
+      en.bytes_write_delta(
+          (y0 + j) * width + x0,
+          { footprint.begin() + (j * size.x()),
+            footprint.begin() + ((j + 1) * size.x()) });
     }
   }
 
-  void pathmap::subtract(entity en, const engine::vec2z position,
-                         const engine::vec2z           size,
-                         const std::span<const int8_t> footprint) noexcept {
+  void pathmap::subtract(
+      entity                        en,
+      const engine::vec2z           position,
+      const engine::vec2z           size,
+      const std::span<const int8_t> footprint) noexcept {
 
     if (size.x() <= 0 || size.y() <= 0) {
       error_("Invalid size.", __FUNCTION__);
@@ -219,16 +230,18 @@ namespace quadwar_app::object {
     }
 
     for (sl::index j = 0; j < size.y(); j++) {
-      en.bytes_erase_delta((y0 + j) * width + x0,
-                           { footprint.begin() + (j * size.x()),
-                             footprint.begin() + ((j + 1) * size.x()) });
+      en.bytes_erase_delta(
+          (y0 + j) * width + x0,
+          { footprint.begin() + (j * size.x()),
+            footprint.begin() + ((j + 1) * size.x()) });
     }
   }
 
-  auto pathmap::find_empty(entity en, const vec2z position,
-                           const vec2z              size,
-                           const span<const int8_t> footprint) noexcept
-      -> vec2z {
+  auto pathmap::find_empty(
+      entity                   en,
+      const vec2z              position,
+      const vec2z              size,
+      const span<const int8_t> footprint) noexcept -> vec2z {
 
     if (size.x() <= 0 || size.y() <= 0) {
       error_("Invalid size.", __FUNCTION__);
@@ -245,13 +258,13 @@ namespace quadwar_app::object {
 
     const auto delta = vec2z { spawn_distance, spawn_distance };
 
-    const auto area = adjust_rect(position - delta, position + delta,
-                                  { width, height });
+    const auto area = adjust_rect(
+        position - delta, position + delta, { width, height });
 
     const auto area_size = area.max - area.min;
 
-    const auto area_src = [&en, &width, &area,
-                           &area_size]() -> sl::vector<int8_t> {
+    const auto area_src =
+        [&en, &width, &area, &area_size]() -> sl::vector<int8_t> {
       auto v = sl::vector<int8_t>(area_size.x() * area_size.y());
 
       for (sl::index j = 0; j < area_size.y(); j++) {
@@ -266,71 +279,23 @@ namespace quadwar_app::object {
 
     const auto fp_center = size / sl::index(2);
 
-    const auto area_dst = [&size, &fp_center, &footprint, &area,
-                           &area_size,
-                           &area_src]() -> sl::vector<int8_t> {
+    const auto area_dst =
+        [&size, &fp_center, &footprint, &area, &area_size,
+         &area_src]() -> sl::vector<int8_t> {
       auto v = sl::vector<int8_t>(area_src.size());
 
-      convolve(fp_center, size, footprint, area_size, area_src, v);
+      grid::convolve(
+          area_size, v, area_src, size, fp_center, footprint);
 
       return v;
     }();
 
-    return area.min + nearest(position - area.min, area_size, area_dst);
+    return area.min +
+           nearest(position - area.min, area_size, area_dst);
   }
 
-  auto pathmap::path_search(entity en, const vec2z origin,
-                            const vec2z target, const vec2z size,
-                            const span<const int8_t> footprint) noexcept
-      -> sl::vector<vec2z> {
-
-    const auto map_size = vec2z { en.get(n_width), en.get(n_height) };
-    const auto center   = math::div<vec2z>(size, 2);
-
-    if (origin.x() - center.x() < 0 ||
-        origin.x() + center.x() >= map_size.x() ||
-        origin.y() - center.y() < 0 ||
-        origin.y() + center.y() >= map_size.y()) {
-      error_("Invalid origin.", __FUNCTION__);
-      return {};
-    }
-
-    const auto src = [&]() {
-      auto v = sl::vector<int8_t>(en.bytes_get_size());
-      en.bytes_read(0, v);
-
-      for (sl::index j = 0, k = 0; j < size.y(); j++) {
-        const auto n = (origin.y() - center.y() + j) * map_size.x() +
-                       (origin.x() - center.x());
-
-        for (sl::index i = 0; i < size.x(); i++, k++) {
-          v[n + i] -= footprint[k];
-        }
-      }
-
-      return v;
-    }();
-
-    const auto dst = [&]() {
-      auto v = sl::vector<int8_t>(src.size(), 0);
-      convolve(center, size, footprint, map_size, src, v);
-      return v;
-    }();
-
-    auto search = grid::path_search_init(
-        map_size, search_scale, dst,
-        [](const int8_t x) {
-          return x < 1;
-        },
-        origin, nearest(target, map_size, dst));
-
-    while (grid::path_search_loop(search) == status::progress) { }
-
-    return grid::path_search_finish(search);
-  }
-
-  auto pathmap::adjust_rect(const vec2z min, const vec2z max,
-                            const vec2z bounds) noexcept
+  auto pathmap::adjust_rect(
+      const vec2z min, const vec2z max, const vec2z bounds) noexcept
       -> adjust_rect_result {
 
     if (bounds.x() < 0 || bounds.y() < 0) {
@@ -363,64 +328,10 @@ namespace quadwar_app::object {
     return res;
   }
 
-  void pathmap::convolve(const vec2z center, const vec2z fp_size,
-                         const span<const int8_t> footprint,
-                         const vec2z size, const span<const int8_t> src,
-                         const span<int8_t> dst) noexcept {
-
-    if (fp_size.x() < 0 || fp_size.y() < 0) {
-      error_("Invalid footprint size.", __FUNCTION__);
-      return;
-    }
-
-    if (size.x() < 0 || size.y() < 0) {
-      error_("Invalid size.", __FUNCTION__);
-      return;
-    }
-
-    if (fp_size.x() * fp_size.y() != footprint.size()) {
-      error_("Invalid footprint.", __FUNCTION__);
-      return;
-    }
-
-    if (size.x() * size.y() != src.size()) {
-      error_("Invalid source.", __FUNCTION__);
-      return;
-    }
-
-    if (src.size() != dst.size()) {
-      error_("Invalid destination.", __FUNCTION__);
-      return;
-    }
-
-    for (sl::index j0 = 0; j0 < size.y(); j0++)
-      for (sl::index i0 = 0; i0 < size.x(); i0++) {
-
-        if (src[j0 * size.x() + i0] <= 0)
-          continue;
-
-        for (sl::index n = 0; n < fp_size.y(); n++)
-          for (sl::index m = 0; m < fp_size.x(); m++) {
-
-            const auto x = footprint[n * fp_size.x() + m];
-
-            if (x <= 0)
-              continue;
-
-            const auto i = i0 + m - center.x();
-            const auto j = j0 + n - center.y();
-
-            if (i < 0 || i >= size.x() || j < 0 || j >= size.y())
-              continue;
-
-            dst[j * size.x() + i] = 1;
-          }
-      }
-  }
-
-  auto pathmap::nearest(const vec2z center, const vec2z size,
-                        const span<const int8_t> map) noexcept
-      -> vec2z {
+  auto pathmap::nearest(
+      const vec2z              center,
+      const vec2z              size,
+      const span<const int8_t> map) noexcept -> vec2z {
 
     if (size.x() < 0 || size.y() < 0) {
       error_("Invalid size.", __FUNCTION__);

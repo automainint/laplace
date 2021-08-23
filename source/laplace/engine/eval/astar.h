@@ -38,18 +38,28 @@ namespace laplace::engine::eval::astar {
   struct _basic_node {
     sl::index index  = _invalid_index;
     sl::index parent = _invalid_index;
-    intval    f      = 0;
-    intval    g      = 0;
+
+    /*  Actual length from source to current node.
+     */
+    intval length = {};
+
+    /*  Distance from current node to destination.
+     */
+    intval distance = {};
+
+    /*  Estimated length from source to destination.
+     */
+    intval estimated = {};
   };
 
   struct _node_theta : _basic_node {
-    intval g_parent = 0;
+    intval length_parent = {};
   };
 
   struct link {
     enum node_value : sl::index { invalid = -1, skip = -2 };
     sl::index node     = invalid;
-    intval    distance = 0;
+    intval    distance = {};
   };
 
   using fn_sight =
@@ -62,19 +72,22 @@ namespace laplace::engine::eval::astar {
       std::function<intval(const sl::index a, const sl::index b)>;
 
   template <bool _nearest, typename _node>
-  inline auto init(const sl::index source,
-                   const sl::index destination) noexcept
+  [[nodiscard]] inline auto init(
+      const sl::index source, const sl::index destination) noexcept
       -> _state<_nearest, _node>;
 
   template <bool _nearest, typename _node>
-  inline auto loop(const fn_sight sight, const fn_neighbors neighbors,
-                   const fn_heuristic       heuristic,
-                   _state<_nearest, _node> &state) noexcept -> status;
+  [[nodiscard]] inline auto loop(
+      const fn_sight           sight,
+      const fn_neighbors       neighbors,
+      const fn_heuristic       heuristic,
+      _state<_nearest, _node> &state) noexcept -> status;
 
   template <typename _node>
-  inline auto finish(std::span<const _node> closed, sl::index source,
-                     sl::index destination) noexcept
-      -> sl::vector<sl::index>;
+  [[nodiscard]] inline auto finish(
+      std::span<const _node> closed,
+      sl::index              source,
+      sl::index destination) noexcept -> sl::vector<sl::index>;
 }
 
 #endif

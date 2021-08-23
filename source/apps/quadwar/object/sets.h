@@ -36,7 +36,6 @@ namespace quadwar_app::object::sets {
     land_width,
     land_height,
 
-    unit_state,
     unit_actor,
     unit_color,
     unit_health,
@@ -45,13 +44,9 @@ namespace quadwar_app::object::sets {
     unit_movement_speed,
     unit_x,
     unit_y,
-    unit_move_x,
-    unit_move_y,
-    unit_speed_remains,
+    unit_target_order,
     unit_target_x,
     unit_target_y,
-    unit_waypoint_index,
-    unit_waypoint_count,
 
     pathmap_width,
     pathmap_height,

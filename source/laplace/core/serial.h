@@ -26,9 +26,9 @@ namespace laplace::serial {
   /*  Read value of specified type from specified offset.
    */
   template <trivial type_>
-  [[nodiscard]] constexpr auto rd(span_cbyte seq, sl::index offset,
-                                  const type_ invalid = -1) noexcept
-      -> type_;
+  [[nodiscard]] constexpr auto rd(
+      span_cbyte seq, sl::index offset,
+      const type_ invalid = -1) noexcept -> type_;
 
   /*  Write the value to specified offset.
    */
@@ -43,9 +43,8 @@ namespace laplace::serial {
   [[nodiscard]] constexpr auto byte_count() noexcept -> sl::whole;
 
   template <typename arg0_, typename... args_>
-  [[nodiscard]] constexpr auto byte_count(arg0_ arg0,
-                                          args_... args) noexcept
-      -> sl::whole;
+  [[nodiscard]] constexpr auto byte_count(
+      arg0_ arg0, args_... args) noexcept -> sl::whole;
 
   template <typename char_type, typename... args_>
   [[nodiscard]] constexpr auto byte_count(
@@ -53,28 +52,30 @@ namespace laplace::serial {
       -> sl::whole;
 
   template <typename elem_type, typename... args_>
-  [[nodiscard]] constexpr auto byte_count(std::span<const elem_type> arg0,
-                                          args_... args) noexcept
+  [[nodiscard]] constexpr auto byte_count(
+      std::span<const elem_type> arg0, args_... args) noexcept
       -> sl::whole;
 
   template <trivial char_type_>
   constexpr void write_bytes(
-      span_byte data, std::basic_string_view<char_type_> arg0) noexcept;
+      span_byte                          data,
+      std::basic_string_view<char_type_> arg0) noexcept;
 
   template <trivial elem_type_>
-  constexpr void write_bytes(span_byte                   data,
-                             std::span<const elem_type_> arg0) noexcept;
+  constexpr void write_bytes(
+      span_byte data, std::span<const elem_type_> arg0) noexcept;
 
   template <trivial arg0_trivial_>
-  constexpr void write_bytes(span_byte     data,
-                             arg0_trivial_ arg0) noexcept;
+  constexpr void write_bytes(
+      span_byte data, arg0_trivial_ arg0) noexcept;
 
   template <typename arg0_, typename... args_>
-  constexpr void write_bytes(span_byte data, arg0_ arg0,
-                             args_... args) noexcept;
+  constexpr void write_bytes(
+      span_byte data, arg0_ arg0, args_... args) noexcept;
 
   template <trivial... args_trivial_>
-  [[nodiscard]] constexpr auto pack_to_array(args_trivial_... args) noexcept;
+  [[nodiscard]] constexpr auto pack_to_array(
+      args_trivial_... args) noexcept;
 
   template <typename... args_>
   [[nodiscard]] constexpr auto pack_to_bytes(args_... args) noexcept;
