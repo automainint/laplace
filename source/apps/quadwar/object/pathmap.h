@@ -28,9 +28,11 @@ namespace quadwar_app::object {
 
     static auto create(world w) -> sl::index;
 
-    static void set_tiles(entity en, const sl::whole width,
-                          const sl::whole               height,
-                          const std::span<const int8_t> tiles);
+    static void set_tiles(
+        entity                        en,
+        const sl::whole               width,
+        const sl::whole               height,
+        const std::span<const int8_t> tiles);
 
     [[nodiscard]] static auto get_width(entity en) -> sl::whole;
     [[nodiscard]] static auto get_height(entity en) -> sl::whole;
@@ -38,20 +40,29 @@ namespace quadwar_app::object {
         -> sl::vector<int8_t>;
 
     [[nodiscard]] static auto check_move(
-        entity en, const engine::vec2z position,
-        const engine::vec2z new_position, const engine::vec2z size,
-        const std::span<const int8_t> footprint) noexcept -> bool;
+        entity                        en,
+        const engine::vec2z           position,
+        const engine::vec2z           size,
+        const std::span<const int8_t> footprint,
+        const engine::vec2z           new_position,
+        const engine::vec2z           new_size,
+        const std::span<const int8_t> new_footprint) noexcept -> bool;
 
-    static void add(entity en, const engine::vec2z position,
-                    const engine::vec2z           size,
-                    const std::span<const int8_t> footprint) noexcept;
+    static void add(
+        entity                        en,
+        const engine::vec2z           position,
+        const engine::vec2z           size,
+        const std::span<const int8_t> footprint) noexcept;
 
-    static void subtract(entity en, const engine::vec2z position,
-                         const engine::vec2z           size,
-                         const std::span<const int8_t> footprint) noexcept;
+    static void subtract(
+        entity                        en,
+        const engine::vec2z           position,
+        const engine::vec2z           size,
+        const std::span<const int8_t> footprint) noexcept;
 
     [[nodiscard]] static auto find_empty(
-        entity en, const engine::vec2z position,
+        entity                        en,
+        const engine::vec2z           position,
         const engine::vec2z           size,
         const std::span<const int8_t> footprint) noexcept
         -> engine::vec2z;
@@ -65,12 +76,9 @@ namespace quadwar_app::object {
     };
 
     [[nodiscard]] static auto adjust_rect(
-        const engine::vec2z min, const engine::vec2z max,
+        const engine::vec2z min,
+        const engine::vec2z max,
         const engine::vec2z bounds) noexcept -> adjust_rect_result;
-
-    [[nodiscard]] static auto nearest(
-        const engine::vec2z center, const engine::vec2z size,
-        const std::span<const int8_t> map) noexcept -> engine::vec2z;
 
     static sl::index n_width;
     static sl::index n_height;

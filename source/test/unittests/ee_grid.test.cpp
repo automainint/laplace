@@ -17,6 +17,8 @@ namespace laplace::test {
   namespace grid  = engine::eval::grid;
   namespace astar = engine::eval::astar;
 
+  using engine::vec2z;
+
   TEST(engine, eval_grid_search_straigth) {
     constexpr auto width  = 5;
     constexpr auto height = 5;
@@ -241,5 +243,41 @@ namespace laplace::test {
         { center_x, center_y }, footprint);
 
     EXPECT_EQ(dst, res);
+  }
+
+  TEST(engine, eval_grid_nearest_empty) {
+    constexpr auto width  = 3;
+    constexpr auto height = 3;
+    constexpr auto size   = width * height;
+
+    constexpr auto map = std::array<int8_t, size> {
+      0, 0, 0, //
+      0, 0, 0, //
+      0, 0, 0
+    };
+
+    constexpr auto s = vec2z { width, height };
+    constexpr auto p = vec2z { 1, 1 };
+
+    EXPECT_EQ(grid::nearest(p, s, map), p);
+  }
+
+  TEST(engine, eval_grid_nearest_complex) {
+    constexpr auto width  = 4;
+    constexpr auto height = 4;
+    constexpr auto size   = width * height;
+
+    constexpr auto map = std::array<int8_t, size> {
+      1, 1, 1, 0, //
+      1, 1, 1, 0, //
+      1, 1, 0, 0, //
+      0, 0, 0, 0
+    };
+
+    constexpr auto s = vec2z { width, height };
+    constexpr auto p = vec2z { 1, 1 };
+    constexpr auto r = vec2z { 2, 2 };
+
+    EXPECT_EQ(grid::nearest(p, s, map), r);
   }
 }

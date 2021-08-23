@@ -95,6 +95,7 @@ namespace quadwar_app::object {
     engine::vec2z              m_destination;
     engine::eval::grid::_state m_search;
     sl::vector<int8_t>         m_pathmap;
+    engine::vec2z              m_size;
     sl::vector<engine::vec2z>  m_waypoints;
   };
 }

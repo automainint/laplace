@@ -102,12 +102,19 @@ namespace quadwar_app::object {
   auto pathmap::check_move(
       entity                   en,
       const vec2z              position,
-      const vec2z              new_position,
       const vec2z              size,
-      const span<const int8_t> footprint) noexcept -> bool {
+      const span<const int8_t> footprint,
+      const vec2z              new_position,
+      const vec2z              new_size,
+      const span<const int8_t> new_footprint) noexcept -> bool {
 
     if (size.x() <= 0 || size.y() <= 0) {
       error_("Invalid size.", __FUNCTION__);
+      return false;
+    }
+
+    if (new_size.x() <= 0 || new_size.y() <= 0) {
+      error_("Invalid new size.", __FUNCTION__);
       return false;
     }
 
@@ -116,30 +123,40 @@ namespace quadwar_app::object {
       return false;
     }
 
+    if (new_size.x() * new_size.y() != new_footprint.size()) {
+      error_("Invalid new footprint.", __FUNCTION__);
+      return false;
+    }
+
     const auto width  = en.get(n_width);
     const auto height = en.get(n_height);
 
-    const auto fp_center = size / sl::index(2);
+    const auto center     = size / sl::index(2);
+    const auto new_center = new_size / sl::index(2);
 
-    const auto x0 = new_position.x() - fp_center.x();
-    const auto y0 = new_position.y() - fp_center.y();
+    const auto x0 = new_position.x() - new_center.x();
+    const auto y0 = new_position.y() - new_center.y();
 
-    const auto x1 = new_position.x() + size.x() - fp_center.x();
-    const auto y1 = new_position.y() + size.y() - fp_center.y();
+    const auto x1 = new_position.x() + new_size.x() - new_center.x();
+    const auto y1 = new_position.y() + new_size.y() - new_center.y();
 
-    const auto dx = new_position.x() - position.x();
-    const auto dy = new_position.y() - position.y();
+    const auto dx = x0 - (position.x() - center.x());
+    const auto dy = y0 - (position.y() - center.y());
 
     if (x0 < 0 || y0 < 0 || x1 >= width || y1 >= height) {
       return false;
     }
 
-    auto line = sl::vector<int8_t>(size.x());
+    auto line = sl::vector<int8_t>(new_size.x());
 
-    for (sl::index j = 0; j < size.y(); j++) {
+    for (sl::index j = 0; j < new_size.y(); j++) {
       en.bytes_read((y0 + j) * width + x0, line);
 
-      for (sl::index i = 0; i < size.x(); i++) {
+      for (sl::index i = 0; i < new_size.x(); i++) {
+        if (line[i] <= 0) {
+          continue;
+        }
+
         const auto i0 = i + dx;
         const auto j0 = j + dy;
 
@@ -148,7 +165,7 @@ namespace quadwar_app::object {
           continue;
         }
 
-        if (footprint[j * size.x() + i] > 0 && line[i] > 0) {
+        if (new_footprint[j * new_size.x() + i] > 0) {
           return false;
         }
       }
@@ -291,7 +308,7 @@ namespace quadwar_app::object {
     }();
 
     return area.min +
-           nearest(position - area.min, area_size, area_dst);
+           grid::nearest(position - area.min, area_size, area_dst);
   }
 
   auto pathmap::adjust_rect(
@@ -326,46 +343,5 @@ namespace quadwar_app::object {
       res.max.y() = bounds.y();
 
     return res;
-  }
-
-  auto pathmap::nearest(
-      const vec2z              center,
-      const vec2z              size,
-      const span<const int8_t> map) noexcept -> vec2z {
-
-    if (size.x() < 0 || size.y() < 0) {
-      error_("Invalid size.", __FUNCTION__);
-      return {};
-    }
-
-    if (size.x() * size.y() != map.size()) {
-      error_("Invalid map.", __FUNCTION__);
-      return {};
-    }
-
-    if (center.x() >= 0 && center.x() < size.x() && center.y() >= 0 &&
-        center.y() < size.y() &&
-        map[center.y() * size.x() + center.x()] <= 0)
-      return center;
-
-    auto      p        = center;
-    sl::index distance = -1;
-
-    for (sl::index j = 0, k = 0; j < size.y(); j++)
-      for (sl::index i = 0; i < size.x(); i++, k++) {
-
-        if (map[k] > 0)
-          continue;
-
-        const auto v = vec2z { i, j };
-        const auto d = math::square_length(center - v);
-
-        if (distance < 0 || d < distance) {
-          p        = v;
-          distance = d;
-        }
-      }
-
-    return p;
   }
 }

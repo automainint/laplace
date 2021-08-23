@@ -456,12 +456,12 @@ namespace laplace::engine::eval::grid {
   }
 
   void convolve(
-      const vec2z             size,
-      std::span<int8_t>       dst,
-      std::span<const int8_t> src,
-      const vec2z             fp_size,
-      const vec2z             center,
-      std::span<const int8_t> footprint) noexcept {
+      const vec2z        size,
+      span<int8_t>       dst,
+      span<const int8_t> src,
+      const vec2z        fp_size,
+      const vec2z        center,
+      span<const int8_t> footprint) noexcept {
 
     if (size.x() < 0 || size.y() < 0) {
       error_("Invalid map size.", __FUNCTION__);
@@ -513,5 +513,79 @@ namespace laplace::engine::eval::grid {
             dst[(j0 + y) * size.x() + i0 + x] = 1;
           }
       }
+  }
+
+  auto nearest(
+      const vec2z                       position,
+      const vec2z                       size,
+      span<const int8_t>                map,
+      std::function<bool(const int8_t)> condition) noexcept -> vec2z {
+
+    if (size.x() <= 0 || size.y() <= 0) {
+      error_("Invalid size.", __FUNCTION__);
+      return {};
+    }
+
+    if (!condition) {
+      error_("Invalid condition.", __FUNCTION__);
+      return {};
+    }
+
+    const auto x0 = max<sl::index>(
+        0, min(position.x(), size.x() - 1));
+    const auto y0 = max<sl::index>(
+        0, min(position.y(), size.y() - 1));
+
+    if (map[y0 * size.x() + x0] <= 0) {
+      return { x0, y0 };
+    }
+
+    auto x        = x0;
+    auto y        = y0;
+    auto distance = sl::index { -1 };
+
+    auto do_point = [&](const sl::index i, const sl::index j) {
+      if (!condition(map[j * size.x() + i])) {
+        return;
+      }
+
+      const auto s = math::square_length(
+          vec2z { i, j } - vec2z { x0, y0 });
+
+      if (distance < 0 || s < distance) {
+        x = i;
+        y = j;
+
+        distance = s;
+      }
+    };
+
+    const auto max_radius = max(
+        max(x0, size.x() - x0), max(y0, size.y() - y0));
+
+    for (sl::index radius = 1; radius <= max_radius; radius++) {
+      const auto i0 = max<sl::index>(0, x0 - radius);
+      const auto j0 = max<sl::index>(0, y0 - radius);
+      const auto i1 = min<sl::index>(x0 + radius, size.x() - 1);
+      const auto j1 = min<sl::index>(y0 + radius, size.y() - 1);
+
+      if (x0 - radius >= 0)
+        for (sl::index j = j0 + 1; j < j1; j++) { do_point(i0, j); }
+
+      if (x0 + radius < size.x())
+        for (sl::index j = j0 + 1; j < j1; j++) { do_point(i1, j); }
+
+      if (y0 - radius >= 0)
+        for (sl::index i = i0; i <= i1; i++) { do_point(i, j0); }
+
+      if (y0 + radius < size.y())
+        for (sl::index i = i0; i <= i1; i++) { do_point(i, j1); }
+
+      if (0 < distance && distance <= radius * radius) {
+        break;
+      }
+    }
+
+    return { x, y };
   }
 }

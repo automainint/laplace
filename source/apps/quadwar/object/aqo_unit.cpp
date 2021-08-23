@@ -22,6 +22,7 @@
 namespace quadwar_app::object {
   namespace access = engine::access;
   namespace eval   = engine::eval;
+  namespace grid   = eval::grid;
 
   using std::min, std::max, std::span, std::vector, engine::intval,
       engine::vec2i, engine::vec2z, engine::id_undefined,
@@ -251,23 +252,26 @@ namespace quadwar_app::object {
   }
 
   void unit::do_search(entity map) noexcept {
+    if (pathmap::resolution == 0) {
+      error_("Invalid pathmap resolution.", __FUNCTION__);
+      return;
+    }
+
+    const auto scale = sets::scale_real / pathmap::resolution;
+
+    const auto x0 = as_index(eval::div(get(n_x), scale, 1));
+    const auto y0 = as_index(eval::div(get(n_y), scale, 1));
+    const auto p0 = vec2z { x0, y0 };
+
     if (get(n_target_order) > 0) {
-      if (pathmap::resolution == 0) {
-        error_("Invalid pathmap resolution.", __FUNCTION__);
-        return;
-      }
-
-      const auto scale = sets::scale_real / pathmap::resolution;
-
-      const auto x0 = as_index(eval::div(get(n_x), scale, 1));
-      const auto y0 = as_index(eval::div(get(n_y), scale, 1));
-
       const auto x1 = as_index(eval::div(get(n_target_x), scale, 1));
       const auto y1 = as_index(eval::div(get(n_target_y), scale, 1));
+      const auto p1 = vec2z { x1, y1 };
 
       const auto width  = as_index(pathmap::get_width(map));
       const auto height = as_index(pathmap::get_height(map));
-      const auto size   = vec2z { width, height };
+
+      m_size = vec2z { width, height };
 
       const auto radius = as_index(
           eval::div(get(n_radius), scale, 1));
@@ -303,53 +307,52 @@ namespace quadwar_app::object {
       m_pathmap.resize(width * height);
       for (auto &x : m_pathmap) { x = 0; }
 
-      eval::grid::convolve(
-          { width, height }, m_pathmap, src, footprint.size,
-          footprint.center, footprint.bytes);
+      grid::convolve(m_size, m_pathmap, src, footprint.size,
+                     footprint.center, footprint.bytes);
 
-      m_destination = { x1, y1 };
+      m_destination = grid::nearest(p1, m_size, m_pathmap);
 
-      m_search = eval::grid::path_search_init(
-          size, 16, m_pathmap, [](const int8_t x) { return x <= 0; },
-          { x0, y0 }, m_destination);
+      m_search = grid::path_search_init(
+          m_size, 16, m_pathmap,
+          [](const int8_t x) { return x <= 0; }, p0, m_destination);
 
       m_searching = true;
       m_movement  = true;
 
-      set(n_target_order, 0);
+      apply_delta(n_target_order, -1);
     }
 
     if (!m_searching) {
       return;
     }
 
-    for (sl::index i = 0; i < 10; i++)
-      if (eval::grid::path_search_loop(m_search) !=
+    for (sl::index i = 0; i < 20; i++)
+      if (grid::path_search_loop(m_search) !=
           eval::astar::status::progress) {
         m_searching = false;
         break;
       }
 
-    const auto points = eval::grid::path_search_finish(m_search);
+    m_current   = -1;
+    m_waypoints = grid::path_search_finish(m_search);
 
-    if (m_current >= m_waypoints.size()) {
-      m_waypoints = points;
-      m_current   = 1;
-      return;
-    }
+    for (sl::index i = m_waypoints.size() - 1; i >= 0; i--)
+      if (grid::trace_line(
+              m_size, p0, m_waypoints[i], [&](const vec2z p) {
+                if (p.x() < 0 || p.y() < 0 || p.x() >= m_size.x() ||
+                    p.y() >= m_size.y()) {
+                  return false;
+                }
 
-    /*for (sl::index i = 0; i < m_current; i++) {
-      if (i >= m_waypoints.size() || i >= points.size()) {
-        break;
-      }
-
-      if (m_waypoints[i] != m_waypoints[m_current]) {
+                return m_pathmap[p.y() * m_size.x() + p.x()] <= 0;
+              })) {
         m_current = i;
         break;
       }
-    }*/
 
-    m_waypoints = points;
+    if (m_current < 0) {
+      apply_delta(n_target_order, 1);
+    }
   }
 
   void unit::do_movement(entity map) noexcept {
@@ -373,7 +376,7 @@ namespace quadwar_app::object {
     auto oy = oy0;
 
     while (delta > 0) {
-      if (m_current >= m_waypoints.size()) {
+      if (m_current < 0 || m_current >= m_waypoints.size()) {
         m_movement = m_searching;
         break;
       }
@@ -407,11 +410,6 @@ namespace quadwar_app::object {
     }
 
     if (ox != ox0 || oy != oy0) {
-      const auto radius = as_index(
-          eval::div(get(n_collision_radius), scale, 1));
-
-      const auto foot = make_footprint(radius);
-
       const auto x0 = as_index(eval::div(ox0, scale, 1));
       const auto y0 = as_index(eval::div(oy0, scale, 1));
 
@@ -419,15 +417,28 @@ namespace quadwar_app::object {
       const auto y = as_index(eval::div(oy, scale, 1));
 
       if (x0 != x || y0 != y) {
+        const auto radius_min = as_index(
+            eval::div(get(n_collision_radius), scale, 1));
+
+        const auto radius_max = as_index(
+            eval::div(get(n_radius), scale, 1));
+
+        const auto foot_max = make_footprint(radius_max);
+        const auto foot_min = make_footprint(radius_min);
+
         if (!pathmap::check_move(
-                map, { x0, y0 }, { x, y }, foot.size, foot.bytes)) {
+                map, { x0, y0 }, foot_max.size, foot_max.bytes,
+                { x, y }, foot_min.size, foot_min.bytes)) {
+          /*  Collision.
+           */
           m_searching = false;
           m_movement  = false;
           return;
         }
 
-        pathmap::subtract(map, { x0, y0 }, foot.size, foot.bytes);
-        pathmap::add(map, { x, y }, foot.size, foot.bytes);
+        pathmap::subtract(
+            map, { x0, y0 }, foot_min.size, foot_min.bytes);
+        pathmap::add(map, { x, y }, foot_min.size, foot_min.bytes);
       }
 
       set(n_x, ox);

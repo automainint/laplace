@@ -114,13 +114,20 @@ namespace laplace::engine::eval::grid {
   [[nodiscard]] auto path_search_finish(const _state &state) noexcept
       -> sl::vector<vec2z>;
 
-  [[nodiscard]] void convolve(
+  void convolve(
       const vec2z             size,
       std::span<int8_t>       dst,
       std::span<const int8_t> src,
       const vec2z             fp_size,
       const vec2z             center,
       std::span<const int8_t> footprint) noexcept;
+
+  [[nodiscard]] auto nearest(
+      const vec2z                       position,
+      const vec2z                       size,
+      std::span<const int8_t>           map,
+      std::function<bool(const int8_t)> condition =
+          [](const int8_t x) { return x <= 0; }) noexcept -> vec2z;
 }
 
 #endif
