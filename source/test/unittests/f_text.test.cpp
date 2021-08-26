@@ -247,6 +247,16 @@ namespace laplace::test {
     auto s    = istringstream { string { "0x8000000000000000" } };
     auto data = decode(wrap(s));
 
+    EXPECT_TRUE(data);
+    EXPECT_TRUE(data && data->is_uint());
+
+    if (data) {
+      auto ss = ostringstream {};
+      ss << "integer: " << data->get_integer() << "\n";
+      ss << "uint:    " << data->get_uint() << "\n";
+      verb(ss.str());
+    }
+
     EXPECT_TRUE(data && data->is_uint() &&
                 data->get_uint() == 0x8000000000000000ull);
   }
