@@ -19,6 +19,7 @@
 #include "../core/serial.h"
 #include "../core/utils.h"
 #include "text.h"
+#include <cmath>
 
 namespace laplace::format::binary {
   using std::make_shared, std::u8string, std::u8string_view,
