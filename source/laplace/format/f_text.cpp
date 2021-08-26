@@ -100,6 +100,9 @@ namespace laplace::format::text {
       field = -static_cast<int64_t>(x_u64);
     } else if ((in.parse(" 0x") || in.parse(" 0X")) &&
                in.parse("%X ", &x_u64)) {
+      auto _s = ostringstream {};
+      _s << "parsed: " << x_u64;
+      verb(_s.str());
       field = x_u64;
     } else if ((in.parse(" -0x") || in.parse(" -0X")) &&
                in.parse("%X ", &x_u64)) {
