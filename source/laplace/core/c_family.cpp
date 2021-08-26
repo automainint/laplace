@@ -869,10 +869,8 @@ namespace laplace::core {
         numeric_limits<signed long long>::max());
 
     if (value <= max_int) {
-      verb("  assign as signed");
       m_data = static_cast<signed long long>(value);
     } else {
-      verb("  assign as unsigned");
       m_data = value;
     }
   }
