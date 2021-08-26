@@ -24,6 +24,7 @@ namespace laplace::format::binary {
       integer,
       string,
       uint,
+      real,
       bytes,
       bitfield,
       vector,
@@ -44,10 +45,6 @@ namespace laplace::format::binary {
 
   auto decode(fn_read read) -> pack_type;
   auto encode(fn_write write, const_pack_type data) -> bool;
-
-  /*  String key ids table.
-   */
-  extern const std::vector<std::u8string> table;
 }
 
 #endif

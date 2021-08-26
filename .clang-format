@@ -11,7 +11,6 @@ MaxEmptyLinesToKeep: 1
 SpacesBeforeTrailingComments: 1
 AccessModifierOffset: -2
 PenaltyBreakAssignment: 100
-PenaltyIndentedWhitespace: 5
 PenaltyReturnTypeOnItsOwnLine: 200
 
 IndentCaseLabels: true

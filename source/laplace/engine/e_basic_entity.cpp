@@ -25,7 +25,7 @@ namespace laplace::engine {
       std::max, std::move, std::make_shared, std::lower_bound,
       std::chrono::milliseconds;
 
-  const milliseconds basic_entity::lock_timeout = milliseconds(100);
+  const milliseconds basic_entity::lock_timeout = milliseconds(300);
   const uint64_t     basic_entity::default_tick_period = 10;
 
   basic_entity::basic_entity(cref_entity en) noexcept {
@@ -36,7 +36,8 @@ namespace laplace::engine {
     assign(en);
   }
 
-  auto basic_entity::operator=(cref_entity en) noexcept -> ref_entity {
+  auto basic_entity::operator=(cref_entity en) noexcept
+      -> ref_entity {
 
     assign(en);
     return *this;
@@ -116,7 +117,8 @@ namespace laplace::engine {
 
   void basic_entity::set_tick_period(uint64_t tick_period) {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
-      m_sets[n_tick_period].delta += static_cast<int64_t>(tick_period) -
+      m_sets[n_tick_period].delta += static_cast<int64_t>(
+                                         tick_period) -
                                      m_sets[n_tick_period].value;
 
       m_is_changed = true;
@@ -279,7 +281,8 @@ namespace laplace::engine {
     return {};
   }
 
-  void basic_entity::bytes_read(sl::index n, span<int8_t> dst) noexcept {
+  void basic_entity::bytes_read(sl::index    n,
+                                span<int8_t> dst) noexcept {
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       if (n + dst.size() > m_bytes.size()) {
         error_("Invalid index.", __FUNCTION__);
@@ -488,7 +491,8 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::vec_read(sl::index n, span<intval> dst) noexcept {
+  void basic_entity::vec_read(sl::index    n,
+                              span<intval> dst) noexcept {
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       if (n < 0 || n + dst.size() > m_vec.size()) {
         error_("Invalid index.", __FUNCTION__);
@@ -527,8 +531,8 @@ namespace laplace::engine {
     return;
   }
 
-  void basic_entity::vec_write_delta(sl::index          n,
-                                     span<const intval> deltas) noexcept {
+  void basic_entity::vec_write_delta(
+      sl::index n, span<const intval> deltas) noexcept {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       if (n < 0 || n + deltas.size() > m_vec.size()) {
         error_("Invalid index.", __FUNCTION__);
@@ -548,8 +552,8 @@ namespace laplace::engine {
     return;
   }
 
-  void basic_entity::vec_erase_delta(sl::index          n,
-                                     span<const intval> deltas) noexcept {
+  void basic_entity::vec_erase_delta(
+      sl::index n, span<const intval> deltas) noexcept {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       if (n < 0 || n + deltas.size() > m_vec.size()) {
         error_("Invalid index.", __FUNCTION__);
@@ -670,7 +674,8 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::vec_erase_by_value_sorted(intval value) noexcept {
+  void basic_entity::vec_erase_by_value_sorted(
+      intval value) noexcept {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
 
       const auto i = lower_bound(

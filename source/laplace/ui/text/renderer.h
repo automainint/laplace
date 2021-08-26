@@ -27,8 +27,9 @@ namespace laplace::ui::text {
     virtual ~renderer() = default;
 
     virtual auto adjust(std::u8string_view text) -> area;
-    virtual void render(sl::index x, sl::index y,
-                        std::u8string_view text);
+
+    virtual void render(
+        sl::index x, sl::index y, std::u8string_view text);
 
     static auto get_default() -> ptr_renderer;
 

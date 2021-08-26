@@ -22,25 +22,32 @@ namespace laplace::ui::text {
    */
   class font final : public painter {
   public:
-    using cref_bitmap = const FT_Bitmap &;
-
     ~font() final = default;
 
     void load(std::u8string_view file_name);
+
     void set_size(size_t width, size_t height);
 
     auto adjust(std::u8string_view text) -> area final;
-    void print(graphics::ref_image img, sl::index x, sl::index y,
-               std::u8string_view text) final;
+
+    void print(graphics::ref_image img,
+               sl::index           x,
+               sl::index           y,
+               std::u8string_view  text) final;
 
     auto get_color() const -> graphics::cref_pixel;
 
   private:
-    static void draw(graphics::ref_image img, sl::index x0,
-                     sl::index y0, cref_bitmap bitmap,
-                     graphics::cref_pixel color);
-    static auto blend(graphics::cref_pixel s, graphics::cref_pixel d,
-                      uint8_t factor) -> graphics::pixel;
+    static void draw(
+        graphics::ref_image  img,
+        sl::index            x0,
+        sl::index            y0,
+        const FT_Bitmap &    bitmap,
+        graphics::cref_pixel color);
+
+    static auto blend(graphics::cref_pixel s,
+                      graphics::cref_pixel d,
+                      uint8_t              factor) -> graphics::pixel;
 
     graphics::pixel m_color = default_color;
     ttf             m_face;

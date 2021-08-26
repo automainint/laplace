@@ -40,7 +40,7 @@ namespace laplace::core {
 
   void parser::pop_offset(bool apply) noexcept {
     if (m_buffer_offset.size() >= 2) {
-      if (apply) {
+      if (!apply) {
         m_buffer_offset[m_buffer_offset.size() - 2] =
             m_buffer_offset.back();
       }
@@ -49,6 +49,9 @@ namespace laplace::core {
 
       m_line   = m_buffer_offset.back().line;
       m_column = m_buffer_offset.back().column;
+
+      m_is_eof = m_buffer_offset.back().offset >= m_buffer.size();
+
     } else {
       error_("No buffered data.", __FUNCTION__);
     }
@@ -68,14 +71,22 @@ namespace laplace::core {
 
   void parser::apply(bool is_ok) noexcept {
     if (!m_buffer_offset.empty()) {
-      if (is_ok && m_buffer_offset.size() == 1) {
-        m_buffer.clear();
+      if (is_ok) {
+        if (m_buffer_offset.size() == 1) {
+          m_buffer.erase(m_buffer.begin(),
+                         m_buffer.begin() +
+                             m_buffer_offset.back().offset);
+
+          m_buffer_offset.back().offset = 0;
+        }
 
         m_line   = m_buffer_offset.back().line;
         m_column = m_buffer_offset.back().column;
+
+      } else {
+        m_buffer_offset.back().offset = 0;
       }
 
-      m_buffer_offset.back().offset = 0;
     } else {
       error_("No buffered data.", __FUNCTION__);
     }
@@ -113,7 +124,8 @@ namespace laplace::core {
   }
 
   void parser::unget_char() noexcept {
-    if (!m_buffer_offset.empty() && m_buffer_offset.back().offset != 0) {
+    if (!m_buffer_offset.empty() &&
+        m_buffer_offset.back().offset > 0) {
       m_buffer_offset.back().offset--;
     } else {
       error_("No buffered data.", __FUNCTION__);
@@ -176,7 +188,8 @@ namespace laplace::core {
     return result;
   }
 
-  auto parser::string_end(char32_t c, const char *p) noexcept -> bool {
+  auto parser::string_end(char32_t c, const char *p) noexcept
+      -> bool {
     if (p[1] == '%') {
       switch (p[2]) {
         case c_line_end: return c == '\r' || c == '\n';
@@ -426,7 +439,7 @@ namespace laplace::core {
 
             *va_arg(ap, int64_t *) = i_value;
           }
-        } else if (*p == 'B') {
+        } else if (*p == c_bin_uint) {
           /*  Binary uint.
            */
 
@@ -456,7 +469,7 @@ namespace laplace::core {
           } else if (!is_silent) {
             *va_arg(ap, uint64_t *) = i_value;
           }
-        } else if (*p == 'O') {
+        } else if (*p == c_oct_uint) {
           /*  Oct uint.
            */
 
@@ -550,14 +563,14 @@ namespace laplace::core {
           /*  Floating-point number.
            */
 
-          bool f_negative     = false;
-          int  f_whole        = -1;
-          int  f_frac_value   = -1;
-          int  f_frac_power   = 0;
-          bool f_exp_negative = false;
-          int  f_exp_value    = -1;
+          bool    f_negative     = false;
+          int64_t f_whole        = -1;
+          int64_t f_frac_value   = -1;
+          int64_t f_frac_power   = 0;
+          bool    f_exp_negative = false;
+          int64_t f_exp_value    = -1;
 
-          char32_t c = get_char();
+          auto c = get_char();
 
           if (c == '-') {
             f_negative = true;
@@ -630,10 +643,10 @@ namespace laplace::core {
               result  = false;
               is_done = true;
             } else if (!is_silent) {
-              long double f_value = 0;
+              auto f_value = long double {};
 
               if (f_whole != -1) {
-                f_value = f_whole;
+                f_value = static_cast<decltype(f_value)>(f_whole);
               }
 
               if (f_frac_value != -1) {
@@ -671,10 +684,10 @@ namespace laplace::core {
           /*  String.
            */
 
-          u8string s_value;
+          auto s_value = u8string {};
 
-          bool     is_empty = true;
-          char32_t c        = get_char();
+          bool is_empty = true;
+          auto c        = get_char();
 
           while (!string_end(c, p)) {
             is_empty = false;
@@ -688,12 +701,7 @@ namespace laplace::core {
             }
 
             if (!is_silent) {
-              sl::index offset = s_value.size();
-
-              if (!utf8::encode(c, s_value, offset)) {
-                error_("UTF-8 encoding failed.", __FUNCTION__);
-                is_silent = true;
-              }
+              s_value.append(1, static_cast<char8_t>(c));
             }
 
             if (c == '\0') {
@@ -703,6 +711,8 @@ namespace laplace::core {
 
             c = get_char();
           }
+
+          unget_char();
 
           if (is_empty) {
             result  = false;
@@ -721,12 +731,7 @@ namespace laplace::core {
           if (c == '_' || (c >= 'a' && c <= 'z') ||
               (c >= 'A' && c <= 'Z')) {
             if (!is_silent) {
-              sl::index offset = s_value.size();
-
-              if (!utf8::encode(c, s_value, offset)) {
-                error_("UTF-8 encoding failed.", __FUNCTION__);
-                is_silent = true;
-              }
+              s_value.append(1, static_cast<char8_t>(c));
             }
 
             c = get_char();
@@ -734,12 +739,7 @@ namespace laplace::core {
             while (c == '_' || (c >= '0' && c <= '9') ||
                    (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
               if (!is_silent) {
-                sl::index offset = s_value.size();
-
-                if (!utf8::encode(c, s_value, offset)) {
-                  error_("UTF-8 encoding failed.", __FUNCTION__);
-                  is_silent = true;
-                }
+                s_value.append(1, static_cast<char8_t>(c));
               }
 
               c = get_char();
@@ -767,12 +767,7 @@ namespace laplace::core {
             is_empty = false;
 
             if (!is_silent) {
-              sl::index offset = s_value.size();
-
-              if (!utf8::encode(c, s_value, offset)) {
-                error_("UTF-8 encoding failed.", __FUNCTION__);
-                is_silent = true;
-              }
+              s_value.append(1, static_cast<char8_t>(c));
             }
 
             c = get_char();
@@ -799,12 +794,7 @@ namespace laplace::core {
             is_empty = false;
 
             if (!is_silent) {
-              sl::index offset = s_value.size();
-
-              if (!utf8::encode(c, s_value, offset)) {
-                error_("UTF-8 encoding failed.", __FUNCTION__);
-                is_silent = true;
-              }
+              s_value.append(1, static_cast<char8_t>(c));
             }
 
             c = get_char();
@@ -831,12 +821,7 @@ namespace laplace::core {
             is_empty = false;
 
             if (!is_silent) {
-              sl::index offset = s_value.size();
-
-              if (!utf8::encode(c, s_value, offset)) {
-                error_("UTF-8 encoding failed.", __FUNCTION__);
-                is_silent = true;
-              }
+              s_value.append(1, static_cast<char8_t>(c));
             }
 
             c = get_char();

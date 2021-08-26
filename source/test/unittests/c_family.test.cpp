@@ -145,7 +145,8 @@ namespace laplace::test {
     EXPECT_TRUE(family(0u) == family(0u));
     EXPECT_TRUE(family(0u) < family(1u));
 
-    EXPECT_TRUE(family(vbyte { 0, 1, 2 }) == family(vbyte { 0, 1, 2 }));
+    EXPECT_TRUE(
+        family(vbyte { 0, 1, 2 }) == family(vbyte { 0, 1, 2 }));
     EXPECT_TRUE(family(vbyte { 0, 1 }) < family(vbyte { 0, 1, 2 }));
     EXPECT_TRUE(family(vbyte { 0, 1, 2 }) < family(vbyte { 1, 2 }));
     EXPECT_TRUE(family(vbyte { 0, 1, 2 }) < family(vbyte { 1, 0 }));
@@ -161,17 +162,19 @@ namespace laplace::test {
 
     EXPECT_TRUE(family(composite { { family(0), family(1) } }) ==
                 family(composite { { family(0), family(1) } }));
-    EXPECT_TRUE(family(composite { { family(0), family(1) } }) <
-                family(composite { { family(0), family(1) },
-                                   { family(2), family(3) } }));
-    EXPECT_TRUE(family(composite { { family(0), family(1) },
-                                   { family(2), family(3) } }) <
-                family(composite { { family(2), family(3) } }));
+    EXPECT_TRUE(
+        family(composite { { family(0), family(1) } }) <
+        family(composite {
+            { family(0), family(1) }, { family(2), family(3) } }));
+    EXPECT_TRUE(
+        family(composite {
+            { family(0), family(1) }, { family(2), family(3) } }) <
+        family(composite { { family(2), family(3) } }));
   }
 
   TEST(core, family_nothrow) {
-    family       f;
-    const family cf;
+    auto       f  = family {};
+    const auto cf = family {};
 
     EXPECT_FALSE(f.get_boolean());
     EXPECT_EQ(f.get_integer(), 0ll);
@@ -199,5 +202,43 @@ namespace laplace::test {
               u8string_view(u8""));
     EXPECT_EQ(family(u8"my string").get_string(),
               u8string_view(u8"my string"));
+  }
+
+  TEST(core, family_has_key) {
+    auto f = family{};
+
+    EXPECT_FALSE(f.has("abc"));
+  }
+
+  TEST(core, family_key) {
+    auto f = family{};
+
+    f.key("abc");
+
+    EXPECT_TRUE(f.has("abc"));
+  }
+
+  TEST(core, family_set_key) {
+    auto f = family{};
+
+    f.key("abc");
+    f.set_key(0, "def");
+
+    EXPECT_FALSE(f.has("abc"));
+    EXPECT_TRUE(f.has("def"));
+  }
+
+  TEST(core, family_merge_simple) {
+    auto a = family{};
+    auto b = family{};
+    auto c = family{};
+
+    a["x"] = 1;
+    b["y"] = 2;
+    c["y"] = 3;
+
+    EXPECT_TRUE(a.merge(b));
+    EXPECT_FALSE(b.merge(c));
+    EXPECT_EQ(b["y"].get_integer(), 3);
   }
 }

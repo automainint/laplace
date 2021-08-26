@@ -38,8 +38,14 @@ namespace laplace::core {
     auto operator=(cref_family) noexcept -> ref_family = default;
     auto operator=(family &&) noexcept -> ref_family = default;
 
+    /*  Create array.
+     */
     family(cref_vfamily value) noexcept;
+
+    /*  Create composite.
+     */
     family(cref_composite value) noexcept;
+
     family(bool value) noexcept;
     family(signed char value) noexcept;
     family(signed short value) noexcept;
@@ -222,6 +228,16 @@ namespace laplace::core {
      */
     auto by_key(signed long long key) const noexcept -> cref_family;
 
+    /*  Get composite element by index.
+     */
+    auto by_index(signed long long n) noexcept -> ref_family;
+
+    /*  Get composite element by index.
+     */
+    auto by_index(signed long long n) const noexcept -> cref_family;
+
+    /*  Returns -1 if less, +1 if greater, 0 if equals.
+     */
     [[nodiscard]] auto compare(cref_family value) const noexcept -> int;
 
     /*  Merge composite data. Returns false
@@ -264,6 +280,18 @@ namespace laplace::core {
     auto by_key(unsigned int key) const noexcept -> cref_family;
     auto by_key(unsigned long key) const noexcept -> cref_family;
     auto by_key(unsigned long long key) const noexcept -> cref_family;
+
+    auto by_index(signed int key) noexcept -> ref_family;
+    auto by_index(signed long key) noexcept -> ref_family;
+    auto by_index(unsigned int key) noexcept -> ref_family;
+    auto by_index(unsigned long key) noexcept -> ref_family;
+    auto by_index(unsigned long long key) noexcept -> ref_family;
+
+    auto by_index(signed int key) const noexcept -> cref_family;
+    auto by_index(signed long key) const noexcept -> cref_family;
+    auto by_index(unsigned int key) const noexcept -> cref_family;
+    auto by_index(unsigned long key) const noexcept -> cref_family;
+    auto by_index(unsigned long long key) const noexcept -> cref_family;
 
     operator signed char() const noexcept;
     operator signed short() const noexcept;

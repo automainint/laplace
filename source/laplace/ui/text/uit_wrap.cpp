@@ -43,7 +43,8 @@ namespace laplace::ui::text {
       }
 
       m_context->render(
-          rect { .x = x, .y = y, .width = a.width, .height = a.height },
+          rect {
+              .x = x, .y = y, .width = a.width, .height = a.height },
           *m_tex);
     }
   }

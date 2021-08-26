@@ -17,7 +17,8 @@
 namespace laplace::ui::text {
   using std::u8string_view, graphics::ref_image, graphics::cref_pixel;
 
-  void lcd::set_size(sl::index char_top, sl::whole char_width,
+  void lcd::set_size(sl::index char_top,
+                     sl::whole char_width,
                      sl::whole char_height) {
 
     m_char_top    = char_top;
@@ -71,8 +72,8 @@ namespace laplace::ui::text {
     return { get_char_top(), width, get_char_height() };
   }
 
-  void lcd::print(ref_image img, sl::index x, sl::index y,
-                  u8string_view text) {
+  void lcd::print(
+      ref_image img, sl::index x, sl::index y, u8string_view text) {
     auto code = char32_t {};
 
     auto x0 = x;
@@ -146,9 +147,11 @@ namespace laplace::ui::text {
     return ((c - char_first) / 16) * m_char_height;
   }
 
-  auto lcd::get_pixel_index(sl::index x, sl::index y, sl::index i,
-                            sl::index j) const -> sl::index {
-    return (y + m_char_height - j - 1) * (m_char_width * 16) + (x + i);
+  auto lcd::get_pixel_index(
+      sl::index x, sl::index y, sl::index i, sl::index j) const
+      -> sl::index {
+    return (y + m_char_height - j - 1) * (m_char_width * 16) +
+           (x + i);
   }
 
   auto lcd::get_char_top() const -> sl::index {
@@ -177,8 +180,8 @@ namespace laplace::ui::text {
     return get_char_size(c) * m_scale_x + m_spacing_x;
   }
 
-  void lcd::draw_char(ref_image img, sl::index x, sl::index y,
-                      char32_t c) {
+  void lcd::draw_char(
+      ref_image img, sl::index x, sl::index y, char32_t c) {
     const auto i0 = get_char_x(c) + get_char_left(c);
     const auto j0 = get_char_y(c);
 
@@ -186,24 +189,26 @@ namespace laplace::ui::text {
       const auto size = get_char_size(c);
 
       for (sl::index i = 0; i < size; i++) {
-        auto n = get_pixel_index(i0, j0, i, j);
+        const auto n = get_pixel_index(i0, j0, i, j);
 
         if (n < m_pixels.size() && m_pixels[n]) {
-          auto x0 = static_cast<int>(i);
-          auto y0 = static_cast<int>(j);
+          const auto cx = m_scale_x;
+          const auto cy = m_scale_y;
 
-          auto cx = static_cast<int>(m_scale_x);
-          auto cy = static_cast<int>(m_scale_y);
-
-          draw_dot(img, x + x0 * cx, y + y0 * cy, x + (x0 + 1) * cx,
-                   y + (y0 + 1) * cy, m_color);
+          draw_dot(img, x + i * cx, y + j * cy, x + (i + 1) * cx,
+                   y + (j + 1) * cy, m_color);
         }
       }
     }
   }
 
-  void lcd::draw_dot(ref_image img, sl::index x0, sl::index y0,
-                     sl::index x1, sl::index y1, cref_pixel color) {
+  void lcd::draw_dot(
+      ref_image  img,
+      sl::index  x0,
+      sl::index  y0,
+      sl::index  x1,
+      sl::index  y1,
+      cref_pixel color) {
     for (sl::index i = x0; i < x1; i++)
       for (sl::index j = y0; j < y1; j++) {
         img.set_pixel(i, j, color);

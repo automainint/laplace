@@ -175,7 +175,8 @@ namespace laplace::core {
     return *this;
   }
 
-  auto family::operator=(unsigned short value) noexcept -> ref_family {
+  auto family::operator=(unsigned short value) noexcept
+      -> ref_family {
     assign(static_cast<signed long long>(value));
     return *this;
   }
@@ -221,38 +222,44 @@ namespace laplace::core {
     return *this;
   }
 
-  auto family::operator=(u16string_view value) noexcept -> ref_family {
+  auto family::operator=(u16string_view value) noexcept
+      -> ref_family {
     assign(value);
     return *this;
   }
 
-  auto family::operator=(u32string_view value) noexcept -> ref_family {
+  auto family::operator=(u32string_view value) noexcept
+      -> ref_family {
     assign(value);
     return *this;
   }
 
   auto family::operator=(const char *value) noexcept -> ref_family {
-    assign(string_view(value));
+    assign(string_view { value });
     return *this;
   }
 
-  auto family::operator=(const wchar_t *value) noexcept -> ref_family {
-    assign(wstring_view(value));
+  auto family::operator=(const wchar_t *value) noexcept
+      -> ref_family {
+    assign(wstring_view { value });
     return *this;
   }
 
-  auto family::operator=(const char8_t *value) noexcept -> ref_family {
-    assign(u8string_view(value));
+  auto family::operator=(const char8_t *value) noexcept
+      -> ref_family {
+    assign(u8string_view { value });
     return *this;
   }
 
-  auto family::operator=(const char16_t *value) noexcept -> ref_family {
-    assign(u16string_view(value));
+  auto family::operator=(const char16_t *value) noexcept
+      -> ref_family {
+    assign(u16string_view { value });
     return *this;
   }
 
-  auto family::operator=(const char32_t *value) noexcept -> ref_family {
-    assign(u32string_view(value));
+  auto family::operator=(const char32_t *value) noexcept
+      -> ref_family {
+    assign(u32string_view { value });
     return *this;
   }
 
@@ -454,7 +461,8 @@ namespace laplace::core {
     if (get<n_composite>(m_data).size() <= n)
       return;
 
-    get<n_composite>(m_data).erase(get<n_composite>(m_data).begin() + n);
+    get<n_composite>(m_data).erase(get<n_composite>(m_data).begin() +
+                                   n);
 
     auto i = lower_bound(
         get<n_composite>(m_data).begin(),
@@ -494,6 +502,10 @@ namespace laplace::core {
       m_data = vector<family>();
     }
 
+    if (n < 0) {
+      n = get<n_vector>(m_data).size();
+    }
+
     if (get<n_vector>(m_data).size() <= n) {
       get<n_vector>(m_data).resize(n + 1);
     }
@@ -528,7 +540,7 @@ namespace laplace::core {
       return logic_error();
     }
 
-    if (get<n_composite>(m_data).size() <= n) {
+    if (n < 0 || get<n_composite>(m_data).size() <= n) {
       return out_of_range();
     }
 
@@ -541,7 +553,7 @@ namespace laplace::core {
       return logic_error();
     }
 
-    if (get<n_vector>(m_data).size() <= n) {
+    if (n < 0 || get<n_vector>(m_data).size() <= n) {
       return out_of_range();
     }
 
@@ -625,6 +637,35 @@ namespace laplace::core {
     return i->second;
   }
 
+  auto family::by_index(signed long long n) noexcept -> ref_family {
+    if (m_data.index() != n_composite) {
+      m_data = composite {};
+    }
+
+    if (n < 0) {
+      n = get<n_composite>(m_data).size();
+    }
+
+    if (get<n_composite>(m_data).size() <= n) {
+      get<n_composite>(m_data).resize(n + 1);
+    }
+
+    return get<n_composite>(m_data)[n].second;
+  }
+
+  auto family::by_index(signed long long n) const noexcept
+      -> cref_family {
+    if (m_data.index() != n_composite) {
+      return logic_error();
+    }
+
+    if (n < 0 || n >= get<n_composite>(m_data).size()) {
+      return out_of_range();
+    }
+
+    return get<n_composite>(m_data)[n].second;
+  }
+
   auto family::compare(cref_family value) const noexcept -> int {
     if (m_data.index() != value.m_data.index()) {
       if (m_data.index() < value.m_data.index())
@@ -657,15 +698,22 @@ namespace laplace::core {
     }
 
     if (m_data.index() == n_real) {
-      if (get<n_real>(m_data) == get<n_real>(value.m_data))
+      const auto a = get<n_real>(m_data);
+      const auto b = get<n_real>(value.m_data);
+      const auto x = a - b;
+
+      constexpr auto eps = numeric_limits<double>::epsilon();
+
+      if (x < eps && x > -eps)
         return 0;
-      else if (get<n_real>(m_data) < get<n_real>(value.m_data))
+      else if (a < b)
         return -1;
       return 1;
     }
 
     if (m_data.index() == n_string) {
-      return get<n_string>(m_data).compare(get<n_string>(value.m_data));
+      return get<n_string>(m_data).compare(
+          get<n_string>(value.m_data));
     }
 
     if (m_data.index() == n_bytes) {
@@ -775,12 +823,12 @@ namespace laplace::core {
   }
 
   auto family::logic_error() noexcept -> cref_family {
-    static const family result;
+    static const auto result = family {};
     return result;
   }
 
   auto family::out_of_range() noexcept -> cref_family {
-    static const family result;
+    static const auto result = family {};
     return result;
   }
 
@@ -817,7 +865,14 @@ namespace laplace::core {
   }
 
   void family::assign(unsigned long long value) noexcept {
-    m_data = value;
+    constexpr auto max_int = static_cast<unsigned long long>(
+        numeric_limits<signed long long>::max());
+
+    if (value <= max_int) {
+      m_data = static_cast<signed long long>(value);
+    } else {
+      m_data = value;
+    }
   }
 
   void family::assign(double value) noexcept {

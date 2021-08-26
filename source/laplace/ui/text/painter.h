@@ -34,14 +34,18 @@ namespace laplace::ui::text {
     static constexpr sl::index default_lcd_char_height = 7;
     static const uint64_t      default_lcd_bits[];
 
-    static constexpr auto default_color = graphics::rgba(250, 240,
-                                                         255, 255);
+    static constexpr auto default_color = graphics::rgba(
+        250, 240, 255, 255);
 
     virtual ~painter() = default;
 
     virtual auto adjust(std::u8string_view text) -> area;
-    virtual void print(graphics::ref_image img, sl::index x,
-                       sl::index y, std::u8string_view text);
+
+    virtual void print(
+        graphics::ref_image img,
+        sl::index           x,
+        sl::index           y,
+        std::u8string_view  text);
 
     static auto get_default() -> ptr_painter;
 

@@ -1,6 +1,6 @@
 /*  laplace/core/options.h
  *
- *      The Laplace options.
+ *      Laplace options.
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -38,6 +38,10 @@ static_assert(sizeof(unsigned long long) == 8);
  */
 //  #define LAPLACE_PLATFORM_DUMMY
 
+/*  Enable all warnings in MSVC.
+ */
+//  #define LAPLACE_MSVC_WARNINGS 1
+
 /*  Windows preprocessor definitions.
  */
 //  #define _WIN32 1
@@ -47,7 +51,7 @@ static_assert(sizeof(unsigned long long) == 8);
  */
 //  #define _CONSOLE 1
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(LAPLACE_MSVC_WARNINGS)
 #  pragma warning(disable : 4018 4100 4245 4250 4389 26812)
 #endif
 

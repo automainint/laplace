@@ -19,19 +19,17 @@ namespace laplace::ui::text {
   weak_ptr<renderer> renderer::m_default;
 
   auto renderer::adjust(u8string_view text) -> renderer::area {
-    return { 0, 0, 0 };
+    return {};
   }
 
-  void renderer::render(sl::index x, sl::index y, u8string_view text) {
-  }
+  void renderer::render(
+      sl::index x, sl::index y, u8string_view text) { }
 
   auto renderer::get_default() -> ptr_renderer {
     auto p = m_default.lock();
 
     if (!p) {
-      p = make_shared<wrap>(painter::get_default(),
-                            ptr_context() /* late init */
-      );
+      p = make_shared<wrap>(painter::get_default());
 
       m_default = p;
     }

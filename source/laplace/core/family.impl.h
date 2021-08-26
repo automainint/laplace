@@ -41,7 +41,8 @@ namespace laplace::core {
     return this->value(family(key));
   }
 
-  inline auto family::value(const char8_t *key) noexcept -> ref_family {
+  inline auto family::value(const char8_t *key) noexcept
+      -> ref_family {
     return this->value(family(key));
   }
 
@@ -113,35 +114,92 @@ namespace laplace::core {
     return this->by_key(static_cast<signed long long>(key));
   }
 
-  inline auto family::by_key(unsigned int key) noexcept -> ref_family {
+  inline auto family::by_key(unsigned int key) noexcept
+      -> ref_family {
     return this->by_key(static_cast<signed long long>(key));
   }
 
-  inline auto family::by_key(unsigned long key) noexcept -> ref_family {
+  inline auto family::by_key(unsigned long key) noexcept
+      -> ref_family {
     return this->by_key(static_cast<signed long long>(key));
   }
 
-  inline auto family::by_key(unsigned long long key) noexcept -> ref_family {
+  inline auto family::by_key(unsigned long long key) noexcept
+      -> ref_family {
     return this->value(family(key));
   }
 
-  inline auto family::by_key(signed int key) const noexcept -> cref_family {
+  inline auto family::by_key(signed int key) const noexcept
+      -> cref_family {
     return this->by_key(static_cast<signed long long>(key));
   }
 
-  inline auto family::by_key(signed long key) const noexcept -> cref_family {
+  inline auto family::by_key(signed long key) const noexcept
+      -> cref_family {
     return this->by_key(static_cast<signed long long>(key));
   }
 
-  inline auto family::by_key(unsigned int key) const noexcept -> cref_family {
+  inline auto family::by_key(unsigned int key) const noexcept
+      -> cref_family {
     return this->by_key(static_cast<signed long long>(key));
   }
 
-  inline auto family::by_key(unsigned long key) const noexcept -> cref_family {
+  inline auto family::by_key(unsigned long key) const noexcept
+      -> cref_family {
     return this->by_key(static_cast<signed long long>(key));
   }
 
   inline auto family::by_key(unsigned long long key) const noexcept
+      -> cref_family {
+    return this->get_value(family(key));
+  }
+
+  inline auto family::by_index(signed int key) noexcept
+      -> ref_family {
+    return this->by_index(static_cast<signed long long>(key));
+  }
+
+  inline auto family::by_index(signed long key) noexcept
+      -> ref_family {
+    return this->by_index(static_cast<signed long long>(key));
+  }
+
+  inline auto family::by_index(unsigned int key) noexcept
+      -> ref_family {
+    return this->by_index(static_cast<signed long long>(key));
+  }
+
+  inline auto family::by_index(unsigned long key) noexcept
+      -> ref_family {
+    return this->by_index(static_cast<signed long long>(key));
+  }
+
+  inline auto family::by_index(unsigned long long key) noexcept
+      -> ref_family {
+    return this->value(family(key));
+  }
+
+  inline auto family::by_index(signed int key) const noexcept
+      -> cref_family {
+    return this->by_index(static_cast<signed long long>(key));
+  }
+
+  inline auto family::by_index(signed long key) const noexcept
+      -> cref_family {
+    return this->by_index(static_cast<signed long long>(key));
+  }
+
+  inline auto family::by_index(unsigned int key) const noexcept
+      -> cref_family {
+    return this->by_index(static_cast<signed long long>(key));
+  }
+
+  inline auto family::by_index(unsigned long key) const noexcept
+      -> cref_family {
+    return this->by_index(static_cast<signed long long>(key));
+  }
+
+  inline auto family::by_index(unsigned long long key) const noexcept
       -> cref_family {
     return this->get_value(family(key));
   }
@@ -182,7 +240,8 @@ namespace laplace::core {
     return static_cast<float>(this->get_real());
   }
 
-  inline auto family::operator[](signed int n) noexcept -> ref_family {
+  inline auto family::operator[](signed int n) noexcept
+      -> ref_family {
     return this->value(n);
   }
 
@@ -191,7 +250,8 @@ namespace laplace::core {
     return this->get_value(n);
   }
 
-  inline auto family::operator[](signed long n) noexcept -> ref_family {
+  inline auto family::operator[](signed long n) noexcept
+      -> ref_family {
     return this->value(n);
   }
 
