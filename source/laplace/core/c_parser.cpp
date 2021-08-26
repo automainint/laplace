@@ -643,7 +643,7 @@ namespace laplace::core {
               result  = false;
               is_done = true;
             } else if (!is_silent) {
-              auto f_value = long double {};
+              long double f_value = {};
 
               if (f_whole != -1) {
                 f_value = static_cast<decltype(f_value)>(f_whole);
