@@ -17,7 +17,7 @@
 
 namespace laplace::format::binary {
   namespace ids {
-    enum idval : uint8_t {
+    enum _id : uint8_t {
       empty,
       bool_true,
       bool_false,
@@ -29,19 +29,11 @@ namespace laplace::format::binary {
       bitfield,
       vector,
       composite,
-      compact_composite
+      compact_composite,
+      packed_string,
+      packed_composite
     };
   }
-
-  /*  Replace string key ids with
-   *  numeric synonyms.
-   */
-  void pack(core::ref_family data);
-
-  /*  Replace numeric key ids back
-   *  to strings.
-   */
-  void unpack(core::ref_family data);
 
   auto decode(fn_read read) -> pack_type;
   auto encode(fn_write write, const_pack_type data) -> bool;

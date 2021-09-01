@@ -15,25 +15,26 @@
 #include <random>
 
 namespace laplace::test {
-  using network::transfer, std::span, std::vector;
+  using network::transfer, std::span;
 
   TEST(network, transfer_pack) {
     constexpr auto test_count = 4;
 
     auto rdev = std::random_device {};
-    auto dist = std::uniform_int_distribution<sl::index>(1, 50);
+    auto dist = std::uniform_int_distribution<sl::index>(1, 200);
 
     for (sl::index n = 0; n < test_count; n++) {
       auto msg = vbyte(dist(rdev));
 
-      for (sl::index i = 0; i < msg.size(); i++)
+      for (sl::index i = 0; i < msg.size(); i++) {
         msg[i] = static_cast<uint8_t>(rdev());
+      }
 
-      vector<span_cbyte> msgs;
+      auto msgs = sl::vector<span_cbyte> {};
       msgs.emplace_back(span_cbyte { msg });
 
-      transfer alice;
-      transfer bob;
+      auto alice = transfer {};
+      auto bob   = transfer {};
 
       auto enc = alice.encode(msgs);
       auto dec = bob.decode(enc);

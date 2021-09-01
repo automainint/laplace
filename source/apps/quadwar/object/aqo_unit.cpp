@@ -116,9 +116,9 @@ namespace quadwar_app::object {
 
     ids.reserve(unit_count * player_count);
 
-    auto create_unit =
-        [&](const sl::index id_actor, const sl::index color,
-            const intval x, const intval y) -> shared_ptr<unit> {
+    auto create_unit = [&](const sl::index id_actor,
+                           const sl::index color, const intval x,
+                           const intval y) -> shared_ptr<unit> {
       auto u = unit {};
 
       u.init(n_health, default_health * sets::scale_points);
@@ -141,8 +141,8 @@ namespace quadwar_app::object {
       const auto y = locs[i].y();
 
       for (sl::index j = 0; j < unit_count; j++) {
-        const auto id = w.spawn(
-            create_unit(id_actor, color, x, y), id_undefined);
+        const auto id = w.spawn(create_unit(id_actor, color, x, y),
+                                id_undefined);
         ids.emplace_back(id);
       }
     }
@@ -180,8 +180,8 @@ namespace quadwar_app::object {
     const auto foot_max = make_footprint(r_max);
     const auto foot_min = make_footprint(r_min);
 
-    auto p = pathmap::find_empty(
-        path, { x0, y0 }, foot_max.size, foot_max.bytes);
+    auto p = pathmap::find_empty(path, { x0, y0 }, foot_max.size,
+                                 foot_max.bytes);
     pathmap::add(path, p, foot_min.size, foot_min.bytes);
 
     u.set(n_x, p.x() * scale);
@@ -191,8 +191,10 @@ namespace quadwar_app::object {
     u.adjust();
   }
 
-  void unit::order_move(
-      world w, sl::index id_actor, sl::index id_unit, vec2i target) {
+  void unit::order_move(world     w,
+                        sl::index id_actor,
+                        sl::index id_unit,
+                        vec2i     target) {
 
     auto u = w.get_entity(id_unit);
 
@@ -351,7 +353,8 @@ namespace quadwar_app::object {
       }
 
     if (m_current < 0) {
-      apply_delta(n_target_order, 1);
+      m_searching = false;
+      m_movement  = false;
     }
   }
 
@@ -426,9 +429,9 @@ namespace quadwar_app::object {
         const auto foot_max = make_footprint(radius_max);
         const auto foot_min = make_footprint(radius_min);
 
-        if (!pathmap::check_move(
-                map, { x0, y0 }, foot_max.size, foot_max.bytes,
-                { x, y }, foot_min.size, foot_min.bytes)) {
+        if (!pathmap::check_move(map, { x0, y0 }, foot_max.size,
+                                 foot_max.bytes, { x, y },
+                                 foot_min.size, foot_min.bytes)) {
           /*  Collision.
            */
           m_searching = false;
@@ -436,8 +439,8 @@ namespace quadwar_app::object {
           return;
         }
 
-        pathmap::subtract(
-            map, { x0, y0 }, foot_min.size, foot_min.bytes);
+        pathmap::subtract(map, { x0, y0 }, foot_min.size,
+                          foot_min.bytes);
         pathmap::add(map, { x, y }, foot_min.size, foot_min.bytes);
       }
 

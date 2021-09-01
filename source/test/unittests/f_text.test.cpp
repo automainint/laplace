@@ -181,7 +181,7 @@ namespace laplace::test {
 
     encode(wrap(s), data);
 
-    EXPECT_TRUE(parser::wrap(s.str()).parse(" { a = 1 ; b = 2 ; } "));
+    EXPECT_TRUE(parser::wrap(s.str()).parse(" { a = 1 b = 2 } "));
   }
 
   TEST(format, text_encode_function) {
@@ -211,7 +211,7 @@ namespace laplace::test {
     encode(wrap(s), data);
 
     EXPECT_TRUE(parser::wrap(s.str()).parse(
-        " { call1 ( 1 , 2 ) ; call2 ( 3 , 4 ) ; } "));
+        " { call1 ( 1 , 2 ) call2 ( 3 , 4 ) } "));
   }
 
   TEST(format, text_decode_empty) {
@@ -351,6 +351,15 @@ namespace laplace::test {
 
   TEST(format, text_decode_composite2) {
     auto s    = istringstream { string { "{ a: 1; b: 2; }" } };
+    auto data = decode(wrap(s));
+
+    EXPECT_TRUE(data && data->is_composite() &&
+                data->get_value("a").get_integer() == 1 &&
+                data->get_value("b").get_integer() == 2);
+  }
+
+  TEST(format, text_decode_composite3) {
+    auto s    = istringstream { string { "{ a: 1 b = 2 }" } };
     auto data = decode(wrap(s));
 
     EXPECT_TRUE(data && data->is_composite() &&

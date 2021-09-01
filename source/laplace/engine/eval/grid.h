@@ -43,57 +43,53 @@ namespace laplace::engine::eval::grid {
   using fn_point     = std::function<bool(const vec2z p)>;
   using fn_available = std::function<bool(const int8_t state)>;
 
-  [[nodiscard]] auto trace_line(
-      const vec2z    size,
-      const vec2z    a,
-      const vec2z    b,
-      const fn_point point) noexcept -> bool;
+  [[nodiscard]] auto trace_line(const vec2z    size,
+                                const vec2z    a,
+                                const vec2z    b,
+                                const fn_point point) noexcept
+      -> bool;
 
-  [[nodiscard]] auto neighbors4(
-      const sl::index               width,
-      const intval                  scale,
-      const std::span<const int8_t> map,
-      const fn_available            available,
-      const sl::index               position,
-      const sl::index               n) noexcept -> astar::link;
+  [[nodiscard]] auto neighbors4(const sl::index               width,
+                                const intval                  scale,
+                                const std::span<const int8_t> map,
+                                const fn_available available,
+                                const sl::index    position,
+                                const sl::index    n) noexcept
+      -> astar::link;
 
-  [[nodiscard]] auto neighbors8(
-      const sl::index               width,
-      const intval                  scale,
-      const std::span<const int8_t> map,
-      const fn_available            available,
-      const sl::index               position,
-      const sl::index               n) noexcept -> astar::link;
+  [[nodiscard]] auto neighbors8(const sl::index               width,
+                                const intval                  scale,
+                                const std::span<const int8_t> map,
+                                const fn_available available,
+                                const sl::index    position,
+                                const sl::index    n) noexcept
+      -> astar::link;
 
-  [[nodiscard]] auto manhattan(
-      const sl::index width,
-      const intval    scale,
-      const sl::index a,
-      const sl::index b) noexcept -> intval;
+  [[nodiscard]] auto manhattan(const sl::index width,
+                               const intval    scale,
+                               const sl::index a,
+                               const sl::index b) noexcept -> intval;
 
-  [[nodiscard]] auto diagonal(
-      const sl::index width,
-      const intval    scale,
-      const sl::index a,
-      const sl::index b) noexcept -> intval;
+  [[nodiscard]] auto diagonal(const sl::index width,
+                              const intval    scale,
+                              const sl::index a,
+                              const sl::index b) noexcept -> intval;
 
-  [[nodiscard]] auto euclidean(
-      const sl::index width,
-      const intval    scale,
-      const sl::index a,
-      const sl::index b) noexcept -> intval;
+  [[nodiscard]] auto euclidean(const sl::index width,
+                               const intval    scale,
+                               const sl::index a,
+                               const sl::index b) noexcept -> intval;
 
-  [[nodiscard]] auto path_exists(
-      const sl::index               width,
-      const std::span<const int8_t> map,
-      const fn_available            available,
-      const vec2z                   a,
-      const vec2z                   b) noexcept -> bool;
+  [[nodiscard]] auto path_exists(const sl::index               width,
+                                 const std::span<const int8_t> map,
+                                 const fn_available available,
+                                 const vec2z        a,
+                                 const vec2z b) noexcept -> bool;
 
   struct _state {
     astar::_state<true, astar::_node_theta> astar;
 
-    sl::whole width;
+    sl::whole width = {};
 
     astar::fn_heuristic heuristic;
     astar::fn_neighbors neighbors;
@@ -114,13 +110,12 @@ namespace laplace::engine::eval::grid {
   [[nodiscard]] auto path_search_finish(const _state &state) noexcept
       -> sl::vector<vec2z>;
 
-  void convolve(
-      const vec2z             size,
-      std::span<int8_t>       dst,
-      std::span<const int8_t> src,
-      const vec2z             fp_size,
-      const vec2z             center,
-      std::span<const int8_t> footprint) noexcept;
+  void convolve(const vec2z             size,
+                std::span<int8_t>       dst,
+                std::span<const int8_t> src,
+                const vec2z             fp_size,
+                const vec2z             center,
+                std::span<const int8_t> footprint) noexcept;
 
   [[nodiscard]] auto nearest(
       const vec2z                       position,

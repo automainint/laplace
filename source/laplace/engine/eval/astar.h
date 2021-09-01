@@ -39,7 +39,7 @@ namespace laplace::engine::eval::astar {
     sl::index index  = _invalid_index;
     sl::index parent = _invalid_index;
 
-    /*  Actual length from source to current node.
+    /*  Actual path length from source to current node.
      */
     intval length = {};
 
@@ -47,7 +47,7 @@ namespace laplace::engine::eval::astar {
      */
     intval distance = {};
 
-    /*  Estimated length from source to destination.
+    /*  Estimated path length from source to destination.
      */
     intval estimated = {};
   };
@@ -72,8 +72,8 @@ namespace laplace::engine::eval::astar {
       std::function<intval(const sl::index a, const sl::index b)>;
 
   template <bool _nearest, typename _node>
-  [[nodiscard]] inline auto init(
-      const sl::index source, const sl::index destination) noexcept
+  [[nodiscard]] inline auto init(const sl::index source,
+                                 const sl::index destination) noexcept
       -> _state<_nearest, _node>;
 
   template <bool _nearest, typename _node>
@@ -84,10 +84,10 @@ namespace laplace::engine::eval::astar {
       _state<_nearest, _node> &state) noexcept -> status;
 
   template <typename _node>
-  [[nodiscard]] inline auto finish(
-      std::span<const _node> closed,
-      sl::index              source,
-      sl::index destination) noexcept -> sl::vector<sl::index>;
+  [[nodiscard]] inline auto finish(std::span<const _node> closed,
+                                   sl::index              source,
+                                   sl::index destination) noexcept
+      -> sl::vector<sl::index>;
 }
 
 #endif

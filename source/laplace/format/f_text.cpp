@@ -242,24 +242,28 @@ namespace laplace::format::text {
                         bool is_vec_elem                   = false) {
     if (f.is_boolean()) {
       return print(f ? "true" : "false");
+    }
 
-    } else if (f.is_integer()) {
+    if (f.is_integer()) {
       auto out = ostringstream {};
       out << f.get_integer();
       return print(out.str());
+    }
 
-    } else if (f.is_uint()) {
+    if (f.is_uint()) {
       auto out = ostringstream {};
       out << "0x" << hex << f.get_uint();
       return print(out.str());
+    }
 
-    } else if (f.is_real()) {
+    if (f.is_real()) {
       auto out    = ostringstream {};
       auto digits = numeric_limits<double>::max_digits10;
       out << setprecision(digits) << f.get_real();
       return print(out.str());
+    }
 
-    } else if (f.is_string()) {
+    if (f.is_string()) {
       auto v = string { as_ascii_string(f.get_string()) };
 
       if (is_id_string(v)) {
@@ -269,8 +273,9 @@ namespace laplace::format::text {
       v = wrap_string(v);
 
       return print(v);
+    }
 
-    } else if (f.is_bytes()) {
+    if (f.is_bytes()) {
       if (!print(":: { ")) {
         return false;
       }
@@ -285,8 +290,9 @@ namespace laplace::format::text {
       }
 
       return print("}");
+    }
 
-    } else if (f.is_vector()) {
+    if (f.is_vector()) {
       auto size = f.get_size();
 
       if (size <= 0) {
@@ -316,8 +322,9 @@ namespace laplace::format::text {
       }
 
       return true;
+    }
 
-    } else if (f.is_composite()) {
+    if (f.is_composite()) {
       if (f.get_size() == 2 && f.has(s_function)) {
 
         if (!printdown(print, f[s_function], indent + 1) ||
@@ -354,8 +361,7 @@ namespace laplace::format::text {
           const auto &cmds = f[k];
 
           for (sl::index j = 0; j < cmds.get_size(); j++)
-            if (!printdown(print, cmds[j], indent + 1) ||
-                !print(";\n")) {
+            if (!printdown(print, cmds[j], indent + 1)) {
               return false;
             }
 
@@ -372,7 +378,7 @@ namespace laplace::format::text {
             return false;
           }
 
-          if (!printdown(print, f[k], indent + 1) || !print(";\n")) {
+          if (!printdown(print, f[k], indent + 1)) {
             return false;
           }
         }

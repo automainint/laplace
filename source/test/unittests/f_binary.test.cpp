@@ -197,6 +197,23 @@ namespace laplace::test {
     EXPECT_TRUE(dst && src == *dst);
   }
 
+  TEST(format, binary_compact_composite) {
+    auto src = family{};
+    src[3] = "Foo";
+    src[1] = "Bar";
+    src[10] = 42;
+
+    auto ss = ostringstream {};
+
+    encode(wrap(ss), src);
+
+    auto s   = ss.str();
+    auto in  = istringstream { s };
+    auto dst = decode(wrap(in));
+
+    EXPECT_TRUE(dst && src == *dst);
+  }
+
   TEST(format, binary_function) {
     auto src = family {};
 

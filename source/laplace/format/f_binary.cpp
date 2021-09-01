@@ -19,98 +19,46 @@
 #include "../core/serial.h"
 #include "../core/utils.h"
 #include "text.h"
+#include <algorithm>
 #include <cmath>
 
 namespace laplace::format::binary {
-  using std::make_shared, std::u8string, std::u8string_view,
-      core::ref_family, core::cref_family, core::family, serial::rd,
-      serial::wr;
+  using std::make_shared, std::lower_bound, std::u8string,
+      std::u8string_view, core::ref_family, core::cref_family,
+      core::family, serial::rd, serial::wr;
 
-  static const auto table = sl::vector<u8string> {
-    u8"__undefined",  text::s_function, text::s_arguments,
-    text::s_commands, u8"load",         u8"width",
-    u8"height",       u8"depth",        u8"pixels"
-  };
+  static constexpr auto _sorted(auto v) {
+    std::sort(v.begin(), v.end());
+    return v;
+  }
+
+  static constexpr auto dictionary = _sorted(
+      std::array<u8string_view, 8> {
+          text::s_function, text::s_arguments, text::s_commands,
+          u8"load", u8"width", u8"height", u8"depth", u8"pixels" });
+
+  static constexpr auto magic = serial::_str<uint64_t>("laplace0");
 
   static constexpr auto mantissa_factor = 1e17;
 
-  static auto pack_key(ref_family composite, sl::index k) -> bool {
-    auto key = family { composite.get_key(k) };
-
-    if (!key.is_string()) {
+  static auto is_packable(cref_family value) -> bool {
+    if (!value.is_composite()) {
       return false;
     }
 
-    for (sl::index n = 0; n < table.size(); n++)
-      if (key.get_string() == table[n]) {
-        key = n;
-
-        if (!composite.has(key)) {
-          composite.set_key(k, key);
-          return true;
-        }
-
-        break;
+    for (sl::index i = 0; i < value.get_size(); i++) {
+      if (!value.get_key(i).is_string()) {
+        return false;
       }
 
-    return false;
-  }
-
-  static auto unpack_key(ref_family composite, sl::index k) -> bool {
-    auto key = family { composite.get_key(k) };
-
-    if (!key.is_integer()) {
-      return false;
-    }
-
-    const auto n = key.get_integer();
-
-    if (n >= 0 && n < table.size()) {
-      key = table[n];
-
-      if (!composite.has(key)) {
-        composite.set_key(k, key);
-        return true;
+      if (auto j = lower_bound(dictionary.begin(), dictionary.end(),
+                               value.get_string());
+          j == dictionary.end() || *j != value.get_string()) {
+        return false;
       }
     }
 
-    return false;
-  }
-
-  void pack(ref_family data) {
-    if (data.is_composite()) {
-      for (sl::index i = 0; i < data.get_size();) {
-        i = pack_key(data, i) ? 0 : i + 1;
-      }
-
-      for (sl::index i = 0; i < data.get_size(); i++) {
-        pack(data.by_index(i));
-      }
-    }
-
-    if (data.is_vector()) {
-      for (sl::index i = 0; i < data.get_size(); i++) {
-        pack(data.value(i));
-      }
-    }
-  }
-
-  void unpack(ref_family data) {
-    if (data.is_composite()) {
-      for (sl::index i = 0; i < data.get_size();) {
-        i = unpack_key(data, i) ? 0 : i + 1;
-      }
-
-      for (sl::index i = 0; i < data.get_size(); i++) {
-        unpack(data.by_index(i));
-      }
-    }
-
-    if (data.is_vector()) {
-      for (sl::index i = 0; i < data.get_size(); i++) {
-        unpack(data.value(i));
-      }
-    }
+    return true;
   }
 
   static auto read_int(fn_read read, ref_family value) -> bool {
@@ -216,20 +164,22 @@ namespace laplace::format::binary {
   static auto read_pack(fn_read read, ref_family value) -> bool;
 
   static auto read_vector(fn_read read, ref_family value) -> bool {
-    auto v = read(8);
+    const auto v = read(8);
 
-    if (v.size() != 8)
+    if (v.size() != 8) {
       return false;
+    }
 
-    auto size = as_index(rd<int64_t>(v, 0));
+    const auto size = as_index(rd<int64_t>(v, 0));
 
     value = family {};
 
     for (sl::index i = 0; i < size; i++) {
-      family field;
+      auto field = family {};
 
-      if (!read_pack(read, field))
+      if (!read_pack(read, field)) {
         return false;
+      }
 
       value[i] = field;
     }
@@ -238,10 +188,11 @@ namespace laplace::format::binary {
   }
 
   static auto read_composite(fn_read read, ref_family value) -> bool {
-    auto v = read(8);
+    const auto v = read(8);
 
-    if (v.size() != 8)
+    if (v.size() != 8) {
       return false;
+    }
 
     auto size = as_index(rd<int64_t>(v, 0));
 
@@ -266,8 +217,9 @@ namespace laplace::format::binary {
       -> bool {
     auto v = read(8);
 
-    if (v.size() != 8)
+    if (v.size() != 8) {
       return false;
+    }
 
     auto size = as_index(rd<int64_t>(v, 0));
 
@@ -276,65 +228,157 @@ namespace laplace::format::binary {
     for (sl::index i = 0; i < size; i++) {
       auto field = family {};
 
-      if (!read_pack(read, field))
-        return false;
+      v = read(8);
 
-      value.by_key(i) = field;
+      if (v.size() != 8) {
+        return false;
+      }
+
+      auto n = as_index(rd<int64_t>(v, 0));
+
+      if (n < 0) {
+        return false;
+      }
+
+      if (!read_pack(read, field)) {
+        return false;
+      }
+
+      value.by_key(n) = field;
+    }
+
+    return true;
+  }
+
+  static auto read_packed_string(fn_read read, ref_family value)
+      -> bool {
+    auto v = read(8);
+
+    if (v.size() != 8) {
+      return false;
+    }
+
+    auto n = as_index(rd<int64_t>(v, 0));
+
+    if (n < 0 || n >= dictionary.size()) {
+      return false;
+    }
+
+    value = dictionary[n];
+    return true;
+  }
+
+  static auto read_packed_composite(fn_read read, ref_family value)
+      -> bool {
+    auto v = read(8);
+
+    if (v.size() != 8) {
+      return false;
+    }
+
+    auto size = as_index(rd<int64_t>(v, 0));
+
+    value = family {};
+
+    for (sl::index i = 0; i < size; i++) {
+      auto field = family {};
+
+      v = read(8);
+
+      if (v.size() != 8) {
+        return false;
+      }
+
+      auto n = as_index(rd<int64_t>(v, 0));
+
+      if (n < 0 || n >= dictionary.size()) {
+        return false;
+      }
+
+      if (!read_pack(read, field)) {
+        return false;
+      }
+
+      value[u8string_view { dictionary[n] }] = field;
     }
 
     return true;
   }
 
   static auto read_pack(fn_read read, ref_family value) -> bool {
-    auto v = read(1);
+    const auto v = read(1);
 
-    if (v.size() != 1)
+    if (v.size() != 1) {
       return false;
-
-    auto id = v[0];
-
-    if (id == ids::bool_true)
-      value = true;
-    else if (id == ids::bool_false)
-      value = false;
-
-    else if (id != ids::empty) {
-      if (id == ids::integer)
-        return read_int(read, value);
-      if (id == ids::string)
-        return read_string(read, value);
-      if (id == ids::uint)
-        return read_uint(read, value);
-      if (id == ids::real)
-        return read_real(read, value);
-      if (id == ids::bytes)
-        return read_bytes(read, value);
-      if (id == ids::bitfield)
-        return read_bitfield(read, value);
-
-      if (id == ids::vector)
-        return read_vector(read, value);
-      if (id == ids::composite)
-        return read_composite(read, value);
-      if (id == ids::compact_composite)
-        return read_compact_composite(read, value);
-
-      return false;
-    } else {
-      value = family {};
     }
 
-    return true;
+    const auto id = v[0];
+
+    if (id == ids::empty) {
+      value = family {};
+      return true;
+    }
+
+    if (id == ids::bool_true) {
+      value = true;
+      return true;
+    }
+
+    if (id == ids::bool_false) {
+      value = false;
+      return true;
+    }
+
+    if (id == ids::integer)
+      return read_int(read, value);
+    if (id == ids::string)
+      return read_string(read, value);
+    if (id == ids::uint)
+      return read_uint(read, value);
+    if (id == ids::real)
+      return read_real(read, value);
+    if (id == ids::bytes)
+      return read_bytes(read, value);
+    if (id == ids::bitfield)
+      return read_bitfield(read, value);
+
+    if (id == ids::vector)
+      return read_vector(read, value);
+    if (id == ids::composite)
+      return read_composite(read, value);
+
+    if (id == ids::compact_composite)
+      return read_compact_composite(read, value);
+    if (id == ids::packed_string)
+      return read_packed_string(read, value);
+    if (id == ids::packed_composite)
+      return read_packed_composite(read, value);
+
+    return false;
   }
 
   auto decode(fn_read read) -> pack_type {
-    auto result = make_shared<family>();
-
-    if (read && read_pack(read, *result)) {
-      return result;
+    if (!read) {
+      return {};
     }
 
-    return {};
+    const auto v = read(8);
+
+    if (v.size() != 8) {
+      return {};
+    }
+
+    if (rd<uint64_t>(v, 0) != magic) {
+      return {};
+    }
+
+    auto result = make_shared<family>();
+
+    if (!read_pack(read, *result)) {
+      return {};
+    }
+
+    return result;
   }
 
   static auto write_empty(fn_write write) -> bool {
@@ -353,8 +397,23 @@ namespace laplace::format::binary {
     return write(v) == v.size();
   }
 
+  static auto write_packed_string(fn_write write, sl::index n)
+      -> bool {
+    auto v = vbyte(9);
+    wr<uint8_t>(v, 0, ids::packed_string);
+    wr<int64_t>(v, 1, n);
+    return write(v) == v.size();
+  }
+
   static auto write_string(fn_write write, u8string_view value)
       -> bool {
+
+    if (auto i = lower_bound(dictionary.begin(), dictionary.end(),
+                             value);
+        i != dictionary.end() && *i == value) {
+      return write_packed_string(write, i - dictionary.begin());
+    }
+
     auto v = vbyte(9 + value.size());
     wr<uint8_t>(v, 0, ids::string);
     wr<uint64_t>(v, 1, value.size());
@@ -393,7 +452,7 @@ namespace laplace::format::binary {
       -> bool {
 
     if (!value.is_vector()) {
-      error_("Invalid value.", __FUNCTION__);
+      error_("Invalid value type.", __FUNCTION__);
       return false;
     }
 
@@ -427,40 +486,6 @@ namespace laplace::format::binary {
 
   static auto writedown(fn_write write, cref_family data) -> bool;
 
-  static auto write_compact_composite(fn_write    write,
-                                      cref_family value) -> bool {
-    if (!value.is_composite()) {
-      error_("Invalid value.", __FUNCTION__);
-      return false;
-    }
-
-    vbyte v(9);
-    wr<uint8_t>(v, 0, ids::compact_composite);
-    wr<uint64_t>(v, 1, value.get_size());
-    if (write(v) != v.size())
-      return false;
-
-    v.resize(8);
-
-    for (sl::index i = 0; i < value.get_size(); i++) {
-      auto &key = value.get_key(i);
-
-      if (!key.is_integer()) {
-        error_("Invalid value.", __FUNCTION__);
-        return false;
-      }
-
-      wr<int64_t>(v, 0, key.get_integer());
-
-      if (write(v) != v.size())
-        return false;
-      if (!writedown(write, value[key]))
-        return false;
-    }
-
-    return true;
-  }
-
   static auto write_vector(fn_write write, cref_family value)
       -> bool {
     auto is_bitfield = [](cref_family value) -> bool {
@@ -484,6 +509,7 @@ namespace laplace::format::binary {
     auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::vector);
     wr<uint64_t>(v, 1, value.get_size());
+
     if (write(v) != v.size())
       return false;
 
@@ -495,21 +521,99 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto write_composite(fn_write write, cref_family value)
-      -> bool {
-    auto is_compact = [](cref_family value) -> bool {
-      for (sl::index i = 0; i < value.get_size(); i++) {
-        if (!value.get_key(i).is_integer())
-          return false;
-      }
-
-      return true;
-    };
-
+  static auto write_compact_composite(fn_write    write,
+                                      cref_family value) -> bool {
     if (!value.is_composite()) {
       error_("Invalid value.", __FUNCTION__);
       return false;
     }
+
+    auto v = vbyte(9);
+    wr<uint8_t>(v, 0, ids::compact_composite);
+    wr<uint64_t>(v, 1, value.get_size());
+
+    if (write(v) != v.size()) {
+      return false;
+    }
+
+    v.resize(8);
+
+    for (sl::index i = 0; i < value.get_size(); i++) {
+      auto &key = value.get_key(i);
+
+      if (!key.is_integer()) {
+        error_("Invalid value.", __FUNCTION__);
+        return false;
+      }
+
+      wr<int64_t>(v, 0, key.get_integer());
+
+      if (write(v) != v.size())
+        return false;
+      if (!writedown(write, value[key]))
+        return false;
+    }
+
+    return true;
+  }
+
+  static auto write_packed_composite(fn_write    write,
+                                     cref_family value) -> bool {
+    auto v = vbyte(9);
+    wr<uint8_t>(v, 0, ids::packed_composite);
+    wr<uint64_t>(v, 1, value.get_size());
+
+    if (write(v) != v.size()) {
+      return false;
+    }
+
+    for (sl::index i = 0; i < value.get_size(); i++) {
+      auto &key = value.get_key(i);
+
+      if (!key.is_string()) {
+        error_("Invalid key type.", __FUNCTION__);
+        return false;
+      }
+
+      auto j = lower_bound(dictionary.begin(), dictionary.end(),
+                           key.get_string());
+
+      if (j == dictionary.end() || *j != key.get_string()) {
+        error_("Invalid key.", __FUNCTION__);
+        return false;
+      }
+
+      v.resize(8);
+      wr<int64_t>(v, 0, j - dictionary.begin());
+
+      if (write(v) != v.size())
+        return false;
+      if (!writedown(write, value.by_index(i)))
+        return false;
+    }
+
+    return true;
+  }
+
+  static auto write_composite(fn_write write, cref_family value)
+      -> bool {
+    if (!value.is_composite()) {
+      error_("Invalid value.", __FUNCTION__);
+      return false;
+    }
+
+    if (is_packable(value)) {
+      return write_packed_composite(write, value);
+    }
+
+    auto is_compact = [](cref_family value) -> bool {
+      for (sl::index i = 0; i < value.get_size(); i++)
+        if (!value.get_key(i).is_integer()) {
+          return false;
+        }
+
+      return true;
+    };
 
     if (is_compact(value)) {
       return write_compact_composite(write, value);
@@ -524,10 +628,9 @@ namespace laplace::format::binary {
     }
 
     for (sl::index i = 0; i < value.get_size(); i++) {
-      auto &key = value.get_key(i);
-      if (!writedown(write, key))
+      if (!writedown(write, value.get_key(i)))
         return false;
-      if (!writedown(write, value[key]))
+      if (!writedown(write, value.by_index(i)))
         return false;
     }
 
@@ -560,7 +663,9 @@ namespace laplace::format::binary {
 
   auto encode(fn_write write, const_pack_type data) -> bool {
     if (write) {
-      return writedown(write, data);
+      auto v = vbyte(8);
+      wr<uint64_t>(v, 0, magic);
+      return write(v) == 8 && writedown(write, data);
     }
 
     return false;

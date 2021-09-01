@@ -17,6 +17,7 @@
 
 #include "defs.h"
 #include "string.h"
+#include <bit>
 #include <concepts>
 
 namespace laplace::serial {
@@ -26,25 +27,24 @@ namespace laplace::serial {
   /*  Read value of specified type from specified offset.
    */
   template <trivial type_>
-  [[nodiscard]] constexpr auto rd(
-      span_cbyte seq, sl::index offset,
-      const type_ invalid = -1) noexcept -> type_;
+  [[nodiscard]] constexpr auto rd(span_cbyte  seq,
+                                  sl::index   offset,
+                                  const type_ invalid = -1) noexcept
+      -> type_;
 
   /*  Write the value to specified offset.
    */
   template <trivial type_>
-  constexpr void wr(span_byte seq, sl::index offset,
-                    type_ value) noexcept;
-
-  template <trivial type_>
-  constexpr void wr(uint8_t *seq, sl::index offset,
-                    type_ value) noexcept;
+  constexpr void wr(span_byte seq,
+                    sl::index offset,
+                    type_     value) noexcept;
 
   [[nodiscard]] constexpr auto byte_count() noexcept -> sl::whole;
 
   template <typename arg0_, typename... args_>
-  [[nodiscard]] constexpr auto byte_count(
-      arg0_ arg0, args_... args) noexcept -> sl::whole;
+  [[nodiscard]] constexpr auto byte_count(arg0_ arg0,
+                                          args_... args) noexcept
+      -> sl::whole;
 
   template <typename char_type, typename... args_>
   [[nodiscard]] constexpr auto byte_count(
@@ -66,12 +66,13 @@ namespace laplace::serial {
       span_byte data, std::span<const elem_type_> arg0) noexcept;
 
   template <trivial arg0_trivial_>
-  constexpr void write_bytes(
-      span_byte data, arg0_trivial_ arg0) noexcept;
+  constexpr void write_bytes(span_byte     data,
+                             arg0_trivial_ arg0) noexcept;
 
   template <typename arg0_, typename... args_>
-  constexpr void write_bytes(
-      span_byte data, arg0_ arg0, args_... args) noexcept;
+  constexpr void write_bytes(span_byte data,
+                             arg0_     arg0,
+                             args_... args) noexcept;
 
   template <trivial... args_trivial_>
   [[nodiscard]] constexpr auto pack_to_array(

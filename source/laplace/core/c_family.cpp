@@ -18,7 +18,7 @@
 #include <algorithm>
 
 namespace laplace::core {
-  using std::min, std::move, std::lower_bound, std::string_view,
+  using std::min, std::lower_bound, std::string_view,
       std::wstring_view, std::u8string_view, std::u16string_view,
       std::u32string_view, std::numeric_limits, std::pair,
       std::vector, std::monostate, std::u8string;
@@ -880,26 +880,26 @@ namespace laplace::core {
   }
 
   void family::assign(string_view value) noexcept {
-    m_data = move(to_u8string(value));
+    m_data = to_u8string(value);
   }
 
   void family::assign(wstring_view value) noexcept {
-    m_data = move(to_u8string(value));
+    m_data = to_u8string(value);
   }
 
   void family::assign(u8string_view value) noexcept {
-    m_data = move(u8string(value));
+    m_data = u8string { value };
   }
 
   void family::assign(u16string_view value) noexcept {
-    m_data = move(to_u8string(value));
+    m_data = to_u8string(value);
   }
 
   void family::assign(u32string_view value) noexcept {
-    m_data = move(to_u8string(value));
+    m_data = to_u8string(value);
   }
 
   void family::assign(span_cbyte value) noexcept {
-    m_data = move(vbyte(value.begin(), value.end()));
+    m_data = vbyte { value.begin(), value.end() };
   }
 }

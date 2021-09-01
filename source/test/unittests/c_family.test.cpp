@@ -49,39 +49,39 @@ namespace laplace::test {
   }
 
   TEST(core, family_assign) {
-    family f;
+    auto f = family {};
 
-    f = vfamily { family() };
+    f = vfamily { family {} };
     EXPECT_TRUE(f.is_vector());
 
-    f = composite { { family(), family() } };
+    f = composite { { family {}, family {} } };
     EXPECT_TRUE(f.is_composite());
 
     f = true;
     EXPECT_TRUE(f.is_boolean());
 
-    f = int8_t(0);
+    f = int8_t {};
     EXPECT_TRUE(f.is_integer());
 
-    f = int16_t(0);
+    f = int16_t {};
     EXPECT_TRUE(f.is_integer());
 
-    f = int32_t(0);
+    f = int32_t {};
     EXPECT_TRUE(f.is_integer());
 
-    f = int64_t(0);
+    f = int64_t {};
     EXPECT_TRUE(f.is_integer());
 
-    f = uint8_t(0);
+    f = uint8_t {};
     EXPECT_TRUE(f.is_uint());
 
-    f = uint16_t(0);
+    f = uint16_t {};
     EXPECT_TRUE(f.is_uint());
 
-    f = uint32_t(0);
+    f = uint32_t {};
     EXPECT_TRUE(f.is_uint());
 
-    f = uint64_t(0);
+    f = uint64_t {};
     EXPECT_TRUE(f.is_uint());
 
     f = 0.f;
@@ -90,7 +90,7 @@ namespace laplace::test {
     f = 0.;
     EXPECT_TRUE(f.is_real());
 
-    f = u8string();
+    f = u8string {};
     EXPECT_TRUE(f.is_string());
 
     f = "";
@@ -108,19 +108,19 @@ namespace laplace::test {
     f = U"";
     EXPECT_TRUE(f.is_string());
 
-    f = string_view("");
+    f = string_view { "" };
     EXPECT_TRUE(f.is_string());
 
-    f = u8string_view(u8"");
+    f = u8string_view { u8"" };
     EXPECT_TRUE(f.is_string());
 
-    f = wstring_view(L"");
+    f = wstring_view { L"" };
     EXPECT_TRUE(f.is_string());
 
-    f = u16string_view(u"");
+    f = u16string_view { u"" };
     EXPECT_TRUE(f.is_string());
 
-    f = u32string_view(U"");
+    f = u32string_view { U"" };
     EXPECT_TRUE(f.is_string());
 
     f = vbyte { 0 };
@@ -145,8 +145,8 @@ namespace laplace::test {
     EXPECT_TRUE(family(0u) == family(0u));
     EXPECT_TRUE(family(0u) < family(1u));
 
-    EXPECT_TRUE(
-        family(vbyte { 0, 1, 2 }) == family(vbyte { 0, 1, 2 }));
+    EXPECT_TRUE(family(vbyte { 0, 1, 2 }) ==
+                family(vbyte { 0, 1, 2 }));
     EXPECT_TRUE(family(vbyte { 0, 1 }) < family(vbyte { 0, 1, 2 }));
     EXPECT_TRUE(family(vbyte { 0, 1, 2 }) < family(vbyte { 1, 2 }));
     EXPECT_TRUE(family(vbyte { 0, 1, 2 }) < family(vbyte { 1, 0 }));
@@ -162,14 +162,12 @@ namespace laplace::test {
 
     EXPECT_TRUE(family(composite { { family(0), family(1) } }) ==
                 family(composite { { family(0), family(1) } }));
-    EXPECT_TRUE(
-        family(composite { { family(0), family(1) } }) <
-        family(composite {
-            { family(0), family(1) }, { family(2), family(3) } }));
-    EXPECT_TRUE(
-        family(composite {
-            { family(0), family(1) }, { family(2), family(3) } }) <
-        family(composite { { family(2), family(3) } }));
+    EXPECT_TRUE(family(composite { { family(0), family(1) } }) <
+                family(composite { { family(0), family(1) },
+                                   { family(2), family(3) } }));
+    EXPECT_TRUE(family(composite { { family(0), family(1) },
+                                   { family(2), family(3) } }) <
+                family(composite { { family(2), family(3) } }));
   }
 
   TEST(core, family_nothrow) {
@@ -205,13 +203,13 @@ namespace laplace::test {
   }
 
   TEST(core, family_has_key) {
-    auto f = family{};
+    auto f = family {};
 
     EXPECT_FALSE(f.has("abc"));
   }
 
   TEST(core, family_key) {
-    auto f = family{};
+    auto f = family {};
 
     f.key("abc");
 
@@ -219,7 +217,7 @@ namespace laplace::test {
   }
 
   TEST(core, family_set_key) {
-    auto f = family{};
+    auto f = family {};
 
     f.key("abc");
     f.set_key(0, "def");
@@ -229,9 +227,9 @@ namespace laplace::test {
   }
 
   TEST(core, family_merge_simple) {
-    auto a = family{};
-    auto b = family{};
-    auto c = family{};
+    auto a = family {};
+    auto b = family {};
+    auto c = family {};
 
     a["x"] = 1;
     b["y"] = 2;

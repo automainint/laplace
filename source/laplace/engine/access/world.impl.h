@@ -18,11 +18,25 @@ namespace laplace::engine::access {
   inline auto world::random(dist_ &dist) const ->
       typename dist_::result_type {
 
-    if (is_allowed(sync, m_mode)) {
-      return dist(get_random_engine());
+    if (!is_allowed(sync, m_mode)) {
+      return {};
     }
 
-    return {};
+    return dist(get_random_engine());
+  }
+
+  template <typename dist_>
+  inline auto world::random(dist_ &dist, sl::whole count) const
+      -> sl::vector<typename dist_::result_type> {
+
+    if (!is_allowed(sync, m_mode)) {
+      return {};
+    }
+
+    auto &r = get_random_engine();
+    auto  v = sl::vector<typename dist_::result_type>(count);
+    for (auto &x : v) { x = dist(r); }
+    return v;
   }
 }
 
