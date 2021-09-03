@@ -13,7 +13,7 @@ option(LAPLACE_ENABLE_LIB       "Enable building static library" OFF)
 option(LAPLACE_ENABLE_TESTING   "Enable testing" OFF)
 option(LAPLACE_ENABLE_COVERAGE  "Enable coverage reporting" OFF)
 option(LAPLACE_VERBOSE          "Enable verbose logging" ON)
-option(LAPLACE_UNSAFE)          "Disable safety checks" OFF)
+option(LAPLACE_UNSAFE           "Disable safety checks" OFF)
 
 set(LAPLACE_PROJECT   laplace)
 set(LAPLACE_OBJ       laplace-obj)
