@@ -26,11 +26,24 @@ namespace laplace {
   /*  TODO
    *  Use source_location.
    */
-  void error_(std::string_view message, std::string_view loc) noexcept;
-  void error_(std::u8string_view message, std::string_view loc) noexcept;
+  void error_(std::string_view message,
+              std::string_view loc) noexcept;
+  void error_(std::u8string_view message,
+              std::string_view   loc) noexcept;
 
   void verb(std::string_view s) noexcept;
   void verb(std::u8string_view s) noexcept;
+
+#ifndef LAPLACE_VERBOSE
+  constexpr void set_verbose(bool is_verbose) noexcept { }
+
+  constexpr auto is_verbose() noexcept -> bool {
+    return false;
+  }
+
+  constexpr void verb(std::string_view s) noexcept { }
+  constexpr void verb(std::u8string_view s) noexcept { }
+#endif
 }
 
 #endif

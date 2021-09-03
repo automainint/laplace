@@ -1,7 +1,5 @@
 /*  laplace/core/utils.h
  *
- *      The core utilities.
- *
  *  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
@@ -24,12 +22,15 @@ namespace laplace {
   /*  Convert unsigned integer value to an index.
    *  All indices are sl::index values.
    */
-  [[nodiscard]] constexpr auto as_index(uint64_t value,
-                                        sl::index invalid = -1) noexcept
+  [[nodiscard]] constexpr auto as_index(
+      const uint64_t value, const sl::index invalid = -1) noexcept
       -> sl::index;
 
-  [[nodiscard]] constexpr auto as_index(int64_t   value,
-                                        sl::index invalid = -1) noexcept
+  /*  Convert 64-bit integer value to an index.
+   *  All indices are sl::index values.
+   */
+  [[nodiscard]] constexpr auto as_index(
+      const int64_t value, const sl::index invalid = -1) noexcept
       -> sl::index;
 }
 

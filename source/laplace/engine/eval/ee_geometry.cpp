@@ -168,7 +168,7 @@ namespace laplace::engine::eval {
 
   auto flat_center_of(cref_box a, sl::index n) -> intval {
     if (n >= 0 && n < 3) {
-      midpoint(a.min[n], a.max[n]);
+      return midpoint(a.min[n], a.max[n]);
     }
 
     return {};

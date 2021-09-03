@@ -12,6 +12,7 @@
 
 #include "../../laplace/core/small_vector.h"
 #include <gtest/gtest.h>
+#include <string>
 
 namespace laplace::test {
   TEST(core, small_vector_empty_at_construct) {
@@ -114,18 +115,33 @@ namespace laplace::test {
   }
 
   TEST(core, small_vector_copy) {
-    auto v = small_vector<int> {};
-    v.push_back(9);
-    auto v2 = small_vector<int> { v };
-    EXPECT_EQ(v2.at(0), 9);
+    auto a = small_vector<int> {};
+    a.push_back(9);
+    auto b = small_vector<int> { a };
+    EXPECT_EQ(b.at(0), 9);
   }
 
   TEST(core, small_vector_copy_big) {
-    auto v = small_vector<int> {};
-    v.resize(400);
-    v.at(399) = 39;
-    auto v2   = small_vector<int> { v };
-    EXPECT_EQ(v2.at(399), 39);
+    auto a = small_vector<int> {};
+    a.resize(400);
+    a.at(399) = 39;
+    auto b    = small_vector<int> { a };
+    EXPECT_EQ(b.at(399), 39);
+  }
+
+  TEST(core, small_vector_copy2) {
+    auto a = small_vector<int, 40> {};
+    a.push_back(9);
+    auto b = small_vector<int, 50> { a };
+    EXPECT_EQ(b.at(0), 9);
+  }
+
+  TEST(core, small_vector_copy2_big) {
+    auto a = small_vector<int, 40> {};
+    a.resize(400);
+    a.at(399) = 39;
+    auto b    = small_vector<int, 50> { a };
+    EXPECT_EQ(b.at(399), 39);
   }
 
   TEST(core, small_vector_iterator) {
@@ -140,33 +156,65 @@ namespace laplace::test {
   }
 
   TEST(core, small_vector_assign) {
-    auto v  = small_vector<int> {};
-    auto v2 = small_vector<int> {};
-    v2.push_back(1);
-    v2.push_back(5);
-    v2.push_back(2);
-    v2.push_back(6);
-    v = v2;
-    EXPECT_EQ(v.at(0), 1);
-    EXPECT_EQ(v.at(1), 5);
-    EXPECT_EQ(v.at(2), 2);
-    EXPECT_EQ(v.at(3), 6);
+    auto a = small_vector<int> {};
+    auto b = small_vector<int> {};
+    b.push_back(1);
+    b.push_back(5);
+    b.push_back(2);
+    b.push_back(6);
+    a = b;
+    EXPECT_EQ(a.size(), b.size());
+    EXPECT_EQ(a.at(0), 1);
+    EXPECT_EQ(a.at(1), 5);
+    EXPECT_EQ(a.at(2), 2);
+    EXPECT_EQ(a.at(3), 6);
   }
 
   TEST(core, small_vector_assign_big) {
-    auto v  = small_vector<int> {};
-    auto v2 = small_vector<int> {};
+    auto a = small_vector<int> {};
+    auto b = small_vector<int> {};
 
-    v2.resize(400);
-    v2.at(350) = 10;
-    v2.at(398) = 4;
-    v2.at(399) = 50;
+    b.resize(400);
+    b.at(350) = 10;
+    b.at(398) = 4;
+    b.at(399) = 50;
 
-    v = v2;
+    a = b;
 
-    EXPECT_EQ(v.at(350), 10);
-    EXPECT_EQ(v.at(398), 4);
-    EXPECT_EQ(v.at(399), 50);
+    EXPECT_EQ(a.at(350), 10);
+    EXPECT_EQ(a.at(398), 4);
+    EXPECT_EQ(a.at(399), 50);
+  }
+
+  TEST(core, small_vector_assign2) {
+    auto a = small_vector<int, 40> {};
+    auto b = small_vector<int, 50> {};
+    b.push_back(10);
+    b.push_back(20);
+    b.push_back(30);
+    b.push_back(40);
+    a = b;
+    EXPECT_EQ(a.size(), b.size());
+    EXPECT_EQ(a.at(0), 10);
+    EXPECT_EQ(a.at(1), 20);
+    EXPECT_EQ(a.at(2), 30);
+    EXPECT_EQ(a.at(3), 40);
+  }
+  
+  TEST(core, small_vector_assign2_big) {
+    auto a = small_vector<int, 40> {};
+    auto b = small_vector<int, 50> {};
+
+    b.resize(400);
+    b.at(350) = 10;
+    b.at(398) = 4;
+    b.at(399) = 50;
+
+    a = b;
+
+    EXPECT_EQ(a.at(350), 10);
+    EXPECT_EQ(a.at(398), 4);
+    EXPECT_EQ(a.at(399), 50);
   }
 
   TEST(core, small_vector_assign_move) {
@@ -318,5 +366,82 @@ namespace laplace::test {
     EXPECT_TRUE(c < d);
     EXPECT_TRUE(c < e);
     EXPECT_TRUE(d > e);
+  }
+
+  TEST(core, small_vector_strings) {
+    auto a = small_vector<std::string> {};
+    auto b = small_vector<std::string> {};
+
+    a.resize(4);
+    a[0] = std::string { "foo" };
+    a[1] = std::string { "bar" };
+    a[2] = std::string { "abc" };
+    a[3] = std::string { "def" };
+
+    b = a;
+
+    EXPECT_EQ(b[0], "foo");
+    EXPECT_EQ(b[1], "bar");
+    EXPECT_EQ(b[2], "abc");
+    EXPECT_EQ(b[3], "def");
+  }
+
+  TEST(core, small_vector_erase) {
+    auto v = small_vector<int> { 1, 2, 3, 4, 5 };
+    v.erase(v.begin() + 2);
+
+    EXPECT_EQ(v.size(), 4);
+    EXPECT_EQ(v.at(0), 1);
+    EXPECT_EQ(v.at(1), 2);
+    EXPECT_EQ(v.at(2), 4);
+    EXPECT_EQ(v.at(3), 5);
+  }
+
+  TEST(core, small_vector_erase_range) {
+    auto v = small_vector<int> { 1, 2, 3, 4, 5 };
+    v.erase(v.begin() + 1, v.begin() + 4);
+
+    EXPECT_EQ(v.size(), 2);
+    EXPECT_EQ(v.at(0), 1);
+    EXPECT_EQ(v.at(1), 5);
+  }
+
+  TEST(core, small_vector_insert_range) {
+    auto a = small_vector<int> {};
+    auto b = small_vector<int> { 1, 2, 3, 4, 5 };
+    a.insert(a.begin(), b.begin(), b.end());
+
+    EXPECT_EQ(a.size(), 5);
+    EXPECT_EQ(a.at(0), 1);
+    EXPECT_EQ(a.at(1), 2);
+    EXPECT_EQ(a.at(2), 3);
+    EXPECT_EQ(a.at(3), 4);
+    EXPECT_EQ(a.at(4), 5);
+  }
+
+  TEST(core, small_vector_insert_range2) {
+    auto a = small_vector<int> { 1, 2 };
+    auto b = small_vector<int> { 3, 4, 5 };
+    a.insert(a.begin() + 1, b.begin(), b.end());
+
+    EXPECT_EQ(a.size(), 5);
+    EXPECT_EQ(a.at(0), 1);
+    EXPECT_EQ(a.at(1), 3);
+    EXPECT_EQ(a.at(2), 4);
+    EXPECT_EQ(a.at(3), 5);
+    EXPECT_EQ(a.at(4), 2);
+  }
+
+  TEST(core, small_vector_insert_range3) {
+    auto a = small_vector<int> { 1, 2, 3 };
+    auto b = small_vector<int> { 4, 5 };
+    a.insert(a.begin() + 1, b.begin(), b.end());
+
+    EXPECT_EQ(a.size(), 5);
+    EXPECT_EQ(a.at(0), 1);
+    EXPECT_EQ(a.at(1), 4);
+    EXPECT_EQ(a.at(2), 5);
+    EXPECT_EQ(a.at(3), 2);
+    EXPECT_EQ(a.at(4), 3);
   }
 }

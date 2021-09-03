@@ -33,8 +33,8 @@ namespace laplace::sl {
   /*  TODO
    *  Small vector optimization.
    */
-  template <typename type_, typename alloc_ = std::allocator<type_>>
-  using vector = std::vector<type_, alloc_>;
+  template <typename type_>
+  using vector = std::vector<type_>;
 
   /*  For indexing integer values.
    */

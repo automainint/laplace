@@ -44,6 +44,7 @@ Laplace CMake configuration options:
 - `LAPLACE_ENABLE_TESTING` - enable testing. `OFF` by default.
 - `LAPLACE_ENABLE_COVERAGE` - enable coverage reporting. `OFF` by default.
 - `LAPLACE_VERBOSE` - enable verbose logging of Laplace. `ON` by default.
+- `LAPLACE_UNSAFE` - disable safety checks of Laplace. `OFF` by default.
 
 Tests will be created if `LAPLACE_ENABLE_TESTING` or `LAPLACE_ENABLE_COVERAGE` is `ON`.
 

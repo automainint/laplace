@@ -13,6 +13,7 @@ option(LAPLACE_ENABLE_LIB       "Enable building static library" OFF)
 option(LAPLACE_ENABLE_TESTING   "Enable testing" OFF)
 option(LAPLACE_ENABLE_COVERAGE  "Enable coverage reporting" OFF)
 option(LAPLACE_VERBOSE          "Enable verbose logging" ON)
+option(LAPLACE_UNSAFE)          "Disable safety checks" OFF)
 
 set(LAPLACE_PROJECT   laplace)
 set(LAPLACE_OBJ       laplace-obj)
@@ -46,6 +47,10 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
 
   if(LAPLACE_VERBOSE)
     add_compile_definitions(LAPLACE_VERBOSE)
+  endif()
+
+  if(LAPLACE_UNSAFE)
+    add_compile_definitions(LAPLACE_UNSAFE)
   endif()
 
   add_library(${LAPLACE_OBJ} OBJECT)

@@ -30,6 +30,10 @@ static_assert(sizeof(unsigned long long) == 8);
  */
 //  #define LAPLACE_VERBOSE
 
+/*  Disable safety checks.
+ */
+//  #define LAPLACE_UNSAFE
+
 /*  Force to use POSIX sockets.
  */
 //  #define LAPLACE_POSIX_SOCKETS
@@ -54,5 +58,13 @@ static_assert(sizeof(unsigned long long) == 8);
 #if defined(_MSC_VER) && !defined(LAPLACE_MSVC_WARNINGS)
 #  pragma warning(disable : 4018 4100 4245 4250 4389 26812)
 #endif
+
+namespace laplace {
+#ifdef LAPLACE_UNSAFE
+  constexpr bool _unsafe = true;
+#else
+  constexpr bool _unsafe = false;
+#endif
+}
 
 #endif

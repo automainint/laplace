@@ -23,8 +23,6 @@ namespace laplace {
       std::shared_mutex, std::string_view, std::u8string_view,
       std::cerr;
 
-  static mutex g_log_lock;
-
 #ifdef LAPLACE_VERBOSE
   static bool         g_verbose = true;
   static shared_mutex g_verbose_lock;
@@ -50,17 +48,9 @@ namespace laplace {
       log(s);
     }
   }
-
-#else
-  void set_verbose(bool is_verbose) noexcept { }
-
-  auto is_verbose() noexcept -> bool {
-    return false;
-  }
-
-  void verb(std::string_view s) noexcept { }
-  void verb(std::u8string_view s) noexcept { }
 #endif
+
+  static auto g_log_lock = mutex {};
 
   void log(string_view s) noexcept {
     try {
