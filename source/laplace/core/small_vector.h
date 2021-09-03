@@ -106,9 +106,9 @@ namespace laplace {
     [[nodiscard]] auto cbegin() const noexcept -> const_iterator;
     [[nodiscard]] auto cend() const noexcept -> const_iterator;
 
-    template <ptrdiff_t size2_, bool unsafe_>
+    template <ptrdiff_t size2_, bool unsafe2_>
     [[nodiscard]] auto compare(
-        const small_vector<elem_, size2_, unsafe_> &v) const noexcept
+        const small_vector<elem_, size2_, unsafe2_> &v) const noexcept
         -> int;
 
     [[nodiscard]] auto operator[](const ptrdiff_t n) noexcept

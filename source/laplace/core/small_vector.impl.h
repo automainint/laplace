@@ -68,7 +68,7 @@ namespace laplace {
     m_values = _static_data();
 
     reserve(size);
-    _fill(m_values, m_values + size, args);
+    _fill(m_values, m_values + size, args...);
 
     m_size = size;
   }
