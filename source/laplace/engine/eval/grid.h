@@ -43,13 +43,13 @@ namespace laplace::engine::eval::grid {
   using fn_point     = std::function<bool(const vec2z p)>;
   using fn_available = std::function<bool(const int8_t state)>;
 
-  [[nodiscard]] auto trace_line(const vec2z    size,
-                                const vec2z    a,
+  [[nodiscard]] auto trace_line(const vec2z    a,
                                 const vec2z    b,
                                 const fn_point point) noexcept
       -> bool;
 
-  [[nodiscard]] auto neighbors4(const sl::index               width,
+  [[nodiscard]] auto neighbors4(const sl::whole               width,
+                                const sl::whole               stride,
                                 const intval                  scale,
                                 const std::span<const int8_t> map,
                                 const fn_available available,
@@ -57,7 +57,8 @@ namespace laplace::engine::eval::grid {
                                 const sl::index    n) noexcept
       -> astar::link;
 
-  [[nodiscard]] auto neighbors8(const sl::index               width,
+  [[nodiscard]] auto neighbors8(const sl::whole               width,
+                                const sl::whole               stride,
                                 const intval                  scale,
                                 const std::span<const int8_t> map,
                                 const fn_available available,
@@ -65,39 +66,64 @@ namespace laplace::engine::eval::grid {
                                 const sl::index    n) noexcept
       -> astar::link;
 
-  [[nodiscard]] auto manhattan(const sl::index width,
+  [[nodiscard]] auto manhattan(const sl::whole stride,
                                const intval    scale,
                                const sl::index a,
                                const sl::index b) noexcept -> intval;
 
-  [[nodiscard]] auto diagonal(const sl::index width,
+  [[nodiscard]] auto diagonal(const sl::whole stride,
                               const intval    scale,
                               const sl::index a,
                               const sl::index b) noexcept -> intval;
 
-  [[nodiscard]] auto euclidean(const sl::index width,
+  [[nodiscard]] auto euclidean(const sl::whole stride,
                                const intval    scale,
                                const sl::index a,
                                const sl::index b) noexcept -> intval;
 
-  [[nodiscard]] auto path_exists(const sl::index               width,
+  [[nodiscard]] auto path_exists(const sl::whole               width,
                                  const std::span<const int8_t> map,
                                  const fn_available available,
-                                 const vec2z        a,
-                                 const vec2z b) noexcept -> bool;
+                                 const vec2z        source,
+                                 const vec2z destination) noexcept
+      -> bool;
+
+  [[nodiscard]] auto path_exists(const sl::whole               width,
+                                 const vec2z                   min,
+                                 const vec2z                   max,
+                                 const std::span<const int8_t> map,
+                                 const fn_available available,
+                                 const vec2z        source,
+                                 const vec2z destination) noexcept
+      -> bool;
 
   struct _state {
     astar::_state<true, astar::_node_theta> astar;
 
-    sl::whole width = {};
+    vec2z     origin = {};
+    sl::whole stride = {};
 
     astar::fn_heuristic heuristic;
     astar::fn_neighbors neighbors;
     astar::fn_sight     sight;
   };
 
+  /*  Search in entire map.
+   */
   [[nodiscard]] auto path_search_init(
       const vec2z                   size,
+      const intval                  scale,
+      const std::span<const int8_t> map,
+      const fn_available            available,
+      const vec2z                   source,
+      const vec2z                   destination) noexcept -> _state;
+
+  /*  Search in bounds [min; max).
+   */
+  [[nodiscard]] auto path_search_init(
+      const vec2z                   size,
+      const vec2z                   min,
+      const vec2z                   max,
       const intval                  scale,
       const std::span<const int8_t> map,
       const fn_available            available,

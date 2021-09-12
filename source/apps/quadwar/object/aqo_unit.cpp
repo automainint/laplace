@@ -338,19 +338,22 @@ namespace quadwar_app::object {
     m_current   = -1;
     m_waypoints = grid::path_search_finish(m_search);
 
-    for (sl::index i = m_waypoints.size() - 1; i >= 0; i--)
-      if (grid::trace_line(
-              m_size, p0, m_waypoints[i], [&](const vec2z p) {
-                if (p.x() < 0 || p.y() < 0 || p.x() >= m_size.x() ||
-                    p.y() >= m_size.y()) {
-                  return false;
-                }
+    for (sl::index i = m_waypoints.size() - 1; i >= 0; i--) {
+      const auto &p1 = m_waypoints[i];
 
-                return m_pathmap[p.y() * m_size.x() + p.x()] <= 0;
-              })) {
+      if (p0.x() < 0 || p0.y() < 0 || p0.x() >= m_size.x() ||
+          p0.y() >= m_size.y() || p1.x() < 0 || p1.y() < 0 ||
+          p1.x() >= m_size.x() || p1.y() >= m_size.y()) {
+        continue;
+      }
+
+      if (grid::trace_line(p0, p1, [&](const vec2z p) {
+            return m_pathmap[p.y() * m_size.x() + p.x()] <= 0;
+          })) {
         m_current = i;
         break;
       }
+    }
 
     if (m_current < 0) {
       m_searching = false;
