@@ -191,7 +191,7 @@ namespace laplace::test {
                                                1, 1, 1, 1, 1, 1, 1 };
 
     auto state = grid::path_search_init(
-        { width, height }, { 2, 1 }, { 5, 3 }, 10, map,
+        { width, height }, { 2, 1 }, { 5, 4 }, 10, map,
         [](const int8_t x) { return x == 0; }, { 2, 1 }, { 4, 1 });
 
     auto s = astar::status {};

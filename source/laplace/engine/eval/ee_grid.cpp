@@ -437,7 +437,7 @@ namespace laplace::engine::eval::grid {
     auto s = _state {};
 
     const auto index_of = [&](const vec2z p) {
-      return p.y() * width + p.x();
+      return p.y() * stride + p.x();
     };
 
     s.astar = astar::init<true, astar::_node_theta>(
