@@ -183,20 +183,24 @@ namespace laplace::engine::eval::grid {
       return {};
     }
 
-    auto check = [&](sl::index p) -> link {
-      if (p < 0 || p >= map.size() || p % stride >= width ||
-          !available(map[p])) {
+    auto check = [&](sl::index x, sl::index y) -> link {
+      if (x < 0 || x >= width || y < 0) {
         return { .node = link::skip };
       }
 
-      return link { .node = p, .distance = scale };
+      const auto n = y * stride + x;
+      if (n >= map.size() || !available(map[n])) {
+        return { .node = link::skip };
+      }
+
+      return link { .node = n, .distance = scale };
     };
 
     switch (n) {
-      case 0: return check(position - stride);
-      case 1: return check(position + stride);
-      case 2: return check(position - 1);
-      case 3: return check(position + 1);
+      case 0: return check(x, y - 1);
+      case 1: return check(x, y + 1);
+      case 2: return check(x - 1, y);
+      case 3: return check(x + 1, y);
     }
 
     return {};
@@ -225,29 +229,34 @@ namespace laplace::engine::eval::grid {
       return {};
     }
 
-    auto check = [&](sl::index p, intval distance) -> link {
-      if (p < 0 || p >= map.size() || p % stride >= width ||
-          !available(map[p])) {
+    auto check = [&](sl::index x, sl::index y,
+                     intval distance) -> link {
+      if (x < 0 || x >= width || y < 0) {
         return { .node = link::skip };
       }
 
-      return link { .node = p, .distance = distance };
+      const auto n = y * stride + x;
+      if (n >= map.size() || !available(map[n])) {
+        return { .node = link::skip };
+      }
+
+      return link { .node = n, .distance = distance };
     };
 
     switch (n) {
-      case 0: return check(position - stride, scale);
-      case 1: return check(position + stride, scale);
-      case 2: return check(position - 1, scale);
-      case 3: return check(position + 1, scale);
+      case 0: return check(x, y - 1, scale);
+      case 1: return check(x, y + 1, scale);
+      case 2: return check(x - 1, y, scale);
+      case 3: return check(x + 1, y, scale);
     }
 
     const auto d = scale > 1 ? eval::sqrt2(scale) : 1;
 
     switch (n) {
-      case 4: return check(position - stride - 1, d);
-      case 5: return check(position - stride + 1, d);
-      case 6: return check(position + stride - 1, d);
-      case 7: return check(position + stride + 1, d);
+      case 4: return check(x - 1, y - 1, d);
+      case 5: return check(x + 1, y - 1, d);
+      case 6: return check(x - 1, y + 1, d);
+      case 7: return check(x + 1, y + 1, d);
     }
 
     return {};
@@ -321,13 +330,13 @@ namespace laplace::engine::eval::grid {
     return eval::sqrt((dx * dx + dy * dy) * scale, scale);
   }
 
-  [[nodiscard]] auto _path_exists_basic(
-      const sl::whole          width,
-      const sl::whole          stride,
-      const span<const int8_t> map,
-      const fn_available       available,
-      const vec2z              source,
-      const vec2z              destination) noexcept -> bool {
+  [[nodiscard]] auto path_exists(const sl::whole          width,
+                                 const sl::whole          stride,
+                                 const span<const int8_t> map,
+                                 const fn_available       available,
+                                 const vec2z              source,
+                                 const vec2z destination) noexcept
+      -> bool {
 
     if (stride <= 0) {
       return false;
@@ -393,8 +402,8 @@ namespace laplace::engine::eval::grid {
                                  const vec2z destination) noexcept
       -> bool {
 
-    return _path_exists_basic(width, width, map, available, source,
-                              destination);
+    return path_exists(width, width, map, available, source,
+                       destination);
   }
 
   [[nodiscard]] auto path_exists(const sl::whole          width,
@@ -406,14 +415,14 @@ namespace laplace::engine::eval::grid {
                                  const vec2z destination) noexcept
       -> bool {
 
-    return _path_exists_basic(
+    return path_exists(
         max.x() - min.x(), width,
         span { map.begin() + min.y() * width + min.x(),
                map.begin() + (max.y() - 1) * width + max.x() },
         available, source - min, destination - min);
   }
 
-  [[nodiscard]] auto _path_search_init_basic(
+  [[nodiscard]] auto path_search_init(
       const vec2z              size,
       const vec2z              origin,
       const sl::whole          stride,
@@ -486,8 +495,8 @@ namespace laplace::engine::eval::grid {
                         const vec2z              source,
                         const vec2z destination) noexcept -> _state {
 
-    return _path_search_init_basic(size, {}, size.x(), scale, map,
-                                   available, source, destination);
+    return path_search_init(size, {}, size.x(), scale, map, available,
+                            source, destination);
   }
 
   auto path_search_init(const vec2z              size,
@@ -499,7 +508,7 @@ namespace laplace::engine::eval::grid {
                         const vec2z              source,
                         const vec2z destination) noexcept -> _state {
 
-    return _path_search_init_basic(
+    return path_search_init(
         max - min, min, size.x(), scale,
         span { map.begin() + min.y() * size.x() + min.x(),
                map.begin() + (max.y() - 1) * size.x() + max.x() },

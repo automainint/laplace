@@ -29,7 +29,7 @@ namespace laplace::test {
                                                 1, 1, 1, 1, 1 };
 
     auto map = eval::hierarchical_grid::generate(
-        { 3, 3 }, { width, height }, grid,
+        { 3, 3 }, { width, height }, 10, grid,
         [](const int8_t x) { return x <= 0; });
 
     EXPECT_TRUE(map.pivots.empty());
@@ -45,7 +45,7 @@ namespace laplace::test {
                                                 1, 1, 1, 1, 1 };
 
     auto map = eval::hierarchical_grid::generate(
-        { 3, 3 }, { width, height }, grid,
+        { 3, 3 }, { width, height }, 10, grid,
         [](const int8_t x) { return x <= 0; });
 
     EXPECT_EQ(map.pivots.size(), 1);
@@ -72,7 +72,7 @@ namespace laplace::test {
                                                 1, 1, 1 };
 
     auto map = eval::hierarchical_grid::generate(
-        { 3, 3 }, { width, height }, grid,
+        { 3, 3 }, { width, height }, 10, grid,
         [](const int8_t x) { return x <= 0; });
 
     EXPECT_EQ(map.pivots.size(), 2);
@@ -108,7 +108,7 @@ namespace laplace::test {
                                                 0, 1, 0, 1, 0 };
 
     auto map = eval::hierarchical_grid::generate(
-        { 2, 2 }, { width, height }, grid,
+        { 2, 2 }, { width, height }, 10, grid,
         [](const int8_t x) { return x <= 0; });
 
     EXPECT_FALSE(map.pivots.empty());
@@ -135,7 +135,7 @@ namespace laplace::test {
     };
 
     auto map = eval::hierarchical_grid::generate(
-        { 3, 3 }, { width, height }, grid,
+        { 3, 3 }, { width, height }, 10, grid,
         [](const int8_t x) { return x <= 0; });
 
     EXPECT_FALSE(map.pivots.empty());
@@ -166,12 +166,104 @@ namespace laplace::test {
 
     auto map = map_info {
       .grid_size    = { width, height },
+      .grid_stride  = width,
+      .grid_scale   = 10,
       .grid_data    = grid,
       .block_size   = { 6, 6 },
-      .block_stride = 6,
+      .block_stride = 1,
       .available    = [](const int8_t x) { return x <= 0; },
       .pivots= { pivot { .block         = { 0, 0 },
                           .position      = { 3, 0 },
+                          .is_horizontal = true },
+                  pivot { .block       = { 0, 0 },
+                          .position    = { 0, 4 },
+                          .is_vertical = true } },
+      .blocks= { sl::vector<sl::index> { 0, 1 } }
+    };
+
+    eval::hierarchical_grid::process(map);
+
+    EXPECT_FALSE(map.pivots[0].neighbors.empty());
+    EXPECT_FALSE(map.pivots[1].neighbors.empty());
+
+    if (!map.pivots[0].neighbors.empty()) {
+      EXPECT_EQ(map.pivots[0].neighbors[0].node, 1);
+    }
+
+    if (!map.pivots[1].neighbors.empty()) {
+      EXPECT_EQ(map.pivots[1].neighbors[0].node, 0);
+    }
+  }
+
+  TEST(engine, eval_hierarchical_grid_process_block2) {
+    using eval::hierarchical_grid::map_info;
+    using eval::hierarchical_grid::pivot;
+
+    constexpr auto width  = 7;
+    constexpr auto height = 7;
+    constexpr auto size   = width * height;
+
+    constexpr auto grid = array<int8_t, size> {
+      0, 0, 0, 0, 0, 0, 0, //
+      0, 0, 0, 0, 0, 0, 0, //
+      0, 0, 0, 0, 0, 0, 0, //
+      1, 1, 1, 1, 1, 1, 1, //
+      0, 0, 0, 0, 0, 0, 0, //
+      0, 0, 0, 0, 0, 0, 0, //
+      0, 0, 0, 0, 0, 0, 0
+    };
+
+    auto map = map_info {
+      .grid_size    = { width, height },
+      .grid_stride  = width,
+      .grid_scale   = 10,
+      .grid_data    = grid,
+      .block_size   = { 6, 6 },
+      .block_stride = 1,
+      .available    = [](const int8_t x) { return x <= 0; },
+      .pivots= { pivot { .block         = { 0, 0 },
+                          .position      = { 3, 0 },
+                          .is_horizontal = true },
+                  pivot { .block       = { 0, 0 },
+                          .position    = { 0, 4 },
+                          .is_vertical = true } },
+      .blocks= { sl::vector<sl::index> { 0, 1 } }
+    };
+
+    eval::hierarchical_grid::process(map);
+
+    EXPECT_TRUE(map.pivots[0].neighbors.empty());
+    EXPECT_TRUE(map.pivots[1].neighbors.empty());
+  }
+
+  TEST(engine, eval_hierarchical_grid_process_block3) {
+    using eval::hierarchical_grid::map_info;
+    using eval::hierarchical_grid::pivot;
+
+    constexpr auto width  = 7;
+    constexpr auto height = 7;
+    constexpr auto size   = width * height;
+
+    constexpr auto grid = array<int8_t, size> {
+      0, 0, 0, 0, 0, 0, 0, //
+      1, 1, 1, 0, 0, 0, 0, //
+      0, 0, 1, 1, 0, 0, 0, //
+      0, 0, 0, 0, 0, 0, 0, //
+      0, 0, 0, 0, 0, 0, 0, //
+      0, 0, 0, 0, 0, 0, 0, //
+      0, 0, 0, 0, 0, 0, 0
+    };
+
+    auto map = map_info {
+      .grid_size    = { width, height },
+      .grid_stride  = width,
+      .grid_scale   = 10,
+      .grid_data    = grid,
+      .block_size   = { 4, 4 },
+      .block_stride = 1,
+      .available    = [](const int8_t x) { return x <= 0; },
+      .pivots= { pivot { .block         = { 0, 0 },
+                          .position      = { 2, 0 },
                           .is_horizontal = true },
                   pivot { .block       = { 0, 0 },
                           .position    = { 0, 3 },
@@ -179,17 +271,50 @@ namespace laplace::test {
       .blocks= { sl::vector<sl::index> { 0, 1 } }
     };
 
-    eval::hierarchical_grid::process({ 3, 3 }, { 3, 3 }, map);
+    eval::hierarchical_grid::process(map);
 
     EXPECT_FALSE(map.pivots[0].neighbors.empty());
     EXPECT_FALSE(map.pivots[1].neighbors.empty());
+  }
 
-    if (!map.pivots[0].neighbors.empty()) {
-      EXPECT_EQ(map.pivots[0].neighbors[0], 1);
-    }
+  TEST(engine, eval_hierarchical_grid_process_block4) {
+    using eval::hierarchical_grid::map_info;
+    using eval::hierarchical_grid::pivot;
 
-    if (!map.pivots[1].neighbors.empty()) {
-      EXPECT_EQ(map.pivots[1].neighbors[0], 0);
-    }
+    constexpr auto width  = 7;
+    constexpr auto height = 7;
+    constexpr auto size   = width * height;
+
+    constexpr auto grid = array<int8_t, size> {
+      0, 0, 0, 0, 0, 0, 0, //
+      1, 1, 1, 0, 0, 0, 0, //
+      0, 0, 1, 1, 1, 0, 0, //
+      0, 0, 0, 0, 0, 0, 0, //
+      0, 0, 0, 0, 0, 0, 0, //
+      0, 0, 0, 0, 0, 0, 0, //
+      0, 0, 0, 0, 0, 0, 0
+    };
+
+    auto map = map_info {
+      .grid_size    = { width, height },
+      .grid_stride  = width,
+      .grid_scale   = 10,
+      .grid_data    = grid,
+      .block_size   = { 4, 4 },
+      .block_stride = 1,
+      .available    = [](const int8_t x) { return x <= 0; },
+      .pivots= { pivot { .block         = { 0, 0 },
+                          .position      = { 2, 0 },
+                          .is_horizontal = true },
+                  pivot { .block       = { 0, 0 },
+                          .position    = { 0, 3 },
+                          .is_vertical = true } },
+      .blocks= { sl::vector<sl::index> { 0, 1 } }
+    };
+
+    eval::hierarchical_grid::process(map);
+
+    EXPECT_TRUE(map.pivots[0].neighbors.empty());
+    EXPECT_TRUE(map.pivots[1].neighbors.empty());
   }
 }

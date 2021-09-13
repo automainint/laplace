@@ -29,10 +29,12 @@ namespace laplace::serial {
   constexpr auto _swap_bytes(auto x) noexcept {
     auto y = static_cast<decltype(x)>(x & 0xff);
 
-    for (sl::index i = 1; i < sizeof x; i++) {
-      y <<= 8;
-      x >>= 8;
-      y |= x & 0xff;
+    if constexpr (sizeof x > 1) {
+      for (sl::index i = 1; i < sizeof x; i++) {
+        y <<= 8;
+        x >>= 8;
+        y |= x & 0xff;
+      }
     }
 
     return y;

@@ -16,6 +16,7 @@
 #include "grid.h"
 
 namespace laplace::engine::eval::hierarchical_grid {
+  using astar::fn_heuristic;
   using grid::fn_available;
 
   struct pivot {
@@ -25,17 +26,20 @@ namespace laplace::engine::eval::hierarchical_grid {
     bool is_horizontal = false;
     bool is_vertical   = false;
 
-    sl::vector<sl::index> neighbors;
+    sl::vector<astar::link> neighbors;
   };
 
   struct map_info {
     static constexpr auto no_block = vec2z { -1, 0 };
 
     vec2z                   grid_size;
+    sl::whole               grid_stride = 0;
+    intval                  grid_scale  = 0;
     std::span<const int8_t> grid_data;
     vec2z                   block_size;
     sl::whole               block_stride = 0;
-    fn_available            available;
+
+    fn_available available;
 
     sl::vector<pivot>                 pivots;
     sl::vector<sl::vector<sl::index>> blocks;
@@ -55,15 +59,14 @@ namespace laplace::engine::eval::hierarchical_grid {
                                         const map_info &map) noexcept
       -> std::span<const sl::index>;
 
-  [[nodiscard]] auto generate(const vec2z block_size,
-                              const vec2z grid_size,
+  [[nodiscard]] auto generate(const vec2z  block_size,
+                              const vec2z  grid_size,
+                              const intval grid_scale,
                               const std::span<const int8_t> grid_data,
                               const fn_available available) noexcept
       -> map_info;
 
-  void process(const vec2z source,
-               const vec2z destination,
-               map_info &  map) noexcept;
+  void process(map_info &map) noexcept;
 }
 
 #endif

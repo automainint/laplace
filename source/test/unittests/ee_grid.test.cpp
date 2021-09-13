@@ -73,6 +73,24 @@ namespace laplace::test {
     EXPECT_TRUE(f);
   }
 
+  TEST(engine, eval_grid_path_not_exists_edge) {
+    constexpr auto width  = 5;
+    constexpr auto height = 5;
+    constexpr auto size   = width * height;
+
+    constexpr std::array<int8_t, size> map = { 0, 0, 0, 0, 0, //
+                                               0, 0, 0, 0, 0, //
+                                               1, 1, 1, 1, 1, //
+                                               0, 0, 0, 0, 0, //
+                                               0, 0, 0, 0, 0 };
+
+    auto f = grid::path_exists(width, map,
+                               [](const int8_t x) { return x == 0; },
+                               { 2, 0 }, { 2, 4 });
+
+    EXPECT_FALSE(f);
+  }
+
   TEST(engine, eval_grid_path_not_exists_submap) {
     constexpr auto width  = 5;
     constexpr auto height = 5;

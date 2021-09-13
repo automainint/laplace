@@ -1,6 +1,7 @@
 /*  laplace/engine/eval/integral.impl.h
  *
- *      Integral deterministic math features. Constexpr implementation.
+ *      Integral deterministic math features. Constexpr
+ * implementation.
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -34,7 +35,8 @@ namespace laplace::engine::eval::impl {
     return _constant_scale;
   }
 
-  constexpr auto div(const intval x, const intval y,
+  constexpr auto div(const intval x,
+                     const intval y,
                      const intval scale) noexcept -> intval {
 
     constexpr auto int_max = std::numeric_limits<intval>::max();
@@ -87,7 +89,8 @@ namespace laplace::engine::eval::impl {
     return (x * scale + y_delta) / y;
   }
 
-  constexpr auto mul(const intval x, const intval y,
+  constexpr auto mul(const intval x,
+                     const intval y,
                      const intval scale) noexcept -> intval {
 
     return div(x * y, scale * scale, scale);
@@ -276,9 +279,11 @@ namespace laplace::engine::eval::impl {
   static constexpr auto _log = _generate_log();
 
   template <typename func_>
-  constexpr auto _interpolate(const func_ f, const intval f_scale,
+  constexpr auto _interpolate(const func_  f,
+                              const intval f_scale,
                               const intval x,
-                              const intval x_scale) noexcept -> intval {
+                              const intval x_scale) noexcept
+      -> intval {
 
     if (x_scale <= f_scale) {
       return f(div(x, x_scale, f_scale));
@@ -342,7 +347,7 @@ namespace laplace::engine::eval::impl {
 
     const auto delta = scale * 2;
 
-    intval value = exp_table(div(x % delta, delta, _exp_table_size));
+    auto value = exp_table(div(x % delta, delta, _exp_table_size));
 
     const auto e2 = mul(e(_exp_table_size), e(_exp_table_size),
                         _exp_table_size);
@@ -378,7 +383,8 @@ namespace laplace::engine::eval::impl {
     return div(value, _log_table_scale, scale);
   }
 
-  constexpr auto pow(const intval x, const intval y,
+  constexpr auto pow(const intval x,
+                     const intval y,
                      const intval scale) noexcept -> intval {
 
     const auto f = [](const intval x, const intval y,
@@ -504,7 +510,8 @@ namespace laplace::engine::eval::impl {
     return 0;
   }
 
-  constexpr auto atan2(const intval y, const intval x,
+  constexpr auto atan2(const intval y,
+                       const intval x,
                        const intval scale) noexcept -> intval {
 
     const auto f = [](const intval y, const intval x,

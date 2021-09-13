@@ -12,9 +12,12 @@
 
 #include "hierarchical_grid.h"
 
+#include "integral.h"
+#include <numeric>
+
 namespace laplace::engine::eval::hierarchical_grid {
   using std::span, std::tuple, std::min, std::max, std::lower_bound,
-      math::mul_by_elem;
+      math::mul_by_elem, std::midpoint;
 
   auto pivot_order(const pivot &a, const pivot &b) noexcept -> bool {
     return a.block.y() < b.block.y() || a.block.x() < b.block.x() ||
@@ -59,7 +62,8 @@ namespace laplace::engine::eval::hierarchical_grid {
 
   auto _generate_basic(const vec2z              block_size,
                        const vec2z              grid_size,
-                       const sl::whole          stride,
+                       const sl::whole          grid_stride,
+                       const intval             grid_scale,
                        const span<const int8_t> grid_data,
                        const fn_available       available) noexcept
       -> map_info {
@@ -70,6 +74,8 @@ namespace laplace::engine::eval::hierarchical_grid {
     }
 
     auto map = map_info { .grid_size    = grid_size,
+                          .grid_stride  = grid_stride,
+                          .grid_scale   = grid_scale,
                           .grid_data    = grid_data,
                           .block_size   = block_size,
                           .block_stride = grid_size.x() /
@@ -77,11 +83,11 @@ namespace laplace::engine::eval::hierarchical_grid {
                           .available = available };
 
     auto index_of = [&](const vec2z p) {
-      return p.y() * stride + p.x();
+      return p.y() * grid_stride + p.x();
     };
 
     auto check = [&](const sl::index n) {
-      return available(grid_data[n]);
+      return n < grid_data.size() && available(grid_data[n]);
     };
 
     auto add = [&](pivot &&p) {
@@ -124,36 +130,52 @@ namespace laplace::engine::eval::hierarchical_grid {
                       .is_vertical   = true });
         }
 
-        if (block_size.x() > 1)
+        if (block_size.x() > 1) {
+          sl::index i0 = check(n0 + 1) ? 1 : 2;
+
           for (sl::index i = 2; x0 + i < grid_size.x(); i++) {
             const auto n = n0 + i;
 
             if ((i >= block_size.x() || !check(n)) && check(n - 1)) {
-              add(pivot { .block         = { bx, by },
-                          .position      = { x0 + i - 1, y0 },
-                          .is_horizontal = true });
+              add(pivot {
+                  .block         = { bx, by },
+                  .position      = { x0 + midpoint(i0, i - 1), y0 },
+                  .is_horizontal = true });
             }
 
             if (i >= block_size.x()) {
               break;
             }
-          }
 
-        if (block_size.y() > 1)
+            if (!check(n)) {
+              i0 = i + 1;
+            }
+          }
+        }
+
+        if (block_size.y() > 1) {
+          sl::index j0 = check(n0 + grid_stride) ? 1 : 2;
+
           for (sl::index j = 2; y0 + j < grid_size.y(); j++) {
-            const auto n = n0 + j * stride;
+            const auto n = n0 + j * grid_stride;
 
             if ((j >= block_size.y() || !check(n)) &&
-                check(n - stride)) {
-              add(pivot { .block       = { bx, by },
-                          .position    = { x0, y0 + j - 1 },
-                          .is_vertical = true });
+                check(n - grid_stride)) {
+              add(pivot {
+                  .block       = { bx, by },
+                  .position    = { x0, y0 + midpoint(j0, j - 1) },
+                  .is_vertical = true });
             }
 
             if (j >= block_size.y()) {
               break;
             }
+
+            if (!check(n)) {
+              j0 = j + 1;
+            }
           }
+        }
       }
 
     return map;
@@ -161,16 +183,22 @@ namespace laplace::engine::eval::hierarchical_grid {
 
   auto generate(const vec2z              block_size,
                 const vec2z              grid_size,
+                const intval             grid_scale,
                 const span<const int8_t> grid_data,
                 const fn_available available) noexcept -> map_info {
 
     return _generate_basic(block_size, grid_size, grid_size.x(),
-                           grid_data, available);
+                           grid_scale, grid_data, available);
   }
 
   void _process_block(const vec2z block, map_info &map) noexcept {
-    auto &indices =
-        map.blocks[block.y() * map.block_stride + block.x()];
+    const auto n = block.y() * map.block_stride + block.x();
+
+    if (n < 0 || n >= map.blocks.size()) {
+      return;
+    }
+
+    auto &indices = map.blocks[n];
 
     for (sl::index i = 0; i < indices.size(); i++)
       for (sl::index j = i + 1; j < indices.size(); j++) {
@@ -180,24 +208,35 @@ namespace laplace::engine::eval::hierarchical_grid {
         const auto n0 = indices[i];
         const auto n1 = indices[j];
 
+        const auto subgrid = span {
+          map.grid_data.begin() + min.y() * map.grid_stride + min.x(),
+          map.grid_data.begin() + (max.y() - 1) * map.grid_stride +
+              max.x()
+        };
+
         auto &a = map.pivots[n0];
         auto &b = map.pivots[n1];
 
-        if (grid::path_exists(map.grid_size.x(), min, max,
-                              map.grid_data, map.available,
-                              a.position, b.position)) {
-          a.neighbors.emplace_back(n1);
-          b.neighbors.emplace_back(n0);
+        if (grid::path_exists((max - min).x(), map.grid_stride,
+                              subgrid, map.available,
+                              a.position - min, b.position - min)) {
+
+          const auto s = b.position - a.position;
+
+          const auto distance = eval::sqrt(
+              math::dot(s, s) * map.grid_scale, map.grid_scale);
+
+          a.neighbors.emplace_back(astar::link { n1, distance });
+          b.neighbors.emplace_back(astar::link { n0, distance });
         }
       }
   }
 
-  void process(const vec2z source,
-               const vec2z destination,
-               map_info &  map) noexcept {
-    const auto src_block = block_of(source, map);
-    const auto dst_block = block_of(destination, map);
-
-    _process_block(src_block, map);
+  void process(map_info &map) noexcept {
+    for (sl::index j = 0; j * map.block_stride < map.blocks.size();
+         j++)
+      for (sl::index i = 0; i < map.block_stride; i++) {
+        _process_block({ i, j }, map);
+      }
   }
 }

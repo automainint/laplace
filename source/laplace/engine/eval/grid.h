@@ -81,6 +81,18 @@ namespace laplace::engine::eval::grid {
                                const sl::index a,
                                const sl::index b) noexcept -> intval;
 
+  /*  Returns true if path exists with specified stride.
+   */
+  [[nodiscard]] auto path_exists(const sl::whole               width,
+                                 const sl::whole               stride,
+                                 const std::span<const int8_t> map,
+                                 const fn_available available,
+                                 const vec2z        source,
+                                 const vec2z destination) noexcept
+      -> bool;
+
+  /*  Returns true if path exists.
+   */
   [[nodiscard]] auto path_exists(const sl::whole               width,
                                  const std::span<const int8_t> map,
                                  const fn_available available,
@@ -88,6 +100,8 @@ namespace laplace::engine::eval::grid {
                                  const vec2z destination) noexcept
       -> bool;
 
+  /*  Returns true if path exists in bounds [min; max).
+   */
   [[nodiscard]] auto path_exists(const sl::whole               width,
                                  const vec2z                   min,
                                  const vec2z                   max,
@@ -107,6 +121,18 @@ namespace laplace::engine::eval::grid {
     astar::fn_neighbors neighbors;
     astar::fn_sight     sight;
   };
+
+  /*  Search in entire map with specified stride and origin offset.
+   */
+  [[nodiscard]] auto path_search_init(
+      const vec2z                   size,
+      const vec2z                   origin,
+      const vec2z                   stride,
+      const intval                  scale,
+      const std::span<const int8_t> map,
+      const fn_available            available,
+      const vec2z                   source,
+      const vec2z                   destination) noexcept -> _state;
 
   /*  Search in entire map.
    */
