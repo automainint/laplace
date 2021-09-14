@@ -15,6 +15,35 @@
 #include "integral.impl.h"
 
 namespace laplace::engine::eval::impl {
+  /*  Tests for 64-bit integer.
+   */
+
+  static_assert(_find_sqrt(4) == 2);
+  static_assert(_find_sqrt(5) == 2);
+  static_assert(_find_sqrt(6) == 2);
+  static_assert(_find_sqrt(7) == 3);
+  static_assert(_find_sqrt(8) == 3);
+  static_assert(_find_sqrt(9) == 3);
+  static_assert(_find_sqrt(99) == 10);
+  static_assert(_find_sqrt(100) == 10);
+  static_assert(_find_sqrt(101) == 10);
+  static_assert(_find_sqrt(0xffffffffffff) == 0x1000000);
+  static_assert(_find_sqrt(0x1000000000000) == 0x1000000);
+  static_assert(_find_sqrt(0x1000000000001) == 0x1000000);
+
+  static_assert(_mul(0x10000, 0x10000) == 0x100000000);
+  static_assert(_mul(-0x10000, 0x10000) == -0x100000000);
+  static_assert(_mul(0x10000, -0x10000) == -0x100000000);
+  static_assert(_mul(-0x10000, -0x10000) == 0x100000000);
+  static_assert(_mul(0x100000000, 0x100) == 0x10000000000);
+  static_assert(_mul(-0x100000000, 0x100) == -0x10000000000);
+  static_assert(_mul(0x100000000, -0x100) == -0x10000000000);
+  static_assert(_mul(-0x100000000, -0x100) == 0x10000000000);
+  static_assert(_mul(0x1000000000000000, 0x1000000000000000) == _int_max);
+  static_assert(_mul(-0x1000000000000000, 0x1000000000000000) == _int_min);
+  static_assert(_mul(0x1000000000000000, -0x1000000000000000) == _int_min);
+  static_assert(_mul(-0x1000000000000000, -0x1000000000000000) == _int_max);
+
   static_assert(div(15, 10, 100) == 150);
   static_assert(div(150, 100, 10) == 15);
   static_assert(div(14, 10, 1) == 1);
@@ -27,6 +56,15 @@ namespace laplace::engine::eval::impl {
   static_assert(div(100000000, 10000000000000000, 100000000) == 1);
   static_assert(div(100000000, 100000000, 10000000000000000) ==
                 10000000000000000);
+  static_assert(div(1, 0, 1) == _int_max);
+  static_assert(div(-1, 0, 1) == _int_min);
+  static_assert(div(0, 0, 1) == 1);
+  static_assert(div(0, 0, 100) == 100);
+  static_assert(div(0x10000000000000, 1, 0x10000000000000) ==
+                _int_max);
+  static_assert(div(0x10000000000000,
+                    0x10000000000000,
+                    0x10000000000000) == 0x10000000000000);
 
   static_assert(e(1000000) == 2718282);
   static_assert(log2e(1000000) == 1442695);
@@ -48,9 +86,12 @@ namespace laplace::engine::eval::impl {
   static_assert(log((e(100) * e(100)) / 100, 100) == 200);
   static_assert(exp(log(200, 100), 100) < 202);
   static_assert(exp(log(200, 100), 100) > 198);
-  static_assert(pow(200, 200, 100) < 406, "2 * 2 != 4");
-  static_assert(pow(200, 200, 100) > 394, "2 * 2 != 4");
-  static_assert(sqrt(400, 100) == 200, "sqrt(4) != 2");
+  static_assert(pow(200, 200, 100) < 402);
+  static_assert(pow(200, 200, 100) > 398);
+  static_assert(sqrt(400, 100) == 200);
+  static_assert(sqrt(9, 1) == 3);
+  static_assert(sqrt(81, 1) == 9);
+  static_assert(sqrt(10000, 1) == 100);
 
   /*  cos^2(x) + sin^2(x) = 1
    */
@@ -93,13 +134,15 @@ namespace laplace::engine::eval {
     return impl::constant_scale();
   }
 
-  auto div(const intval x, const intval y, const intval scale) noexcept
-      -> intval {
+  auto div(const intval x,
+           const intval y,
+           const intval scale) noexcept -> intval {
     return impl::div(x, y, scale);
   }
 
-  auto mul(const intval x, const intval y, const intval scale) noexcept
-      -> intval {
+  auto mul(const intval x,
+           const intval y,
+           const intval scale) noexcept -> intval {
     return impl::mul(x, y, scale);
   }
 
@@ -159,8 +202,9 @@ namespace laplace::engine::eval {
     return impl::sqrt(x, scale);
   }
 
-  auto pow(const intval x, const intval y, const intval scale) noexcept
-      -> intval {
+  auto pow(const intval x,
+           const intval y,
+           const intval scale) noexcept -> intval {
     return impl::pow(x, y, scale);
   }
 
@@ -184,7 +228,8 @@ namespace laplace::engine::eval {
     return impl::log10(x, scale);
   }
 
-  auto sin_2pi(const intval x, const intval scale) noexcept -> intval {
+  auto sin_2pi(const intval x, const intval scale) noexcept
+      -> intval {
     return impl::sin_2pi(x, scale);
   }
 
@@ -212,7 +257,8 @@ namespace laplace::engine::eval {
     return impl::atan(x, scale);
   }
 
-  auto atan2(const intval y, const intval x,
+  auto atan2(const intval y,
+             const intval x,
              const intval scale) noexcept -> intval {
     return impl::atan2(y, x, scale);
   }

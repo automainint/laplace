@@ -15,8 +15,8 @@
 
 namespace laplace {
   constexpr auto as_index(const uint64_t  value,
-                          const sl::index invalid) noexcept
-      -> sl::index {
+                          const sl::index invalid,
+                          const bool silent) noexcept -> sl::index {
 
     if constexpr (!_unsafe) {
       if (value == -1) {
@@ -24,7 +24,8 @@ namespace laplace {
       }
 
       if (value > std::numeric_limits<sl::index>::max()) {
-        error_("Index value overflow.", __FUNCTION__);
+        if (!silent)
+          error_("Index value overflow.", __FUNCTION__);
         return invalid;
       }
     }
@@ -33,8 +34,8 @@ namespace laplace {
   }
 
   constexpr auto as_index(const int64_t   value,
-                          const sl::index invalid) noexcept
-      -> sl::index {
+                          const sl::index invalid,
+                          const bool silent) noexcept -> sl::index {
 
     if constexpr (!_unsafe) {
       if (value == -1) {
@@ -44,12 +45,14 @@ namespace laplace {
       if constexpr (sizeof value > sizeof(sl::index)) {
         if (value < 0 ||
             value > std::numeric_limits<sl::index>::max()) {
-          error_("Index value overflow.", __FUNCTION__);
+          if (!silent)
+            error_("Index value overflow.", __FUNCTION__);
           return invalid;
         }
       } else {
         if (value < 0) {
-          error_("Index value overflow.", __FUNCTION__);
+          if (!silent)
+            error_("Index value overflow.", __FUNCTION__);
           return invalid;
         }
       }

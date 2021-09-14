@@ -135,7 +135,8 @@ namespace laplace::network {
     m_is_quit = is_quit;
   }
 
-  void server::set_tick_duration(uint64_t tick_duration_msec) noexcept {
+  void server::set_tick_duration(
+      uint64_t tick_duration_msec) noexcept {
     m_tick_duration_msec = tick_duration_msec;
   }
 
@@ -175,12 +176,14 @@ namespace laplace::network {
     m_bytes_loss += count;
   }
 
-  auto server::adjust_delta(uint64_t delta_msec) noexcept -> uint64_t {
-    uint64_t delta = 0;
+  auto server::adjust_delta(uint64_t delta_msec) noexcept
+      -> uint64_t {
+    auto delta = uint64_t {};
 
     if (m_tick_duration_msec > 0) {
       delta = (m_tick_clock_msec + delta_msec) / m_tick_duration_msec;
-      m_tick_clock_msec = delta_msec % m_tick_duration_msec;
+      m_tick_clock_msec = (m_tick_clock_msec + delta_msec) %
+                          m_tick_duration_msec;
     }
 
     return delta;
@@ -216,7 +219,9 @@ namespace laplace::network {
     }
   }
 
-  void server::verb_slot(sl::index slot, sl::index n, span_cbyte seq) {
+  void server::verb_slot(sl::index  slot,
+                         sl::index  n,
+                         span_cbyte seq) {
     if (m_verbose) {
       const auto id   = prime_impact::get_id(seq);
       const auto name = basic_factory::name_by_id_native(id);
@@ -236,7 +241,8 @@ namespace laplace::network {
       auto ss = ostringstream {};
       ss << " ";
       for (sl::index i = 0; i < bytes.size(); i++) {
-        ss << " " << setw(2) << hex << static_cast<unsigned>(bytes[i]);
+        ss << " " << setw(2) << hex
+           << static_cast<unsigned>(bytes[i]);
         if ((i % 16) == 15)
           ss << "\n ";
       }

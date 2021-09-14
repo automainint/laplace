@@ -17,7 +17,9 @@
 
 namespace laplace::engine {
   constexpr void basic_impact::set_index(sl::index n) {
-    set_order({ eventorder::root + n });
+    if (n >= 0) {
+      set_order({ eventorder::root + n });
+    }
   }
 
   constexpr void basic_impact::set_order(cref_eventorder order) {
@@ -35,7 +37,11 @@ namespace laplace::engine {
   inline void basic_impact::perform(access::world) const { }
 
   constexpr auto basic_impact::get_index() const -> sl::index {
-    return this->m_order.get_index() - eventorder::root;
+    const auto n = this->m_order.get_index();
+    if (n < eventorder::root) {
+      return id_undefined;
+    }
+    return n - eventorder::root;
   }
 
   constexpr auto basic_impact::get_order() const -> cref_eventorder {
@@ -81,9 +87,7 @@ namespace laplace::engine {
 
   template <typename basic_impact_>
   inline auto gen() -> impact_gen {
-    return [] {
-      return std::make_shared<basic_impact_>();
-    };
+    return [] { return std::make_shared<basic_impact_>(); };
   }
 }
 

@@ -23,15 +23,17 @@ namespace laplace {
    *  All indices are sl::index values.
    */
   [[nodiscard]] constexpr auto as_index(
-      const uint64_t value, const sl::index invalid = -1) noexcept
-      -> sl::index;
+      const uint64_t  value,
+      const sl::index invalid = -1,
+      const bool      silent  = false) noexcept -> sl::index;
 
   /*  Convert 64-bit integer value to an index.
    *  All indices are sl::index values.
    */
   [[nodiscard]] constexpr auto as_index(
-      const int64_t value, const sl::index invalid = -1) noexcept
-      -> sl::index;
+      const int64_t   value,
+      const sl::index invalid = -1,
+      const bool      silent  = false) noexcept -> sl::index;
 }
 
 #include "utils.impl.h"

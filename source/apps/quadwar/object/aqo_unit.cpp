@@ -31,7 +31,7 @@ namespace quadwar_app::object {
   const engine::intval unit::default_health           = 100;
   const engine::intval unit::default_radius           = 1200;
   const engine::intval unit::default_collision_radius = 600;
-  const engine::intval unit::default_movement_speed   = 200;
+  const engine::intval unit::default_movement_speed   = 100;
 
   sl::index unit::n_health           = {};
   sl::index unit::n_radius           = {};

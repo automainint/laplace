@@ -142,7 +142,8 @@ namespace laplace::engine {
 
     void vec_read(sl::index n, std::span<intval> dst) noexcept;
 
-    void vec_write(sl::index n, std::span<const intval> values) noexcept;
+    void vec_write(sl::index               n,
+                   std::span<const intval> values) noexcept;
 
     void vec_write_delta(sl::index               n,
                          std::span<const intval> deltas) noexcept;

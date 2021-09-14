@@ -99,7 +99,8 @@ namespace laplace::network {
       }
 
       if (!m_slots[slot].token.empty()) {
-        send_event_to(slot, encode<session_token>(m_slots[slot].token));
+        send_event_to(slot,
+                      encode<session_token>(m_slots[slot].token));
       }
 
       return true;
@@ -315,7 +316,8 @@ namespace laplace::network {
 
   void udp_server::append_event(sl::index slot, span_cbyte seq) {
     if (m_slots[slot].is_connected) {
-      m_slots[slot].out.emplace_back(vbyte { seq.begin(), seq.end() });
+      m_slots[slot].out.emplace_back(
+          vbyte { seq.begin(), seq.end() });
     }
   }
 
@@ -343,9 +345,8 @@ namespace laplace::network {
     }
 
     return any_of(m_allowed_commands.begin(),
-                  m_allowed_commands.end(), [command_id](auto id) {
-                    return id == command_id;
-                  });
+                  m_allowed_commands.end(),
+                  [command_id](auto id) { return id == command_id; });
   }
 
   auto udp_server::is_master() const -> bool {
@@ -447,8 +448,9 @@ namespace laplace::network {
     if (m_slots[slot].outdate >= get_update_timeout()) {
       if (is_master()) {
         if (auto sol = get_solver(); sol) {
-          send_event_to(slot, encode<server_idle>(m_queue.events.size(),
-                                                  sol->get_time()));
+          send_event_to(slot,
+                        encode<server_idle>(m_queue.events.size(),
+                                            sol->get_time()));
         }
       }
 
@@ -851,10 +853,12 @@ namespace laplace::network {
           add_event(slot, ev);
         } else {
           if (is_verbose()) {
-            const auto s = engine::basic_factory::name_by_id_native(id);
+            const auto s = engine::basic_factory::name_by_id_native(
+                id);
 
             if (s.empty()) {
-              verb(fmt("Network: Command '%d' not allowed.", (int) id));
+              verb(fmt("Network: Command '%d' not allowed.",
+                       (int) id));
             } else {
               verb(fmt("Network: Command '%s (%d)' not allowed.",
                        s.c_str(), (int) id));
@@ -934,7 +938,8 @@ namespace laplace::network {
 
       if (m_slots[i].wait >= get_connection_timeout()) {
         if (is_verbose()) {
-          verb(fmt("Network: Connection timeout on slot %d.", (int) i));
+          verb(fmt("Network: Connection timeout on slot %d.",
+                   (int) i));
         }
 
         disconnect(i);
@@ -946,7 +951,8 @@ namespace laplace::network {
     if (m_ping_clock >= get_ping_timeout()) {
 
       for (sl::index slot = 0; slot < m_slots.size(); slot++)
-        if (m_slots[slot].is_connected && m_slots[slot].is_exclusive) {
+        if (m_slots[slot].is_connected &&
+            m_slots[slot].is_exclusive) {
           send_event_to(slot, encode<ping_request>(get_local_time()));
         }
 

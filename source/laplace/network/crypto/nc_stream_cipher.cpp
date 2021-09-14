@@ -68,10 +68,11 @@ namespace laplace::network::crypto {
     auto n   = sl::index {};
 
     while (n < bytes.size()) {
-      const auto offset = as_index(rd<uint64_t>(bytes, n + n_offset));
-      const auto size   = as_index(rd<uint64_t>(bytes, n + n_size));
+      const auto offset = as_index(rd<uint64_t>(bytes, n + n_offset), -1, true);
+      const auto size   = as_index(rd<uint64_t>(bytes, n + n_size), -1, true);
 
-      if (scan({ bytes.begin() + n, bytes.end() })) {
+      if (offset >= 0 && size >= 0 &&
+          scan({ bytes.begin() + n, bytes.end() })) {
 
         if (offset != m_dec_offset) {
           if (!rewind_decryption()) {

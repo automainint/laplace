@@ -9,6 +9,12 @@ else()
   target_link_libraries(${LAPLACE_CONFIG} INTERFACE Threads::Threads)
 endif()
 
+if(MSVC)
+  target_compile_options(${LAPLACE_CONFIG} INTERFACE /constexpr:steps2000000)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  target_compile_options(${LAPLACE_CONFIG} INTERFACE -fconstexpr-steps=2000000)
+endif()
+
 if(LAPLACE_ENABLE_COVERAGE)
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(
