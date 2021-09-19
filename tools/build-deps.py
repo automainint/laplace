@@ -43,11 +43,15 @@ def build_deps(
   if os.path.exists('_tmp'):
       shutil.rmtree('_tmp')
 
-os.chdir('..')
+def main():
+  os.chdir('..')
 
-build_deps('build-deps-debug-x86', 'Debug', 'x86', 'Win32', 'Visual Studio 16 2019', 'MultiThreadedDebug', False)
-build_deps('build-deps-debug-x64', 'Debug', 'x64', 'x64', 'Visual Studio 16 2019', 'MultiThreadedDebug', False)
-build_deps('build-deps-release-x86', 'Release', 'x86', 'Win32', 'Visual Studio 16 2019', 'MultiThreaded', False)
-build_deps('build-deps-release-x64', 'Release', 'x64', 'x64', 'Visual Studio 16 2019', 'MultiThreaded', True)
+  build_deps('build-deps-debug-x86', 'Debug', 'x86', 'Win32', 'Visual Studio 16 2019', 'MultiThreadedDebug', False)
+  build_deps('build-deps-debug-x64', 'Debug', 'x64', 'x64', 'Visual Studio 16 2019', 'MultiThreadedDebug', False)
+  build_deps('build-deps-release-x86', 'Release', 'x86', 'Win32', 'Visual Studio 16 2019', 'MultiThreaded', False)
+  build_deps('build-deps-release-x64', 'Release', 'x64', 'x64', 'Visual Studio 16 2019', 'MultiThreaded', True)
 
-os.chdir('tools')
+  os.chdir('tools')
+
+if __name__ == '__main__':
+  main()

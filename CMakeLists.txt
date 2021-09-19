@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
+# Project version policy.
 set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 
 # Allow to set up the options for the dependencies.

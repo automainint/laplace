@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os, sys
+import os
 
 def rejoin_alias(alias):
   result = ''
@@ -84,62 +84,66 @@ def process_file(file_name, incs = list()):
     f = open(file_name, 'rb')
     return f.read()
 
-data_folder = os.path.join('..', 'data')
-folder = os.path.join('..', 'source', 'generated')
+def main():
+  data_folder = os.path.join('..', 'data')
+  folder = os.path.join('..', 'source', 'generated')
 
-os.makedirs(folder, exist_ok=True)
+  os.makedirs(folder, exist_ok=True)
 
-list_file = open(os.path.join(data_folder, 'embed.txt'), 'r')
+  list_file = open(os.path.join(data_folder, 'embed.txt'), 'r')
 
-out = open(os.path.join(folder, 'laplace_embedded.cpp'), 'w')
+  out = open(os.path.join(folder, 'laplace_embedded.cpp'), 'w')
 
-out.write('/*  Generated with the Laplace embed files tool.\n */\n\n')
-out.write('#include <cstdint>\n')
-out.write('#include <string>\n')
-out.write('#include <vector>\n\n')
-out.write('namespace laplace::embedded {\n')
+  out.write('/*  Generated with the Laplace embed files tool.\n */\n\n')
+  out.write('#include <cstdint>\n')
+  out.write('#include <string>\n')
+  out.write('#include <vector>\n\n')
+  out.write('namespace laplace::embedded {\n')
 
-lines = list_file.readlines()
-aliases = list()
+  lines = list_file.readlines()
+  aliases = list()
 
-for line in lines:
-  s = line.lower().replace('\\', '/').replace('\n', '')
-  if len(s) > 0:
-    aliases.append(s)
+  for line in lines:
+    s = line.lower().replace('\\', '/').replace('\n', '')
+    if len(s) > 0:
+      aliases.append(s)
 
-out.write('  std::vector<std::wstring> aliases = {\n')
+  out.write('  std::vector<std::wstring> aliases = {\n')
 
-k = 0
-for alias in aliases:
-  s = '    L":/' + alias + '"'
-  k += 1
-  if k < len(aliases):
-    s += ','
-  out.write(s + '\n')
-
-out.write('  };\n\n')
-out.write('  std::vector<std::vector<uint8_t>> bytes = {\n')
-
-k = 0
-for alias in aliases:
-  s = ''
-  file_name = os.path.join(data_folder, rejoin_alias(alias))
-  buf = process_file(file_name)
-  n = 0
-  for x in buf:
-    s += format(x, '#04x')
-    n += 1
-    if n < len(buf):
+  k = 0
+  for alias in aliases:
+    s = '    L":/' + alias + '"'
+    k += 1
+    if k < len(aliases):
       s += ','
-      if (n % 16) == 0:
-        s += '\n        '
-      else:
-        s += ' '
-  k += 1
-  s = '    {   ' + s + ' }'
-  if k < len(aliases):
-    s += ','
-  out.write(s + '\n')
+    out.write(s + '\n')
 
-out.write('  };\n')
-out.write('}\n')
+  out.write('  };\n\n')
+  out.write('  std::vector<std::vector<uint8_t>> bytes = {\n')
+
+  k = 0
+  for alias in aliases:
+    s = ''
+    file_name = os.path.join(data_folder, rejoin_alias(alias))
+    buf = process_file(file_name)
+    n = 0
+    for x in buf:
+      s += format(x, '#04x')
+      n += 1
+      if n < len(buf):
+        s += ','
+        if (n % 16) == 0:
+          s += '\n        '
+        else:
+          s += ' '
+    k += 1
+    s = '    {   ' + s + ' }'
+    if k < len(aliases):
+      s += ','
+    out.write(s + '\n')
+
+  out.write('  };\n')
+  out.write('}\n')
+
+if __name__ == '__main__':
+  main()
