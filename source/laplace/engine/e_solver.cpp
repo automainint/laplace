@@ -12,10 +12,15 @@
 
 #include "solver.h"
 
+#include "prime_impact.h"
 #include <algorithm>
 
 namespace laplace::engine {
   const bool solver::default_allow_rewind = false;
+
+  void solver::set_factory(ptr_factory f) {
+    m_factory = f;
+  }
 
   void solver::set_world(ptr_world w) {
     if (m_world != w) {
@@ -27,39 +32,53 @@ namespace laplace::engine {
     }
   }
 
+  void solver::reset_factory() {
+    m_factory.reset();
+  }
+
   void solver::reset_world() {
     m_world.reset();
   }
 
-  void solver::apply(ptr_impact imp) {
-    if (imp) {
-      if (imp->get_time() == time_undefined) {
-        imp->set_time(m_time);
-      }
-
-      if (imp->get_time() < m_time) {
-        if (m_is_rewind_allowed) {
-          auto time = m_time;
-          rewind_to(imp->get_time());
-
-          m_history.emplace(m_history.begin() + m_position, imp);
-
-          rewind_to(time);
-        } else {
-          error_("Rewind is not allowed. Impact ignored.",
-                 __FUNCTION__);
-        }
-      } else {
-        auto op = [](const ptr_impact &a, uint64_t b) -> bool {
-          return a->get_time() < b;
-        };
-
-        auto it = lower_bound(m_history.begin() + m_position,
-                              m_history.end(), imp->get_time(), op);
-
-        m_history.emplace(it, imp);
-      }
+  auto solver::apply(span_cbyte ev) -> uint64_t {
+    if (ev.empty()) {
+      error_("No event.", __FUNCTION__);
+      return -1;
     }
+
+    auto event_time = prime_impact::get_time(ev);
+
+    if (event_time == time_undefined) {
+      event_time = m_time;
+    }
+
+    if (event_time < m_time) {
+      if (!m_is_rewind_allowed) {
+        error_("Rewind is not allowed. Event ignored.", __FUNCTION__);
+        return -1;
+      }
+
+      auto const current_time = m_time;
+      rewind_to(event_time);
+      m_history.emplace(m_history.begin() + m_position, ev.begin(),
+                        ev.end());
+      rewind_to(current_time);
+
+    } else {
+      auto const it = lower_bound(
+          m_history.begin() + m_position, m_history.end(), event_time,
+          [](vbyte const &a, uint64_t b) -> bool {
+            return prime_impact::get_time(a) < b;
+          });
+
+      auto const n = it - m_history.begin();
+
+      m_history.emplace(it, ev.begin(), ev.end());
+
+      prime_impact::set_time(m_history[n], event_time);
+    }
+
+    return event_time;
   }
 
   void solver::rewind_to(uint64_t time) {
@@ -116,12 +135,13 @@ namespace laplace::engine {
     return m_history.size();
   }
 
-  auto solver::get_history(sl::index index) const -> ptr_impact {
-    if (index < 0 || index >= m_history.size()) {
+  auto solver::get_history(sl::index n) const -> vbyte {
+    if (n < 0 || n >= m_history.size()) {
+      error_("Invalid index.", __FUNCTION__);
       return {};
     }
 
-    return m_history[index];
+    return m_history[n];
   }
 
   auto solver::generate_seed() -> seed_type {
@@ -132,47 +152,48 @@ namespace laplace::engine {
   }
 
   void solver::adjust(uint64_t time) {
-    if (m_time != time) {
-      if (time < m_time) {
-        if (m_world) {
-          m_world->clear();
-          m_world->get_random().seed(m_seed);
-        }
-
-        m_time     = 0;
-        m_position = 0;
-      }
-
-      auto op = [](const ptr_impact &a, uint64_t b) -> bool {
-        return a->get_time() < b;
-      };
-
-      auto i_end = lower_bound(m_history.begin() + m_position,
-                               m_history.end(), time, op);
-
-      auto t0 = m_time;
-
-      for (auto i = m_history.begin() + m_position; i != i_end; i++) {
-        auto t1 = (*i)->get_time();
-
-        if (t0 < t1) {
-          if (m_world) {
-            m_world->tick(t1 - t0);
-          }
-          t0 = t1;
-        }
-
-        if (m_world) {
-          m_world->queue(*i);
-        }
-      }
-
-      if (t0 < time && m_world) {
-        m_world->schedule(time - t0);
-      }
-
-      m_time     = time;
-      m_position = static_cast<size_t>(i_end - m_history.begin());
+    if (m_time == time) {
+      return;
     }
+
+    if (time < m_time) {
+      if (m_world) {
+        m_world->clear();
+        m_world->get_random().seed(m_seed);
+      }
+
+      m_time     = 0;
+      m_position = 0;
+    }
+
+    auto const i_end = lower_bound(
+        m_history.begin() + m_position, m_history.end(), time,
+        [](vbyte const &a, uint64_t b) -> bool {
+          return prime_impact::get_time(a) < b;
+        });
+
+    auto t0 = m_time;
+
+    for (auto i = m_history.begin() + m_position; i != i_end; i++) {
+      auto t1 = prime_impact::get_time(*i);
+
+      if (t0 < t1) {
+        if (m_world) {
+          m_world->tick(t1 - t0);
+        }
+        t0 = t1;
+      }
+
+      if (m_world && m_factory) {
+        m_world->queue(m_factory->decode(*i));
+      }
+    }
+
+    if (t0 < time && m_world) {
+      m_world->schedule(time - t0);
+    }
+
+    m_time     = time;
+    m_position = static_cast<size_t>(i_end - m_history.begin());
   }
 }

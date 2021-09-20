@@ -48,9 +48,8 @@ namespace laplace::engine::access {
   }
 
   auto entity::index_of(sl::index id) const -> sl::index {
-    return is_allowed(read_only, m_mode)
-               ? m_entity->index_of(id)
-               : id_undefined;
+    return is_allowed(read_only, m_mode) ? m_entity->index_of(id)
+                                         : id_undefined;
   }
 
   auto entity::get_count() const -> sl::whole {
@@ -58,9 +57,8 @@ namespace laplace::engine::access {
   }
 
   auto entity::id_of(sl::index n) const -> sl::index {
-    return is_allowed(read_only, m_mode)
-               ? m_entity->id_of(n)
-               : id_undefined;
+    return is_allowed(read_only, m_mode) ? m_entity->id_of(n)
+                                         : id_undefined;
   }
 
   auto entity::scale_of(sl::index n) const -> sl::index {
@@ -84,22 +82,19 @@ namespace laplace::engine::access {
   }
 
   auto entity::bytes_get_size() const noexcept -> sl::whole {
-    return is_allowed(read_only, m_mode)
-               ? m_entity->bytes_get_size()
-               : 0;
+    return is_allowed(read_only, m_mode) ? m_entity->bytes_get_size()
+                                         : 0;
   }
 
   auto entity::bytes_get(sl::index n, int8_t defval) const noexcept
       -> int8_t {
-    return is_allowed(read_only, m_mode)
-               ? m_entity->bytes_get(n)
-               : defval;
+    return is_allowed(read_only, m_mode) ? m_entity->bytes_get(n)
+                                         : defval;
   }
 
   auto entity::bytes_get_all() const noexcept -> sl::vector<int8_t> {
-    return is_allowed(read_only, m_mode)
-               ? m_entity->bytes_get_all()
-               : sl::vector<int8_t> {};
+    return is_allowed(read_only, m_mode) ? m_entity->bytes_get_all()
+                                         : sl::vector<int8_t> {};
   }
 
   void entity::bytes_set(sl::index n, int8_t value) const noexcept {
@@ -108,22 +103,22 @@ namespace laplace::engine::access {
     }
   }
 
-  void entity::bytes_apply_delta(
-      sl::index n, int8_t delta) const noexcept {
+  void entity::bytes_apply_delta(sl::index n,
+                                 int8_t    delta) const noexcept {
     if (is_allowed(read_only, m_mode)) {
       m_entity->bytes_apply_delta(n, delta);
     }
   }
 
-  void entity::bytes_read(
-      sl::index n, span<int8_t> dst) const noexcept {
+  void entity::bytes_read(sl::index    n,
+                          span<int8_t> dst) const noexcept {
     if (is_allowed(read_only, m_mode)) {
       m_entity->bytes_read(n, dst);
     }
   }
 
-  void entity::bytes_write(
-      sl::index n, span<const int8_t> values) const noexcept {
+  void entity::bytes_write(sl::index          n,
+                           span<const int8_t> values) const noexcept {
     if (is_allowed(async, m_mode)) {
       m_entity->bytes_write(n, values);
     }
@@ -150,22 +145,19 @@ namespace laplace::engine::access {
   }
 
   auto entity::vec_get_size() const noexcept -> sl::whole {
-    return is_allowed(read_only, m_mode)
-               ? m_entity->vec_get_size()
-               : 0;
+    return is_allowed(read_only, m_mode) ? m_entity->vec_get_size()
+                                         : 0;
   }
 
   auto entity::vec_get(sl::index n, intval defval) const noexcept
       -> intval {
-    return is_allowed(read_only, m_mode)
-               ? m_entity->vec_get(n)
-               : defval;
+    return is_allowed(read_only, m_mode) ? m_entity->vec_get(n)
+                                         : defval;
   }
 
   auto entity::vec_get_all() const noexcept -> sl::vector<intval> {
-    return is_allowed(read_only, m_mode)
-               ? m_entity->vec_get_all()
-               : sl::vector<intval> {};
+    return is_allowed(read_only, m_mode) ? m_entity->vec_get_all()
+                                         : sl::vector<intval> {};
   }
 
   void entity::vec_read(sl::index    n,
@@ -202,8 +194,8 @@ namespace laplace::engine::access {
     }
   }
 
-  void entity::vec_apply_delta(
-      sl::index n, intval delta) const noexcept {
+  void entity::vec_apply_delta(sl::index n,
+                               intval    delta) const noexcept {
     if (is_allowed(async, m_mode)) {
       m_entity->vec_apply_delta(n, delta);
     }
@@ -252,27 +244,24 @@ namespace laplace::engine::access {
     }
   }
 
-  void entity::adjust() const {
+  void entity::adjust() const noexcept {
     if (is_allowed(sync, m_mode)) {
       m_entity->adjust();
     }
   }
 
-  auto entity::is_dynamic() const -> bool {
-    return is_allowed(read_only, m_mode)
-               ? m_entity->is_dynamic()
-               : false;
+  auto entity::is_dynamic() const noexcept -> bool {
+    return is_allowed(read_only, m_mode) ? m_entity->is_dynamic()
+                                         : false;
   }
 
-  auto entity::get_tick_period() const -> uint64_t {
-    return is_allowed(read_only, m_mode)
-               ? m_entity->get_tick_period()
-               : 0;
+  auto entity::get_tick_period() const noexcept -> uint64_t {
+    return is_allowed(read_only, m_mode) ? m_entity->get_tick_period()
+                                         : 0;
   }
 
-  auto entity::get_id() const -> sl::index {
-    return is_allowed(read_only, m_mode)
-               ? m_entity->get_id()
-               : id_undefined;
+  auto entity::get_id() const noexcept -> sl::index {
+    return is_allowed(read_only, m_mode) ? m_entity->get_id()
+                                         : id_undefined;
   }
 }

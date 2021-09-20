@@ -23,10 +23,10 @@ namespace quadwar_app::object {
   public:
     enum order : sl::index { o_move };
 
-    static const engine::intval default_health;
-    static const engine::intval default_radius;
-    static const engine::intval default_collision_radius;
-    static const engine::intval default_movement_speed;
+    static engine::intval const default_health;
+    static engine::intval const default_radius;
+    static engine::intval const default_collision_radius;
+    static engine::intval const default_movement_speed;
 
     unit();
     ~unit() override = default;

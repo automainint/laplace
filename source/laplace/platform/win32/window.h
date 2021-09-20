@@ -112,10 +112,12 @@ namespace laplace::win32 {
     void update_display();
     void destroy_window();
     void accept_files(void *drop_data);
-    auto process(UINT message, WPARAM wparam, LPARAM lparam) -> LRESULT;
+    auto process(UINT message, WPARAM wparam, LPARAM lparam)
+        -> LRESULT;
 
-    static auto __stdcall window_proc(HWND window_handle,
-                                      UINT message, WPARAM wparam,
+    static auto __stdcall window_proc(HWND   window_handle,
+                                      UINT   message,
+                                      WPARAM wparam,
                                       LPARAM lparam) -> LRESULT;
 
     static const uint32_t default_style_ex;

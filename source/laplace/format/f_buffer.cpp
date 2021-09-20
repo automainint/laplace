@@ -15,12 +15,11 @@
 #include <algorithm>
 
 namespace laplace::format {
-  buffer::buffer(fn_read read) {
-    m_read   = read;
-    m_offset = 0;
+  buffer::buffer(fn_read read) noexcept {
+    m_read = read;
   }
 
-  auto buffer::read(sl::whole count) -> vbyte {
+  auto buffer::read(sl::whole count) noexcept -> vbyte {
     if (count < 0) {
       error_("Invalid count.", __FUNCTION__);
       return {};
@@ -39,12 +38,12 @@ namespace laplace::format {
     return vbyte(p, p + count);
   }
 
-  void buffer::keep() {
+  void buffer::keep() noexcept {
     m_offset = 0;
     m_data.clear();
   }
 
-  void buffer::restore() {
+  void buffer::restore() noexcept {
     m_offset = 0;
   }
 }

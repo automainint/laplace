@@ -41,7 +41,7 @@ namespace laplace::format::binary {
 
   static constexpr auto mantissa_factor = 1e17;
 
-  static auto is_packable(cref_family value) -> bool {
+  static auto is_packable(cref_family value) noexcept -> bool {
     if (!value.is_composite()) {
       return false;
     }
@@ -61,7 +61,8 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto read_int(fn_read read, ref_family value) -> bool {
+  static auto read_int(fn_read read, ref_family value) noexcept
+      -> bool {
     auto v = read(8);
 
     if (v.size() != 8)
@@ -71,7 +72,8 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto read_string(fn_read read, ref_family value) -> bool {
+  static auto read_string(fn_read read, ref_family value) noexcept
+      -> bool {
     auto v = read(8);
 
     if (v.size() != 8)
@@ -87,7 +89,8 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto read_uint(fn_read read, ref_family value) -> bool {
+  static auto read_uint(fn_read read, ref_family value) noexcept
+      -> bool {
     auto v = read(8);
 
     if (v.size() != 8)
@@ -97,7 +100,8 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto read_real(fn_read read, ref_family value) -> bool {
+  static auto read_real(fn_read read, ref_family value) noexcept
+      -> bool {
     auto v = read(12);
 
     if (v.size() != 12)
@@ -112,7 +116,8 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto read_bytes(fn_read read, ref_family value) -> bool {
+  static auto read_bytes(fn_read read, ref_family value) noexcept
+      -> bool {
     auto v = read(8);
 
     if (v.size() != 8)
@@ -128,7 +133,8 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto read_bitfield(fn_read read, ref_family value) -> bool {
+  static auto read_bitfield(fn_read read, ref_family value) noexcept
+      -> bool {
     auto v = read(8);
 
     if (v.size() != 8)
@@ -161,9 +167,11 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto read_pack(fn_read read, ref_family value) -> bool;
+  static auto read_pack(fn_read read, ref_family value) noexcept
+      -> bool;
 
-  static auto read_vector(fn_read read, ref_family value) -> bool {
+  static auto read_vector(fn_read read, ref_family value) noexcept
+      -> bool {
     const auto v = read(8);
 
     if (v.size() != 8) {
@@ -187,7 +195,8 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto read_composite(fn_read read, ref_family value) -> bool {
+  static auto read_composite(fn_read read, ref_family value) noexcept
+      -> bool {
     const auto v = read(8);
 
     if (v.size() != 8) {
@@ -213,7 +222,8 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto read_compact_composite(fn_read read, ref_family value)
+  static auto read_compact_composite(fn_read    read,
+                                     ref_family value) noexcept
       -> bool {
     auto v = read(8);
 
@@ -250,8 +260,8 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto read_packed_string(fn_read read, ref_family value)
-      -> bool {
+  static auto read_packed_string(fn_read    read,
+                                 ref_family value) noexcept -> bool {
     auto v = read(8);
 
     if (v.size() != 8) {
@@ -268,7 +278,8 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto read_packed_composite(fn_read read, ref_family value)
+  static auto read_packed_composite(fn_read    read,
+                                    ref_family value) noexcept
       -> bool {
     auto v = read(8);
 
@@ -305,7 +316,8 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto read_pack(fn_read read, ref_family value) -> bool {
+  static auto read_pack(fn_read read, ref_family value) noexcept
+      -> bool {
     const auto v = read(1);
 
     if (v.size() != 1) {
@@ -357,56 +369,52 @@ namespace laplace::format::binary {
     return false;
   }
 
-  auto decode(fn_read read) -> pack_type {
-    if (!read) {
+  auto decode(fn_read read) noexcept -> pack_type {
+    if (!read)
       return {};
-    }
 
-    const auto v = read(8);
+    auto const v = read(8);
 
-    if (v.size() != 8) {
+    if (v.size() != 8)
       return {};
-    }
 
-    if (rd<uint64_t>(v, 0) != magic) {
+    if (rd<uint64_t>(v, 0) != magic)
       return {};
-    }
 
-    auto result = make_shared<family>();
+    if (auto f = family {}; read_pack(read, f))
+      return f;
 
-    if (!read_pack(read, *result)) {
-      return {};
-    }
-
-    return result;
+    return {};
   }
 
-  static auto write_empty(fn_write write) -> bool {
+  static auto write_empty(fn_write write) noexcept -> bool {
     return write(vbyte { ids::empty }) == 1;
   }
 
-  static auto write_bool(fn_write write, bool value) -> bool {
+  static auto write_bool(fn_write write, bool value) noexcept
+      -> bool {
     return write(vbyte { value ? ids::bool_true
                                : ids::bool_false }) == 1;
   }
 
-  static auto write_int(fn_write write, int64_t value) -> bool {
+  static auto write_int(fn_write write, int64_t value) noexcept
+      -> bool {
     auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::integer);
     wr<int64_t>(v, 1, value);
     return write(v) == v.size();
   }
 
-  static auto write_packed_string(fn_write write, sl::index n)
-      -> bool {
+  static auto write_packed_string(fn_write  write,
+                                  sl::index n) noexcept -> bool {
     auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::packed_string);
     wr<int64_t>(v, 1, n);
     return write(v) == v.size();
   }
 
-  static auto write_string(fn_write write, u8string_view value)
-      -> bool {
+  static auto write_string(fn_write      write,
+                           u8string_view value) noexcept -> bool {
 
     if (auto i = lower_bound(dictionary.begin(), dictionary.end(),
                              value);
@@ -421,14 +429,16 @@ namespace laplace::format::binary {
     return write(v) == v.size();
   }
 
-  static auto write_uint(fn_write write, uint64_t value) -> bool {
+  static auto write_uint(fn_write write, uint64_t value) noexcept
+      -> bool {
     auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::uint);
     wr<uint64_t>(v, 1, value);
     return write(v) == v.size();
   }
 
-  static auto write_real(fn_write write, double value) -> bool {
+  static auto write_real(fn_write write, double value) noexcept
+      -> bool {
     auto exponent = int {};
     auto mantissa = frexp(value, &exponent) * mantissa_factor;
     auto m        = static_cast<int64_t>(round(mantissa));
@@ -440,7 +450,8 @@ namespace laplace::format::binary {
     return write(v) == v.size();
   }
 
-  static auto write_bytes(fn_write write, span_cbyte value) -> bool {
+  static auto write_bytes(fn_write write, span_cbyte value) noexcept
+      -> bool {
     auto v = vbyte(9 + value.size());
     wr<uint8_t>(v, 0, ids::bytes);
     wr<uint64_t>(v, 1, value.size());
@@ -448,8 +459,8 @@ namespace laplace::format::binary {
     return write(v) == v.size();
   }
 
-  static auto write_bitfield(fn_write write, cref_family value)
-      -> bool {
+  static auto write_bitfield(fn_write    write,
+                             cref_family value) noexcept -> bool {
 
     if (!value.is_vector()) {
       error_("Invalid value type.", __FUNCTION__);
@@ -484,9 +495,10 @@ namespace laplace::format::binary {
     return write(v) == v.size();
   }
 
-  static auto writedown(fn_write write, cref_family data) -> bool;
+  static auto writedown(fn_write write, cref_family data) noexcept
+      -> bool;
 
-  static auto write_vector(fn_write write, cref_family value)
+  static auto write_vector(fn_write write, cref_family value) noexcept
       -> bool {
     auto is_bitfield = [](cref_family value) -> bool {
       for (sl::index i = 0; i < value.get_size(); i++)
@@ -522,7 +534,8 @@ namespace laplace::format::binary {
   }
 
   static auto write_compact_composite(fn_write    write,
-                                      cref_family value) -> bool {
+                                      cref_family value) noexcept
+      -> bool {
     if (!value.is_composite()) {
       error_("Invalid value.", __FUNCTION__);
       return false;
@@ -558,7 +571,8 @@ namespace laplace::format::binary {
   }
 
   static auto write_packed_composite(fn_write    write,
-                                     cref_family value) -> bool {
+                                     cref_family value) noexcept
+      -> bool {
     auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::packed_composite);
     wr<uint64_t>(v, 1, value.get_size());
@@ -595,8 +609,8 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto write_composite(fn_write write, cref_family value)
-      -> bool {
+  static auto write_composite(fn_write    write,
+                              cref_family value) noexcept -> bool {
     if (!value.is_composite()) {
       error_("Invalid value.", __FUNCTION__);
       return false;
@@ -637,7 +651,8 @@ namespace laplace::format::binary {
     return true;
   }
 
-  static auto writedown(fn_write write, cref_family data) -> bool {
+  static auto writedown(fn_write write, cref_family data) noexcept
+      -> bool {
     if (data.is_empty())
       return write_empty(write);
     if (data.is_boolean())
@@ -661,7 +676,7 @@ namespace laplace::format::binary {
     return false;
   }
 
-  auto encode(fn_write write, const_pack_type data) -> bool {
+  auto encode(fn_write write, const_pack_type data) noexcept -> bool {
     if (write) {
       auto v = vbyte(8);
       wr<uint64_t>(v, 0, magic);

@@ -32,7 +32,9 @@ namespace laplace::engine {
     using basic_impact::get_actor;
     using basic_impact::get_index;
     using basic_impact::get_time;
+    using basic_impact::set_actor;
     using basic_impact::set_index;
+    using basic_impact::set_time;
 
     /*  Max encoded impact size.
      */
@@ -55,7 +57,11 @@ namespace laplace::engine {
 
     [[nodiscard]] constexpr auto get_encoded_size() const -> sl::whole;
 
+    static constexpr void set_actor(span_byte seq, sl::index id_actor);
+
     static constexpr void set_index(span_byte seq, sl::index n);
+
+    static constexpr void set_time(span_byte seq, uint64_t time);
 
     [[nodiscard]] static constexpr auto is_unindexed(span_cbyte seq)
         -> bool;
@@ -114,7 +120,7 @@ namespace laplace::engine {
   template <typename prime_impact_, typename... args_>
   [[nodiscard]] constexpr auto encode(args_... args) -> vbyte;
 
-  using ptr_prime_impact = std::shared_ptr<prime_impact>;
+  using ptr_prime_impact = std::unique_ptr<prime_impact>;
 }
 
 #include "prime_impact.impl.h"

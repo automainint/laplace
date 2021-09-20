@@ -48,8 +48,9 @@ namespace laplace::engine::access {
 
     [[nodiscard]] auto bytes_get_size() const noexcept -> sl::whole;
 
-    [[nodiscard]] auto bytes_get(
-        sl::index n, int8_t defval = {}) const noexcept -> int8_t;
+    [[nodiscard]] auto bytes_get(sl::index n,
+                                 int8_t    defval = {}) const noexcept
+        -> int8_t;
 
     [[nodiscard]] auto bytes_get_all() const noexcept
         -> sl::vector<int8_t>;
@@ -74,8 +75,9 @@ namespace laplace::engine::access {
 
     [[nodiscard]] auto vec_get_size() const noexcept -> sl::whole;
 
-    [[nodiscard]] auto vec_get(
-        sl::index n, intval defval = {}) const noexcept -> intval;
+    [[nodiscard]] auto vec_get(sl::index n,
+                               intval    defval = {}) const noexcept
+        -> intval;
 
     [[nodiscard]] auto vec_get_all() const noexcept
         -> sl::vector<intval>;
@@ -104,11 +106,11 @@ namespace laplace::engine::access {
     void vec_erase_by_value(intval value) const noexcept;
     void vec_erase_by_value_sorted(intval value) const noexcept;
 
-    void adjust() const;
+    void adjust() const noexcept;
 
-    [[nodiscard]] auto is_dynamic() const -> bool;
-    [[nodiscard]] auto get_tick_period() const -> uint64_t;
-    [[nodiscard]] auto get_id() const -> sl::index;
+    [[nodiscard]] auto is_dynamic() const noexcept -> bool;
+    [[nodiscard]] auto get_tick_period() const noexcept -> uint64_t;
+    [[nodiscard]] auto get_id() const noexcept -> sl::index;
 
   private:
     ptr_entity m_entity;

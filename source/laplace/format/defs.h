@@ -15,11 +15,12 @@
 
 #include "../core/family.h"
 #include <functional>
+#include <optional>
 
 namespace laplace::format {
   enum class mode { text, binary };
 
-  using pack_type       = core::ptr_family;
+  using pack_type       = std::optional<core::family>;
   using const_pack_type = core::cref_family;
   using fn_read         = std::function<vbyte(sl::whole)>;
   using fn_write        = std::function<sl::whole(span_cbyte)>;

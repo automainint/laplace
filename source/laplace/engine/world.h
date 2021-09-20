@@ -17,7 +17,7 @@
 
 #include "../platform/thread.h"
 #include "basic_entity.h"
-#include "basic_impact.predef.h"
+#include "basic_impact.h"
 #include "scheduler.h"
 #include <functional>
 #include <random>

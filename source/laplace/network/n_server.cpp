@@ -48,6 +48,10 @@ namespace laplace::network {
 
   void server::set_factory(ptr_factory fac) {
     m_factory = fac;
+
+    if (m_solver) {
+      m_solver->set_factory(fac);
+    }
   }
 
   void server::set_verbose(bool verbose) noexcept {
@@ -112,6 +116,10 @@ namespace laplace::network {
 
       if (m_world) {
         m_solver->set_world(m_world);
+      }
+
+      if (m_factory) {
+        m_solver->set_factory(m_factory);
       }
     }
   }

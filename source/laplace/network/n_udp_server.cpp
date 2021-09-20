@@ -67,7 +67,7 @@ namespace laplace::network {
       verb_queue(m_queue.events.size(), seq);
 
       auto &qu = m_queue.events;
-      qu.emplace_back(vbyte { seq.begin(), seq.end() });
+      qu.emplace_back(seq.begin(), seq.end());
       prime_impact::set_index(qu.back(), qu.size() - 1);
     }
   }
@@ -316,8 +316,7 @@ namespace laplace::network {
 
   void udp_server::append_event(sl::index slot, span_cbyte seq) {
     if (m_slots[slot].is_connected) {
-      m_slots[slot].out.emplace_back(
-          vbyte { seq.begin(), seq.end() });
+      m_slots[slot].out.emplace_back(seq.begin(), seq.end());
     }
   }
 
@@ -500,121 +499,90 @@ namespace laplace::network {
   }
 
   void udp_server::distribute_event(sl::index slot, span_cbyte seq) {
-    if (auto f = get_factory(); f) {
-      auto ev = f->decode(seq);
+    if (seq.empty()) {
+      error_("No event.", __FUNCTION__);
+      return;
+    }
 
-      if (!ev) {
-        if (is_verbose()) {
-          verb("Network: Unable to decode command.");
-        }
+    auto buf = vbyte { seq.begin(), seq.end() };
 
-        add_bytes_loss(seq.size() + transfer::get_data_overhead());
-        return;
-      }
+    /*  Set the event actor id.
+     */
+    if (slot != slot_host)
+      prime_impact::set_actor(buf, m_slots[slot].id_actor);
 
-      /*  Set the event actor id.
+    const sl::index n = m_queue.events.size();
+    
+    prime_impact::set_index(buf, n);
+
+    verb_queue(n, seq);
+
+    if (get_state() == server_state::prepare) {
+      /*  Perform the event.
        */
-      if (slot != slot_host)
-        ev->set_actor(m_slots[slot].id_actor);
-
-      const sl::index n = m_queue.events.size();
-
-      ev->set_index(n);
-
-      verb_queue(n, seq);
-
-      if (get_state() == server_state::prepare) {
-        /*  Perform the event. The event
-         *  time will be undefined.
-         */
-        add_instant_event(prime_impact::get_id(seq), ev);
-      } else {
-        if (auto sol = get_solver(); sol) {
-          /*  Apply the event and
-           *  set the event time.
-           */
-          sol->apply(ev);
-        }
-      }
-
-      /*  Add the event to the main queue.
-       */
-      m_queue.events.emplace_back(ev->encode());
+      add_instant_event(buf);
 
     } else {
-      error_("No factory.", __FUNCTION__);
+      if (auto sol = get_solver(); sol) {
+        /*  Apply the event.
+         */
+        auto time = sol->apply(buf);
+
+        /*  Set the event time.
+         */
+        prime_impact::set_time(buf, time);
+      }
     }
+
+    /*  Add the event to the main queue.
+     */
+    m_queue.events.emplace_back(buf);
   }
 
-  void udp_server::add_instant_event(uint16_t id, ptr_impact ev) {
-    if (id == ids::server_loading) {
+  void udp_server::add_instant_event(span_cbyte seq) {
+    if (prime_impact::get_id(seq) == ids::server_loading) {
 
       if (!m_loader) {
         m_loader = make_unique<loader>();
         m_loader->set_world(get_world());
+        m_loader->set_factory(get_factory());
       }
 
       if (!m_instant_events.empty()) {
-        for (sl::index i = 0; i < m_instant_events.size(); i++)
+        for (sl::index i = 0; i < m_instant_events.size(); i++) {
           m_loader->add_task(m_instant_events[i]);
+        }
 
         m_instant_events.clear();
       }
 
-      m_loader->add_task(ev);
+      m_loader->add_task(seq);
 
     } else {
-      m_instant_events.emplace_back(ev);
-    }
-  }
-
-  void udp_server::add_instant_event(span_cbyte seq) {
-    if (auto f = get_factory(); f) {
-      auto ev = f->decode(seq);
-
-      if (!ev) {
-        if (is_verbose()) {
-          verb("Network: Unable to decode command.");
-        }
-
-        return;
-      }
-
-      add_instant_event(prime_impact::get_id(seq), ev);
-
-    } else {
-      error_("No factory.", __FUNCTION__);
+      m_instant_events.emplace_back(seq.begin(), seq.end());
     }
   }
 
   void udp_server::perform_event(sl::index slot, span_cbyte seq) {
-    if (auto f = get_factory(); f) {
-      auto ev = f->decode(seq);
+    update_time_limit(prime_impact::get_time(seq));
 
-      if (!ev) {
-        if (is_verbose()) {
-          verb("Network: Unable to decode command.");
-        }
-
-        return;
-      }
-
-      update_time_limit(ev->get_time());
-
-      if (auto sol = get_solver(); sol) {
-        sol->apply(ev);
-      }
+    if (auto sol = get_solver(); sol) {
+      sol->apply(seq);
     }
   }
 
   void udp_server::perform_instant_events() {
-    if (auto wor = get_world(); wor) {
-      for (sl::index i = 0; i < m_instant_events.size(); i++) {
-        m_instant_events[i]->perform({ *wor, access::sync });
-      }
+    auto wor = get_world();
+    auto fac = get_factory();
 
-      m_instant_events.clear();
+    if (wor && fac) {
+      for (sl::index i = 0; i < m_instant_events.size(); i++) {
+        auto ev = fac->decode(m_instant_events[i]);
+        ev->perform({ *wor, access::sync });
+      }
     }
+
+    m_instant_events.clear();
   }
 
   void udp_server::receive_chunks() {
@@ -881,8 +849,7 @@ namespace laplace::network {
         auto plain = sl::vector<span_cbyte> {};
 
         for (sl::index i = 0; i < s.out.size(); i++) {
-          plain.emplace_back(
-              span_cbyte { s.out[i].begin(), s.out[i].end() });
+          plain.emplace_back(s.out[i].begin(), s.out[i].end());
         }
 
         const auto chunk = s.is_encrypted ? s.tran.encode(plain)

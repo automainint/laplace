@@ -28,10 +28,10 @@ namespace quadwar_app::object {
       engine::vec2i, engine::vec2z, engine::id_undefined,
       std::shared_ptr, std::make_shared;
 
-  const engine::intval unit::default_health           = 100;
-  const engine::intval unit::default_radius           = 1200;
-  const engine::intval unit::default_collision_radius = 600;
-  const engine::intval unit::default_movement_speed   = 100;
+  engine::intval const unit::default_health           = 100;
+  engine::intval const unit::default_radius           = 1200;
+  engine::intval const unit::default_collision_radius = 600;
+  engine::intval const unit::default_movement_speed   = 100;
 
   sl::index unit::n_health           = {};
   sl::index unit::n_radius           = {};
@@ -47,7 +47,7 @@ namespace quadwar_app::object {
 
   unit unit::m_proto(unit::proto);
 
-  unit::unit(proto_tag) : basic_entity(1) {
+  unit::unit(proto_tag) : basic_entity(dynamic, 1) {
     setup_sets(
         { { .id = sets::unit_health, .scale = sets::scale_points },
           { .id = sets::unit_radius, .scale = sets::scale_real },

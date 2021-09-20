@@ -117,7 +117,6 @@ namespace laplace::network {
     void clean_slots();
     void process_event(sl::index slot, span_cbyte seq);
     void distribute_event(sl::index slot, span_cbyte seq);
-    void add_instant_event(uint16_t id, engine::ptr_impact ev);
     void add_instant_event(span_cbyte seq);
     void perform_event(sl::index slot, span_cbyte seq);
     void perform_instant_events();
@@ -154,7 +153,7 @@ namespace laplace::network {
 
     std::unique_ptr<engine::loader> m_loader;
 
-    engine::vptr_impact m_instant_events;
+    sl::vector<vbyte> m_instant_events;
 
     vuint16   m_allowed_commands;
     uint16_t  m_max_command_id        = default_max_command_id;

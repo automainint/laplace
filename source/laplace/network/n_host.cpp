@@ -47,7 +47,8 @@ namespace laplace::network {
 
     m_node = make_unique<udp_node>(port);
 
-    process_event(slot_host, encode<server_clock>(get_tick_duration()));
+    process_event(slot_host,
+                  encode<server_clock>(get_tick_duration()));
     process_event(slot_host, encode<server_seed>(m_seed));
     process_event(slot_host, encode<server_init>());
 
@@ -69,7 +70,8 @@ namespace laplace::network {
 
       if (cipher_id == ids::cipher_ecc_rabbit) {
         m_slots[slot].tran.setup_cipher<ecc_rabbit>();
-        m_slots[slot].tran.set_remote_key(session_request::get_key(seq));
+        m_slots[slot].tran.set_remote_key(
+            session_request::get_key(seq));
 
         send_event_to(slot, encode<session_response>(
                                 m_slots[slot].node->get_port(),
@@ -77,7 +79,8 @@ namespace laplace::network {
       } else {
         if (cipher_id != ids::cipher_plain) {
           if (is_verbose()) {
-            verb(fmt("Network: Unknown cipher on slot %d.", (int) slot));
+            verb(fmt("Network: Unknown cipher on slot %d.",
+                     (int) slot));
           }
         }
 
@@ -175,19 +178,7 @@ namespace laplace::network {
       }
 
       if (get_state() == server_state::prepare) {
-        if (auto f = get_factory(); f) {
-          auto ev = f->decode(seq);
-
-          if (ev) {
-            add_instant_event(prime_impact::get_id(seq), ev);
-          } else {
-            if (is_verbose()) {
-              verb("Network: Unable to decode command.");
-            }
-          }
-        } else {
-          error_("No factory.", __FUNCTION__);
-        }
+        add_instant_event(seq);
       } else {
         if (is_verbose()) {
           verb("Network: Ignore ready command.");

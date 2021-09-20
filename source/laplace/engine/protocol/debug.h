@@ -18,10 +18,10 @@
 namespace laplace::engine::protocol {
   class debug final : public sync_prime_impact {
   public:
-    enum encoding_offset : sl::index { n_value = 18 };
+    enum encoding_offset : sl::index { n_value = 26 };
 
     static constexpr uint16_t  id   = ids::debug;
-    static constexpr sl::whole size = 26;
+    static constexpr sl::whole size = 34;
 
     ~debug() final = default;
 
@@ -35,9 +35,13 @@ namespace laplace::engine::protocol {
       m_value = value;
     }
 
-    constexpr debug(sl::index n, uint64_t time, int64_t value) {
+    constexpr debug(sl::index n,
+                    uint64_t  time,
+                    sl::index id_actor,
+                    int64_t   value) {
       set_index(n);
       set_time(time);
+      set_actor(id_actor);
       set_encoded_size(size);
 
       m_value = value;
@@ -50,8 +54,8 @@ namespace laplace::engine::protocol {
     void perform(access::world w) const final;
 
     inline void encode_to(std::span<uint8_t> bytes) const final {
-      serial::write_bytes(
-          bytes, id, get_index64(), get_time64(), m_value);
+      serial::write_bytes(bytes, id, get_index64(), get_time64(),
+                          get_actor64(), m_value);
     }
 
     static constexpr auto scan(span_cbyte seq) -> bool {
@@ -59,7 +63,8 @@ namespace laplace::engine::protocol {
     }
 
     static inline auto decode(span_cbyte seq) {
-      return debug { get_index(seq), get_time(seq), get_value(seq) };
+      return debug { get_index(seq), get_time(seq), get_actor(seq),
+                     get_value(seq) };
     }
 
   private:

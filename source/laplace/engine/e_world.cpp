@@ -50,8 +50,7 @@ namespace laplace::engine {
 
       m_entities[id] = ent;
 
-      ent->set_id(id);
-      ent->set_world(shared_from_this());
+      ent->set_world(shared_from_this(), id);
 
       while (m_next_id < m_entities.size() && m_entities[m_next_id]) {
         m_next_id++;
@@ -94,8 +93,7 @@ namespace laplace::engine {
 
       m_entities[id] = ent;
 
-      ent->set_id(id);
-      ent->set_world(shared_from_this());
+      ent->set_world(shared_from_this(), id);
 
       while (m_next_id < m_entities.size() && m_entities[m_next_id]) {
         m_next_id++;
@@ -175,20 +173,18 @@ namespace laplace::engine {
     if (ev) {
       if (ev->is_async()) {
         auto _ul = unique_lock(m_lock);
+        m_queue.emplace_back(std::move(ev));
 
-        m_queue.emplace_back(ev);
       } else {
         auto _ul = unique_lock(m_lock);
 
-        auto op = [](const ptr_impact &a, cref_eventorder b) -> bool {
-          return a->get_order() < b;
-        };
+        auto iter = lower_bound(
+            m_sync_queue.begin(), m_sync_queue.end(), ev->get_order(),
+            [](ptr_impact const &a, cref_eventorder b) -> bool {
+              return a->get_order() < b;
+            });
 
-        auto iter = lower_bound(m_sync_queue.begin(),
-                                m_sync_queue.end(), ev->get_order(),
-                                op);
-
-        m_sync_queue.emplace(iter, ev);
+        m_sync_queue.emplace(iter, std::move(ev));
       }
     }
   }
@@ -355,7 +351,8 @@ namespace laplace::engine {
 
     if (m_index <= m_queue.size()) {
       m_queue.erase(m_queue.begin(),
-                    m_queue.begin() + static_cast<ptrdiff_t>(m_index));
+                    m_queue.begin() +
+                        static_cast<ptrdiff_t>(m_index));
 
       m_index = 0;
     }
@@ -374,14 +371,16 @@ namespace laplace::engine {
   auto world::next_sync_impact() -> ptr_impact {
     auto _ul = unique_lock(m_lock);
 
-    return m_index < m_sync_queue.size() ? m_sync_queue[m_index++]
-                                         : ptr_impact();
+    return m_index < m_sync_queue.size()
+               ? std::move(m_sync_queue[m_index++])
+               : ptr_impact {};
   }
 
   auto world::next_async_impact() -> ptr_impact {
     auto _ul = unique_lock(m_lock);
 
-    return m_index < m_queue.size() ? m_queue[m_index++] : ptr_impact();
+    return m_index < m_queue.size() ? std::move(m_queue[m_index++])
+                                    : ptr_impact();
   }
 
   auto world::next_dynamic_entity() -> ptr_entity {

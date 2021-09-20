@@ -20,8 +20,9 @@ namespace laplace::format::text {
   static constexpr auto s_function  = u8"__function";
   static constexpr auto s_arguments = u8"__arguments";
 
-  auto decode(fn_read read) -> pack_type;
-  auto encode(fn_write write, const_pack_type data) -> bool;
+  [[nodiscard]] auto decode(fn_read read) noexcept -> pack_type;
+  [[nodiscard]] auto encode(fn_write        write,
+                            const_pack_type data) noexcept -> bool;
 }
 
 #endif

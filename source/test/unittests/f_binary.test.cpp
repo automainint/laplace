@@ -28,12 +28,13 @@ namespace laplace::test {
     auto src = family {};
     auto ss  = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
@@ -41,12 +42,13 @@ namespace laplace::test {
     auto src = family { true };
     auto ss  = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
@@ -54,12 +56,13 @@ namespace laplace::test {
     auto src = family { false };
     auto ss  = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
@@ -67,12 +70,13 @@ namespace laplace::test {
     auto src = family { 100 };
     auto ss  = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
@@ -80,12 +84,13 @@ namespace laplace::test {
     auto src = family { 0x8000000000000000 };
     auto ss  = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
@@ -93,12 +98,13 @@ namespace laplace::test {
     auto src = family { 3.1415 };
     auto ss  = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
@@ -106,12 +112,13 @@ namespace laplace::test {
     auto src = family { 0.0000001 };
     auto ss  = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
@@ -119,12 +126,13 @@ namespace laplace::test {
     auto src = family { 1e100 };
     auto ss  = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
@@ -132,12 +140,13 @@ namespace laplace::test {
     auto src = family { u8"Foo bar" };
     auto ss  = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
@@ -145,12 +154,13 @@ namespace laplace::test {
     auto src = family { vbyte { 1, 2, 3, 4, 5 } };
     auto ss  = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
@@ -159,12 +169,13 @@ namespace laplace::test {
                                   true, false, true, false, true } };
     auto ss  = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
@@ -172,12 +183,13 @@ namespace laplace::test {
     auto src = family { vfamily { 1, 2, 3, 4, 5 } };
     auto ss  = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
@@ -188,29 +200,31 @@ namespace laplace::test {
 
     auto ss = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
   TEST(format, binary_compact_composite) {
-    auto src = family{};
-    src[3] = "Foo";
-    src[1] = "Bar";
-    src[10] = 42;
+    auto src = family {};
+    src[3]   = "Foo";
+    src[1]   = "Bar";
+    src[10]  = 42;
 
     auto ss = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 
@@ -223,12 +237,13 @@ namespace laplace::test {
 
     auto ss = ostringstream {};
 
-    encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src);
 
     auto s   = ss.str();
     auto in  = istringstream { s };
     auto dst = decode(wrap(in));
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(dst && src == *dst);
   }
 }

@@ -15,13 +15,14 @@
 #ifndef laplace_engine_basic_impact_predef_h
 #define laplace_engine_basic_impact_predef_h
 
+#include "../core/defs.h"
 #include <memory>
 #include <vector>
 
 namespace laplace::engine {
   class basic_impact;
-  using ptr_impact  = std::shared_ptr<basic_impact>;
-  using vptr_impact = std::vector<ptr_impact>;
+  using ptr_impact  = std::unique_ptr<basic_impact>;
+  using vptr_impact = sl::vector<ptr_impact>;
 }
 
 #endif

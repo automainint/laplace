@@ -17,7 +17,7 @@
 #include <thread>
 
 namespace laplace::test {
-  using std::make_shared, std::thread, engine::basic_entity,
+  using std::make_shared, std::make_unique, std::thread, engine::basic_entity,
       engine::basic_impact, engine::world, engine::scheduler,
       engine::id_undefined;
 
@@ -26,15 +26,12 @@ namespace laplace::test {
 
   class my_counter : public basic_entity {
   public:
-    class dynamic_tag { };
-    static constexpr auto dynamic = dynamic_tag {};
-
     my_counter() : basic_entity(proto) {
       setup_sets({ { sets::debug_value, 0, 0 } });
       n_value = index_of(sets::debug_value);
     }
 
-    my_counter(dynamic_tag) : basic_entity(default_tick_period) {
+    my_counter(dynamic_tag) : basic_entity(dynamic) {
       setup_sets({ { sets::debug_value, 0, 0 } });
       n_value = index_of(sets::debug_value);
     }
@@ -111,12 +108,12 @@ namespace laplace::test {
     const auto id = a->spawn(e, id_undefined);
 
     for (sl::index i = 0; i < 100; i++) {
-      a->queue(make_shared<my_additioner>(id, 1));
-      a->queue(make_shared<my_additioner>(id, -1));
+      a->queue(make_unique<my_additioner>(id, 1));
+      a->queue(make_unique<my_additioner>(id, -1));
     }
 
     for (sl::index i = 0; i < 100; i++) {
-      a->queue(make_shared<my_additioner>(id, 1));
+      a->queue(make_unique<my_additioner>(id, 1));
     }
 
     a->tick(1);

@@ -27,8 +27,9 @@ namespace laplace::test {
     auto data = family {};
     auto s    = ostringstream {};
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" { } "));
   }
 
@@ -36,8 +37,9 @@ namespace laplace::test {
     auto data = family { true };
     auto s    = ostringstream {};
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" true "));
   }
 
@@ -45,8 +47,9 @@ namespace laplace::test {
     auto data = family { false };
     auto s    = ostringstream {};
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" false "));
   }
 
@@ -55,8 +58,9 @@ namespace laplace::test {
     auto s    = ostringstream {};
     auto x    = int64_t {};
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" %d ", &x));
     EXPECT_EQ(x, 1);
   }
@@ -66,11 +70,12 @@ namespace laplace::test {
     auto s    = ostringstream {};
     auto x    = uint64_t {};
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
     auto str = s.str();
     auto p   = parser::wrap(str);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(p.parse(" 0x") || p.parse(" 0X"));
     EXPECT_TRUE(p.parse("%X ", &x));
     EXPECT_EQ(x, 0x8000000000000000ull);
@@ -81,8 +86,9 @@ namespace laplace::test {
     auto s    = ostringstream {};
     auto x    = double {};
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" %f ", &x));
     EXPECT_DOUBLE_EQ(x, 1.5);
   }
@@ -92,8 +98,9 @@ namespace laplace::test {
     auto s    = ostringstream {};
     auto x    = u8string {};
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" Hello "));
   }
 
@@ -102,8 +109,9 @@ namespace laplace::test {
     auto s    = ostringstream {};
     auto x    = u8string {};
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" \"% Hello% \" "));
   }
 
@@ -112,8 +120,9 @@ namespace laplace::test {
     auto s    = ostringstream {};
     auto x    = u8string {};
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" \"\\\"Hello\\\"\" "));
   }
 
@@ -122,8 +131,9 @@ namespace laplace::test {
     auto s    = ostringstream {};
     auto x    = u8string {};
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" _abcDEF123 "));
   }
 
@@ -132,8 +142,9 @@ namespace laplace::test {
     auto s    = ostringstream {};
     auto x    = u8string {};
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" \"1abc\" "));
   }
 
@@ -141,11 +152,12 @@ namespace laplace::test {
     auto data = family { vbyte { 0x11, 0x7f, 0xa0 } };
     auto s    = ostringstream {};
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
     auto str = s.str();
     auto p   = parser::wrap(str);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(p.parse(" :: { 11 7f a0 } ") ||
                 p.parse(" :: { 11 7F A0 } "));
   }
@@ -155,8 +167,9 @@ namespace laplace::test {
                                          family { 3 } } };
     auto s    = ostringstream {};
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" 1 , 2 , 3 "));
   }
 
@@ -167,8 +180,9 @@ namespace laplace::test {
     data[0] = core::vfamily { family { 1 }, family { 2 } };
     data[1] = 3;
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" ( 1 , 2 ) , 3 "));
   }
 
@@ -179,8 +193,9 @@ namespace laplace::test {
     data["a"] = 1;
     data["b"] = 2;
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" { a = 1 b = 2 } "));
   }
 
@@ -192,8 +207,9 @@ namespace laplace::test {
     data[text::s_arguments][0] = 1;
     data[text::s_arguments][1] = 2;
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(" call ( 1 , 2 ) "));
   }
 
@@ -208,8 +224,9 @@ namespace laplace::test {
     data[text::s_commands][1][text::s_arguments][0] = 3;
     data[text::s_commands][1][text::s_arguments][1] = 4;
 
-    encode(wrap(s), data);
+    auto success = encode(wrap(s), data);
 
+    EXPECT_TRUE(success);
     EXPECT_TRUE(parser::wrap(s.str()).parse(
         " { call1 ( 1 , 2 ) call2 ( 3 , 4 ) } "));
   }

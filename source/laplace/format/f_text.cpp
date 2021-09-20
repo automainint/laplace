@@ -24,7 +24,7 @@ namespace laplace::format::text {
       std::numeric_limits, std::setprecision, std::string_view,
       std::u8string_view;
 
-  static auto is_id_string(string_view s) -> bool {
+  static auto is_id_string(string_view s) noexcept -> bool {
     if (s.empty()) {
       return false;
     }
@@ -42,7 +42,7 @@ namespace laplace::format::text {
     return true;
   }
 
-  static auto wrap_string(string_view s) -> string {
+  static auto wrap_string(string_view s) noexcept -> string {
     auto result = string { "\"" };
 
     for (sl::index i = 0; i < s.size(); i++) {
@@ -58,7 +58,7 @@ namespace laplace::format::text {
     return result;
   }
 
-  static auto unwrap_string(u8string_view s) -> u8string {
+  static auto unwrap_string(u8string_view s) noexcept -> u8string {
     auto result = u8string {};
 
     for (sl::index i = 0; i < s.size(); i++)
@@ -69,7 +69,9 @@ namespace laplace::format::text {
     return result;
   }
 
-  static bool parse(parser &in, family &f, bool is_vec_elem = false) {
+  static bool parse(parser &in,
+                    family &f,
+                    bool    is_vec_elem = false) noexcept {
     auto field = family {};
 
     auto x_u64 = uint64_t {};
@@ -215,31 +217,27 @@ namespace laplace::format::text {
     return true;
   }
 
-  auto decode(fn_read read) -> pack_type {
-    if (!read) {
+  auto decode(fn_read read) noexcept -> pack_type {
+    if (!read)
       return {};
-    }
 
     auto in = parser([read]() -> char32_t {
-      auto c = read(1);
+      auto const c = read(1);
       if (c.size() == 1)
         return c[0];
       return 0;
     });
 
-    auto result = make_shared<family>();
+    if (auto f = family {}; parse(in, f))
+      return f;
 
-    if (!parse(in, *result)) {
-      return {};
-    }
-
-    return result;
+    return {};
   }
 
   static bool printdown(function<bool(string_view)> print,
-                        const family &              f,
+                        family const &              f,
                         sl::whole                   indent = 0,
-                        bool is_vec_elem                   = false) {
+                        bool is_vec_elem = false) noexcept {
     if (f.is_boolean()) {
       return print(f ? "true" : "false");
     }
@@ -347,7 +345,7 @@ namespace laplace::format::text {
       if (!print("{\n"))
         return false;
 
-      const auto size = f.get_size();
+      auto const size = f.get_size();
 
       for (sl::index i = 0; i < size; i++) {
         for (sl::index n = 0; n <= indent; n++)
@@ -355,10 +353,10 @@ namespace laplace::format::text {
             return false;
           }
 
-        const auto &k = f.get_key(i);
+        auto const &k = f.get_key(i);
 
         if (k.get_string() == s_commands) {
-          const auto &cmds = f[k];
+          auto const &cmds = f[k];
 
           for (sl::index j = 0; j < cmds.get_size(); j++)
             if (!printdown(print, cmds[j], indent + 1)) {
@@ -395,7 +393,7 @@ namespace laplace::format::text {
     return print("{ }");
   }
 
-  auto encode(fn_write write, const_pack_type data) -> bool {
+  auto encode(fn_write write, const_pack_type data) noexcept -> bool {
     auto print = [write](string_view s) -> bool {
       auto v = vbyte(s.size());
       memcpy(v.data(), s.data(), v.size());

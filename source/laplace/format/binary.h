@@ -35,8 +35,9 @@ namespace laplace::format::binary {
     };
   }
 
-  auto decode(fn_read read) -> pack_type;
-  auto encode(fn_write write, const_pack_type data) -> bool;
+  [[nodiscard]] auto decode(fn_read read) noexcept -> pack_type;
+  [[nodiscard]] auto encode(fn_write        write,
+                            const_pack_type data) noexcept -> bool;
 }
 
 #endif

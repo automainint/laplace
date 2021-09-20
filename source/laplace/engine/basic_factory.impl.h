@@ -17,8 +17,9 @@
 
 namespace laplace::engine {
   template <typename impact_type_>
-  inline auto basic_factory::make(span_cbyte seq) -> ptr_prime_impact {
-    return std::make_shared<impact_type_>(impact_type_::decode(seq));
+  inline auto basic_factory::make(span_cbyte seq)
+      -> ptr_prime_impact {
+    return std::make_unique<impact_type_>(impact_type_::decode(seq));
   }
 }
 
