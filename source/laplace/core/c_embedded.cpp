@@ -13,6 +13,7 @@
 #include "embedded.h"
 
 #include <algorithm>
+#include <mutex>
 #include <shared_mutex>
 
 namespace laplace::embedded {
@@ -20,7 +21,7 @@ namespace laplace::embedded {
       std::unique_lock, std::shared_mutex, std::vector, std::wstring,
       std::wstring_view;
 
-  shared_mutex g_lock;
+  auto g_lock = shared_mutex {};
 
   static bool is_ready = false;
 
