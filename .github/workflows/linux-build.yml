@@ -27,8 +27,8 @@ jobs:
           cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D LAPLACE_ENABLE_TESTING=ON -D LAPLACE_VERBOSE=ON -B build -S .
           cmake --build build --config $BUILD_TYPE
       env:
-        CC: gcc-10
-        CXX: g++-10
+        CC: gcc-11
+        CXX: g++-11
 
     - name: Run tests
       working-directory: ${{github.workspace}}/build
