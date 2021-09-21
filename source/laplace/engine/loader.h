@@ -15,6 +15,8 @@
 
 #include "basic_factory.h"
 #include "basic_impact.h"
+#include <condition_variable>
+#include <mutex>
 #include <thread>
 
 namespace laplace::engine {

@@ -37,7 +37,7 @@ namespace laplace::sl {
   template <typename type_>
   using vector = std::vector<type_>;
 
-  /*  For indexing integer values.
+  /*  Integer value for indexing.
    */
   using index = ptrdiff_t;
 
