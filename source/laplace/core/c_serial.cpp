@@ -13,6 +13,11 @@
 #include "serial.h"
 
 namespace laplace::serial {
+  static_assert(sizeof(_buffer<1>) == 1);
+  static_assert(sizeof(_buffer<2>) == 2);
+  static_assert(sizeof(_buffer<4>) == 4);
+  static_assert(sizeof(_buffer<8>) == 8);
+
   static_assert(_swap_bytes(uint8_t { 0x01 }) == uint8_t { 0x01 });
 
   static_assert(_swap_bytes(uint16_t { 0x0102 }) ==

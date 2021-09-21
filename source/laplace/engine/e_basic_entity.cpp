@@ -26,7 +26,7 @@ namespace laplace::engine {
       std::chrono::milliseconds;
 
   const milliseconds basic_entity::lock_timeout = milliseconds(300);
-  const uint64_t     basic_entity::default_tick_period = 10;
+  const sl::time     basic_entity::default_tick_period = 10;
 
   basic_entity::basic_entity(cref_entity en) noexcept {
     assign(en);
@@ -58,7 +58,7 @@ namespace laplace::engine {
 
   basic_entity::basic_entity(dummy_tag) { }
 
-  basic_entity::basic_entity(dynamic_tag, uint64_t tick_period) {
+  basic_entity::basic_entity(dynamic_tag, sl::time tick_period) {
 
     setup_sets({ { sets::is_dynamic, 1, 1 },
                  { sets::tick_period, sets::scale_time,
@@ -75,7 +75,7 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::set_tick_period(uint64_t tick_period) {
+  void basic_entity::set_tick_period(sl::time tick_period) {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       m_sets[n_tick_period].delta += static_cast<int64_t>(
                                          tick_period) -
@@ -88,7 +88,7 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::set_clock(uint64_t clock_msec) {
+  void basic_entity::set_clock(sl::time clock_msec) {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       m_clock = clock_msec;
     } else {
@@ -99,9 +99,8 @@ namespace laplace::engine {
 
   void basic_entity::reset_clock() {
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
-      const auto period = static_cast<uint64_t>(
-          m_sets[n_tick_period].value);
-      m_clock = period - 1;
+      const auto period = m_sets[n_tick_period].value;
+      m_clock           = period - 1;
     } else {
       error_("Lock timeout.", __FUNCTION__);
       desync();
@@ -683,9 +682,7 @@ namespace laplace::engine {
 
     if (auto _ul = unique_lock(m_lock, lock_timeout); _ul) {
       bool const is_tick = m_clock == 0;
-
-      auto const period = static_cast<uint64_t>(
-          m_sets[n_tick_period].value);
+      auto const period  = m_sets[n_tick_period].value;
 
       if (is_tick) {
         m_clock = period - 1;
@@ -715,10 +712,10 @@ namespace laplace::engine {
     return false;
   }
 
-  auto basic_entity::get_tick_period() -> uint64_t {
+  auto basic_entity::get_tick_period() -> sl::time {
 
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
-      return static_cast<uint64_t>(m_sets[n_tick_period].value);
+      return m_sets[n_tick_period].value;
     } else {
       error_("Lock timeout.", __FUNCTION__);
       desync();

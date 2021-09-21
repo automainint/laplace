@@ -14,6 +14,25 @@
 #define laplace_core_serial_impl_h
 
 namespace laplace::serial {
+  template <sl::whole size_>
+  struct _buffer {
+    uint8_t v[size_] = {};
+  };
+
+  constexpr void _move(trivial auto const src, span_byte const dst) {
+    constexpr auto size = sizeof src;
+    auto           buf  = std::bit_cast<_buffer<size>>(src);
+    std::move(buf.v, buf.v + size, dst.begin());
+  }
+
+  template <trivial type_>
+  constexpr auto _read(span_cbyte const src) {
+    constexpr auto size = sizeof(type_);
+    auto           buf  = _buffer<size> {};
+    std::copy(src.begin(), src.begin() + size, buf.v);
+    return std::bit_cast<type_>(buf);
+  }
+
   template <typename type_>
   constexpr auto _str(std::string_view s) noexcept -> type_ {
     auto x = type_ {};
@@ -49,31 +68,23 @@ namespace laplace::serial {
   }
 
   template <trivial type_>
-  constexpr auto rd(span_cbyte  seq,
-                    sl::index   offset,
-                    const type_ invalid) noexcept -> type_ {
-    auto value = invalid;
-
-    if (offset + sizeof value <= seq.size()) {
-      auto dst = &value;
-      auto src = seq.data() + offset;
-
-      std::memcpy(dst, src, sizeof value);
-    }
-
-    return _convert_endian(value);
+  constexpr auto rd(span_cbyte const seq,
+                    sl::index const  offset,
+                    type_ const      invalid) noexcept -> type_ {
+    if (offset < 0 || offset + sizeof(type_) > seq.size())
+      return invalid;
+    return _convert_endian(
+        _read<type_>({ seq.begin() + offset, seq.end() }));
   }
 
   template <trivial type_>
-  constexpr void wr(span_byte seq,
-                    sl::index offset,
-                    type_     value) noexcept {
-    if (offset + sizeof value <= seq.size()) {
-      auto dst = seq.data() + offset;
-      auto src = _convert_endian(value);
-
-      std::memcpy(dst, &src, sizeof value);
-    }
+  constexpr void wr(span_byte const seq,
+                    sl::index const offset,
+                    type_ const     value) noexcept {
+    if (offset < 0 || offset + sizeof value > seq.size())
+      return;
+    _move(_convert_endian(value),
+          { seq.begin() + offset, seq.end() });
   }
 
   constexpr auto byte_count() noexcept -> sl::whole {

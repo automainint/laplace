@@ -97,11 +97,13 @@ namespace laplace::win32 {
     auto get_text() const -> std::u8string_view;
     void refresh();
 
-    void set_window_rect(sl::index x, sl::index y, sl::whole width,
+    void set_window_rect(sl::index x,
+                         sl::index y,
+                         sl::whole width,
                          sl::whole height);
     void attach(HWND handle);
     void process(HRAWINPUT raw_input);
-    void tick(uint64_t delta_msec);
+    void tick(sl::time delta_msec);
     void reset();
 
   private:

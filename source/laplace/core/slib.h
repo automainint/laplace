@@ -50,6 +50,7 @@ namespace laplace::sl {
 
   using index64 = int64_t;
   using whole64 = int64_t;
+  using time64  = int64_t;
 }
 
 #endif

@@ -22,12 +22,13 @@ namespace laplace::network {
     void set_cipher(std::unique_ptr<crypto::basic_cipher> cipher);
     void set_remote_key(span_cbyte key);
 
-    [[nodiscard]] auto pack(std::span<const span_cbyte> data) -> vbyte;
-    [[nodiscard]] auto unpack(span_cbyte data) -> std::vector<vbyte>;
+    [[nodiscard]] auto pack(std::span<const span_cbyte> data)
+        -> vbyte;
+    [[nodiscard]] auto unpack(span_cbyte data) -> sl::vector<vbyte>;
 
     [[nodiscard]] auto encode(std::span<const span_cbyte> data)
         -> vbyte;
-    [[nodiscard]] auto decode(span_cbyte data) -> std::vector<vbyte>;
+    [[nodiscard]] auto decode(span_cbyte data) -> sl::vector<vbyte>;
 
     [[nodiscard]] auto get_public_key() const noexcept -> span_cbyte;
     [[nodiscard]] auto get_mutual_key() const noexcept -> span_cbyte;
@@ -36,7 +37,8 @@ namespace laplace::network {
 
     [[nodiscard]] auto get_loss_count() const noexcept -> sl::whole;
 
-    [[nodiscard]] static auto get_data_overhead() noexcept -> sl::whole;
+    [[nodiscard]] static auto get_data_overhead() noexcept
+        -> sl::whole;
     [[nodiscard]] static auto check_sum(span_cbyte data) -> uint64_t;
 
     template <typename cipher_>
@@ -53,7 +55,8 @@ namespace laplace::network {
         -> std::vector<vbyte>;
 
     [[nodiscard]] auto scan(span_cbyte data,
-                            uint16_t mark) const noexcept -> sl::whole;
+                            uint16_t   mark) const noexcept
+        -> sl::whole;
 
     static constexpr uint16_t mark_plain     = 0;
     static constexpr uint16_t mark_encrypted = 1;

@@ -40,12 +40,6 @@ namespace laplace::engine::object::sets {
    */
   static constexpr intval scale_angle = scale_factor;
 
-  static_assert(scale_points > 0);
-  static_assert(scale_real > 0);
-  static_assert(scale_time > 0);
-  static_assert(scale_factor > 0);
-  static_assert(scale_angle > 0);
-
   enum set_id : sl::index {
     undefined = 0,
 

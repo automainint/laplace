@@ -72,7 +72,7 @@ namespace laplace::network {
     }
   }
 
-  void udp_server::tick(uint64_t delta_msec) {
+  void udp_server::tick(sl::time delta_msec) {
     reset_tick();
 
     receive_events();
@@ -233,11 +233,11 @@ namespace laplace::network {
     return m_is_encryption_enabled;
   }
 
-  auto udp_server::get_local_time() const noexcept -> uint64_t {
+  auto udp_server::get_local_time() const noexcept -> sl::time {
     return m_local_time;
   }
 
-  void udp_server::update_world(uint64_t delta_msec) {
+  void udp_server::update_world(sl::time delta_msec) {
     if (m_loader && m_loader->is_ready()) {
       m_loader.reset();
     }
@@ -512,7 +512,7 @@ namespace laplace::network {
       prime_impact::set_actor(buf, m_slots[slot].id_actor);
 
     const sl::index n = m_queue.events.size();
-    
+
     prime_impact::set_index(buf, n);
 
     verb_queue(n, seq);
@@ -894,7 +894,7 @@ namespace laplace::network {
     }
   }
 
-  void udp_server::update_slots(uint64_t delta_msec) {
+  void udp_server::update_slots(sl::time delta_msec) {
     for (sl::index i = 0; i < m_slots.size(); i++) {
       if (!m_slots[i].is_connected) {
         continue;
@@ -927,7 +927,7 @@ namespace laplace::network {
     }
   }
 
-  void udp_server::update_local_time(uint64_t delta_msec) {
+  void udp_server::update_local_time(sl::time delta_msec) {
     const auto t = m_local_time;
     m_local_time += delta_msec;
 
@@ -939,12 +939,12 @@ namespace laplace::network {
     }
   }
 
-  void udp_server::update_time_limit(uint64_t time) {
-    if (time != -1 && m_time_limit < time)
+  void udp_server::update_time_limit(sl::time time) {
+    if (time >= 0 && m_time_limit < time)
       m_time_limit = time;
   }
 
-  auto udp_server::convert_delta(uint64_t delta_msec) -> uint64_t {
+  auto udp_server::convert_delta(sl::time delta_msec) -> sl::time {
     if (auto sol = get_solver(); sol) {
       const auto time = sol->get_time();
 
@@ -959,8 +959,8 @@ namespace laplace::network {
     return 0;
   }
 
-  auto udp_server::adjust_overtake(uint64_t time) -> uint64_t {
-    uint64_t overtake = 0;
+  auto udp_server::adjust_overtake(sl::time time) -> sl::time {
+    auto overtake = sl::time {};
 
     if (get_tick_duration() > 0) {
       auto ping_ticks = get_ping() /

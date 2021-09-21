@@ -22,10 +22,10 @@ namespace laplace::network {
   class server {
   public:
     static const bool      default_verbose;
-    static const uint64_t  default_tick_duration_msec;
-    static const uint64_t  default_update_timeout_msec;
-    static const uint64_t  default_ping_timeout_msec;
-    static const uint64_t  default_connection_timeout_msec;
+    static const sl::time  default_tick_duration_msec;
+    static const sl::time  default_update_timeout_msec;
+    static const sl::time  default_ping_timeout_msec;
+    static const sl::time  default_connection_timeout_msec;
     static const sl::whole default_overtake_factor;
 
     server() = default;
@@ -35,7 +35,7 @@ namespace laplace::network {
     void set_verbose(bool verbose) noexcept;
 
     virtual void queue(span_cbyte seq);
-    virtual void tick(uint64_t delta_msec);
+    virtual void tick(sl::time delta_msec);
 
     virtual void reconnect();
 
@@ -43,13 +43,14 @@ namespace laplace::network {
     [[nodiscard]] auto get_solver() const -> engine::ptr_solver;
     [[nodiscard]] auto get_world() const -> engine::ptr_world;
 
-    [[nodiscard]] auto get_ping() const noexcept -> uint64_t;
+    [[nodiscard]] auto get_ping() const noexcept -> sl::time;
 
     [[nodiscard]] auto get_state() const noexcept -> server_state;
     [[nodiscard]] auto get_tick_duration() noexcept -> sl::whole;
 
     [[nodiscard]] auto get_bytes_sent() const noexcept -> sl::whole;
-    [[nodiscard]] auto get_bytes_received() const noexcept -> sl::whole;
+    [[nodiscard]] auto get_bytes_received() const noexcept
+        -> sl::whole;
     [[nodiscard]] auto get_bytes_loss() const noexcept -> sl::whole;
 
     [[nodiscard]] auto is_connected() const noexcept -> bool;
@@ -74,9 +75,9 @@ namespace laplace::network {
     void set_connected(bool is_connected) noexcept;
     void set_quit(bool is_quit) noexcept;
 
-    void set_tick_duration(uint64_t tick_duration_msec) noexcept;
+    void set_tick_duration(sl::time tick_duration_msec) noexcept;
     void set_random_seed(engine::seed_type seed);
-    void set_ping(uint64_t ping_msec) noexcept;
+    void set_ping(sl::time ping_msec) noexcept;
     void set_state(server_state state) noexcept;
 
     void reset_tick() noexcept;
@@ -87,14 +88,15 @@ namespace laplace::network {
     /*  Update tick timer. Returns time
      *  delta in ticks.
      */
-    [[nodiscard]] auto adjust_delta(uint64_t delta_msec) noexcept
-        -> uint64_t;
+    [[nodiscard]] auto adjust_delta(sl::time delta_msec) noexcept
+        -> sl::time;
 
     [[nodiscard]] auto get_connection_timeout() const noexcept
-        -> uint64_t;
+        -> sl::time;
 
-    [[nodiscard]] auto get_update_timeout() const noexcept -> uint64_t;
-    [[nodiscard]] auto get_ping_timeout() const noexcept -> uint64_t;
+    [[nodiscard]] auto get_update_timeout() const noexcept
+        -> sl::time;
+    [[nodiscard]] auto get_ping_timeout() const noexcept -> sl::time;
     [[nodiscard]] auto get_overtake_factor() const noexcept
         -> sl::whole;
 
@@ -111,13 +113,14 @@ namespace laplace::network {
     engine::ptr_solver  m_solver;
     engine::ptr_world   m_world;
 
-    uint64_t m_ping_msec               = 0;
-    uint64_t m_tick_clock_msec         = 0;
-    uint64_t m_tick_duration_msec      = default_tick_duration_msec;
-    uint64_t m_connection_timeout_msec = default_connection_timeout_msec;
-    uint64_t  m_update_timeout_msec    = default_update_timeout_msec;
-    uint64_t  m_ping_timeout_msec      = default_ping_timeout_msec;
-    sl::whole m_overtake_factor        = default_overtake_factor;
+    sl::time m_ping_msec          = 0;
+    sl::time m_tick_clock_msec    = 0;
+    sl::time m_tick_duration_msec = default_tick_duration_msec;
+    sl::time m_connection_timeout_msec =
+        default_connection_timeout_msec;
+    sl::time  m_update_timeout_msec = default_update_timeout_msec;
+    sl::time  m_ping_timeout_msec   = default_ping_timeout_msec;
+    sl::whole m_overtake_factor     = default_overtake_factor;
 
     sl::whole m_bytes_sent     = 0;
     sl::whole m_bytes_received = 0;

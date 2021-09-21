@@ -18,7 +18,7 @@
 namespace laplace::engine::action {
   class remove final : public sync_impact {
   public:
-    remove(size_t id_entity) {
+    remove(sl::index id_entity) {
       m_id_entity = id_entity;
     }
 
@@ -29,7 +29,7 @@ namespace laplace::engine::action {
     }
 
   private:
-    size_t m_id_entity = 0;
+    sl::index m_id_entity = 0;
   };
 }
 

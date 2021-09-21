@@ -30,7 +30,8 @@ namespace quadwar_app::protocol {
 
     ~qw_order_move() final = default;
 
-    inline qw_order_move(sl::index id_actor, sl::index id_unit,
+    inline qw_order_move(sl::index      id_actor,
+                         sl::index      id_unit,
                          engine::intval target_x,
                          engine::intval target_y) {
       set_actor(id_actor);
@@ -41,8 +42,11 @@ namespace quadwar_app::protocol {
       m_target_y = target_y;
     }
 
-    inline qw_order_move(sl::index n, uint64_t time, sl::index id_actor,
-                         sl::index id_unit, engine::intval target_x,
+    inline qw_order_move(sl::index      n,
+                         sl::time       time,
+                         sl::index      id_actor,
+                         sl::index      id_unit,
+                         engine::intval target_x,
                          engine::intval target_y) {
       set_index(n);
       set_time(time);

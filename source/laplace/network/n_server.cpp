@@ -27,10 +27,10 @@ namespace laplace::network {
       engine::basic_factory, engine::prime_impact;
 
   const bool      server::default_verbose                 = false;
-  const uint64_t  server::default_tick_duration_msec      = 10;
-  const uint64_t  server::default_update_timeout_msec     = 10;
-  const uint64_t  server::default_ping_timeout_msec       = 100;
-  const uint64_t  server::default_connection_timeout_msec = 20000;
+  const sl::time  server::default_tick_duration_msec      = 10;
+  const sl::time  server::default_update_timeout_msec     = 10;
+  const sl::time  server::default_ping_timeout_msec       = 100;
+  const sl::time  server::default_connection_timeout_msec = 20000;
   const sl::whole server::default_overtake_factor         = 3;
 
   server::~server() {
@@ -59,7 +59,7 @@ namespace laplace::network {
   }
 
   void server::queue(span_cbyte seq) { }
-  void server::tick(uint64_t delta_msec) { }
+  void server::tick(sl::time delta_msec) { }
   void server::reconnect() { }
 
   auto server::get_factory() const -> ptr_factory {
@@ -74,7 +74,7 @@ namespace laplace::network {
     return m_world;
   }
 
-  auto server::get_ping() const noexcept -> uint64_t {
+  auto server::get_ping() const noexcept -> sl::time {
     return m_ping_msec;
   }
 
@@ -144,7 +144,7 @@ namespace laplace::network {
   }
 
   void server::set_tick_duration(
-      uint64_t tick_duration_msec) noexcept {
+      sl::time tick_duration_msec) noexcept {
     m_tick_duration_msec = tick_duration_msec;
   }
 
@@ -154,7 +154,7 @@ namespace laplace::network {
     }
   }
 
-  void server::set_ping(uint64_t ping_msec) noexcept {
+  void server::set_ping(sl::time ping_msec) noexcept {
     m_ping_msec = ping_msec;
   }
 
@@ -184,9 +184,9 @@ namespace laplace::network {
     m_bytes_loss += count;
   }
 
-  auto server::adjust_delta(uint64_t delta_msec) noexcept
-      -> uint64_t {
-    auto delta = uint64_t {};
+  auto server::adjust_delta(sl::time delta_msec) noexcept
+      -> sl::time {
+    auto delta = sl::time {};
 
     if (m_tick_duration_msec > 0) {
       delta = (m_tick_clock_msec + delta_msec) / m_tick_duration_msec;
@@ -197,15 +197,15 @@ namespace laplace::network {
     return delta;
   }
 
-  auto server::get_connection_timeout() const noexcept -> uint64_t {
+  auto server::get_connection_timeout() const noexcept -> sl::time {
     return m_connection_timeout_msec;
   }
 
-  auto server::get_update_timeout() const noexcept -> uint64_t {
+  auto server::get_update_timeout() const noexcept -> sl::time {
     return m_update_timeout_msec;
   }
 
-  auto server::get_ping_timeout() const noexcept -> uint64_t {
+  auto server::get_ping_timeout() const noexcept -> sl::time {
     return m_ping_timeout_msec;
   }
 

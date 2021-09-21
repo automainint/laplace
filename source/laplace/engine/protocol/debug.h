@@ -36,7 +36,7 @@ namespace laplace::engine::protocol {
     }
 
     constexpr debug(sl::index n,
-                    uint64_t  time,
+                    sl::time  time,
                     sl::index id_actor,
                     int64_t   value) {
       set_index(n);

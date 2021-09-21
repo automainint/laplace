@@ -37,7 +37,7 @@ namespace laplace::engine {
     static constexpr auto dynamic = dynamic_tag {};
 
     static const std::chrono::milliseconds lock_timeout;
-    static const uint64_t                  default_tick_period;
+    static const sl::time                  default_tick_period;
 
     basic_entity(cref_entity en) noexcept;
     basic_entity(basic_entity &&en) noexcept;
@@ -55,7 +55,7 @@ namespace laplace::engine {
     /*  Initialize dynamic entity.
      */
     basic_entity(dynamic_tag,
-                 uint64_t tick_period = default_tick_period);
+                 sl::time tick_period = default_tick_period);
 
     virtual ~basic_entity() = default;
 
@@ -67,12 +67,12 @@ namespace laplace::engine {
     /*  Set the Entity tick period.
      *  Thread-safe.
      */
-    void set_tick_period(uint64_t tick_period);
+    void set_tick_period(sl::time tick_period);
 
     /*  Set the Entity clock current time.
      *  Thread-safe.
      */
-    void set_clock(uint64_t clock_msec);
+    void set_clock(sl::time clock_msec);
 
     /*  Set the Entity clock.
      *  Thread-safe.
@@ -182,7 +182,7 @@ namespace laplace::engine {
     /*  Returns the tick period.
      *  Thread-safe.
      */
-    [[nodiscard]] auto get_tick_period() -> uint64_t;
+    [[nodiscard]] auto get_tick_period() -> sl::time;
 
     /*  Returns the Entity id.
      */
@@ -267,7 +267,7 @@ namespace laplace::engine {
     sl::vector<_range>      m_bytes_changed;
     sl::vector<vec_row>     m_vec;
     sl::vector<_range>      m_vec_changed;
-    uint64_t                m_clock = {};
+    sl::time                m_clock = {};
     sl::index               m_id    = id_undefined;
   };
 }

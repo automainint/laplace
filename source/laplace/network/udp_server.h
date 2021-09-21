@@ -43,7 +43,7 @@ namespace laplace::network {
     void set_chunk_size(sl::whole size);
 
     void queue(span_cbyte seq) override;
-    void tick(uint64_t delta_msec) override;
+    void tick(sl::time delta_msec) override;
 
     [[nodiscard]] auto get_port() const -> uint16_t;
 
@@ -63,8 +63,8 @@ namespace laplace::network {
       bool      is_encrypted = false;
       bool      is_exclusive = false;
       bool      request_flag = true;
-      uint64_t  outdate      = 0;
-      uint64_t  wait         = 0;
+      sl::time  outdate      = 0;
+      sl::time  wait         = 0;
 
       sl::vector<vbyte> in;
       sl::vector<vbyte> out;
@@ -79,14 +79,15 @@ namespace laplace::network {
      *  added to the main queue.
      */
     [[nodiscard]] virtual auto perform_control(sl::index  slot,
-                                               span_cbyte seq) -> bool;
+                                               span_cbyte seq)
+        -> bool;
 
     void cleanup();
 
     [[nodiscard]] auto is_encryption_enabled() const noexcept -> bool;
-    [[nodiscard]] auto get_local_time() const noexcept -> uint64_t;
+    [[nodiscard]] auto get_local_time() const noexcept -> sl::time;
 
-    void update_world(uint64_t delta_msec);
+    void update_world(sl::time delta_msec);
 
     void send_events();
 
@@ -103,7 +104,8 @@ namespace laplace::network {
 
     [[nodiscard]] auto is_master() const -> bool;
 
-    auto add_slot(std::string_view address, uint16_t port) -> sl::index;
+    auto add_slot(std::string_view address, uint16_t port)
+        -> sl::index;
 
     [[nodiscard]] auto has_slot(std::string_view address,
                                 uint16_t         port) const -> bool;
@@ -135,12 +137,12 @@ namespace laplace::network {
     void send_chunks();
     void disconnect(sl::index slot);
 
-    void update_slots(uint64_t delta_msec);
-    void update_local_time(uint64_t delta_msec);
-    void update_time_limit(uint64_t time);
+    void update_slots(sl::time delta_msec);
+    void update_local_time(sl::time delta_msec);
+    void update_time_limit(sl::time time);
 
-    [[nodiscard]] auto convert_delta(uint64_t delta_msec) -> uint64_t;
-    [[nodiscard]] auto adjust_overtake(uint64_t time) -> uint64_t;
+    [[nodiscard]] auto convert_delta(sl::time delta_msec) -> sl::time;
+    [[nodiscard]] auto adjust_overtake(sl::time time) -> sl::time;
 
     std::vector<slot_info>    m_slots;
     std::unique_ptr<udp_node> m_node;
@@ -161,9 +163,9 @@ namespace laplace::network {
     bool      m_is_encryption_enabled = true;
     sl::whole m_max_slot_count        = 0;
     sl::whole m_loss_compensation     = default_loss_compensation;
-    uint64_t  m_local_time            = 0;
-    uint64_t  m_time_limit            = 0;
-    uint64_t  m_ping_clock            = 0;
+    sl::time  m_local_time            = 0;
+    sl::time  m_time_limit            = 0;
+    sl::time  m_ping_clock            = 0;
   };
 }
 

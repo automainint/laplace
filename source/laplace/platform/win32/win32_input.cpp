@@ -202,8 +202,10 @@ namespace laplace::win32 {
     for (auto &k : m_keyboard_state) { k.is_changed = false; }
   }
 
-  void input::set_window_rect(sl::index x, sl::index y,
-                              sl::whole width, sl::whole height) {
+  void input::set_window_rect(sl::index x,
+                              sl::index y,
+                              sl::whole width,
+                              sl::whole height) {
 
     m_center_x = x + width / 2;
     m_center_y = y + height / 2;
@@ -219,12 +221,12 @@ namespace laplace::win32 {
       /*  Initial toggle states.
        */
 
-      m_keyboard_state[key_capslock].is_down = (GetKeyState(VK_CAPITAL) &
-                                                1) == 1;
-      m_keyboard_state[key_numlock].is_down = (GetKeyState(VK_NUMLOCK) &
-                                               1) == 1;
-      m_keyboard_state[key_scrolllock].is_down = (GetKeyState(VK_SCROLL) &
-                                                  1) == 1;
+      m_keyboard_state[key_capslock].is_down =
+          (GetKeyState(VK_CAPITAL) & 1) == 1;
+      m_keyboard_state[key_numlock].is_down =
+          (GetKeyState(VK_NUMLOCK) & 1) == 1;
+      m_keyboard_state[key_scrolllock].is_down =
+          (GetKeyState(VK_SCROLL) & 1) == 1;
 
       /*  Initial cursor position.
        */
@@ -246,14 +248,16 @@ namespace laplace::win32 {
       /*  Register input devices.
        */
 
-      RAWINPUTDEVICE rid[] = { { .usUsagePage = HID_USAGE_PAGE_GENERIC,
-                                 .usUsage = HID_USAGE_GENERIC_MOUSE,
-                                 .dwFlags = 0,
-                                 .hwndTarget = handle },
-                               { .usUsagePage = HID_USAGE_PAGE_GENERIC,
-                                 .usUsage = HID_USAGE_GENERIC_KEYBOARD,
-                                 .dwFlags    = 0,
-                                 .hwndTarget = handle } };
+      RAWINPUTDEVICE rid[] = {
+        { .usUsagePage = HID_USAGE_PAGE_GENERIC,
+          .usUsage     = HID_USAGE_GENERIC_MOUSE,
+          .dwFlags     = 0,
+          .hwndTarget  = handle },
+        { .usUsagePage = HID_USAGE_PAGE_GENERIC,
+          .usUsage     = HID_USAGE_GENERIC_KEYBOARD,
+          .dwFlags     = 0,
+          .hwndTarget  = handle }
+      };
 
       if (!RegisterRawInputDevices(rid, sizeof rid / sizeof *rid,
                                    sizeof(RAWINPUTDEVICE))) {
@@ -266,7 +270,8 @@ namespace laplace::win32 {
     constexpr auto header_size = sizeof(RAWINPUTHEADER);
     uint32_t       size        = 0;
 
-    GetRawInputData(raw_input, RID_INPUT, nullptr, &size, header_size);
+    GetRawInputData(raw_input, RID_INPUT, nullptr, &size,
+                    header_size);
 
     auto bytes = vbyte(size);
 
@@ -287,7 +292,7 @@ namespace laplace::win32 {
     }
   }
 
-  void input::tick(uint64_t delta_msec) {
+  void input::tick(sl::time delta_msec) {
     if (m_is_char_pressed) {
       if (m_char_period_msec <= delta_msec) {
         sl::whole offset = m_text.length();

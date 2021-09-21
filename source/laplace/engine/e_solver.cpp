@@ -40,7 +40,7 @@ namespace laplace::engine {
     m_world.reset();
   }
 
-  auto solver::apply(span_cbyte ev) -> uint64_t {
+  auto solver::apply(span_cbyte ev) -> sl::time {
     if (ev.empty()) {
       error_("No event.", __FUNCTION__);
       return -1;
@@ -67,7 +67,7 @@ namespace laplace::engine {
     } else {
       auto const it = lower_bound(
           m_history.begin() + m_position, m_history.end(), event_time,
-          [](vbyte const &a, uint64_t b) -> bool {
+          [](vbyte const &a, sl::time b) -> bool {
             return prime_impact::get_time(a) < b;
           });
 
@@ -81,12 +81,12 @@ namespace laplace::engine {
     return event_time;
   }
 
-  void solver::rewind_to(uint64_t time) {
+  void solver::rewind_to(sl::time time) {
     adjust(time);
     join();
   }
 
-  void solver::schedule(uint64_t delta) {
+  void solver::schedule(sl::time delta) {
     adjust(m_time + delta);
   }
 
@@ -104,7 +104,7 @@ namespace laplace::engine {
     return m_is_rewind_allowed;
   }
 
-  auto solver::get_time() const -> uint64_t {
+  auto solver::get_time() const -> sl::time {
     return m_time;
   }
 
@@ -151,7 +151,7 @@ namespace laplace::engine {
     return dist(dev);
   }
 
-  void solver::adjust(uint64_t time) {
+  void solver::adjust(sl::time time) {
     if (m_time == time) {
       return;
     }
@@ -168,7 +168,7 @@ namespace laplace::engine {
 
     auto const i_end = lower_bound(
         m_history.begin() + m_position, m_history.end(), time,
-        [](vbyte const &a, uint64_t b) -> bool {
+        [](vbyte const &a, sl::time b) -> bool {
           return prime_impact::get_time(a) < b;
         });
 

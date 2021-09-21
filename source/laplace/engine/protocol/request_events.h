@@ -44,7 +44,7 @@ namespace laplace::engine::protocol {
 
     static constexpr auto get_event(span_cbyte seq, size_t index) {
       return as_index(
-          serial::rd<uint64_t>(seq, n_events + index * event_size));
+          serial::rd<sl::index64>(seq, n_events + index * event_size));
     }
 
     inline void encode_to(std::span<uint8_t> bytes) const final {

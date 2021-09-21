@@ -28,7 +28,7 @@ namespace laplace::engine {
   constexpr intval infinity   = intval_max >> 4;
   constexpr intval safe_limit = intval_max >> 2;
 
-  constexpr uint64_t  time_undefined = -1;
+  constexpr sl::time  time_undefined = -1;
   constexpr sl::index id_undefined   = -1;
 
   using vec2i = math::vector<2, intval>;

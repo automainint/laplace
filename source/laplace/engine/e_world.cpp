@@ -189,17 +189,17 @@ namespace laplace::engine {
     }
   }
 
-  void world::tick(uint64_t delta) {
+  void world::tick(sl::time delta) {
     schedule(delta);
 
     join();
   }
 
-  void world::schedule(uint64_t delta) {
+  void world::schedule(sl::time delta) {
     if (get_thread_count() <= 0) {
       auto _ul = unique_lock(m_lock);
 
-      for (uint64_t t = 0; t < delta; t++) {
+      for (sl::time t = 0; t < delta; t++) {
         while (!m_sync_queue.empty() || !m_queue.empty()) {
           for (sl::index i = 0; i < m_sync_queue.size(); i++) {
             _ul.unlock();

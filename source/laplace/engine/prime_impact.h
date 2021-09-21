@@ -61,7 +61,7 @@ namespace laplace::engine {
 
     static constexpr void set_index(span_byte seq, sl::index n);
 
-    static constexpr void set_time(span_byte seq, uint64_t time);
+    static constexpr void set_time(span_byte seq, sl::time time);
 
     [[nodiscard]] static constexpr auto is_unindexed(span_cbyte seq)
         -> bool;
@@ -71,7 +71,7 @@ namespace laplace::engine {
     [[nodiscard]] static constexpr auto get_index_unsafe(span_cbyte seq)
         -> sl::index;
     [[nodiscard]] static constexpr auto get_time_unsafe(span_cbyte seq)
-        -> uint64_t;
+        -> sl::time;
     [[nodiscard]] static constexpr auto get_actor_unsafe(span_cbyte seq)
         -> sl::index;
 
@@ -80,7 +80,7 @@ namespace laplace::engine {
     [[nodiscard]] static constexpr auto get_index(span_cbyte seq)
         -> sl::index;
     [[nodiscard]] static constexpr auto get_time(span_cbyte seq)
-        -> uint64_t;
+        -> sl::time;
     [[nodiscard]] static constexpr auto get_actor(span_cbyte seq)
         -> sl::index;
 

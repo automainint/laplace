@@ -23,14 +23,15 @@ namespace quadwar_app::protocol {
   public:
     ~qw_slot_remove() override = default;
 
-    constexpr qw_slot_remove(sl::index n, uint64_t time,
+    constexpr qw_slot_remove(sl::index n,
+                             sl::time  time,
                              sl::index id_actor) :
         slot_remove(n, time, id_actor) { }
 
     inline void perform(world w) const override {
       verb(fmt(" :: event  Quadwar/slot_remove: %zu", get_actor()));
 
-      auto r = w.get_entity(w.get_root());
+      auto r     = w.get_entity(w.get_root());
       auto slots = w.get_entity(object::root::get_slots(r));
 
       slots.vec_erase_by_value(get_actor());
