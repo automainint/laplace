@@ -410,13 +410,12 @@ namespace laplace::test {
         "{ call1(1, 2); call2(3, 4); }" } };
     auto data = decode(wrap(s));
 
-    EXPECT_TRUE(data);
+    EXPECT_TRUE(data && data->is_composite());
 
-    if (data) {
+    if (data && data->is_composite()) {
       auto &cmds = data->get_value(text::s_commands);
 
       EXPECT_TRUE(
-          data->is_composite() &&
           cmds[0][text::s_function].get_string() == u8"call1" &&
           cmds[0][text::s_arguments][0].get_integer() == 1 &&
           cmds[0][text::s_arguments][1].get_integer() == 2 &&

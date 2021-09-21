@@ -37,7 +37,8 @@ namespace laplace::format::binary {
           text::s_function, text::s_arguments, text::s_commands,
           u8"load", u8"width", u8"height", u8"depth", u8"pixels" });
 
-  static constexpr auto magic = serial::_str<uint64_t>("laplace0");
+  static constexpr auto magic_plain = serial::_str<uint64_t>(
+      "LaPlain0");
 
   static constexpr auto mantissa_factor = 1e17;
 
@@ -378,7 +379,7 @@ namespace laplace::format::binary {
     if (v.size() != 8)
       return {};
 
-    if (rd<uint64_t>(v, 0) != magic)
+    if (rd<uint64_t>(v, 0) != magic_plain)
       return {};
 
     if (auto f = family {}; read_pack(read, f))
@@ -679,7 +680,7 @@ namespace laplace::format::binary {
   auto encode(fn_write write, const_pack_type data) noexcept -> bool {
     if (write) {
       auto v = vbyte(8);
-      wr<uint64_t>(v, 0, magic);
+      wr<uint64_t>(v, 0, magic_plain);
       return write(v) == 8 && writedown(write, data);
     }
 
