@@ -570,7 +570,7 @@ namespace laplace::core {
           bool    f_exp_negative = false;
           int64_t f_exp_value    = -1;
 
-          auto c = get_char();
+          int64_t c = get_char();
 
           if (c == '-') {
             f_negative = true;

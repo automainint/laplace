@@ -22,8 +22,9 @@ namespace laplace::ui::elem {
     m_on_click = ev;
   }
 
-  auto button::tick(uint64_t delta_msec, cref_input_handler in,
-                    bool is_handled) -> bool {
+  auto button::tick(sl::time           delta_msec,
+                    cref_input_handler in,
+                    bool               is_handled) -> bool {
     return is_handled || button_tick(in);
   }
 
@@ -64,7 +65,8 @@ namespace laplace::ui::elem {
     return { panel::get_state(), m_is_pressed, m_has_cursor };
   }
 
-  auto button::update(ptr_widget object, button::state button_state,
+  auto button::update(ptr_widget         object,
+                      button::state      button_state,
                       event_button_click on_button_click,
                       cref_input_handler in) -> update_result {
     auto event_status = false;

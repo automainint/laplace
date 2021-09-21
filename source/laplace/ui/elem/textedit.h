@@ -43,7 +43,7 @@ namespace laplace::ui::elem {
 
     void setup_filter(filter f);
 
-    auto tick(uint64_t delta_msec, core::cref_input_handler in,
+    auto tick(sl::time delta_msec, core::cref_input_handler in,
               bool is_handled) -> bool final;
 
     void render() final;

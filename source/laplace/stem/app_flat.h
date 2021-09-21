@@ -30,7 +30,7 @@ namespace laplace::stem {
   protected:
     void init() override;
     void cleanup() override;
-    void update(uint64_t delta_msec) override;
+    void update(sl::time delta_msec) override;
     void render() override;
     void adjust_layout(sl::whole width, sl::whole height) override;
 

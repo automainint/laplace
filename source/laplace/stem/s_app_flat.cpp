@@ -35,7 +35,7 @@ namespace laplace::stem {
     application::cleanup();
   }
 
-  void app_flat::update(uint64_t delta_msec) {
+  void app_flat::update(sl::time delta_msec) {
     m_ui->tick(delta_msec, get_input(), false);
   }
 

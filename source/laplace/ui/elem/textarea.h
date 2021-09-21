@@ -1,31 +1,44 @@
-#pragma once
+/*  laplace/ui/elem/textarea.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
 
-#include "../widget.h"
+#ifndef laplace_ui_elem_textarea_h
+#define laplace_ui_elem_textarea_h
+
 #include "../text/renderer.h"
+#include "../widget.h"
 
-namespace laplace::ui::elem
-{
-    class textarea final : public widget
-    {
-    public:
-        static constexpr int default_line_height = 30;
+namespace laplace::ui::elem {
+  class textarea final : public widget {
+  public:
+    static constexpr int default_line_height = 30;
 
-        ~textarea() final = default;
+    ~textarea() final = default;
 
-        void render() final;
+    void render() final;
 
-        void set_renderer(text::ptr_renderer renderer);
-        void set_text(std::u8string_view text);
-        void set_line_height(int line_height);
+    void set_renderer(text::ptr_renderer renderer);
+    void set_text(std::u8string_view text);
+    void set_line_height(int line_height);
 
-    private:
-        void textarea_render();
+  private:
+    void textarea_render();
 
-        text::ptr_renderer  m_renderer      = text::renderer::get_default();
-        std::u8string       m_text;
-        int                 m_line_height   = default_line_height;
-    };
+    text::ptr_renderer m_renderer = text::renderer::get_default();
+    std::u8string      m_text;
+    int                m_line_height = default_line_height;
+  };
 
-    using ptr_textarea = std::shared_ptr<textarea>;
-    using vptr_textarea = std::vector<ptr_textarea>;
+  using ptr_textarea  = std::shared_ptr<textarea>;
+  using vptr_textarea = sl::vector<ptr_textarea>;
 }
+
+#endif

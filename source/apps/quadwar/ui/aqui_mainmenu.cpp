@@ -16,7 +16,29 @@
 #include "../session.h"
 
 namespace quadwar_app::ui {
-  using ui::column_layout, ui::rect, std::u8string, std::u8string_view;
+  using ui::column_layout, ui::rect, std::u8string,
+      std::u8string_view;
+
+  sl::whole const mainmenu::spacing     = 4;
+  sl::whole const mainmenu::line_count  = 7;
+  sl::whole const mainmenu::menu_width  = 640;
+  sl::whole const mainmenu::info_height = 80;
+  sl::whole const mainmenu::line_height = 60;
+
+  u8string_view const mainmenu::c_welcome      = u8"Welcome";
+  u8string_view const mainmenu::c_create       = u8"Create";
+  u8string_view const mainmenu::c_join         = u8"Join";
+  u8string_view const mainmenu::c_quit         = u8"Quit";
+  u8string_view const mainmenu::c_create_game  = u8"Create Game";
+  u8string_view const mainmenu::c_join_game    = u8"Join Game";
+  u8string_view const mainmenu::c_server_ip    = u8"Server IP";
+  u8string_view const mainmenu::c_game_name    = u8"Game name";
+  u8string_view const mainmenu::c_player_name  = u8"Player name";
+  u8string_view const mainmenu::c_map_size     = u8"Map size";
+  u8string_view const mainmenu::c_player_count = u8"Player count";
+  u8string_view const mainmenu::c_unit_count   = u8"Unit count";
+  u8string_view const mainmenu::c_cancel       = u8"Cancel";
+  u8string_view const mainmenu::c_continue     = u8"Continue";
 
   mainmenu::mainmenu() {
     m_page_root->attach(m_create);
@@ -163,9 +185,7 @@ namespace quadwar_app::ui {
   }
 
   void mainmenu::on_quit(mainmenu::event_quit ev) {
-    m_quit->on_click([ev](ui::ptr_widget) {
-      ev();
-    });
+    m_quit->on_click([ev](ui::ptr_widget) { ev(); });
   }
 
   void mainmenu::refresh() {
@@ -250,27 +270,27 @@ namespace quadwar_app::ui {
   }
 
   void mainmenu::adjust_layout(sl::whole width, sl::whole height) {
-    auto lines_height    = line_height * line_count;
-    auto full_height     = lines_height + info_height;
-    auto half_menu_width = menu_width / 2;
+    auto const lines_height    = line_height * line_count;
+    auto const full_height     = lines_height + info_height;
+    auto const half_menu_width = menu_width / 2;
 
-    auto x0 = (width - menu_width) / 2;
-    auto y0 = (height - full_height) / 2;
+    auto const x0 = (width - menu_width) / 2;
+    auto const y0 = (height - full_height) / 2;
 
     m_info->set_rect(rect { x0 + spacing, y0 + spacing,
                             menu_width - spacing * 2,
                             info_height - spacing * 2 });
 
-    const auto lines_rect = rect { x0, y0 + info_height, menu_width,
+    auto const lines_rect = rect { x0, y0 + info_height, menu_width,
                                    lines_height };
 
     m_page_root->set_rect(lines_rect);
     m_page_create->set_rect(lines_rect);
     m_page_join->set_rect(lines_rect);
 
-    m_c_game_name_label->set_rect(rect { spacing, spacing,
-                                         half_menu_width - spacing * 2,
-                                         line_height - spacing * 2 });
+    m_c_game_name_label->set_rect(
+        rect { spacing, spacing, half_menu_width - spacing * 2,
+               line_height - spacing * 2 });
 
     m_c_game_name->set_rect(rect { spacing + half_menu_width, spacing,
                                    half_menu_width - spacing * 2,
@@ -319,9 +339,9 @@ namespace quadwar_app::ui {
     /*  Page: Join
      */
 
-    m_j_server_ip_label->set_rect(rect { spacing, spacing,
-                                         half_menu_width - spacing * 2,
-                                         line_height - spacing * 2 });
+    m_j_server_ip_label->set_rect(
+        rect { spacing, spacing, half_menu_width - spacing * 2,
+               line_height - spacing * 2 });
 
     m_j_server_ip->set_rect(rect { spacing + half_menu_width, spacing,
                                    half_menu_width - spacing * 2,

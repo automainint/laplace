@@ -28,15 +28,16 @@ namespace laplace::ui {
   class widget : public std::enable_shared_from_this<widget> {
   public:
     using ptr_widget  = std::shared_ptr<widget>;
-    using vptr_widget = std::vector<ptr_widget>;
+    using vptr_widget = sl::vector<ptr_widget>;
 
     virtual ~widget() = default;
 
     /*  Widget live loop. Returns true if
      *  any event was handled.
      */
-    virtual auto tick(uint64_t delta_msec, core::cref_input_handler in,
-                      bool is_handled) -> bool;
+    virtual auto tick(sl::time                 delta_msec,
+                      core::cref_input_handler in,
+                      bool                     is_handled) -> bool;
 
     virtual void render();
 
@@ -111,8 +112,9 @@ namespace laplace::ui {
     void draw_childs();
     void up_to_date();
 
-    auto widget_tick(uint64_t delta_msec, core::cref_input_handler in,
-                     bool is_handled) -> bool;
+    auto widget_tick(sl::time                 delta_msec,
+                     core::cref_input_handler in,
+                     bool                     is_handled) -> bool;
 
     void widget_render();
 

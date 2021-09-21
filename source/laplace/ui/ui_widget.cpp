@@ -19,10 +19,11 @@
 #include <algorithm>
 
 namespace laplace::ui {
-  using std::vector, graphics::prepare_ui, core::cref_input_handler;
+  using sl::vector, graphics::prepare_ui, core::cref_input_handler;
 
-  auto widget::tick(uint64_t delta_msec, cref_input_handler in,
-                    bool is_handled) -> bool {
+  auto widget::tick(sl::time           delta_msec,
+                    cref_input_handler in,
+                    bool               is_handled) -> bool {
     return widget_tick(delta_msec, in, is_handled);
   }
 
@@ -144,8 +145,9 @@ namespace laplace::ui {
     m_is_changed = false;
   }
 
-  auto widget::widget_tick(uint64_t delta_msec, cref_input_handler in,
-                           bool is_handled) -> bool {
+  auto widget::widget_tick(sl::time           delta_msec,
+                           cref_input_handler in,
+                           bool               is_handled) -> bool {
     if (!m_is_attached) {
       m_absolute_x = m_rect.x;
       m_absolute_y = m_rect.y;

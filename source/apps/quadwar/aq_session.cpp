@@ -26,6 +26,7 @@
 #include "protocol/qw_player_name.h"
 #include <filesystem>
 #include <fstream>
+#include <limits>
 #include <thread>
 
 namespace quadwar_app {
@@ -48,13 +49,13 @@ namespace quadwar_app {
     ids::player_name,     ids::order_move
   };
 
-  const char     session::host_info_file[]    = ".host";
-  const char     session::default_server_ip[] = "127.0.0.1";
-  const uint16_t session::default_port        = network::any_port;
+  char const     session::host_info_file[]    = ".host";
+  char const     session::default_server_ip[] = "127.0.0.1";
+  uint16_t const session::default_port        = network::any_port;
 
-  const sl::whole session::thread_count = 4;
-  const float     session::sense_move   = 1.5f;
-  const float     session::sense_scale  = .0003f;
+  sl::whole const session::thread_count = 4;
+  float const     session::sense_move   = 1.5f;
+  float const     session::sense_scale  = .0003f;
 
   session::session() {
     m_lobby.on_abort([this] {
@@ -90,7 +91,7 @@ namespace quadwar_app {
     m_on_quit = ev;
   }
 
-  void session::tick(uint64_t delta_msec, cref_input_handler in) {
+  void session::tick(sl::time delta_msec, cref_input_handler in) {
     if (m_server && m_world) {
       m_server->tick(delta_msec);
 
@@ -135,12 +136,14 @@ namespace quadwar_app {
     if (i == server_ip.end()) {
       m_server_ip = server_ip;
     } else {
-      const auto p    = &(i + 1)[0];
-      const auto size = static_cast<size_t>(server_ip.end() - (i + 1));
+      auto const as_port = [](auto const n) -> uint16_t {
+        if (n < 0 || n > std::numeric_limits<uint16_t>::max())
+          return 0;
+        return static_cast<uint16_t>(n);
+      };
 
-      m_server_ip = string(server_ip.begin(), i);
-
-      m_server_port = static_cast<uint16_t>(to_integer({ p, size }));
+      m_server_ip   = string { server_ip.begin(), i };
+      m_server_port = as_port(to_integer({ i + 1, server_ip.end() }));
     }
   }
 
@@ -156,15 +159,15 @@ namespace quadwar_app {
     m_player_name = player_name;
   }
 
-  void session::set_map_size(size_t map_size) {
+  void session::set_map_size(sl::whole map_size) {
     m_map_size = map_size;
   }
 
-  void session::set_player_count(size_t player_count) {
+  void session::set_player_count(sl::whole player_count) {
     m_player_count = player_count;
   }
 
-  void session::set_unit_count(size_t unit_count) {
+  void session::set_unit_count(sl::whole unit_count) {
     m_unit_count = unit_count;
   }
 
@@ -191,7 +194,8 @@ namespace quadwar_app {
 
     save_host_info(server->get_port());
 
-    m_lobby.show_info(fmt(u8"Game host (port %hu)", server->get_port()));
+    m_lobby.show_info(
+        fmt(u8"Game host (port %hu)", server->get_port()));
 
     m_lobby.set_start_enabled(true);
   }
@@ -234,7 +238,7 @@ namespace quadwar_app {
     return string(default_address);
   }
 
-  void session::update_control(uint64_t           delta_msec,
+  void session::update_control(sl::time           delta_msec,
                                cref_input_handler in) {
     bool is_moved = false;
     auto delta    = vec2 {};
@@ -362,7 +366,8 @@ namespace quadwar_app {
         m_lobby.set_slot(i, id_actor, name);
       }
 
-      for (sl::index i = slot_count; i < m_lobby.get_slot_count(); i++) {
+      for (sl::index i = slot_count; i < m_lobby.get_slot_count();
+           i++) {
         m_lobby.remove_slot(i);
       }
     }

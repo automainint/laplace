@@ -35,7 +35,9 @@ namespace laplace::stem {
       std::unique_ptr, std::istream, std::ifstream,
       std::filesystem::path;
 
-  application::application(int argc, char **argv, cref_family def_cfg) {
+  application::application(int         argc,
+                           char **     argv,
+                           cref_family def_cfg) {
     m_config = load(argc, argv, def_cfg);
   }
 
@@ -68,21 +70,17 @@ namespace laplace::stem {
     m_window->set_fullscreen_mode(frame_width, frame_height,
                                   frame_rate);
 
-    m_window->on_init([this]() {
-      init();
-    });
+    m_window->on_init([this]() { init(); });
 
-    m_window->on_cleanup([this]() {
-      cleanup();
-    });
+    m_window->on_cleanup([this]() { cleanup(); });
 
-    m_window->on_size([this](size_t width, size_t height) {
+    m_window->on_size([this](sl::whole width, sl::whole height) {
       if (width > 0 && height > 0) {
         set_frame_size(width, height);
       }
     });
 
-    m_window->on_frame([this](uint64_t delta_msec) {
+    m_window->on_frame([this](sl::time delta_msec) {
       update(delta_msec);
       render();
     });
@@ -106,13 +104,14 @@ namespace laplace::stem {
     m_render.reset();
   }
 
-  void application::update(uint64_t delta_msec) { }
+  void application::update(sl::time delta_msec) { }
 
   void application::render() {
     m_gl->swap_buffers();
   }
 
-  void application::set_frame_size(sl::whole width, sl::whole height) {
+  void application::set_frame_size(sl::whole width,
+                                   sl::whole height) {
     adjust_layout(width, height);
 
     graphics::viewport(0, 0, width, height);
@@ -151,13 +150,9 @@ namespace laplace::stem {
       return m_input->is_scrolllock();
     };
 
-    m_input_handler.is_alt = [&]() {
-      return m_input->is_alt();
-    };
+    m_input_handler.is_alt = [&]() { return m_input->is_alt(); };
 
-    m_input_handler.is_shift = [&]() {
-      return m_input->is_shift();
-    };
+    m_input_handler.is_shift = [&]() { return m_input->is_shift(); };
 
     m_input_handler.is_control = [&]() {
       return m_input->is_control();
@@ -219,9 +214,7 @@ namespace laplace::stem {
       return m_input->get_wheel_delta();
     };
 
-    m_input_handler.get_text = [&]() {
-      return m_input->get_text();
-    };
+    m_input_handler.get_text = [&]() { return m_input->get_text(); };
   }
 
   void application::load_shaders() {

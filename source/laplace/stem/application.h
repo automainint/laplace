@@ -35,7 +35,7 @@ namespace laplace::stem {
 
     virtual void init();
     virtual void cleanup();
-    virtual void update(uint64_t delta_msec);
+    virtual void update(sl::time delta_msec);
     virtual void render();
     virtual void set_frame_size(sl::whole width, sl::whole height);
     virtual void adjust_layout(sl::whole width, sl::whole height);

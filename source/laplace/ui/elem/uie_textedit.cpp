@@ -29,7 +29,7 @@ namespace laplace::ui::elem {
     m_filter = f;
   }
 
-  auto textedit::tick(uint64_t delta_msec, cref_input_handler in,
+  auto textedit::tick(sl::time delta_msec, cref_input_handler in,
                       bool is_handled) -> bool {
     return is_handled || textedit_tick(in);
   }
