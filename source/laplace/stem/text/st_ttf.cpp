@@ -18,7 +18,7 @@
 #include <iostream>
 #include <vector>
 
-namespace laplace::ui::text {
+namespace laplace::stem::text {
   namespace fs = std::filesystem;
 
   using std::make_shared, std::string, std::string_view,

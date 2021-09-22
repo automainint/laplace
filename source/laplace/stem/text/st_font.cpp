@@ -16,7 +16,7 @@
 #include "../../core/utf8.h"
 #include <algorithm>
 
-namespace laplace::ui::text {
+namespace laplace::stem::text {
   using std::u8string_view, std::min, std::max, graphics::ref_image,
       graphics::cref_pixel, graphics::pixel, graphics::rgba;
 
@@ -28,7 +28,7 @@ namespace laplace::ui::text {
     m_face.set_pixel_sizes(width, height);
   }
 
-  auto font::adjust(u8string_view text) -> painter::area {
+  auto font::adjust(u8string_view text) -> ui::text_area {
     auto top         = sl::index {};
     auto width       = sl::index {};
     auto width_total = sl::index {};
@@ -61,8 +61,10 @@ namespace laplace::ui::text {
     return { top, width, height };
   }
 
-  void font::print(
-      ref_image img, sl::index x, sl::index y, u8string_view text) {
+  void font::print(ref_image     img,
+                   sl::index     x,
+                   sl::index     y,
+                   u8string_view text) {
     auto code = char32_t {};
 
     for (sl::index i = 0; utf8::decode(text, i, code);) {
@@ -77,17 +79,16 @@ namespace laplace::ui::text {
     }
   }
 
-  void font::draw(
-      ref_image        img,
-      sl::index        x0,
-      sl::index        y0,
-      const FT_Bitmap &bitmap,
-      cref_pixel       color) {
+  void font::draw(ref_image        img,
+                  sl::index        x0,
+                  sl::index        y0,
+                  const FT_Bitmap &bitmap,
+                  cref_pixel       color) {
     for (sl::index y = 0; y < bitmap.rows; y++) {
       sl::index row = bitmap.pitch > 0 ? y : (bitmap.rows - (y + 1));
 
-      auto p = static_cast<const uint8_t *>(
-          bitmap.buffer + row * abs(bitmap.pitch));
+      auto p = static_cast<const uint8_t *>(bitmap.buffer +
+                                            row * abs(bitmap.pitch));
 
       for (sl::index x = 0; x < bitmap.width; x++) {
         auto i = x0 + x;

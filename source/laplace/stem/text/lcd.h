@@ -1,9 +1,22 @@
-#pragma once
+/*  laplace/ui/text/lcd.h
+ *
+ *  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#ifndef laplace_stem_text_lcd_h
+#define laplace_stem_text_lcd_h
 
 #include "../../core/defs.h"
 #include "painter.h"
 
-namespace laplace::ui::text {
+namespace laplace::stem::text {
   /*  LCD bit text renderer.
    */
   class lcd final : public painter {
@@ -18,17 +31,20 @@ namespace laplace::ui::text {
 
     ~lcd() override = default;
 
-    void set_size(sl::index char_top, sl::whole char_width,
+    void set_size(sl::index char_top,
+                  sl::whole char_width,
                   sl::whole char_height);
     void set_scale(sl::index x, sl::index y);
     void set_spacing(sl::index x, sl::index y);
 
     void set_bits(const uint64_t *bits);
 
-    auto adjust(std::u8string_view text) -> area final;
+    auto adjust(std::u8string_view text) -> ui::text_area final;
 
-    void print(graphics::ref_image img, sl::index x, sl::index y,
-               std::u8string_view text) final;
+    void print(graphics::ref_image img,
+               sl::index           x,
+               sl::index           y,
+               std::u8string_view  text) final;
 
   private:
     void adjust_size(sl::index n, char32_t c);
@@ -36,7 +52,9 @@ namespace laplace::ui::text {
     auto get_char_x(char32_t c) const -> sl::whole;
     auto get_char_y(char32_t c) const -> sl::whole;
 
-    auto get_pixel_index(sl::index x, sl::index y, sl::index i,
+    auto get_pixel_index(sl::index x,
+                         sl::index y,
+                         sl::index i,
                          sl::index j) const -> sl::index;
 
     auto get_char_top() const -> sl::index;
@@ -46,10 +64,15 @@ namespace laplace::ui::text {
     auto get_char_size(char32_t c) const -> sl::index;
     auto get_char_width(char32_t c) const -> sl::index;
 
-    void draw_char(graphics::ref_image img, sl::index x, sl::index y,
-                   char32_t c);
-    static void draw_dot(graphics::ref_image img, sl::index x0,
-                         sl::index y0, sl::index x1, sl::index y1,
+    void        draw_char(graphics::ref_image img,
+                          sl::index           x,
+                          sl::index           y,
+                          char32_t            c);
+    static void draw_dot(graphics::ref_image  img,
+                         sl::index            x0,
+                         sl::index            y0,
+                         sl::index            x1,
+                         sl::index            y1,
                          graphics::cref_pixel color);
 
     struct char_size {
@@ -71,3 +94,5 @@ namespace laplace::ui::text {
     vbyte     m_pixels;
   };
 }
+
+#endif

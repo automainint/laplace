@@ -1,4 +1,4 @@
-/*  laplace/ui/text/renderer.h
+/*  laplace/stem/text/renderer.h
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -10,23 +10,21 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_ui_text_renderer_h
-#define laplace_ui_text_renderer_h
+#ifndef laplace_stem_text_renderer_h
+#define laplace_stem_text_renderer_h
 
 #include "painter.h"
 
-namespace laplace::ui::text {
+namespace laplace::stem::text {
   /*  Rendering text as vertex array.
    */
   class renderer {
   public:
-    using area = painter::area;
-
     using ptr_renderer = std::shared_ptr<renderer>;
 
     virtual ~renderer() = default;
 
-    virtual auto adjust(std::u8string_view text) -> area;
+    virtual auto adjust(std::u8string_view text) -> ui::text_area;
 
     virtual void render(
         sl::index x, sl::index y, std::u8string_view text);

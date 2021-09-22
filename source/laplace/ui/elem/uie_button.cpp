@@ -29,12 +29,18 @@ namespace laplace::ui::elem {
   }
 
   void button::render() {
-    if (!m_context) {
-      error_("No context.", __FUNCTION__);
-      return;
-    }
+    do {
+      auto con = get_context();
 
-    m_context->render(get_state());
+      if constexpr (!_unsafe) {
+        if (!con) {
+          error_("No context.", __FUNCTION__);
+          return;
+        }
+      }
+
+      con->render_button(get_state());
+    } while (0);
 
     up_to_date();
   }
@@ -61,12 +67,12 @@ namespace laplace::ui::elem {
     return m_has_cursor;
   }
 
-  auto button::get_state() const -> button::state {
+  auto button::get_state() const -> button_state {
     return { panel::get_state(), m_is_pressed, m_has_cursor };
   }
 
   auto button::update(ptr_widget         object,
-                      button::state      button_state,
+                      button_state       button_state,
                       event_button_click on_button_click,
                       cref_input_handler in) -> update_result {
     auto event_status = false;
@@ -96,7 +102,6 @@ namespace laplace::ui::elem {
           /*  Ignore cursor if left mouse button was
            *  pressed outside of the UI element.
            */
-
           has_cursor = false;
         }
       }

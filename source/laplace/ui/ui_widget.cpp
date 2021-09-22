@@ -12,14 +12,13 @@
 
 #include "widget.h"
 
-#include "../core/defs.h"
-#include "../graphics/utils.h"
-#include "../platform/opengl.h"
-#include "context.h"
 #include <algorithm>
 
 namespace laplace::ui {
-  using sl::vector, graphics::prepare_ui, core::cref_input_handler;
+  using std::sort, std::weak_ptr, std::make_shared,
+      std::u8string_view, core::cref_input_handler;
+
+  weak_ptr<context> widget::m_default_context;
 
   auto widget::tick(sl::time           delta_msec,
                     cref_input_handler in,
@@ -43,6 +42,10 @@ namespace laplace::ui {
       return true;
 
     return p->event_allowed(x, y);
+  }
+
+  void widget::set_context(ptr_context con) {
+    m_context = con;
   }
 
   void widget::set_layout(layout fn) {
@@ -110,6 +113,17 @@ namespace laplace::ui {
     }
   }
 
+  void widget::prepare() {
+    if constexpr (!_unsafe) {
+      if (!m_context) {
+        error_("No context.", __FUNCTION__);
+        return;
+      }
+    }
+
+    m_context->prepare();
+  }
+
   void widget::draw_childs() {
     auto indices    = sl::vector<sl::index> {};
     auto local_area = rect { 0, 0, m_rect.width, m_rect.height };
@@ -154,7 +168,7 @@ namespace laplace::ui {
     }
 
     if (m_is_attached || (m_is_visible && m_is_enabled)) {
-      auto list = vector<ptr_widget> {};
+      auto list = sl::vector<ptr_widget> {};
 
       for (auto &c : m_childs) {
         if (c->is_visible() && c->is_enabled()) {
@@ -173,13 +187,12 @@ namespace laplace::ui {
   void widget::widget_render() {
     if (m_is_attached) {
       draw_childs();
-    } else if (m_is_visible) {
-      /*  Check if visible only for root widget. Visibility
-       *  checking for attached widgets in widget::draw_childs.
-       */
-
+    } else
+        /*  Check if visible only for root widget. Visibility
+         *  checking for attached widgets in widget::draw_childs.
+         */
+        if (m_is_visible) {
       prepare();
-
       draw_childs();
     }
   }
@@ -222,10 +235,7 @@ namespace laplace::ui {
     if (child->m_is_attached &&
         child->m_parent.lock() == shared_from_this()) {
       if (child->m_attach_index < m_childs.size()) {
-        m_childs.erase(        //
-            m_childs.begin() + //
-            static_cast<ptrdiff_t>(child->m_attach_index));
-
+        m_childs.erase(m_childs.begin() + child->m_attach_index);
         update_indices(child->m_attach_index);
       }
 
@@ -243,21 +253,22 @@ namespace laplace::ui {
       m_childs[child_index]->m_attach_index = 0;
       m_childs[child_index]->m_parent.reset();
 
-      m_childs.erase(        //
-          m_childs.begin() + //
-          static_cast<ptrdiff_t>(child_index));
-
+      m_childs.erase(m_childs.begin() + child_index);
       update_indices(child_index);
 
       set_expired(true);
     }
   }
 
+  auto widget::get_context() const -> ptr_context {
+    return m_context;
+  }
+
   auto widget::get_level() const -> sl::index {
     return m_level;
   }
 
-  auto widget::get_rect() const -> cref_rect {
+  auto widget::get_rect() const -> rect {
     return m_rect;
   }
 
@@ -364,12 +375,29 @@ namespace laplace::ui {
     return result;
   }
 
-  void widget::prepare() {
-    prepare_ui();
+  void widget::set_default_context(ptr_context con) {
+    m_default_context = con;
   }
 
   auto widget::get_default_context() -> ptr_context {
-    return context::get_default();
+    auto p = m_default_context.lock();
+
+    if (!p) {
+      p = make_shared<context>(
+          context { .prepare     = []() {},
+                    .adjust_text = [](u8string_view) -> text_area {
+                      return {};
+                    },
+                    .render_text       = [](rect, u8string_view) {},
+                    .render_panel      = [](panel_state) {},
+                    .render_button     = [](button_state) {},
+                    .render_textbutton = [](textbutton_state) {},
+                    .render_textedit   = [](textedit_state) {} });
+
+      m_default_context = p;
+    }
+
+    return p;
   }
 
   void widget::set_handler(bool is_handler) {

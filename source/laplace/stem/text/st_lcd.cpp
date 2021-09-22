@@ -14,7 +14,7 @@
 
 #include "../../core/utils.h"
 
-namespace laplace::ui::text {
+namespace laplace::stem::text {
   using std::u8string_view, graphics::ref_image, graphics::cref_pixel;
 
   void lcd::set_size(sl::index char_top,
@@ -61,7 +61,7 @@ namespace laplace::ui::text {
     }
   }
 
-  auto lcd::adjust(u8string_view text) -> painter::area {
+  auto lcd::adjust(u8string_view text) -> ui::text_area {
     auto width = sl::index {};
     auto c     = char32_t {};
 

@@ -10,8 +10,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_ui_text_ttf_h
-#define laplace_ui_text_ttf_h
+#ifndef laplace_stem_text_ttf_h
+#define laplace_stem_text_ttf_h
 
 #include "../../core/defs.h"
 #include <cstdint>
@@ -21,7 +21,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-namespace laplace::ui::text {
+namespace laplace::stem::text {
   class ttf_library {
   public:
     ttf_library();

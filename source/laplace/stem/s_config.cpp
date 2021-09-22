@@ -28,25 +28,23 @@ namespace laplace::stem::config {
       core::cref_family, platform::window, format::wrap;
 
   auto scan_flag(int argc, char **argv, char c) -> bool {
-    for (auto i = 0; i < argc; i++) {
+    for (auto i = 0; i < argc; i++)
       if (argv[i] && argv[i][0] == '-') {
         for (auto k = 1; argv[i][k]; k++) {
           if (argv[i][k] == c)
             return true;
         }
       }
-    }
 
     return false;
   }
 
   auto scan_flag(int argc, char **argv, string_view name) -> bool {
-    for (auto i = 0; i < argc; i++) {
+    for (auto i = 0; i < argc; i++)
       if (argv[i] && argv[i][0] == '-' && argv[i][1] == '-') {
         if (string { argv[i] + 2 } == name)
           return true;
       }
-    }
 
     return false;
   }
@@ -64,41 +62,44 @@ namespace laplace::stem::config {
   static char  g_argv_data[argv_size][argv_string_size] = { 0 };
 
   auto parse_cmdline(const char *args) -> pair<int, char **> {
-    if (args) {
-      for (auto i = 0; args[i]; i++) {
-        if (args[i] != ' ') {
-          auto j     = i + 1;
-          bool quote = false;
+    if (!args)
+      return { g_argc, g_argv };
 
-          for (; args[j] && args[j] != ' ' && !quote; j++) {
-            if (args[j] == '\\' && args[j + 1]) {
-              j++;
-            } else if (args[j] == '"') {
-              quote = !quote;
-            }
-          }
+    for (auto i = 0; args[i]; i++) {
+      if (args[i] == ' ')
+        continue;
 
-          if (i < j) {
-            if (g_argc >= argv_size) {
-              error_("Too many command line arguments.", __FUNCTION__);
-              break;
-            }
+      auto j     = i + 1;
+      bool quote = false;
 
-            const auto size = j - i;
-
-            if (size >= argv_string_size) {
-              error_("Too long command line argument.", __FUNCTION__);
-              break;
-            }
-
-            memcpy(g_argv_data[g_argc], args + i, size);
-            g_argv[g_argc] = g_argv_data[g_argc];
-            g_argc++;
-          }
-
-          i += j;
+      for (; args[j] && args[j] != ' ' && !quote; j++) {
+        if (args[j] == '\\' && args[j + 1]) {
+          j++;
+        } else if (args[j] == '"') {
+          quote = !quote;
         }
       }
+
+      if (i >= j) {
+        i += j;
+        continue;
+      }
+
+      if (g_argc >= argv_size) {
+        error_("Too many command line arguments.", __FUNCTION__);
+        break;
+      }
+
+      const auto size = j - i;
+
+      if (size >= argv_string_size) {
+        error_("Too long command line argument.", __FUNCTION__);
+        break;
+      }
+
+      memcpy(g_argv_data[g_argc], args + i, size);
+      g_argv[g_argc] = g_argv_data[g_argc];
+      g_argc++;
     }
 
     return { g_argc, g_argv };
@@ -142,7 +143,8 @@ namespace laplace::stem::config {
     return 1;
   }
 
-  auto read_frame_size(char **tag, char **end, ref_family cfg) -> int {
+  auto read_frame_size(char **tag, char **end, ref_family cfg)
+      -> int {
     if (tag + 2 < end && tag[0] && tag[1] && tag[2]) {
       cfg[k_frame][0] = atoi(tag[0]);
       cfg[k_frame][1] = atoi(tag[1]);
@@ -152,7 +154,8 @@ namespace laplace::stem::config {
     return 3;
   }
 
-  auto process_tag(char **arg, char **end, ref_family cfg) -> char ** {
+  auto process_tag(char **arg, char **end, ref_family cfg)
+      -> char ** {
     if (arg && *arg && arg < end) {
       auto tag = *arg;
 
@@ -220,19 +223,20 @@ namespace laplace::stem::config {
   }
 
   void save(cref_family cfg) {
-    if (cfg.has(k_file)) {
-      auto file_name = to_wstring(cfg[k_file].get_string());
+    if (!cfg.has(k_file))
+      return;
 
-      if (!embedded::scan(file_name)) {
-        auto out = ofstream(fs::path(file_name));
-        auto w   = wrap(out);
+    auto file_name = to_wstring(cfg[k_file].get_string());
 
-        if (!text::encode(w, cfg)) {
-          error_(fmt("Unable to save config file '%s'.",
-                     to_string(file_name).c_str()),
-                 __FUNCTION__);
-        }
-      }
-    }
+    if (embedded::scan(file_name))
+      return;
+
+    auto out = ofstream(fs::path(file_name));
+    auto w   = wrap(out);
+
+    if (!text::encode(w, cfg))
+      error_(fmt("Unable to save config file '%s'.",
+                 to_string(file_name).c_str()),
+             __FUNCTION__);
   }
 }

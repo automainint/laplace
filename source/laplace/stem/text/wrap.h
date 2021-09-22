@@ -10,31 +10,33 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_ui_text_wrap_h
-#define laplace_ui_text_wrap_h
+#ifndef laplace_stem_text_wrap_h
+#define laplace_stem_text_wrap_h
 
 #include "../../graphics/texture.h"
-#include "../context.h"
+#include "../../render/context.h"
 #include "painter.h"
 #include "renderer.h"
 
-namespace laplace::ui::text {
+namespace laplace::stem::text {
   /*  Painter to Renderer wrapper.
    */
   class wrap final : public renderer {
   public:
-    wrap(ptr_painter paint, ptr_context cont = ptr_context {});
+    wrap(ptr_painter paint);
     ~wrap() override = default;
 
-    void set_context(ptr_context cont);
+    void set_render_context(render::ptr_context cont);
 
-    auto adjust(std::u8string_view text) -> area final;
-    void render(
-        sl::index x, sl::index y, std::u8string_view text) final;
+    auto adjust(std::u8string_view text) -> ui::text_area final;
+
+    void render(sl::index          x,
+                sl::index          y,
+                std::u8string_view text) final;
 
   private:
-    ptr_context m_context;
-    ptr_painter m_paint;
+    render::ptr_context m_render = render::context::get_default();
+    ptr_painter         m_paint;
 
     graphics::ptr_texture m_tex =
         std::make_shared<graphics::texture>();

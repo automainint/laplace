@@ -1,4 +1,4 @@
-/*  laplace/ui/text/uit_lcd_data.cpp
+/*  laplace/stem/text/st_lcd_data.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -12,8 +12,12 @@
 
 #include "painter.h"
 
-namespace laplace::ui::text {
-  const uint64_t painter::default_lcd_bits[] = {
+namespace laplace::stem::text {
+  sl::index const painter::default_lcd_char_top    = 6;
+  sl::index const painter::default_lcd_char_width  = 5;
+  sl::index const painter::default_lcd_char_height = 7;
+
+  uint64_t const painter::default_lcd_bits[] = {
     0xffe77bfe7fbfff3f, 0xfddd991ad73fdfff, 0xa9d0d73fdfffffc2,
     0xff3feffffdc2fddc, 0xefe3f8e6fdff77ba, 0x9dfefdfa8b787f3f,
     0xfdfd8d1affffee7f, 0x7fbfff3ff67f9ffe, 0xe739f7ffbfff7bfa,

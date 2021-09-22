@@ -12,8 +12,9 @@
  *  the MIT License for more details.
  */
 
-#include "../graphics/utils.h"
 #include "app_flat.h"
+
+#include "../graphics/utils.h"
 
 namespace laplace::stem {
   using std::make_shared, std::abs, core::cref_family, ui::frame;
@@ -50,7 +51,8 @@ namespace laplace::stem {
   void app_flat::adjust_layout(sl::whole width, sl::whole height) {
     application::adjust_layout(width, height);
 
-    m_ui->set_rect({ .x = 0, .y = 0, .width = width, .height = height });
+    m_ui->set_rect(
+        { .x = 0, .y = 0, .width = width, .height = height });
 
     m_ui->refresh();
   }

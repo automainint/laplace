@@ -1,4 +1,4 @@
-/*  laplace/ui/text/uit_renderer.cpp
+/*  laplace/stem/text/st_renderer.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -11,26 +11,27 @@
  */
 
 #include "renderer.h"
+
 #include "wrap.h"
 
-namespace laplace::ui::text {
+namespace laplace::stem::text {
   using std::make_shared, std::weak_ptr, std::u8string_view;
 
   weak_ptr<renderer> renderer::m_default;
 
-  auto renderer::adjust(u8string_view text) -> renderer::area {
+  auto renderer::adjust(u8string_view text) -> ui::text_area {
     return {};
   }
 
-  void renderer::render(
-      sl::index x, sl::index y, u8string_view text) { }
+  void renderer::render(sl::index     x,
+                        sl::index     y,
+                        u8string_view text) { }
 
   auto renderer::get_default() -> ptr_renderer {
     auto p = m_default.lock();
 
     if (!p) {
-      p = make_shared<wrap>(painter::get_default());
-
+      p         = make_shared<wrap>(painter::get_default());
       m_default = p;
     }
 

@@ -14,7 +14,6 @@
 
 #include "../../core/keys.h"
 #include "../../core/utf8.h"
-#include "../context.h"
 
 namespace laplace::ui::elem {
   using namespace core::keys;
@@ -29,17 +28,25 @@ namespace laplace::ui::elem {
     m_filter = f;
   }
 
-  auto textedit::tick(sl::time delta_msec, cref_input_handler in,
-                      bool is_handled) -> bool {
+  auto textedit::tick(sl::time           delta_msec,
+                      cref_input_handler in,
+                      bool               is_handled) -> bool {
     return is_handled || textedit_tick(in);
   }
 
   void textedit::render() {
-    if (!m_context) {
-      error_("No context.", __FUNCTION__);
-    }
+    do {
+      auto con = get_context();
 
-    m_context->render(get_state());
+      if constexpr (!_unsafe) {
+        if (!con) {
+          error_("No context.", __FUNCTION__);
+          return;
+        }
+      }
+
+      con->render_textedit(get_state());
+    } while (0);
 
     up_to_date();
   }
@@ -86,28 +93,28 @@ namespace laplace::ui::elem {
     return m_selection;
   }
 
-  auto textedit::get_state() const -> textedit::state {
-    return { panel::get_state(), has_focus(),  u8string(get_text()),
+  auto textedit::get_state() const -> textedit_state {
+    return { panel::get_state(), has_focus(),  get_text(),
              m_length_limit,     get_cursor(), get_selection() };
   }
 
-  auto textedit::update(ptr_widget       object,
-                        textedit::state  textedit_state,
-                        textedit::filter f, cref_input_handler in)
-      -> textedit::update_result {
+  auto textedit::update(ptr_widget         object,
+                        textedit_state     state,
+                        textedit::filter   f,
+                        cref_input_handler in) -> update_result {
 
     const auto x = in.get_cursor_x();
     const auto y = in.get_cursor_y();
 
-    const auto has_cursor = contains(textedit_state.rect, x, y) &&
+    const auto has_cursor = contains(state.rect, x, y) &&
                             (!object || object->event_allowed(x, y));
 
     auto event_status = false;
-    auto has_focus    = textedit_state.has_focus;
+    auto has_focus    = state.has_focus;
 
-    auto text      = u8string(textedit_state.text);
-    auto cursor    = textedit_state.cursor;
-    auto selection = textedit_state.selection;
+    auto text      = u8string { state.text };
+    auto cursor    = state.cursor;
+    auto selection = state.selection;
 
     if (has_focus) {
       auto s = in.get_text();
@@ -125,14 +132,13 @@ namespace laplace::ui::elem {
                 break;
             }
 
-            text.erase(text.begin() + static_cast<ptrdiff_t>(n),
-                       text.begin() + static_cast<ptrdiff_t>(cursor));
+            text.erase(text.begin() + n, text.begin() + cursor);
 
             cursor = n;
           } else if (c != ctrl_delete) {
             if (!f || f(c)) {
-              if (textedit_state.length_limit == 0 ||
-                  text.size() < textedit_state.length_limit)
+              if (state.length_limit == 0 ||
+                  text.size() < state.length_limit)
                 if (!utf8::encode(c, text, cursor))
                   error_("Unable to encode UTF-8 string.",
                          __FUNCTION__);

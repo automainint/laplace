@@ -15,8 +15,8 @@
 #ifndef laplace_stem_app_flat_h
 #define laplace_stem_app_flat_h
 
-#include "../ui/frame.h"
 #include "application.h"
+#include "ui/frame.h"
 
 namespace laplace::stem {
   class app_flat : public application {

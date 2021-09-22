@@ -16,6 +16,7 @@
 #define laplace_stem_application_h
 
 #include "../core/family.h"
+#include "../core/input_handler.h"
 #include "../graphics/defs.h"
 #include "../platform/wrap.h"
 #include "../render/context.h"
@@ -45,8 +46,9 @@ namespace laplace::stem {
     [[nodiscard]] auto get_input() -> core::cref_input_handler;
 
   private:
-    void wrap_input();
     void load_shaders();
+    void setup_ui();
+    void wrap_input();
     void adjust_frame_size(sl::whole width, sl::whole height);
 
     [[nodiscard]] auto shader_path(const char *name,
@@ -60,9 +62,8 @@ namespace laplace::stem {
     platform::ptr_glcontext m_gl;
     platform::ptr_input     m_input;
 
-    ui::ptr_context     m_ui;
     render::ptr_context m_render;
-
+    ui::ptr_context     m_ui;
     core::input_handler m_input_handler;
   };
 }

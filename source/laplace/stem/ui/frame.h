@@ -10,28 +10,26 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_ui_frame_h
-#define laplace_ui_frame_h
+#ifndef laplace_stem_ui_frame_h
+#define laplace_stem_ui_frame_h
 
-#include "../graphics/flat/framebuffer.h"
-#include "context.h"
-#include "widget.h"
+#include "../../graphics/flat/framebuffer.h"
+#include "../../render/context.h"
+#include "../../ui/widget.h"
 
-namespace laplace::ui {
+namespace laplace::stem::ui {
+  using namespace laplace::ui;
+
   class frame final : public widget {
   public:
-    frame(const frame &) = delete;
-    auto operator=(const frame &) -> frame & = delete;
-
-    frame();
     ~frame() final = default;
 
-    void set_context(ptr_context cont);
+    void set_render_context(render::ptr_context con);
 
     void render() final;
 
   private:
-    ptr_context                 m_context;
+    render::ptr_context m_render = render::context::get_default();
     graphics::flat::framebuffer m_buffer;
   };
 

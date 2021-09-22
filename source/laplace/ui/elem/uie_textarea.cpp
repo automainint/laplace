@@ -15,15 +15,11 @@
 namespace laplace::ui::elem {
   using std::u8string_view;
 
+  const sl::whole textarea::default_line_height = 30;
+
   void textarea::render() {
     textarea_render();
-
     up_to_date();
-  }
-
-  void textarea::set_renderer(text::ptr_renderer renderer) {
-    m_renderer = renderer;
-    set_expired(true);
   }
 
   void textarea::set_text(u8string_view text) {
@@ -37,30 +33,37 @@ namespace laplace::ui::elem {
   }
 
   void textarea::textarea_render() {
-    auto i0 = sl::index {};
+    auto con = get_context();
 
-    auto const y1 = get_absolute_y() + get_rect().height;
+    if constexpr (!_unsafe) {
+      if (!con) {
+        error_("No context.", __FUNCTION__);
+        return;
+      }
+    }
+
+    auto const r  = get_rect();
+    auto const y1 = get_absolute_y() + r.height;
     auto       y  = m_line_height > 0 ? get_absolute_y()
                                       : y1 - m_line_height;
 
+    auto i0 = sl::index {};
+
     for (sl::index i = 0; i <= m_text.length(); i++) {
-      if (i == m_text.length() || m_text[i] == u8'\n') {
-        if (i0 < i) {
-          m_renderer->render(
-              get_absolute_x(), y,
-              { m_text.begin() + i0, m_text.begin() + i });
-        }
-
-        if (y < 0)
-          break;
-
-        y += m_line_height;
-
-        if (y >= y1)
-          break;
-
-        i0 = i + 1;
-      }
+      if (i < m_text.length() && m_text[i] != u8'\n')
+        continue;
+      if (i0 < i)
+        con->render_text({ .x      = get_absolute_x(),
+                           .y      = y,
+                           .width  = r.width,
+                           .height = y1 - y },
+                         { m_text.begin() + i0, m_text.begin() + i });
+      if (y < 0)
+        break;
+      y += m_line_height;
+      if (y >= y1)
+        break;
+      i0 = i + 1;
     }
   }
 }

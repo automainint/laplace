@@ -15,20 +15,25 @@
 #include "../context.h"
 
 namespace laplace::ui::elem {
-  void panel::set_context(ptr_context cont) {
-    m_context = cont ? cont : ui::context::get_default();
-    set_expired(true);
-  }
-
   void panel::render() {
-    m_context->render(get_state());
+    do {
+      auto con = get_context();
+
+      if constexpr (!_unsafe) {
+        if (!con) {
+          error_("No context.", __FUNCTION__);
+          break;
+        }
+      }
+
+      con->render_panel(get_state());
+    } while (0);
 
     draw_childs();
-
     up_to_date();
   }
 
-  auto panel::get_state() const -> panel::state {
+  auto panel::get_state() const -> panel_state {
     return { get_level(), get_absolute_rect(), is_enabled() };
   }
 }

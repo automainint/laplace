@@ -1,9 +1,7 @@
 /bin/**
-/lib/**
-/lib-*/**
+/lib*/**
+/*build*/**
 /include/**
-/build/**
-/build-*/**
 
 /.vs/
 *.sln

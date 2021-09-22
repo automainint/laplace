@@ -15,7 +15,6 @@
 
 #include "rect.h"
 #include <functional>
-#include <vector>
 
 namespace laplace::ui {
   struct layout_context {

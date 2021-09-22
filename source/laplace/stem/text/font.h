@@ -10,14 +10,14 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_ui_text_font_h
-#define laplace_ui_text_font_h
+#ifndef laplace_stem_text_font_h
+#define laplace_stem_text_font_h
 
 #include "painter.h"
 #include "ttf.h"
 #include <memory>
 
-namespace laplace::ui::text {
+namespace laplace::stem::text {
   /*  TTF font renderer.
    */
   class font final : public painter {
@@ -28,7 +28,7 @@ namespace laplace::ui::text {
 
     void set_size(size_t width, size_t height);
 
-    auto adjust(std::u8string_view text) -> area final;
+    auto adjust(std::u8string_view text) -> ui::text_area final;
 
     void print(graphics::ref_image img,
                sl::index           x,
@@ -38,12 +38,11 @@ namespace laplace::ui::text {
     auto get_color() const -> graphics::cref_pixel;
 
   private:
-    static void draw(
-        graphics::ref_image  img,
-        sl::index            x0,
-        sl::index            y0,
-        const FT_Bitmap &    bitmap,
-        graphics::cref_pixel color);
+    static void draw(graphics::ref_image  img,
+                     sl::index            x0,
+                     sl::index            y0,
+                     const FT_Bitmap &    bitmap,
+                     graphics::cref_pixel color);
 
     static auto blend(graphics::cref_pixel s,
                       graphics::cref_pixel d,

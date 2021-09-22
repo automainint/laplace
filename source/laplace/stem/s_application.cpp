@@ -19,7 +19,9 @@
 #include "../graphics/flat/solid_shader.h"
 #include "../graphics/flat/sprite_shader.h"
 #include "../graphics/utils.h"
+#include "../ui/widget.h"
 #include "config.h"
+#include "ui/context.h"
 #include <filesystem>
 #include <fstream>
 
@@ -91,10 +93,10 @@ namespace laplace::stem {
   void application::init() {
     graphics::init();
 
-    m_ui     = ui::context::get_default();
     m_render = render::context::get_default();
 
     load_shaders();
+    setup_ui();
 
     m_window->set_visible(true);
   }
@@ -117,7 +119,8 @@ namespace laplace::stem {
     graphics::viewport(0, 0, width, height);
 
     if (m_ui) {
-      m_ui->set_frame_size(width, height);
+      m_ui->frame_width  = width;
+      m_ui->frame_height = height;
     }
   }
 
@@ -135,6 +138,11 @@ namespace laplace::stem {
 
   auto application::get_input() -> cref_input_handler {
     return m_input_handler;
+  }
+
+  void application::setup_ui() {
+    m_ui = make_shared<ui::context_impl>();
+    ui::widget::set_default_context(m_ui);
   }
 
   void application::wrap_input() {

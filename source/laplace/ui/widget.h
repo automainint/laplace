@@ -14,15 +14,12 @@
 #define laplace_ui_widget_h
 
 #include "../core/input_handler.h"
+#include "context.h"
 #include "layout.h"
 #include <memory>
 #include <vector>
 
 namespace laplace::ui {
-  class context;
-
-  using ptr_context = std::shared_ptr<context>;
-
   /*  UI Widget base class.
    */
   class widget : public std::enable_shared_from_this<widget> {
@@ -47,6 +44,7 @@ namespace laplace::ui {
     [[nodiscard]] virtual auto event_allowed(sl::index x, sl::index y)
         -> bool;
 
+    void set_context(ptr_context con);
     void set_layout(layout fn);
     void set_level(sl::index level);
     void set_rect(cref_rect r);
@@ -60,9 +58,9 @@ namespace laplace::ui {
     void detach(ptr_widget child);
     void detach(sl::index child_index);
 
+    [[nodiscard]] auto get_context() const -> ptr_context;
     [[nodiscard]] auto get_level() const -> sl::index;
-    [[nodiscard]] auto get_rect() const -> cref_rect;
-
+    [[nodiscard]] auto get_rect() const -> rect;
     [[nodiscard]] auto get_absolute_x() const -> sl::index;
     [[nodiscard]] auto get_absolute_y() const -> sl::index;
     [[nodiscard]] auto get_absolute_rect() const -> rect;
@@ -100,8 +98,7 @@ namespace laplace::ui {
      */
     [[nodiscard]] auto get_child(sl::index index) const -> ptr_widget;
 
-    static void prepare();
-
+    static void               set_default_context(ptr_context con);
     [[nodiscard]] static auto get_default_context() -> ptr_context;
 
   protected:
@@ -109,6 +106,7 @@ namespace laplace::ui {
      */
     void set_handler(bool is_handler);
 
+    void prepare();
     void draw_childs();
     void up_to_date();
 
@@ -125,22 +123,25 @@ namespace laplace::ui {
     void adjust_layout();
     void refresh_childs();
 
+    static std::weak_ptr<context> m_default_context;
+
     bool m_expired        = true;
     bool m_expired_childs = true;
 
-    layout    m_layout;
-    sl::index m_level = 0;
-    rect      m_rect;
-    sl::index m_absolute_x   = 0;
-    sl::index m_absolute_y   = 0;
-    bool      m_is_changed   = true;
-    bool      m_is_visible   = true;
-    bool      m_is_enabled   = true;
-    bool      m_is_handler   = false;
-    bool      m_is_attached  = false;
-    bool      m_has_focus    = false;
-    sl::index m_attach_index = 0;
-    sl::index m_focus_index  = 0;
+    ptr_context m_context = get_default_context();
+    layout      m_layout;
+    sl::index   m_level = 0;
+    rect        m_rect;
+    sl::index   m_absolute_x   = 0;
+    sl::index   m_absolute_y   = 0;
+    bool        m_is_changed   = true;
+    bool        m_is_visible   = true;
+    bool        m_is_enabled   = true;
+    bool        m_is_handler   = false;
+    bool        m_is_attached  = false;
+    bool        m_has_focus    = false;
+    sl::index   m_attach_index = 0;
+    sl::index   m_focus_index  = 0;
 
     vptr_widget           m_childs;
     std::weak_ptr<widget> m_parent;
