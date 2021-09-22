@@ -1,4 +1,4 @@
-/*  laplace/ui/text/uit_wrap.cpp
+/*  laplace/stem/text/st_wrap.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

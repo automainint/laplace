@@ -81,7 +81,7 @@ namespace laplace::ui::elem {
     auto x = in.get_cursor_x();
     auto y = in.get_cursor_y();
 
-    auto has_cursor = contains(button_state.rect, x, y) &&
+    auto has_cursor = contains(button_state.bounds, x, y) &&
                       (!object || object->event_allowed(x, y));
 
     if (is_pressed) {

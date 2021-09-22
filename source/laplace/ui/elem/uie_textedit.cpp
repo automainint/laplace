@@ -106,7 +106,7 @@ namespace laplace::ui::elem {
     const auto x = in.get_cursor_x();
     const auto y = in.get_cursor_y();
 
-    const auto has_cursor = contains(state.rect, x, y) &&
+    const auto has_cursor = contains(state.bounds, x, y) &&
                             (!object || object->event_allowed(x, y));
 
     auto event_status = false;

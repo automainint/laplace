@@ -1,4 +1,4 @@
-/*  laplace/ui/text/uit_painter.cpp
+/*  laplace/stem/text/st_painter.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

@@ -26,7 +26,7 @@ namespace laplace::ui {
 
   struct panel_state {
     sl::index level      = 0;
-    rect      rect       = {};
+    rect      bounds     = {};
     bool      is_enabled = true;
   };
 

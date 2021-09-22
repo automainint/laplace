@@ -1,4 +1,4 @@
-/*  laplace/ui/ui_context.cpp
+/*  laplace/stem/ui/su_context.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -86,7 +86,7 @@ namespace laplace::stem::ui {
       }
     }
 
-    _render_solid(to_rectf(state.rect), colors[0]);
+    _render_solid(to_rectf(state.bounds), colors[0]);
   }
 
   void context_impl::_render_button(button_state state) {
@@ -109,7 +109,7 @@ namespace laplace::stem::ui {
       n_color = n0;
     }
 
-    _render_solid(to_rectf(state.rect), colors[n_color]);
+    _render_solid(to_rectf(state.bounds), colors[n_color]);
   }
 
   void context_impl::_render_textbutton(textbutton_state state) {
@@ -124,11 +124,11 @@ namespace laplace::stem::ui {
 
     auto a = m_font->adjust(state.text);
 
-    auto dx = state.rect.width - a.width;
-    auto dy = state.rect.height - a.height;
+    auto dx = state.bounds.width - a.width;
+    auto dy = state.bounds.height - a.height;
 
-    auto x = state.rect.x + dx / 2;
-    auto y = state.rect.y + dy / 2;
+    auto x = state.bounds.x + dx / 2;
+    auto y = state.bounds.y + dy / 2;
 
     m_font->render(x, y, state.text);
   }
@@ -141,7 +141,7 @@ namespace laplace::stem::ui {
       }
     }
 
-    auto const f = to_rectf(state.rect);
+    auto const f = to_rectf(state.bounds);
 
     if (state.has_focus) {
       _render_solid(f, colors[1]);
@@ -150,9 +150,9 @@ namespace laplace::stem::ui {
     }
 
     auto const a  = m_font->adjust(state.text);
-    auto const dy = state.rect.height - a.height;
-    auto const x  = state.rect.x + dy / 2;
-    auto const y  = state.rect.y + dy / 2;
+    auto const dy = state.bounds.height - a.height;
+    auto const x  = state.bounds.x + dy / 2;
+    auto const y  = state.bounds.y + dy / 2;
 
     m_font->render(x, y, state.text);
   }

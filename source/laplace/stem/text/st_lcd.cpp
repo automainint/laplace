@@ -1,4 +1,4 @@
-/*  laplace/ui/text/uit_lcd.cpp
+/*  laplace/stem/text/st_lcd.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

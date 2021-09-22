@@ -1,4 +1,4 @@
-/*  laplace/ui/text/uit_font.cpp
+/*  laplace/stem/text/st_font.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *

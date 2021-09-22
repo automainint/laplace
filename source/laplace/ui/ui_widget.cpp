@@ -411,33 +411,34 @@ namespace laplace::ui {
   }
 
   void widget::adjust_layout() {
-    if (m_layout) {
-      auto childs  = sl::vector<sl::index> {};
-      auto context = vlayout_context {};
+    if (!m_layout)
+      return;
 
-      childs.reserve(m_childs.size());
-      context.reserve(m_childs.size());
+    auto childs  = sl::vector<sl::index> {};
+    auto context = vlayout_context {};
 
-      for (sl::index i = 0; i < m_childs.size(); i++) {
-        auto &c = *m_childs[i];
+    childs.reserve(m_childs.size());
+    context.reserve(m_childs.size());
 
-        if (c.is_visible()) {
-          childs.emplace_back(i);
+    for (sl::index i = 0; i < m_childs.size(); i++) {
+      auto &c = *m_childs[i];
 
-          context.emplace_back(layout_context {
-              .level = c.get_level(), .box = c.get_rect() });
-        }
+      if (c.is_visible()) {
+        childs.emplace_back(i);
+
+        context.emplace_back(layout_context { .level = c.get_level(),
+                                              .box = c.get_rect() });
       }
+    }
 
-      auto rects = m_layout(m_rect, context);
+    auto rects = m_layout(m_rect, context);
 
-      if (rects.size() == childs.size()) {
-        for (sl::index i = 0; i < childs.size(); i++) {
-          m_childs[childs[i]]->set_rect(rects[i]);
-        }
-      } else {
-        error_("Invalid layout.", __FUNCTION__);
+    if (rects.size() == childs.size()) {
+      for (sl::index i = 0; i < childs.size(); i++) {
+        m_childs[childs[i]]->set_rect(rects[i]);
       }
+    } else {
+      error_("Invalid layout.", __FUNCTION__);
     }
   }
 

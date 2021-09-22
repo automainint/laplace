@@ -1,4 +1,4 @@
-/*  laplace/ui/text/uit_ttf.cpp
+/*  laplace/stem/text/st_ttf.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
