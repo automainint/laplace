@@ -18,7 +18,8 @@
 namespace laplace::ui::elem {
   using namespace core::keys;
 
-  using std::u8string_view, std::u8string, core::cref_input_handler;
+  using std::u8string_view, std::u8string, core::cref_input_handler,
+      core::is_key_down, core::input_event;
 
   textedit::textedit() {
     set_handler(true);
@@ -101,13 +102,7 @@ namespace laplace::ui::elem {
   auto textedit::update(ptr_widget         object,
                         textedit_state     state,
                         textedit::filter   f,
-                        cref_input_handler in) -> update_result {
-
-    const auto x = in.get_cursor_x();
-    const auto y = in.get_cursor_y();
-
-    const auto has_cursor = contains(state.bounds, x, y) &&
-                            (!object || object->event_allowed(x, y));
+                        input_event const &ev) -> update_result {
 
     auto event_status = false;
     auto has_focus    = state.has_focus;
@@ -116,37 +111,38 @@ namespace laplace::ui::elem {
     auto cursor    = state.cursor;
     auto selection = state.selection;
 
+    const auto x = ev.cursor_x;
+    const auto y = ev.cursor_y;
+
+    const auto has_cursor = contains(state.bounds, x, y) &&
+                            (!object || object->event_allowed(x, y));
+
     if (has_focus) {
-      auto s = in.get_text();
+      if (ev.character == ctrl_backspace) {
+        auto n   = sl::index {};
+        auto buf = char32_t {};
 
-      if (!s.empty()) {
-        for (auto c : s) {
-          if (c == ctrl_backspace) {
-            sl::index n = 0;
-            char32_t  buf;
+        for (sl::index i = 0; i < cursor;) {
+          n = i;
 
-            for (sl::index i = 0; i < cursor;) {
-              n = i;
+          if (!utf8::decode(text, i, buf))
+            break;
+        }
 
-              if (!utf8::decode(text, i, buf))
-                break;
-            }
+        text.erase(text.begin() + n, text.begin() + cursor);
+        cursor = n;
 
-            text.erase(text.begin() + n, text.begin() + cursor);
-
-            cursor = n;
-          } else if (c != ctrl_delete) {
-            if (!f || f(c)) {
-              if (state.length_limit == 0 ||
-                  text.size() < state.length_limit)
-                if (!utf8::encode(c, text, cursor))
-                  error_("Unable to encode UTF-8 string.",
-                         __FUNCTION__);
-            }
-          }
+      } else if (ev.character && ev.character != ctrl_delete) {
+        if (!f || f(ev.character)) {
+          if (state.length_limit == 0 ||
+              text.size() < state.length_limit)
+            if (!utf8::encode(ev.character, text, cursor))
+              error_("Unable to encode UTF-8 string.", __FUNCTION__);
         }
       }
-    } else if (has_cursor && in.is_key_pressed(key_lbutton)) {
+
+    } else if (has_cursor && ev.key == key_lbutton &&
+               is_key_down(ev)) {
       event_status = true;
       has_focus    = true;
     }
@@ -155,23 +151,27 @@ namespace laplace::ui::elem {
   }
 
   auto textedit::textedit_tick(cref_input_handler in) -> bool {
-    if (in.is_key_pressed(key_tab)) {
-      if (auto p = get_parent(); p) {
-        p->next_tab();
+    bool event_status = false;
 
-        return true;
+    for (auto const &ev : in.get_events()) {
+      if (ev.key == key_tab && is_key_down(ev)) {
+        if (auto p = get_parent(); p) {
+          p->next_tab();
+          event_status = true;
+        }
+      } else {
+        auto const s = update(shared_from_this(), get_state(),
+                              m_filter, ev);
+
+        set_focus(s.has_focus);
+        set_text(s.text);
+        set_cursor(s.cursor);
+        set_selection(s.selection);
+
+        event_status |= s.event_status;
       }
-    } else {
-      auto s = update(shared_from_this(), get_state(), m_filter, in);
-
-      set_focus(s.has_focus);
-      set_text(s.text);
-      set_cursor(s.cursor);
-      set_selection(s.selection);
-
-      return s.event_status;
     }
 
-    return false;
+    return event_status;
   }
 }

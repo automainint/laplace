@@ -15,7 +15,7 @@
 #include <algorithm>
 
 namespace laplace::ui {
-  using std::sort, std::weak_ptr, std::make_shared,
+  using std::sort, std::weak_ptr, std::make_shared, std::lower_bound,
       std::u8string_view, core::cref_input_handler;
 
   weak_ptr<context> widget::m_default_context;
@@ -125,9 +125,6 @@ namespace laplace::ui {
   }
 
   void widget::draw_childs() {
-    auto indices    = sl::vector<sl::index> {};
-    auto local_area = rect { 0, 0, m_rect.width, m_rect.height };
-
     for (auto &c : m_childs) {
       if (c->is_visible()) {
         c->m_absolute_x = m_absolute_x + c->m_rect.x;
@@ -135,19 +132,23 @@ namespace laplace::ui {
       }
     }
 
-    for (sl::index i = 0; i < m_childs.size(); i++) {
-      auto &w = m_childs[i];
+    auto const local_area = rect { 0, 0, m_rect.width,
+                                   m_rect.height };
 
-      if (w->is_visible() && intersects(local_area, w->m_rect)) {
-        indices.emplace_back(i);
-      }
-    }
+    auto indices = sl::vector<sl::index> {};
+    indices.reserve(m_childs.size());
 
     auto op = [this](sl::index a, sl::index b) -> bool {
       return m_childs[a]->get_level() < m_childs[b]->get_level();
     };
 
-    sort(indices.begin(), indices.end(), op);
+    for (sl::index i = 0; i < m_childs.size(); i++) {
+      auto const &w = m_childs[i];
+
+      if (w->is_visible() && intersects(local_area, w->m_rect))
+        indices.emplace(
+            lower_bound(indices.begin(), indices.end(), i, op), i);
+    }
 
     for (auto i : indices) { m_childs[i]->render(); }
 
@@ -168,13 +169,13 @@ namespace laplace::ui {
     }
 
     if (m_is_attached || (m_is_visible && m_is_enabled)) {
-      auto list = sl::vector<ptr_widget> {};
+      auto list = sl::vector<widget *> {};
+      list.reserve(m_childs.size());
 
-      for (auto &c : m_childs) {
+      for (auto &c : m_childs)
         if (c->is_visible() && c->is_enabled()) {
-          list.emplace_back(c);
+          list.emplace_back(c.get());
         }
-      }
 
       for (auto &c : list) {
         is_handled |= c->tick(delta_msec, in, is_handled);

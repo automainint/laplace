@@ -16,7 +16,8 @@
 #include "../context.h"
 
 namespace laplace::ui::elem {
-  using core::cref_input_handler, core::keys::key_lbutton;
+  using core::cref_input_handler, core::keys::key_lbutton,
+      core::is_key_down, core::is_key_up;
 
   void button::on_click(event_button_click ev) {
     m_on_click = ev;
@@ -78,34 +79,40 @@ namespace laplace::ui::elem {
     auto event_status = false;
     auto is_pressed   = button_state.is_pressed;
 
-    auto x = in.get_cursor_x();
-    auto y = in.get_cursor_y();
+    for (auto const &ev : in.get_events()) {
+      if (ev.key != key_lbutton)
+        continue;
 
-    auto has_cursor = contains(button_state.bounds, x, y) &&
-                      (!object || object->event_allowed(x, y));
+      auto const x = ev.cursor_x;
+      auto const y = ev.cursor_y;
 
-    if (is_pressed) {
-      if (in.is_key_up(key_lbutton)) {
-        if (has_cursor && on_button_click) {
-          on_button_click(object);
-        }
+      auto const has_cursor = contains(button_state.bounds, x, y) &&
+                              (!object ||
+                               object->event_allowed(x, y));
 
-        event_status = true;
-        is_pressed   = false;
-      }
-    } else if (in.is_key_down(key_lbutton)) {
-      if (has_cursor) {
-        if (in.is_key_changed(key_lbutton)) {
+      if (is_pressed) {
+        if (is_key_up(ev)) {
+          if (has_cursor && on_button_click) {
+            on_button_click(object);
+          }
+
           event_status = true;
-          is_pressed   = true;
-        } else {
-          /*  Ignore cursor if left mouse button was
-           *  pressed outside of the UI element.
-           */
-          has_cursor = false;
+          is_pressed   = false;
         }
+      } else if (is_key_down(ev) && has_cursor) {
+        event_status = true;
+        is_pressed   = true;
       }
     }
+
+    auto const x = in.get_cursor_x();
+    auto const y = in.get_cursor_y();
+
+    auto const has_cursor = contains(button_state.bounds, x, y) &&
+                            (!object ||
+                             object->event_allowed(x, y)) &&
+                            (is_pressed ||
+                             !in.is_key_down(key_lbutton));
 
     return { event_status, is_pressed, has_cursor };
   }

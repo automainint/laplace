@@ -55,7 +55,7 @@ namespace laplace::ui::elem {
     static auto update(ptr_widget               object,
                        textedit_state           state,
                        filter                   f,
-                       core::cref_input_handler in) -> update_result;
+                       core::input_event const &ev) -> update_result;
 
   private:
     auto textedit_tick(core::cref_input_handler in) -> bool;

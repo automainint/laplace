@@ -14,13 +14,32 @@
 #define laplace_core_input_handler_h
 
 #include "defs.h"
+#include "keys.h"
 #include <functional>
 
 namespace laplace::core {
+  struct input_event {
+    static constexpr sl::index delta_key_down = 1;
+    static constexpr sl::index delta_key_up   = -1;
+
+    sl::index cursor_x  = {};
+    sl::index cursor_y  = {};
+    sl::index key       = {};
+    sl::index delta     = {};
+    char32_t  character = {};
+  };
+
+  constexpr auto is_key_down(input_event const &ev) noexcept -> bool;
+  constexpr auto is_key_up(input_event const &ev) noexcept -> bool;
+
+  constexpr auto get_wheel_delta(input_event const &ev) noexcept
+      -> sl::index;
+
   using fn_get_bool_state = std::function<bool()>;
   using fn_get_int_state  = std::function<sl::index()>;
   using fn_get_key_state  = std::function<bool(sl::index)>;
-  using fn_get_text       = std::function<std::u8string_view()>;
+
+  using fn_get_events = std::function<std::span<const input_event>()>;
 
   struct input_handler {
     fn_get_bool_state is_capslock;
@@ -46,10 +65,12 @@ namespace laplace::core {
     fn_get_int_state get_cursor_y;
     fn_get_int_state get_wheel_delta;
 
-    fn_get_text get_text;
+    fn_get_events get_events;
   };
 
-  using cref_input_handler = const input_handler &;
+  using cref_input_handler = input_handler const &;
 }
+
+#include "input_handler.impl.h"
 
 #endif

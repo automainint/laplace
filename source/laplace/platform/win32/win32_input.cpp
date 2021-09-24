@@ -28,11 +28,12 @@
 #include <iostream>
 
 namespace laplace::win32 {
-  using std::u8string_view;
+  using std::u8string, std::u8string_view, std::span,
+      core::input_event;
   using namespace core::keys;
 
-  const sl::whole input::char_predelay_msec   = 500;
-  const sl::whole input::char_period_msec     = 50;
+  const sl::time  input::char_predelay_msec   = 500;
+  const sl::time  input::char_period_msec     = 50;
   const sl::whole input::default_resolution_x = 2000;
   const sl::whole input::default_resolution_y = 1500;
 
@@ -49,14 +50,6 @@ namespace laplace::win32 {
     if (!m_use_system_cursor) {
       ShowCursor(true);
     }
-  }
-
-  void input::on_key_down(event_key_down ev) {
-    m_on_key_down = ev;
-  }
-
-  void input::on_wheel(event_wheel ev) {
-    m_on_wheel = ev;
   }
 
   void input::use_system_cursor(bool use) {
@@ -188,12 +181,12 @@ namespace laplace::win32 {
     return m_mouse_state.wheel_delta;
   }
 
-  auto input::get_text() const -> u8string_view {
-    return m_text;
+  auto input::get_events() const -> span<const input_event> {
+    return m_events;
   }
 
   void input::refresh() {
-    m_text.clear();
+    m_events.clear();
 
     m_mouse_state.delta_x     = 0;
     m_mouse_state.delta_y     = 0;
@@ -294,15 +287,15 @@ namespace laplace::win32 {
 
   void input::tick(sl::time delta_msec) {
     if (m_is_char_pressed) {
-      if (m_char_period_msec <= delta_msec) {
-        sl::whole offset = m_text.length();
-        if (!utf8::encode(m_last_char, m_text, offset))
-          error_("Unable to encode UTF-8 string.", __FUNCTION__);
-        m_char_period_msec += char_period_msec > delta_msec
-                                  ? char_period_msec - delta_msec
-                                  : char_period_msec;
-      } else {
-        m_char_period_msec -= delta_msec;
+      m_char_period_msec -= delta_msec;
+
+      if (m_char_period_msec <= 0) {
+        m_events.emplace_back<input_event>(
+            { .cursor_x  = m_mouse_state.cursor_x,
+              .cursor_y  = m_mouse_state.cursor_y,
+              .character = m_last_char });
+
+        m_char_period_msec += char_period_msec;
       }
     }
   }
@@ -525,50 +518,55 @@ namespace laplace::win32 {
     }
   }
 
-  void input::process_wheel(int delta) {
+  void input::process_wheel(sl::index delta) {
     m_mouse_state.wheel_delta += delta;
 
-    if (m_on_wheel) {
-      m_on_wheel(delta);
-    }
+    m_events.emplace_back<input_event>(
+        { .cursor_x = m_mouse_state.cursor_x,
+          .cursor_y = m_mouse_state.cursor_y,
+          .key      = key_wheel,
+          .delta    = delta });
   }
 
   void input::process_key(uint8_t key, bool is_down) {
-    auto  n = m_keymap[key];
-    auto &k = m_keyboard_state[n];
+    auto const n = m_keymap[key];
+    auto &     k = m_keyboard_state[n];
 
     k.is_changed = k.is_down != is_down;
     k.is_down    = is_down;
 
-    if (k.is_changed) {
-      if (is_down) {
-        if (m_on_key_down) {
-          m_on_key_down(n);
-        }
-      }
+    auto const get_char = [&]() -> char32_t {
+      if (k.is_changed)
+        return process_char(n, is_down);
+      return {};
+    };
 
-      process_char(n, is_down);
-    }
+    m_events.emplace_back<input_event>(
+        { .cursor_x  = m_mouse_state.cursor_x,
+          .cursor_y  = m_mouse_state.cursor_y,
+          .key       = n,
+          .delta     = is_down ? input_event::delta_key_down
+                               : input_event::delta_key_up,
+          .character = get_char() });
   }
 
-  void input::process_char(uint8_t key, bool is_down) {
-    auto c = to_char(key);
+  auto input::process_char(uint8_t key, bool is_down) -> char32_t {
+    auto const c = to_char(key);
 
     if (c) {
       m_char_period_msec = char_predelay_msec;
 
       if (is_down) {
-        sl::index offset = m_text.length();
-
-        if (!utf8::encode(c, m_text, offset))
-          error_("Unable to encode UTF-8 string.", __FUNCTION__);
-
         m_is_char_pressed = true;
         m_last_char_key   = key;
         m_last_char       = c;
+        return c;
+
       } else if (key == m_last_char_key) {
         m_is_char_pressed = false;
       }
     }
+
+    return {};
   }
 }

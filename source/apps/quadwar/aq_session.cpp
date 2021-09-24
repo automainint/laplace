@@ -40,7 +40,8 @@ namespace quadwar_app {
       std::u8string_view, std::ofstream, std::ifstream, network::host,
       network::remote, protocol::qw_player_name, object::root,
       object::landscape, object::player, engine::id_undefined,
-      core::cref_input_handler, view::vec2, view::real;
+      core::cref_input_handler, view::vec2, view::real,
+      core::is_key_down, core::get_wheel_delta;
 
   const uint16_t session::allowed_commands[] = {
     ids::session_request, ids::session_token, ids::request_token,
@@ -245,8 +246,37 @@ namespace quadwar_app {
 
     const auto fdelta = static_cast<real>(delta_msec);
 
-    m_view.set_cursor({ static_cast<real>(in.get_mouse_x()),
-                        static_cast<real>(in.get_mouse_y()) });
+    for (auto const &ev : in.get_events()) {
+      if (ev.key == key_wheel) {
+        auto const fwheel = static_cast<real>(get_wheel_delta(ev));
+        m_view.scale(sense_scale * fwheel);
+        continue;
+      }
+
+      m_view.set_cursor({ static_cast<real>(ev.cursor_x),
+                          static_cast<real>(ev.cursor_y) });
+
+      if (!is_key_down(ev))
+        continue;
+
+      switch (ev.key) {
+        case key_lbutton: m_view.click(); break;
+
+        case key_rbutton: {
+          const auto u = m_view.get_unit();
+
+          if (u >= 0) {
+            const auto target = m_view.get_grid_position();
+
+            m_server->emit<protocol::qw_order_move>(
+                m_id_actor, u, target.x(), target.y());
+          }
+        } break;
+      }
+    }
+
+    m_view.set_cursor({ static_cast<real>(in.get_cursor_x()),
+                        static_cast<real>(in.get_cursor_y()) });
 
     if (in.is_key_down(key_left)) {
       is_moved = true;
@@ -268,34 +298,14 @@ namespace quadwar_app {
       delta.y() += sense_move * fdelta;
     }
 
-    if (in.get_wheel_delta() != 0) {
-      const auto fwheel = static_cast<real>(in.get_wheel_delta());
-      m_view.scale(sense_scale * fwheel);
-    }
-
     if (in.is_key_down(key_mbutton)) {
       is_moved = true;
       delta.x() -= static_cast<real>(in.get_mouse_delta_x());
       delta.y() -= static_cast<real>(in.get_mouse_delta_y());
     }
 
-    if (in.is_key_pressed(key_lbutton)) {
-      m_view.click();
-    }
-
     if (is_moved) {
       m_view.move(delta);
-    }
-
-    if (in.is_key_pressed(key_rbutton)) {
-      const auto u = m_view.get_unit();
-
-      if (u >= 0) {
-        const auto target = m_view.get_grid_position();
-
-        m_server->emit<protocol::qw_order_move>(
-            m_id_actor, u, target.x(), target.y());
-      }
     }
   }
 

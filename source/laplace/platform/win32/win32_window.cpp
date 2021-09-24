@@ -30,6 +30,7 @@ namespace laplace::win32 {
       L"{46DA795E-8CD4-4F46-8462-86A47ED257DC}";
   const wchar_t window::default_window_name[] =
       L"Laplace Application";
+
   const bool      window::default_is_visible    = false;
   const bool      window::default_is_fullscreen = false;
   const sl::whole window::default_frame_width   = 960;
@@ -166,7 +167,8 @@ namespace laplace::win32 {
     update_rect();
   }
 
-  void window::set_size(sl::whole frame_width, sl::whole frame_height) {
+  void window::set_size(sl::whole frame_width,
+                        sl::whole frame_height) {
     if (frame_width > 0 && frame_height > 0) {
       m_frame_width  = frame_width;
       m_frame_height = frame_height;
@@ -341,9 +343,10 @@ namespace laplace::win32 {
       auto window_name  = m_window_name.c_str();
 
       m_handle = CreateWindowExW(
-          static_cast<DWORD>(get_style_ex()), window_class, window_name,
-          static_cast<DWORD>(get_style()), static_cast<int>(get_x()),
-          static_cast<int>(get_y()), static_cast<int>(get_width()),
+          static_cast<DWORD>(get_style_ex()), window_class,
+          window_name, static_cast<DWORD>(get_style()),
+          static_cast<int>(get_x()), static_cast<int>(get_y()),
+          static_cast<int>(get_width()),
           static_cast<int>(get_height()), m_parent, nullptr,
           m_module_handle, nullptr);
 
@@ -424,7 +427,8 @@ namespace laplace::win32 {
       /*  Reset to default settings.
        */
 
-      if (ChangeDisplaySettings(nullptr, 0) != DISP_CHANGE_SUCCESSFUL) {
+      if (ChangeDisplaySettings(nullptr, 0) !=
+          DISP_CHANGE_SUCCESSFUL) {
         error_("Toggle off. ChangeDisplaySettings failed.",
                __FUNCTION__);
       }
@@ -516,9 +520,10 @@ namespace laplace::win32 {
     return 0;
   }
 
-  auto CALLBACK window::window_proc(HWND window_handle, UINT message,
-                                    WPARAM wparam, LPARAM lparam)
-      -> LRESULT {
+  auto CALLBACK window::window_proc(HWND   window_handle,
+                                    UINT   message,
+                                    WPARAM wparam,
+                                    LPARAM lparam) -> LRESULT {
     if (message != WM_CREATE) {
       window *w = reinterpret_cast<window *>(
           GetWindowLongPtr(window_handle, GWLP_USERDATA));

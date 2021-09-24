@@ -222,7 +222,9 @@ namespace laplace::stem {
       return m_input->get_wheel_delta();
     };
 
-    m_input_handler.get_text = [&]() { return m_input->get_text(); };
+    m_input_handler.get_events = [&]() {
+      return m_input->get_events();
+    };
   }
 
   void application::load_shaders() {
