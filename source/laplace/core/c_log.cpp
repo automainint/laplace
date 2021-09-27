@@ -15,6 +15,7 @@
 #include "string.h"
 #include <cstdarg>
 #include <iostream>
+#include <mutex>
 #include <shared_mutex>
 #include <sstream>
 
