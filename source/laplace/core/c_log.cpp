@@ -15,7 +15,6 @@
 #include "string.h"
 #include <cstdarg>
 #include <iostream>
-#include <mutex>
 #include <shared_mutex>
 #include <sstream>
 
@@ -24,64 +23,79 @@ namespace laplace {
       std::shared_mutex, std::string_view, std::u8string_view,
       std::cerr, std::ostringstream;
 
-#ifdef LAPLACE_VERBOSE
-  static bool         g_verbose = true;
-  static shared_mutex g_verbose_lock;
-
-  void set_verbose(bool is_verbose) noexcept {
-    auto _ul  = unique_lock(g_verbose_lock);
-    g_verbose = is_verbose;
-  }
-
-  auto is_verbose() noexcept -> bool {
-    auto _sl = shared_lock(g_verbose_lock);
-    return g_verbose;
-  }
-
-  void verb(string_view s) noexcept {
-    if (is_verbose())
-      log(s);
-  }
-
-  void verb(u8string_view s) noexcept {
-    if (is_verbose())
-      log(s);
-  }
-#endif
-
-  static auto g_log_lock = mutex {};
-
   static auto g_log_default = [](string_view s) {
     cerr << s << '\n';
   };
 
-  static auto g_log = fn_log { g_log_default };
+  static bool g_verbose  = true;
+  static auto g_log_lock = shared_mutex {};
+  static auto g_log      = fn_log { g_log_default };
 
   void setup_log(fn_log fn) noexcept {
-    auto _ul = unique_lock(g_log_lock);
-    g_log    = fn ? fn : g_log_default;
+    if constexpr (_log_enabled) {
+      auto _ul = unique_lock(g_log_lock);
+      g_log    = fn ? fn : g_log_default;
+    }
+  }
+
+  void set_verbose(bool is_verbose) noexcept {
+    if constexpr (_log_enabled) {
+      auto _ul  = unique_lock(g_log_lock);
+      g_verbose = is_verbose;
+    }
+  }
+
+  auto is_verbose() noexcept -> bool {
+    if constexpr (_log_enabled) {
+      auto _sl = shared_lock(g_log_lock);
+      return g_verbose;
+    } else {
+      return false;
+    }
   }
 
   void log(string_view s) noexcept {
-    auto _ul = unique_lock(g_log_lock);
-    g_log(s);
+    if constexpr (_log_enabled) {
+      auto _ul = unique_lock(g_log_lock);
+      g_log(s);
+    }
   }
 
   void log(u8string_view s) noexcept {
-    log(as_ascii_string(s));
+    if constexpr (_log_enabled) {
+      log(as_ascii_string(s));
+    }
+  }
+
+  void verb(string_view s) noexcept {
+    if constexpr (_log_enabled) {
+      if (is_verbose())
+        log(s);
+    }
+  }
+
+  void verb(u8string_view s) noexcept {
+    if constexpr (_log_enabled) {
+      if (is_verbose())
+        log(s);
+    }
   }
 
   void error_(string_view message, string_view loc) noexcept {
-    auto _ul = unique_lock(g_log_lock);
-    auto ss  = ostringstream {};
-    ss << "[ error";
-    if (!loc.empty())
-      ss << " in " << loc;
-    ss << " ] " << message << '\n';
-    log(ss.str());
+    if constexpr (_log_enabled) {
+      auto _ul = unique_lock(g_log_lock);
+      auto ss  = ostringstream {};
+      ss << "[ error";
+      if (!loc.empty())
+        ss << " in " << loc;
+      ss << " ] " << message << '\n';
+      log(ss.str());
+    }
   }
 
   void error_(u8string_view message, string_view loc) noexcept {
-    error_(as_ascii_string(message), loc);
+    if constexpr (_log_enabled) {
+      error_(as_ascii_string(message), loc);
+    }
   }
 }

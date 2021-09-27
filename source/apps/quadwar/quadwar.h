@@ -35,6 +35,7 @@ namespace quadwar_app {
     static sl::whole const      default_player_count;
     static sl::whole const      default_unit_count;
     static sl::whole const      default_map_size;
+    static sl::whole const      default_fps;
 
     static char8_t const *const caption;
 
@@ -56,6 +57,7 @@ namespace quadwar_app {
     ui::ptr_mainmenu m_mainmenu;
     ptr_session      m_session;
     bool             m_return_to_mainmenu = false;
+    sl::whole        m_fps                = default_fps;
   };
 }
 

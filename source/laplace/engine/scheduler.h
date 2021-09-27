@@ -24,26 +24,30 @@
 namespace laplace::engine {
   class scheduler {
   public:
-    static const sl::whole overthreading_limit;
-    static const sl::whole concurrency_limit;
+    static sl::whole const overthreading_limit;
+    static sl::whole const concurrency_limit;
 
     scheduler(const scheduler &) = delete;
     auto operator=(const scheduler &) -> scheduler & = delete;
 
-    scheduler(world &w);
-    ~scheduler();
+    scheduler(world &w) noexcept;
+    ~scheduler() noexcept;
 
-    void schedule(sl::whole delta);
-    void join();
+    void schedule(sl::whole const delta) noexcept;
+    void join() noexcept;
 
-    void set_thread_count(const sl::whole thread_count);
-
-    [[nodiscard]] auto get_thread_count() -> sl::whole;
+    void set_thread_count(sl::whole const thread_count) noexcept;
+    [[nodiscard]] auto get_thread_count() noexcept -> sl::whole;
 
   private:
-    void set_done();
-    void sync(std::function<void()> fn);
-    void tick_thread();
+    void set_done() noexcept;
+    void fence(std::function<void()> fn) noexcept;
+    void tick_thread() noexcept;
+
+    void perform_sync_queue() noexcept;
+    void perform_async_queue() noexcept;
+    void update_dynamic_entities() noexcept;
+    void adjust_all_entities() noexcept;
 
     world &m_world;
 

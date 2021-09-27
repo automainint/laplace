@@ -63,19 +63,16 @@ namespace laplace::ui {
     [[nodiscard]] auto get_absolute_y() const -> sl::index;
     [[nodiscard]] auto get_absolute_rect() const -> rect;
 
-    /*  Set focus to next enabled
-     *  widget for childs.
+    /*  Set focus to next enabled widget for childs.
      */
     void next_tab();
 
-    /*  Set expiration state for the widget
-     *  and all the childs. It will cause
-     *  full redrawing.
+    /*  Set expiration state for the widget and all the childs. It
+     *  will cause full redrawing.
      */
     void refresh();
 
-    /*  Set the expiration state for
-     *  this widget.
+    /*  Set the expiration state for this widget.
      */
     void set_expired(bool is_expired);
 
@@ -123,19 +120,19 @@ namespace laplace::ui {
     bool m_expired        = true;
     bool m_expired_childs = true;
 
-    layout      m_layout;
-    sl::index   m_level = 0;
-    rect        m_rect;
-    sl::index   m_absolute_x   = 0;
-    sl::index   m_absolute_y   = 0;
-    bool        m_is_changed   = true;
-    bool        m_is_visible   = true;
-    bool        m_is_enabled   = true;
-    bool        m_is_handler   = false;
-    bool        m_is_attached  = false;
-    bool        m_has_focus    = false;
-    sl::index   m_attach_index = 0;
-    sl::index   m_focus_index  = 0;
+    layout    m_layout;
+    sl::index m_level = 0;
+    rect      m_rect;
+    sl::index m_absolute_x   = 0;
+    sl::index m_absolute_y   = 0;
+    bool      m_is_changed   = true;
+    bool      m_is_visible   = true;
+    bool      m_is_enabled   = true;
+    bool      m_is_handler   = false;
+    bool      m_is_attached  = false;
+    bool      m_has_focus    = false;
+    sl::index m_attach_index = 0;
+    sl::index m_focus_index  = 0;
 
     vptr_widget           m_childs;
     std::weak_ptr<widget> m_parent;

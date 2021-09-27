@@ -39,6 +39,12 @@ namespace quadwar_app {
   sl::whole const quadwar::default_unit_count       = 6;
   sl::whole const quadwar::default_map_size         = 64;
 
+#ifdef _DEBUG
+  sl::whole const quadwar::default_fps = 30;
+#else
+  sl::whole const quadwar::default_fps = 60;
+#endif
+
   char8_t const *const quadwar::caption = u8"Quadwar";
 
   auto quadwar::get_player_name() noexcept -> u8string_view {
@@ -163,7 +169,7 @@ namespace quadwar_app {
 
     m_ui->render(get_ui_context());
 
-    lock_fps(60);
+    lock_fps(m_fps);
     finish_and_swap();
   }
 

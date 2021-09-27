@@ -426,14 +426,10 @@ namespace quadwar_app::object {
         const auto radius_min = as_index(
             eval::div(get(n_collision_radius), scale, 1));
 
-        const auto radius_max = as_index(
-            eval::div(get(n_radius), scale, 1));
-
-        const auto foot_max = make_footprint(radius_max);
         const auto foot_min = make_footprint(radius_min);
 
-        if (!pathmap::check_move(map, { x0, y0 }, foot_max.size,
-                                 foot_max.bytes, { x, y },
+        if (!pathmap::check_move(map, { x0, y0 }, foot_min.size,
+                                 foot_min.bytes, { x, y },
                                  foot_min.size, foot_min.bytes)) {
           /*  Collision.
            */

@@ -21,16 +21,16 @@ namespace laplace::engine {
   using std::unique_lock, std::lock, std::adopt_lock, std::jthread,
       std::thread, std::function, std::ostringstream;
 
-  const sl::whole scheduler::overthreading_limit = 8;
-  const sl::whole scheduler::concurrency_limit   = 0x1000;
+  sl::whole const scheduler::overthreading_limit = 8;
+  sl::whole const scheduler::concurrency_limit   = 0x1000;
 
-  scheduler::scheduler(world &w) : m_world(w) { }
+  scheduler::scheduler(world &w) noexcept : m_world(w) { }
 
-  scheduler::~scheduler() {
+  scheduler::~scheduler() noexcept {
     set_done();
   }
 
-  void scheduler::schedule(sl::whole delta) {
+  void scheduler::schedule(sl::whole const delta) noexcept {
     lock(m_lock_ex, m_lock_in);
     auto _ul_ex = unique_lock(m_lock_ex, adopt_lock);
     auto _ul    = unique_lock(m_lock_in, adopt_lock);
@@ -41,19 +41,19 @@ namespace laplace::engine {
     m_sync.notify_all();
   }
 
-  void scheduler::join() {
+  void scheduler::join() noexcept {
     lock(m_lock_ex, m_lock_in);
     auto _ul_ex = unique_lock(m_lock_ex, adopt_lock);
     auto _ul    = unique_lock(m_lock_in, adopt_lock);
 
-    if (!m_threads.empty()) {
+    if (!m_threads.empty())
       m_sync.wait(_ul, [this] {
-        return m_tick_count == 0u || m_threads.empty();
+        return m_tick_count <= 0 || m_threads.empty();
       });
-    }
   }
 
-  void scheduler::set_thread_count(const sl::whole thread_count) {
+  void scheduler::set_thread_count(
+      sl::whole const thread_count) noexcept {
     lock(m_lock_ex, m_lock_in);
     auto _ul_ex = unique_lock(m_lock_ex, adopt_lock);
     auto _ul    = unique_lock(m_lock_in, adopt_lock);
@@ -86,37 +86,33 @@ namespace laplace::engine {
       count = thread_count_limit;
     }
 
-    sl::whole n = m_threads.size();
+    if (count == m_threads.size())
+      return;
 
-    if (count < n) {
+    if (!m_threads.empty()) {
       m_done = true;
       _ul.unlock();
 
       m_sync.notify_all();
 
-      for (auto &t : m_threads) { t.join(); }
+      for (auto &t : m_threads) t.join();
 
       _ul.lock();
       m_done = false;
-
-      n = 0;
-    } else if (count > n) {
-      m_threads.resize(count);
     }
 
-    for (auto i = n; i < m_threads.size(); i++) {
-      m_threads[i] = jthread([this] {
-        this->tick_thread();
-      });
-    }
+    m_threads.resize(count);
+
+    for (auto &t : m_threads)
+      t = jthread([this] { this->tick_thread(); });
   }
 
-  auto scheduler::get_thread_count() -> sl::whole {
+  auto scheduler::get_thread_count() noexcept -> sl::whole {
     auto _ul = unique_lock(m_lock_ex);
     return m_threads.size();
   }
 
-  void scheduler::set_done() {
+  void scheduler::set_done() noexcept {
     lock(m_lock_ex, m_lock_in);
     auto _ul_ex = unique_lock(m_lock_ex, adopt_lock);
     auto _ul    = unique_lock(m_lock_in, adopt_lock);
@@ -127,7 +123,7 @@ namespace laplace::engine {
     m_sync.notify_all();
   }
 
-  void scheduler::sync(function<void()> fn) {
+  void scheduler::fence(function<void()> fn) noexcept {
     auto _ul = unique_lock(m_lock_in);
 
     m_in++;
@@ -142,9 +138,7 @@ namespace laplace::engine {
 
       _ul.lock();
     } else {
-      m_sync.wait(_ul, [this] {
-        return m_in >= m_threads.size();
-      });
+      m_sync.wait(_ul, [this] { return m_in >= m_threads.size(); });
     }
 
     m_out++;
@@ -155,79 +149,62 @@ namespace laplace::engine {
 
       m_sync.notify_all();
     } else {
-      m_sync.wait(_ul, [this] {
-        return m_out >= m_threads.size();
-      });
+      m_sync.wait(_ul, [this] { return m_out >= m_threads.size(); });
     }
   }
 
-  void scheduler::tick_thread() {
+  void scheduler::tick_thread() noexcept {
     auto _ul = unique_lock(m_lock_in);
 
     while (m_sync.wait(_ul,
-                       [this] {
-                         return m_tick_count > 0 || m_done;
-                       }),
+                       [this] { return m_tick_count > 0 || m_done; }),
            !m_done) {
       while (m_tick_count > 0) {
         _ul.unlock();
 
         while (!m_world.no_queue()) {
-          /*  Execute the sync queue.
-           */
-
-          sync([this] {
-            while (auto ev = m_world.next_sync_impact()) {
-              ev->perform({ m_world, access::sync });
-            }
-
+          fence([&] {
+            perform_sync_queue();
             m_world.clean_sync_queue();
           });
 
-          /*  Execute the async queue.
-           */
-
-          while (auto ev = m_world.next_async_impact()) {
-            ev->perform({ m_world, access::async });
-          }
-
-          sync([this] {
-            m_world.clean_async_queue();
-          });
+          perform_async_queue();
+          fence([&] { m_world.clean_async_queue(); });
         }
 
-        /*  Update the dynamic entities.
-         */
+        update_dynamic_entities();
+        fence([&] { m_world.reset_index(); });
 
-        while (auto en = m_world.next_dynamic_entity()) {
-          if (en->clock()) {
-            en->tick({ m_world, access::async });
-          }
-        }
-
-        sync([this] {
+        adjust_all_entities();
+        fence([&] {
           m_world.reset_index();
-        });
-
-        /*  Adjust all the entities.
-         */
-
-        while (auto en = m_world.next_entity()) { en->adjust(); }
-
-        sync([this] {
-          m_world.reset_index();
-
           m_tick_count--;
         });
 
         _ul.lock();
       }
 
-      _ul.unlock();
-
       m_sync.notify_all();
-
-      _ul.lock();
     }
+  }
+
+  void scheduler::perform_sync_queue() noexcept {
+    while (auto ev = m_world.next_sync_impact())
+      ev->perform({ m_world, access::sync });
+  }
+
+  void scheduler::perform_async_queue() noexcept {
+    while (auto ev = m_world.next_async_impact())
+      ev->perform({ m_world, access::async });
+  }
+
+  void scheduler::update_dynamic_entities() noexcept {
+    while (auto en = m_world.next_dynamic_entity())
+      if (en->clock())
+        en->tick({ m_world, access::async });
+  }
+
+  void scheduler::adjust_all_entities() noexcept {
+    while (auto en = m_world.next_entity()) en->adjust();
   }
 }
