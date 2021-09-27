@@ -22,13 +22,13 @@ namespace laplace::ui::elem {
 
     ~textarea() final = default;
 
-    void render() final;
+    void render(context const &con) final;
 
     void set_text(std::u8string_view text);
     void set_line_height(int line_height);
 
   private:
-    void textarea_render();
+    void textarea_render(context const &con);
 
     std::u8string m_text;
     sl::whole     m_line_height = default_line_height;

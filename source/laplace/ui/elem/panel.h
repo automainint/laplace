@@ -20,7 +20,7 @@ namespace laplace::ui::elem {
   public:
     ~panel() override = default;
 
-    void render() override;
+    void render(context const &con) override;
 
     auto get_state() const -> panel_state;
   };

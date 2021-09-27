@@ -29,20 +29,8 @@ namespace laplace::ui::elem {
     return is_handled || button_tick(in);
   }
 
-  void button::render() {
-    do {
-      auto con = get_context();
-
-      if constexpr (!_unsafe) {
-        if (!con) {
-          error_("No context.", __FUNCTION__);
-          return;
-        }
-      }
-
-      con->render_button(get_state());
-    } while (0);
-
+  void button::render(context const &con) {
+    con.render_button(get_state());
     up_to_date();
   }
 

@@ -39,7 +39,7 @@ namespace laplace::ui::elem {
               core::cref_input_handler in,
               bool                     is_handled) -> bool final;
 
-    void render() final;
+    void render(context const &con) final;
 
     void set_text(std::u8string_view text);
     void set_length_limit(sl::whole limit);

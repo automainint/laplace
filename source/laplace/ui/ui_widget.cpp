@@ -26,8 +26,8 @@ namespace laplace::ui {
     return widget_tick(delta_msec, in, is_handled);
   }
 
-  void widget::render() {
-    widget_render();
+  void widget::render(context const &con) {
+    widget_render(con);
 
     up_to_date();
   }
@@ -42,10 +42,6 @@ namespace laplace::ui {
       return true;
 
     return p->event_allowed(x, y);
-  }
-
-  void widget::set_context(ptr_context con) {
-    m_context = con;
   }
 
   void widget::set_layout(layout fn) {
@@ -113,18 +109,11 @@ namespace laplace::ui {
     }
   }
 
-  void widget::prepare() {
-    if constexpr (!_unsafe) {
-      if (!m_context) {
-        error_("No context.", __FUNCTION__);
-        return;
-      }
-    }
-
-    m_context->prepare();
+  void widget::prepare(context const &con) {
+    con.prepare();
   }
 
-  void widget::draw_childs() {
+  void widget::draw_childs(context const &con) {
     for (auto &c : m_childs) {
       if (c->is_visible()) {
         c->m_absolute_x = m_absolute_x + c->m_rect.x;
@@ -150,7 +139,7 @@ namespace laplace::ui {
             lower_bound(indices.begin(), indices.end(), i, op), i);
     }
 
-    for (auto i : indices) { m_childs[i]->render(); }
+    for (auto i : indices) { m_childs[i]->render(con); }
 
     m_expired_childs = false;
   }
@@ -185,16 +174,16 @@ namespace laplace::ui {
     return is_handled;
   }
 
-  void widget::widget_render() {
+  void widget::widget_render(context const &con) {
     if (m_is_attached) {
-      draw_childs();
+      draw_childs(con);
     } else
         /*  Check if visible only for root widget. Visibility
          *  checking for attached widgets in widget::draw_childs.
          */
         if (m_is_visible) {
-      prepare();
-      draw_childs();
+      prepare(con);
+      draw_childs(con);
     }
   }
 
@@ -259,10 +248,6 @@ namespace laplace::ui {
 
       set_expired(true);
     }
-  }
-
-  auto widget::get_context() const -> ptr_context {
-    return m_context;
   }
 
   auto widget::get_level() const -> sl::index {
@@ -374,31 +359,6 @@ namespace laplace::ui {
     }
 
     return result;
-  }
-
-  void widget::set_default_context(ptr_context con) {
-    m_default_context = con;
-  }
-
-  auto widget::get_default_context() -> ptr_context {
-    auto p = m_default_context.lock();
-
-    if (!p) {
-      p = make_shared<context>(
-          context { .prepare     = []() {},
-                    .adjust_text = [](u8string_view) -> text_area {
-                      return {};
-                    },
-                    .render_text       = [](rect, u8string_view) {},
-                    .render_panel      = [](panel_state) {},
-                    .render_button     = [](button_state) {},
-                    .render_textbutton = [](textbutton_state) {},
-                    .render_textedit   = [](textedit_state) {} });
-
-      m_default_context = p;
-    }
-
-    return p;
   }
 
   void widget::set_handler(bool is_handler) {

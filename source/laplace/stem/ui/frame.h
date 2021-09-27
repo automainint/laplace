@@ -26,7 +26,7 @@ namespace laplace::stem::ui {
 
     void set_render_context(render::ptr_context con);
 
-    void render() final;
+    void render(context const &con) final;
 
   private:
     render::ptr_context m_render = render::context::get_default();

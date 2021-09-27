@@ -36,7 +36,7 @@ namespace laplace::ui {
                       core::cref_input_handler in,
                       bool                     is_handled) -> bool;
 
-    virtual void render();
+    virtual void render(context const &con);
 
     /*  Check if the widget allowed to handle
      *  an event in specified location.
@@ -44,7 +44,6 @@ namespace laplace::ui {
     [[nodiscard]] virtual auto event_allowed(sl::index x, sl::index y)
         -> bool;
 
-    void set_context(ptr_context con);
     void set_layout(layout fn);
     void set_level(sl::index level);
     void set_rect(cref_rect r);
@@ -58,7 +57,6 @@ namespace laplace::ui {
     void detach(ptr_widget child);
     void detach(sl::index child_index);
 
-    [[nodiscard]] auto get_context() const -> ptr_context;
     [[nodiscard]] auto get_level() const -> sl::index;
     [[nodiscard]] auto get_rect() const -> rect;
     [[nodiscard]] auto get_absolute_x() const -> sl::index;
@@ -98,23 +96,20 @@ namespace laplace::ui {
      */
     [[nodiscard]] auto get_child(sl::index index) const -> ptr_widget;
 
-    static void               set_default_context(ptr_context con);
-    [[nodiscard]] static auto get_default_context() -> ptr_context;
-
   protected:
     /*  Set if the widget can handle focus.
      */
     void set_handler(bool is_handler);
 
-    void prepare();
-    void draw_childs();
+    void prepare(context const &con);
+    void draw_childs(context const &con);
     void up_to_date();
 
     auto widget_tick(sl::time                 delta_msec,
                      core::cref_input_handler in,
                      bool                     is_handled) -> bool;
 
-    void widget_render();
+    void widget_render(context const &con);
 
     [[nodiscard]] auto is_widget_changed() -> bool;
 
@@ -128,7 +123,6 @@ namespace laplace::ui {
     bool m_expired        = true;
     bool m_expired_childs = true;
 
-    ptr_context m_context = get_default_context();
     layout      m_layout;
     sl::index   m_level = 0;
     rect        m_rect;

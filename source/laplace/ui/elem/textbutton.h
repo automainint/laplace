@@ -20,7 +20,7 @@ namespace laplace::ui::elem {
   public:
     ~textbutton() final = default;
 
-    void render() final;
+    void render(context const &con) final;
 
     void set_text(std::u8string_view text);
 

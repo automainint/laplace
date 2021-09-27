@@ -14,9 +14,13 @@
 #define laplace_core_log_h
 
 //#include <source_location>
+#include <functional>
 #include <string>
 
 namespace laplace {
+  using fn_log = std::function<void(std::string_view)>;
+
+  void setup_log(fn_log fn) noexcept;
   void set_verbose(bool is_verbose) noexcept;
   auto is_verbose() noexcept -> bool;
 

@@ -24,15 +24,19 @@ namespace laplace::stem {
     static constexpr graphics::vec4 clear_color = { .1f, .09f, .12f,
                                                     1.f };
 
-    app_flat(int argc, char **argv, core::cref_family def_cfg);
-    ~app_flat() override;
+    app_flat(int               argc,
+             char **           argv,
+             core::cref_family def_cfg) noexcept;
+
+    ~app_flat() noexcept override = default;
 
   protected:
-    void init() override;
-    void cleanup() override;
-    void update(sl::time delta_msec) override;
-    void render() override;
-    void adjust_layout(sl::whole width, sl::whole height) override;
+    void init() noexcept override;
+    void cleanup() noexcept override;
+    void update(sl::time delta_msec) noexcept override;
+    void render() noexcept override;
+    void adjust_layout(sl::whole width,
+                       sl::whole height) noexcept override;
 
     ui::ptr_frame m_ui;
   };

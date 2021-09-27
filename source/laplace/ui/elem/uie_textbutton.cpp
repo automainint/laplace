@@ -15,20 +15,8 @@
 namespace laplace::ui::elem {
   using std::u8string_view;
 
-  void textbutton::render() {
-    do {
-      auto con = get_context();
-
-      if constexpr (!_unsafe) {
-        if (!con) {
-          error_("No context.", __FUNCTION__);
-          break;
-        }
-      }
-
-      con->render_textbutton(get_state());
-    } while (0);
-
+  void textbutton::render(context const &con) {
+    con.render_textbutton(get_state());
     up_to_date();
   }
 

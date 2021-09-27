@@ -10,8 +10,9 @@
  *  the MIT License for more details.
  */
 
-#include "../../graphics/utils.h"
 #include "frame.h"
+
+#include "../../graphics/utils.h"
 
 namespace laplace::stem::ui {
   using sprite_vertex = render::context::sprite_vertex;
@@ -21,10 +22,8 @@ namespace laplace::stem::ui {
     m_render = con;
   }
 
-  void frame::render() {
+  void frame::render(context const &con) {
     do {
-      auto con = get_context();
-
       if constexpr (!_unsafe) {
         if (!m_render) {
           error_("No render context.", __FUNCTION__);
@@ -32,28 +31,27 @@ namespace laplace::stem::ui {
         }
       }
 
-      const auto r = rect { .x      = 0,
+      auto const r = rect { .x      = 0,
                             .y      = 0,
-                            .width  = con->frame_width,
-                            .height = con->frame_height };
+                            .width  = con.frame_width,
+                            .height = con.frame_height };
 
       if (is_widget_changed()) {
         m_buffer.set_size(r.width, r.height);
       }
 
       if (is_widget_changed() || has_childs_expired()) {
-        m_buffer.render([this]() {
+        m_buffer.render([&]() {
           clear_color_buffer({ 0.f, 0.f, 0.f, 0.f });
-
-          widget_render();
+          widget_render(con);
         });
 
         viewport(0, 0, r.width, r.height);
       }
 
-      const auto f = to_rectf(r);
+      auto const f = to_rectf(r);
 
-      const auto v = {
+      auto const v = {
         sprite_vertex { .position = { f.x, f.y },
                         .texcoord = { 0.f, 1.f } },
         sprite_vertex { .position = { f.x + f.width, f.y },

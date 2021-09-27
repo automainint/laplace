@@ -29,28 +29,29 @@ namespace quadwar_app {
 
   class quadwar : public stem::app_flat {
   public:
-    static const char8_t * default_player_names[];
-    static const char *    default_server_address;
-    static const char *    default_game_name;
-    static const sl::whole default_player_count;
-    static const sl::whole default_unit_count;
-    static const sl::whole default_map_size;
+    static char8_t const *const default_player_names[];
+    static char const           default_server_address[];
+    static char const           default_game_name[];
+    static sl::whole const      default_player_count;
+    static sl::whole const      default_unit_count;
+    static sl::whole const      default_map_size;
 
-    static const char8_t *caption;
+    static char8_t const *const caption;
 
-    quadwar(int argc, char **argv);
-    ~quadwar() override = default;
+    quadwar(int argc, char **argv) noexcept;
+    ~quadwar() noexcept override = default;
 
   protected:
-    void init() override;
-    void cleanup() override;
-    void update(sl::time delta_msec) override;
-    void render() override;
-    void adjust_layout(sl::whole width, sl::whole height) override;
+    void init() noexcept override;
+    void cleanup() noexcept override;
+    void update(sl::time delta_msec) noexcept override;
+    void render() noexcept override;
+    void adjust_layout(sl::whole width,
+                       sl::whole height) noexcept override;
 
   private:
-    static auto get_player_name() -> std::u8string_view;
-    static auto get_config() -> core::family;
+    static auto get_player_name() noexcept -> std::u8string_view;
+    static auto get_config() noexcept -> core::family;
 
     ui::ptr_mainmenu m_mainmenu;
     ptr_session      m_session;

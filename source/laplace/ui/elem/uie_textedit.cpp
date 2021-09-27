@@ -35,20 +35,8 @@ namespace laplace::ui::elem {
     return is_handled || textedit_tick(in);
   }
 
-  void textedit::render() {
-    do {
-      auto con = get_context();
-
-      if constexpr (!_unsafe) {
-        if (!con) {
-          error_("No context.", __FUNCTION__);
-          return;
-        }
-      }
-
-      con->render_textedit(get_state());
-    } while (0);
-
+  void textedit::render(context const &con) {
+    con.render_textedit(get_state());
     up_to_date();
   }
 

@@ -21,41 +21,51 @@
 #include "../platform/wrap.h"
 #include "../render/context.h"
 #include "../ui/context.h"
+#include <chrono>
 
 namespace laplace::stem {
   class application {
   public:
-    application(int argc, char **argv, core::cref_family def_cfg);
+    application(int               argc,
+                char **           argv,
+                core::cref_family def_cfg) noexcept;
 
-    virtual ~application();
+    virtual ~application() noexcept;
 
-    auto run() -> int;
+    auto run() noexcept -> int;
 
   protected:
     core::family m_config;
 
-    virtual void init();
-    virtual void cleanup();
-    virtual void update(sl::time delta_msec);
-    virtual void render();
-    virtual void set_frame_size(sl::whole width, sl::whole height);
-    virtual void adjust_layout(sl::whole width, sl::whole height);
+    virtual void init() noexcept;
+    virtual void cleanup() noexcept;
+    virtual void update(sl::time delta_msec) noexcept;
+    virtual void render() noexcept;
+    virtual void set_frame_size(sl::whole width,
+                                sl::whole height) noexcept;
+    virtual void adjust_layout(sl::whole width,
+                               sl::whole height) noexcept;
 
-    [[nodiscard]] auto get_window() -> platform::ref_window;
-    [[nodiscard]] auto get_gl() -> platform::ref_glcontext;
-    [[nodiscard]] auto get_input() -> core::cref_input_handler;
+    void lock_fps(sl::whole fps) noexcept;
+    void finish_and_swap() noexcept;
+
+    [[nodiscard]] auto get_window() noexcept -> platform::ref_window;
+    [[nodiscard]] auto get_gl() noexcept -> platform::ref_glcontext;
+    [[nodiscard]] auto get_input() noexcept
+        -> core::cref_input_handler;
+    [[nodiscard]] auto get_ui_context() noexcept -> ui::context &;
 
   private:
-    void load_shaders();
-    void setup_ui();
-    void wrap_input();
-    void adjust_frame_size(sl::whole width, sl::whole height);
+    void load_shaders() noexcept;
+    void wrap_input() noexcept;
+    void adjust_frame_size(sl::whole width,
+                           sl::whole height) noexcept;
 
     [[nodiscard]] auto shader_path(const char *name,
-                                   const char *type) const
+                                   const char *type) const noexcept
         -> std::wstring;
 
-    [[nodiscard]] auto open(std::wstring_view file_name)
+    [[nodiscard]] auto open(std::wstring_view file_name) noexcept
         -> std::unique_ptr<std::istream>;
 
     platform::ptr_window    m_window;
@@ -65,6 +75,8 @@ namespace laplace::stem {
     render::ptr_context m_render;
     ui::ptr_context     m_ui;
     core::input_handler m_input_handler;
+
+    std::chrono::steady_clock::time_point m_frame_time;
   };
 }
 

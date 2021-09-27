@@ -15,21 +15,9 @@
 #include "../context.h"
 
 namespace laplace::ui::elem {
-  void panel::render() {
-    do {
-      auto con = get_context();
-
-      if constexpr (!_unsafe) {
-        if (!con) {
-          error_("No context.", __FUNCTION__);
-          break;
-        }
-      }
-
-      con->render_panel(get_state());
-    } while (0);
-
-    draw_childs();
+  void panel::render(context const &con) {
+    con.render_panel(get_state());
+    draw_childs(con);
     up_to_date();
   }
 

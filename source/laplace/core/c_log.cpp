@@ -17,11 +17,12 @@
 #include <iostream>
 #include <mutex>
 #include <shared_mutex>
+#include <sstream>
 
 namespace laplace {
   using std::unique_lock, std::shared_lock, std::mutex,
       std::shared_mutex, std::string_view, std::u8string_view,
-      std::cerr;
+      std::cerr, std::ostringstream;
 
 #ifdef LAPLACE_VERBOSE
   static bool         g_verbose = true;
@@ -38,25 +39,32 @@ namespace laplace {
   }
 
   void verb(string_view s) noexcept {
-    if (is_verbose()) {
+    if (is_verbose())
       log(s);
-    }
   }
 
   void verb(u8string_view s) noexcept {
-    if (is_verbose()) {
+    if (is_verbose())
       log(s);
-    }
   }
 #endif
 
   static auto g_log_lock = mutex {};
 
+  static auto g_log_default = [](string_view s) {
+    cerr << s << '\n';
+  };
+
+  static auto g_log = fn_log { g_log_default };
+
+  void setup_log(fn_log fn) noexcept {
+    auto _ul = unique_lock(g_log_lock);
+    g_log    = fn ? fn : g_log_default;
+  }
+
   void log(string_view s) noexcept {
-    try {
-      auto _ul = unique_lock(g_log_lock);
-      cerr << s << '\n';
-    } catch (...) { }
+    auto _ul = unique_lock(g_log_lock);
+    g_log(s);
   }
 
   void log(u8string_view s) noexcept {
@@ -65,11 +73,12 @@ namespace laplace {
 
   void error_(string_view message, string_view loc) noexcept {
     auto _ul = unique_lock(g_log_lock);
-    if (loc.empty()) {
-      cerr << "[ error ] " << message << '\n';
-    } else {
-      cerr << "[ error in " << loc << " ] " << message << '\n';
-    }
+    auto ss  = ostringstream {};
+    ss << "[ error";
+    if (!loc.empty())
+      ss << " in " << loc;
+    ss << " ] " << message << '\n';
+    log(ss.str());
   }
 
   void error_(u8string_view message, string_view loc) noexcept {

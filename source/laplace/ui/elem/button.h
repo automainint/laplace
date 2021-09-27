@@ -34,7 +34,7 @@ namespace laplace::ui::elem {
               core::cref_input_handler in,
               bool                     is_handled) -> bool final;
 
-    void render() override;
+    void render(context const &con) override;
 
     void set_pressed(bool is_pressed);
     void set_cursor(bool has_cursor);
