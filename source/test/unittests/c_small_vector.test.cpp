@@ -200,7 +200,7 @@ namespace laplace::test {
     EXPECT_EQ(a.at(2), 30);
     EXPECT_EQ(a.at(3), 40);
   }
-  
+
   TEST(core, small_vector_assign2_big) {
     auto a = small_vector<int, 40> {};
     auto b = small_vector<int, 50> {};
@@ -298,6 +298,13 @@ namespace laplace::test {
     v.resize(100, 1);
     v.emplace(v.begin() + 5, 10);
     EXPECT_EQ(v.at(5), 10);
+  }
+
+  TEST(core, small_vector_emplace2) {
+    auto v = small_vector<int> {};
+    v.resize(100, 1);
+    v.emplace(v.end(), 10);
+    EXPECT_EQ(v.at(100), 10);
   }
 
   TEST(core, small_vector_emplace_back) {

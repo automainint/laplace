@@ -222,6 +222,21 @@ namespace laplace::engine::eval::astar {
 
     return v;
   };
+
+  template <bool _nearest, typename _node>
+  inline auto length(_state<_nearest, _node> const &state) noexcept
+      -> intval {
+    const auto i = std::lower_bound(
+        state.closed.begin(), state.closed.end(), state.destination,
+        [](_node const &n, sl::index const i) {
+          return n.index < i;
+        });
+
+    if (i == state.closed.end() || i->index != state.destination)
+      return -1;
+
+    return i->length;
+  }
 }
 
 #endif

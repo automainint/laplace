@@ -35,7 +35,7 @@ namespace laplace::engine::eval::hierarchical_grid {
     vec2z                   grid_size;
     sl::whole               grid_stride = 0;
     intval                  grid_scale  = 0;
-    std::span<const int8_t> grid_data;
+    std::span<int8_t const> grid_data;
     vec2z                   block_size;
     sl::whole               block_stride = 0;
 
@@ -45,25 +45,32 @@ namespace laplace::engine::eval::hierarchical_grid {
     sl::vector<sl::vector<sl::index>> blocks;
   };
 
-  [[nodiscard]] auto pivot_order(const pivot &a,
-                                 const pivot &b) noexcept -> bool;
+  [[nodiscard]] auto pivot_order(pivot const &a,
+                                 pivot const &b) noexcept -> bool;
 
-  [[nodiscard]] auto block_of(const vec2z &   position,
-                              const map_info &map) noexcept -> vec2z;
+  [[nodiscard]] auto block_of(vec2z const &   position,
+                              map_info const &map) noexcept -> vec2z;
 
-  [[nodiscard]] auto pivots_of(const vec2z &   block,
-                               const map_info &map) noexcept
-      -> std::span<const sl::index>;
+  [[nodiscard]] auto origin_of(vec2z const &   block,
+                               map_info const &map) noexcept -> vec2z;
 
-  [[nodiscard]] auto pivots_of_position(const vec2z &   position,
-                                        const map_info &map) noexcept
-      -> std::span<const sl::index>;
+  [[nodiscard]] auto pivots_of(vec2z const &   block,
+                               map_info const &map) noexcept
+      -> std::span<sl::index const>;
 
-  [[nodiscard]] auto generate(const vec2z  block_size,
-                              const vec2z  grid_size,
-                              const intval grid_scale,
-                              const std::span<const int8_t> grid_data,
-                              const fn_available available) noexcept
+  [[nodiscard]] auto pivots_of_position(vec2z const &   position,
+                                        map_info const &map) noexcept
+      -> std::span<sl::index const>;
+
+  [[nodiscard]] auto nearest_pivot(vec2z const &   position,
+                                   map_info const &map) noexcept
+      -> sl::index;
+
+  [[nodiscard]] auto generate(vec2z const  block_size,
+                              vec2z const  grid_size,
+                              intval const grid_scale,
+                              std::span<int8_t const> const grid_data,
+                              fn_available const available) noexcept
       -> map_info;
 
   void process(map_info &map) noexcept;

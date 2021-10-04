@@ -12,6 +12,7 @@
 
 #include "hierarchical_grid.h"
 
+#include "astar.impl.h"
 #include "integral.h"
 #include <numeric>
 
@@ -42,6 +43,11 @@ namespace laplace::engine::eval::hierarchical_grid {
              position.y() / map.block_size.y() };
   }
 
+  auto origin_of(vec2z const &block, map_info const &map) noexcept
+      -> vec2z {
+    return mul_by_elem(block, map.block_size);
+  }
+
   auto pivots_of(const vec2z &block, const map_info &map) noexcept
       -> span<const sl::index> {
     const auto n = block.y() * map.block_stride + block.x();
@@ -55,7 +61,7 @@ namespace laplace::engine::eval::hierarchical_grid {
 
   auto pivots_of_position(const vec2z &   position,
                           const map_info &map) noexcept
-      -> span<const sl::index> {
+      -> span<sl::index const> {
 
     return pivots_of(block_of(position, map), map);
   }
@@ -78,7 +84,8 @@ namespace laplace::engine::eval::hierarchical_grid {
                           .grid_scale   = grid_scale,
                           .grid_data    = grid_data,
                           .block_size   = block_size,
-                          .block_stride = grid_size.x() /
+                          .block_stride = (grid_size.x() +
+                                           block_size.x() - 1) /
                                           block_size.x(),
                           .available = available };
 
@@ -181,6 +188,42 @@ namespace laplace::engine::eval::hierarchical_grid {
     return map;
   }
 
+  auto nearest_pivot(vec2z const &   position,
+                     map_info const &map) noexcept -> sl::index {
+    auto const block  = block_of(position, map);
+    auto const pivots = pivots_of(block, map);
+    auto const origin = origin_of(block, map);
+    auto const size   = map.block_size + vec2z { 1, 1 };
+
+    auto n      = astar::_invalid_index;
+    auto length = intval {};
+
+    for (auto const k : pivots) {
+      auto const pivot = map.pivots[k];
+      auto const last  = origin + map.block_size;
+
+      auto search = grid::path_search_init(
+          size, origin, map.grid_stride, map.grid_scale,
+          span { map.grid_data.begin() +
+                     map.grid_stride * origin.y() + origin.x(),
+                 map.grid_data.begin() + map.grid_stride * last.y() +
+                     last.x() + 1 },
+          map.available, position - origin, pivot.position - origin);
+
+      while (grid::path_search_loop(search) ==
+             astar::status::progress) { }
+
+      auto const l = astar::length(search.astar);
+
+      if (n < 0 || l < length) {
+        n      = k;
+        length = l;
+      }
+    }
+
+    return n;
+  }
+
   auto generate(const vec2z              block_size,
                 const vec2z              grid_size,
                 const intval             grid_scale,
@@ -202,7 +245,7 @@ namespace laplace::engine::eval::hierarchical_grid {
 
     for (sl::index i = 0; i < indices.size(); i++)
       for (sl::index j = i + 1; j < indices.size(); j++) {
-        const auto min = mul_by_elem(block, map.block_size);
+        const auto min = origin_of(block, map);
         const auto max = min + map.block_size + vec2z { 1, 1 };
 
         const auto n0 = indices[i];

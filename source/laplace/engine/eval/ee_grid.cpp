@@ -18,12 +18,12 @@
 namespace laplace::engine::eval::grid {
   using std::span, std::min, std::max, std::function, astar::link;
 
-  void merge(const vec2z              size,
-             const span<int8_t>       dst,
-             const span<const int8_t> src,
-             const op                 merge_op) noexcept {
+  void merge(vec2z const              size,
+             span<int8_t> const       dst,
+             span<int8_t const> const src,
+             op const                 merge_op) noexcept {
 
-    const auto count = size.x() * size.y();
+    auto const count = size.x() * size.y();
 
     if (count > dst.size()) {
       error_("Invalid destination size.", __FUNCTION__);
@@ -40,12 +40,12 @@ namespace laplace::engine::eval::grid {
     }
   }
 
-  void merge(const vec2z              dst_size,
-             const span<int8_t>       dst,
-             const vec2z              src_size,
-             const vec2i              src_offset,
-             const span<const int8_t> src,
-             const op                 merge_op) noexcept {
+  void merge(vec2z const              dst_size,
+             span<int8_t> const       dst,
+             vec2z const              src_size,
+             vec2i const              src_offset,
+             span<int8_t const> const src,
+             op const                 merge_op) noexcept {
 
     if (dst_size.x() * dst_size.y() > dst.size()) {
       error_("Invalid destination size.", __FUNCTION__);
@@ -60,7 +60,7 @@ namespace laplace::engine::eval::grid {
     for (sl::index y = 0; y < src_size.y(); y++) {
       for (sl::index x = 0; x < src_size.x(); x++) {
 
-        const auto n = (src_offset.y() + y) * dst_size.x() +
+        auto const n = (src_offset.y() + y) * dst_size.x() +
                        (src_offset.x() + x);
 
         dst[n] = merge_op(dst[n], src[y * src_size.x() + x]);
@@ -68,18 +68,18 @@ namespace laplace::engine::eval::grid {
     }
   }
 
-  [[nodiscard]] auto trace_line(const vec2z    a,
-                                const vec2z    b,
-                                const fn_point point) noexcept
+  [[nodiscard]] auto trace_line(vec2z const    a,
+                                vec2z const    b,
+                                fn_point const point) noexcept
       -> bool {
 
-    const auto abs_delta = [](const sl::index x0,
-                              const sl::index x1) {
+    auto const abs_delta = [](sl::index const x0,
+                              sl::index const x1) {
       return x0 < x1 ? x1 - x0 : x0 - x1;
     };
 
-    const auto dx = abs_delta(a.x(), b.x());
-    const auto dy = abs_delta(a.y(), b.y());
+    auto const dx = abs_delta(a.x(), b.x());
+    auto const dy = abs_delta(a.y(), b.y());
 
     if (dx > dy) {
       if (b.x() < a.x()) {
@@ -160,20 +160,20 @@ namespace laplace::engine::eval::grid {
     return true;
   }
 
-  [[nodiscard]] auto neighbors4(const sl::whole          width,
-                                const sl::whole          stride,
-                                const intval             scale,
-                                const span<const int8_t> map,
-                                const fn_available       available,
-                                const sl::index          position,
-                                const sl::index n) noexcept -> link {
+  [[nodiscard]] auto neighbors4(sl::whole const          width,
+                                sl::whole const          stride,
+                                intval const             scale,
+                                span<int8_t const> const map,
+                                fn_available const       available,
+                                sl::index const          position,
+                                sl::index const n) noexcept -> link {
 
     if (position < 0 || position >= map.size() || stride <= 0) {
       return {};
     }
 
-    const auto x = position % stride;
-    const auto y = position / stride;
+    auto const x = position % stride;
+    auto const y = position / stride;
 
     if (x < 0 || y < 0 || x >= width) {
       return {};
@@ -188,7 +188,7 @@ namespace laplace::engine::eval::grid {
         return { .node = link::skip };
       }
 
-      const auto n = y * stride + x;
+      auto const n = y * stride + x;
       if (n >= map.size() || !available(map[n])) {
         return { .node = link::skip };
       }
@@ -206,20 +206,20 @@ namespace laplace::engine::eval::grid {
     return {};
   }
 
-  [[nodiscard]] auto neighbors8(const sl::whole          width,
-                                const sl::whole          stride,
-                                const intval             scale,
-                                const span<const int8_t> map,
-                                const fn_available       available,
-                                const sl::index          position,
-                                const sl::index n) noexcept -> link {
+  [[nodiscard]] auto neighbors8(sl::whole const          width,
+                                sl::whole const          stride,
+                                intval const             scale,
+                                span<int8_t const> const map,
+                                fn_available const       available,
+                                sl::index const          position,
+                                sl::index const n) noexcept -> link {
 
     if (position < 0 || position >= map.size() || stride <= 0) {
       return {};
     }
 
-    const auto x = position % stride;
-    const auto y = position / stride;
+    auto const x = position % stride;
+    auto const y = position / stride;
 
     if (x < 0 || y < 0 || x >= width) {
       return {};
@@ -235,7 +235,7 @@ namespace laplace::engine::eval::grid {
         return { .node = link::skip };
       }
 
-      const auto n = y * stride + x;
+      auto const n = y * stride + x;
       if (n >= map.size() || !available(map[n])) {
         return { .node = link::skip };
       }
@@ -250,7 +250,7 @@ namespace laplace::engine::eval::grid {
       case 3: return check(x + 1, y, scale);
     }
 
-    const auto d = scale > 1 ? eval::sqrt2(scale) : 1;
+    auto const d = scale > 1 ? eval::sqrt2(scale) : 1;
 
     switch (n) {
       case 4: return check(x - 1, y - 1, d);
@@ -262,45 +262,45 @@ namespace laplace::engine::eval::grid {
     return {};
   }
 
-  [[nodiscard]] auto manhattan(const sl::whole stride,
-                               const intval    scale,
-                               const sl::index source,
-                               const sl::index destination) noexcept
+  [[nodiscard]] auto manhattan(sl::whole const stride,
+                               intval const    scale,
+                               sl::index const source,
+                               sl::index const destination) noexcept
       -> intval {
 
     if (stride <= 0) {
       return 0;
     }
 
-    const auto x0 = source % stride;
-    const auto y0 = source / stride;
+    auto const x0 = source % stride;
+    auto const y0 = source / stride;
 
-    const auto x1 = destination % stride;
-    const auto y1 = destination / stride;
+    auto const x1 = destination % stride;
+    auto const y1 = destination / stride;
 
-    const auto dx = x0 < x1 ? x1 - x0 : x0 - x1;
-    const auto dy = y0 < y1 ? y1 - y0 : y0 - y1;
+    auto const dx = x0 < x1 ? x1 - x0 : x0 - x1;
+    auto const dy = y0 < y1 ? y1 - y0 : y0 - y1;
 
     return (dx + dy) * scale;
   }
 
-  [[nodiscard]] auto diagonal(const sl::whole stride,
-                              const intval    scale,
-                              const sl::index a,
-                              const sl::index b) noexcept -> intval {
+  [[nodiscard]] auto diagonal(sl::whole const stride,
+                              intval const    scale,
+                              sl::index const a,
+                              sl::index const b) noexcept -> intval {
 
     if (stride <= 0) {
       return 0;
     }
 
-    const auto x0 = a % stride;
-    const auto y0 = a / stride;
+    auto const x0 = a % stride;
+    auto const y0 = a / stride;
 
-    const auto x1 = b % stride;
-    const auto y1 = b / stride;
+    auto const x1 = b % stride;
+    auto const y1 = b / stride;
 
-    const auto dx = x0 < x1 ? x1 - x0 : x0 - x1;
-    const auto dy = y0 < y1 ? y1 - y0 : y0 - y1;
+    auto const dx = x0 < x1 ? x1 - x0 : x0 - x1;
+    auto const dy = y0 < y1 ? y1 - y0 : y0 - y1;
 
     if (dx < dy) {
       return eval::sqrt2(scale) * dx + (dy - dx) * scale;
@@ -309,33 +309,33 @@ namespace laplace::engine::eval::grid {
     return eval::sqrt2(scale) * dy + (dx - dy) * scale;
   }
 
-  [[nodiscard]] auto euclidean(const sl::whole stride,
-                               const intval    scale,
-                               const sl::index a,
-                               const sl::index b) noexcept -> intval {
+  [[nodiscard]] auto euclidean(sl::whole const stride,
+                               intval const    scale,
+                               sl::index const a,
+                               sl::index const b) noexcept -> intval {
 
     if (stride <= 0) {
       return 0;
     }
 
-    const auto x0 = a % stride;
-    const auto y0 = a / stride;
+    auto const x0 = a % stride;
+    auto const y0 = a / stride;
 
-    const auto x1 = b % stride;
-    const auto y1 = b / stride;
+    auto const x1 = b % stride;
+    auto const y1 = b / stride;
 
-    const auto dx = x0 < x1 ? x1 - x0 : x0 - x1;
-    const auto dy = y0 < y1 ? y1 - y0 : y0 - y1;
+    auto const dx = x0 < x1 ? x1 - x0 : x0 - x1;
+    auto const dy = y0 < y1 ? y1 - y0 : y0 - y1;
 
     return eval::sqrt((dx * dx + dy * dy) * scale, scale);
   }
 
-  [[nodiscard]] auto path_exists(const sl::whole          width,
-                                 const sl::whole          stride,
-                                 const span<const int8_t> map,
-                                 const fn_available       available,
-                                 const vec2z              source,
-                                 const vec2z destination) noexcept
+  [[nodiscard]] auto path_exists(sl::whole const          width,
+                                 sl::whole const          stride,
+                                 span<int8_t const> const map,
+                                 fn_available const       available,
+                                 vec2z const              source,
+                                 vec2z const destination) noexcept
       -> bool {
 
     if (stride <= 0) {
@@ -359,21 +359,21 @@ namespace laplace::engine::eval::grid {
       return true;
     }
 
-    const auto sight = [](const sl::index a, const sl::index b) {
+    auto const sight = [](sl::index const a, sl::index const b) {
       return false;
     };
 
-    const auto heuristic = [&](const sl::index a,
-                               const sl::index b) -> intval {
+    auto const heuristic = [&](sl::index const a,
+                               sl::index const b) -> intval {
       return manhattan(stride, 1, a, b);
     };
 
-    const auto neighbors = [&](const sl::index p,
-                               const sl::index n) -> link {
+    auto const neighbors = [&](sl::index const p,
+                               sl::index const n) -> link {
       return neighbors8(width, stride, 1, map, available, p, n);
     };
 
-    const auto index_of = [&](const vec2z p) {
+    auto const index_of = [&](vec2z const p) {
       return p.y() * stride + p.x();
     };
 
@@ -395,24 +395,24 @@ namespace laplace::engine::eval::grid {
     return false;
   }
 
-  [[nodiscard]] auto path_exists(const sl::whole          width,
-                                 const span<const int8_t> map,
-                                 const fn_available       available,
-                                 const vec2z              source,
-                                 const vec2z destination) noexcept
+  [[nodiscard]] auto path_exists(sl::whole const          width,
+                                 span<int8_t const> const map,
+                                 fn_available const       available,
+                                 vec2z const              source,
+                                 vec2z const destination) noexcept
       -> bool {
 
     return path_exists(width, width, map, available, source,
                        destination);
   }
 
-  [[nodiscard]] auto path_exists(const sl::whole          width,
-                                 const vec2z              min,
-                                 const vec2z              max,
-                                 const span<const int8_t> map,
-                                 const fn_available       available,
-                                 const vec2z              source,
-                                 const vec2z destination) noexcept
+  [[nodiscard]] auto path_exists(sl::whole const          width,
+                                 vec2z const              min,
+                                 vec2z const              max,
+                                 span<int8_t const> const map,
+                                 fn_available const       available,
+                                 vec2z const              source,
+                                 vec2z const destination) noexcept
       -> bool {
 
     return path_exists(
@@ -423,14 +423,14 @@ namespace laplace::engine::eval::grid {
   }
 
   [[nodiscard]] auto path_search_init(
-      const vec2z              size,
-      const vec2z              origin,
-      const sl::whole          stride,
-      const intval             scale,
-      const span<const int8_t> map,
-      const fn_available       available,
-      const vec2z              source,
-      const vec2z              destination) noexcept -> _state {
+      vec2z const              size,
+      vec2z const              origin,
+      sl::whole const          stride,
+      intval const             scale,
+      span<int8_t const> const map,
+      fn_available const       available,
+      vec2z const              source,
+      vec2z const              destination) noexcept -> _state {
 
     if (size.x() * size.y() > map.size()) {
       error_("Invalid map size.", __FUNCTION__);
@@ -441,11 +441,11 @@ namespace laplace::engine::eval::grid {
       return {};
     }
 
-    const auto width = size.x();
+    auto const width = size.x();
 
     auto s = _state {};
 
-    const auto index_of = [&](const vec2z p) {
+    auto const index_of = [&](vec2z const p) {
       return p.y() * stride + p.x();
     };
 
@@ -455,24 +455,24 @@ namespace laplace::engine::eval::grid {
     s.origin = origin;
     s.stride = stride;
 
-    s.heuristic = [stride, scale](const sl::index a,
-                                  const sl::index b) -> intval {
+    s.heuristic = [stride, scale](sl::index const a,
+                                  sl::index const b) -> intval {
       return euclidean(stride, scale, a, b);
     };
 
     s.neighbors = [width, stride, scale, map, available](
-                      const sl::index p, const sl::index n) -> link {
+                      sl::index const p, sl::index const n) -> link {
       return neighbors8(width, stride, scale, map, available, p, n);
     };
 
     s.sight = [size, stride, available,
-               map](const sl::index a, const sl::index b) -> bool {
-      const auto point_of = [&](const sl::index n) {
+               map](sl::index const a, sl::index const b) -> bool {
+      auto const point_of = [&](const sl::index n) {
         return vec2z { n % stride, n / stride };
       };
 
-      const auto p0 = point_of(a);
-      const auto p1 = point_of(b);
+      auto const p0 = point_of(a);
+      auto const p1 = point_of(b);
 
       if (p0.x() < 0 || p0.x() >= size.x() || p0.y() < 0 ||
           p0.y() >= size.y() || p1.x() < 0 || p1.x() >= size.x() ||
@@ -480,7 +480,7 @@ namespace laplace::engine::eval::grid {
         return false;
       }
 
-      return trace_line(p0, p1, [&](const vec2z p) {
+      return trace_line(p0, p1, [&](vec2z const p) {
         return available(map[p.y() * stride + p.x()]);
       });
     };
@@ -488,25 +488,25 @@ namespace laplace::engine::eval::grid {
     return s;
   }
 
-  auto path_search_init(const vec2z              size,
-                        const intval             scale,
-                        const span<const int8_t> map,
-                        const fn_available       available,
-                        const vec2z              source,
-                        const vec2z destination) noexcept -> _state {
+  auto path_search_init(vec2z const              size,
+                        intval const             scale,
+                        span<int8_t const> const map,
+                        fn_available const       available,
+                        vec2z const              source,
+                        vec2z const destination) noexcept -> _state {
 
     return path_search_init(size, {}, size.x(), scale, map, available,
                             source, destination);
   }
 
-  auto path_search_init(const vec2z              size,
-                        const vec2z              min,
-                        const vec2z              max,
-                        const intval             scale,
-                        const span<const int8_t> map,
-                        const fn_available       available,
-                        const vec2z              source,
-                        const vec2z destination) noexcept -> _state {
+  auto path_search_init(vec2z const              size,
+                        vec2z const              min,
+                        vec2z const              max,
+                        intval const             scale,
+                        span<int8_t const> const map,
+                        fn_available const       available,
+                        vec2z const              source,
+                        vec2z const destination) noexcept -> _state {
 
     return path_search_init(
         max - min, min, size.x(), scale,
@@ -522,18 +522,18 @@ namespace laplace::engine::eval::grid {
                        state.astar);
   }
 
-  [[nodiscard]] auto path_search_finish(const _state &state) noexcept
+  [[nodiscard]] auto path_search_finish(_state const &state) noexcept
       -> sl::vector<vec2z> {
     if (state.stride <= 0) {
       return {};
     }
 
-    const auto v = astar::finish<astar::_node_theta>(
+    auto const v = astar::finish<astar::_node_theta>(
         state.astar.closed, state.astar.source, state.astar.nearest);
 
     auto path = sl::vector<vec2z>(v.size());
 
-    const auto point_of = [&](const sl::index n) {
+    auto const point_of = [&](sl::index const n) {
       return state.origin +
              vec2z { n % state.stride, n / state.stride };
     };
@@ -545,12 +545,12 @@ namespace laplace::engine::eval::grid {
     return path;
   }
 
-  void convolve(const vec2z        size,
-                span<int8_t>       dst,
-                span<const int8_t> src,
-                const vec2z        fp_size,
-                const vec2z        center,
-                span<const int8_t> footprint) noexcept {
+  void convolve(vec2z const              size,
+                span<int8_t> const       dst,
+                span<int8_t const> const src,
+                vec2z const              fp_size,
+                vec2z const              center,
+                span<int8_t const> const footprint) noexcept {
 
     if (size.x() < 0 || size.y() < 0) {
       error_("Invalid map size.", __FUNCTION__);
@@ -583,15 +583,15 @@ namespace laplace::engine::eval::grid {
           continue;
         }
 
-        const auto i0 = i - center.x();
-        const auto j0 = j - center.y();
-        const auto i1 = i0 + fp_size.x();
-        const auto j1 = j0 + fp_size.y();
+        auto const i0 = i - center.x();
+        auto const j0 = j - center.y();
+        auto const i1 = i0 + fp_size.x();
+        auto const j1 = j0 + fp_size.y();
 
-        const auto x0 = max<sl::index>(0, i0) - i0;
-        const auto y0 = max<sl::index>(0, j0) - j0;
-        const auto x1 = min<sl::index>(size.x(), i1) - i0;
-        const auto y1 = min<sl::index>(size.y(), j1) - j0;
+        auto const x0 = max<sl::index>(0, i0) - i0;
+        auto const y0 = max<sl::index>(0, j0) - j0;
+        auto const x1 = min<sl::index>(size.x(), i1) - i0;
+        auto const y1 = min<sl::index>(size.y(), j1) - j0;
 
         for (sl::index y = y0; y < y1; y++)
           for (sl::index x = x0; x < x1; x++) {
@@ -604,10 +604,10 @@ namespace laplace::engine::eval::grid {
       }
   }
 
-  auto nearest(const vec2z                  position,
-               const vec2z                  size,
-               span<const int8_t>           map,
-               function<bool(const int8_t)> condition) noexcept
+  auto nearest(vec2z const                  position,
+               vec2z const                  size,
+               span<int8_t const> const     map,
+               function<bool(int8_t)> const condition) noexcept
       -> vec2z {
 
     if (size.x() <= 0 || size.y() <= 0) {
@@ -620,9 +620,9 @@ namespace laplace::engine::eval::grid {
       return {};
     }
 
-    const auto x0 = max<sl::index>(0,
+    auto const x0 = max<sl::index>(0,
                                    min(position.x(), size.x() - 1));
-    const auto y0 = max<sl::index>(0,
+    auto const y0 = max<sl::index>(0,
                                    min(position.y(), size.y() - 1));
 
     if (map[y0 * size.x() + x0] <= 0) {
@@ -633,12 +633,12 @@ namespace laplace::engine::eval::grid {
     auto y        = y0;
     auto distance = sl::index { -1 };
 
-    auto do_point = [&](const sl::index i, const sl::index j) {
+    auto do_point = [&](sl::index const i, sl::index const j) {
       if (!condition(map[j * size.x() + i])) {
         return;
       }
 
-      const auto s = math::square_length(vec2z { i, j } -
+      auto const s = math::square_length(vec2z { i, j } -
                                          vec2z { x0, y0 });
 
       if (distance < 0 || s < distance) {
@@ -649,14 +649,14 @@ namespace laplace::engine::eval::grid {
       }
     };
 
-    const auto max_radius = max(max(x0, size.x() - x0),
+    auto const max_radius = max(max(x0, size.x() - x0),
                                 max(y0, size.y() - y0));
 
     for (sl::index radius = 1; radius <= max_radius; radius++) {
-      const auto i0 = max<sl::index>(0, x0 - radius);
-      const auto j0 = max<sl::index>(0, y0 - radius);
-      const auto i1 = min<sl::index>(x0 + radius, size.x() - 1);
-      const auto j1 = min<sl::index>(y0 + radius, size.y() - 1);
+      auto const i0 = max<sl::index>(0, x0 - radius);
+      auto const j0 = max<sl::index>(0, y0 - radius);
+      auto const i1 = min<sl::index>(x0 + radius, size.x() - 1);
+      auto const j1 = min<sl::index>(y0 + radius, size.y() - 1);
 
       if (x0 - radius >= 0)
         for (sl::index j = j0 + 1; j < j1; j++) { do_point(i0, j); }

@@ -241,12 +241,16 @@ namespace laplace {
 
     reserve(m_size + 1);
 
-    _fill_one(m_values + m_size, m_values[m_size - 1]);
-
     const auto p = position - m_values;
-    std::move_backward(m_values + p, m_values + m_size - 1,
-                       m_values + m_size);
-    m_values[p] = elem_(args...);
+
+    if (p < m_size) {
+      _fill_one(m_values + m_size, m_values[m_size - 1]);
+      std::move_backward(m_values + p, m_values + m_size - 1,
+                         m_values + m_size);
+      m_values[p] = elem_(args...);
+    } else {
+      _fill_one(m_values + m_size, args...);
+    }
 
     m_size++;
   }

@@ -88,6 +88,10 @@ namespace laplace::engine::eval::astar {
                                    sl::index              source,
                                    sl::index destination) noexcept
       -> sl::vector<sl::index>;
+
+  template <bool _nearest, typename _node>
+  [[nodiscard]] inline auto length(
+      _state<_nearest, _node> const &state) noexcept -> intval;
 }
 
 #endif
