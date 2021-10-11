@@ -1,0 +1,39 @@
+name: mac-build
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up CMake 3.18
+      uses: jwlawson/actions-setup-cmake@v1.8
+      with:
+        cmake-version: 3.18
+
+    - name: Install GCC 11
+      run: |
+          sudo apt-get install gcc-11 g++-11
+
+    - name: Build
+      run: |
+          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D LAPLACE_ENABLE_TESTING=ON -D LAPLACE_VERBOSE=ON -B build -S .
+          cmake --build build --config $BUILD_TYPE
+      env:
+        CC: gcc-11
+        CXX: g++-11
+
+    - name: Run tests
+      working-directory: ${{github.workspace}}/build
+      run: ctest -V -C $BUILD_TYPE
