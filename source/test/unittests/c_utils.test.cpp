@@ -15,17 +15,19 @@
 
 namespace laplace::test {
   TEST(core, utils_index_arg_types) {
-    EXPECT_EQ(as_index(signed char {}), sl::index {});
-    EXPECT_EQ(as_index(signed short {}), sl::index {});
-    EXPECT_EQ(as_index(signed int {}), sl::index {});
-    EXPECT_EQ(as_index(signed long {}), sl::index {});
-    EXPECT_EQ(as_index(signed long long {}), sl::index {});
+    EXPECT_EQ(as_index(static_cast<signed char>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<signed short>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<signed int>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<signed long>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<signed long long>(0)),
+              sl::index {});
 
-    EXPECT_EQ(as_index(unsigned char {}), sl::index {});
-    EXPECT_EQ(as_index(unsigned short {}), sl::index {});
-    EXPECT_EQ(as_index(unsigned int {}), sl::index {});
-    EXPECT_EQ(as_index(unsigned long {}), sl::index {});
-    EXPECT_EQ(as_index(unsigned long long {}), sl::index {});
+    EXPECT_EQ(as_index(static_cast<unsigned char>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<unsigned short>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<unsigned int>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<unsigned long>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<unsigned long long>(0)),
+              sl::index {});
   }
 
   TEST(core, utils_index_unsigned) {
