@@ -17,11 +17,11 @@
 #include "../graphics/utils.h"
 
 namespace laplace::stem {
-  using std::make_shared, std::abs, core::cref_family, ui::frame;
+  using std::make_shared, std::abs, core::unival, ui::frame;
 
-  app_flat::app_flat(int         argc,
-                     char **     argv,
-                     cref_family def_cfg) noexcept :
+  app_flat::app_flat(int           argc,
+                     char **       argv,
+                     unival const &def_cfg) noexcept :
       application(argc, argv, def_cfg) { }
 
   void app_flat::init() noexcept {

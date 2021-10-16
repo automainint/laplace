@@ -15,8 +15,8 @@
 #ifndef laplace_stem_application_h
 #define laplace_stem_application_h
 
-#include "../core/family.h"
 #include "../core/input_handler.h"
+#include "../core/unival.h"
 #include "../graphics/defs.h"
 #include "../platform/wrap.h"
 #include "../render/context.h"
@@ -26,16 +26,16 @@
 namespace laplace::stem {
   class application {
   public:
-    application(int               argc,
-                char **           argv,
-                core::cref_family def_cfg) noexcept;
+    application(int                 argc,
+                char **             argv,
+                core::unival const &def_cfg) noexcept;
 
     virtual ~application() noexcept;
 
     auto run() noexcept -> int;
 
   protected:
-    core::family m_config;
+    core::unival m_config;
 
     virtual void init() noexcept;
     virtual void cleanup() noexcept;

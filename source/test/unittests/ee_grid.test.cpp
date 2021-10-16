@@ -30,9 +30,8 @@ namespace laplace::test {
                                                1, 0, 0, 0, 1, //
                                                1, 1, 1, 1, 1 };
 
-    auto f = grid::path_exists(width, map,
-                               [](const int8_t x) { return x == 0; },
-                               { 1, 1 }, { 3, 3 });
+    auto f = grid::path_exists({ 1, 1 }, { 3, 3 }, grid::is_zero,
+                               grid::area_of({ width, height }, map));
 
     EXPECT_TRUE(f);
   }
@@ -48,9 +47,8 @@ namespace laplace::test {
                                                1, 1, 0, 0, 1, //
                                                1, 1, 1, 1, 1 };
 
-    auto f = grid::path_exists(width, map,
-                               [](const int8_t x) { return x == 0; },
-                               { 3, 1 }, { 1, 3 });
+    auto f = grid::path_exists({ 3, 1 }, { 1, 3 }, grid::is_zero,
+                               grid::area_of({ width, height }, map));
 
     EXPECT_FALSE(f);
   }
@@ -66,9 +64,10 @@ namespace laplace::test {
                                                1, 0, 0, 0, 1, //
                                                1, 1, 1, 1, 1 };
 
-    auto f = grid::path_exists(width, { 1, 1 }, { 4, 3 }, map,
-                               [](const int8_t x) { return x == 0; },
-                               { 1, 1 }, { 3, 2 });
+    auto f = grid::path_exists(
+        { 1, 1 }, { 3, 2 }, grid::is_zero,
+        grid::submap({ 1, 1 }, { 4, 3 },
+                     grid::area_of({ width, height }, map)));
 
     EXPECT_TRUE(f);
   }
@@ -84,9 +83,8 @@ namespace laplace::test {
                                                0, 0, 0, 0, 0, //
                                                0, 0, 0, 0, 0 };
 
-    auto f = grid::path_exists(width, map,
-                               [](const int8_t x) { return x == 0; },
-                               { 2, 0 }, { 2, 4 });
+    auto f = grid::path_exists({ 2, 0 }, { 2, 4 }, grid::is_zero,
+                               grid::area_of({ width, height }, map));
 
     EXPECT_FALSE(f);
   }
@@ -102,9 +100,10 @@ namespace laplace::test {
                                                1, 0, 0, 0, 1, //
                                                1, 1, 1, 1, 1 };
 
-    auto f = grid::path_exists(width, { 1, 1 }, { 3, 3 }, map,
-                               [](const int8_t x) { return x == 0; },
-                               { 3, 1 }, { 1, 3 });
+    auto f = grid::path_exists(
+        { 3, 1 }, { 1, 3 }, grid::is_zero,
+        grid::submap({ 1, 1 }, { 3, 3 },
+                     grid::area_of({ width, height }, map)));
 
     EXPECT_FALSE(f);
   }
@@ -121,8 +120,8 @@ namespace laplace::test {
                                                1, 1, 1, 1, 1 };
 
     auto state = grid::path_search_init(
-        { width, height }, 10, map,
-        [](const int8_t x) { return x == 0; }, { 1, 1 }, { 3, 3 });
+        { 1, 1 }, { 3, 3 }, grid::is_zero, 10,
+        grid::area_of({ width, height }, map));
 
     auto s = astar::status {};
 
@@ -148,8 +147,8 @@ namespace laplace::test {
                                                1, 1, 1, 1, 1, 1, 1 };
 
     auto state = grid::path_search_init(
-        { width, height }, 10, map,
-        [](const int8_t x) { return x == 0; }, { 1, 1 }, { 5, 1 });
+        { 1, 1 }, { 5, 1 }, grid::is_zero, 10,
+        grid::area_of({ width, height }, map));
 
     auto s = astar::status {};
 
@@ -177,8 +176,8 @@ namespace laplace::test {
                                                1, 1, 1, 1, 1, 1, 1 };
 
     auto state = grid::path_search_init(
-        { width, height }, 10, map,
-        [](const int8_t x) { return x == 0; }, { 1, 5 }, { 5, 1 });
+        { 1, 5 }, { 5, 1 }, grid::is_zero, 10,
+        grid::area_of({ width, height }, map));
 
     auto s = astar::status {};
 
@@ -209,8 +208,9 @@ namespace laplace::test {
                                                1, 1, 1, 1, 1, 1, 1 };
 
     auto state = grid::path_search_init(
-        { width, height }, { 2, 1 }, { 5, 4 }, 10, map,
-        [](const int8_t x) { return x == 0; }, { 2, 1 }, { 4, 1 });
+        { 2, 1 }, { 4, 1 }, grid::is_zero, 10,
+        grid::submap({ 2, 1 }, { 5, 4 },
+                     grid::area_of({ width, height }, map)));
 
     auto s = astar::status {};
 
@@ -218,7 +218,7 @@ namespace laplace::test {
       s = grid::path_search_loop(state);
     } while (s == astar::status::progress);
 
-    const auto v = grid::path_search_finish(state);
+    auto const v = grid::path_search_finish(state);
 
     EXPECT_EQ(s, astar::status::success);
     EXPECT_EQ(v.size(), 5u);

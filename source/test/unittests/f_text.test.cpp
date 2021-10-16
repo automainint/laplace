@@ -19,12 +19,12 @@
 namespace laplace::test {
   namespace text = format::text;
 
-  using core::family, core::parser, text::decode, text::encode,
+  using core::unival, core::parser, text::decode, text::encode,
       format::wrap, std::string, std::u8string, std::ostringstream,
       std::istringstream;
 
   TEST(format, text_encode_empty) {
-    auto data = family {};
+    auto data = unival {};
     auto s    = ostringstream {};
 
     auto success = encode(wrap(s), data);
@@ -34,7 +34,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_true) {
-    auto data = family { true };
+    auto data = unival { true };
     auto s    = ostringstream {};
 
     auto success = encode(wrap(s), data);
@@ -44,7 +44,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_false) {
-    auto data = family { false };
+    auto data = unival { false };
     auto s    = ostringstream {};
 
     auto success = encode(wrap(s), data);
@@ -54,7 +54,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_integer) {
-    auto data = family { 1 };
+    auto data = unival { 1 };
     auto s    = ostringstream {};
     auto x    = int64_t {};
 
@@ -66,7 +66,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_uint) {
-    auto data = family { 0x8000000000000000ull };
+    auto data = unival { 0x8000000000000000ull };
     auto s    = ostringstream {};
     auto x    = uint64_t {};
 
@@ -82,7 +82,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_real) {
-    auto data = family { 1.5 };
+    auto data = unival { 1.5 };
     auto s    = ostringstream {};
     auto x    = double {};
 
@@ -94,7 +94,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_id) {
-    auto data = family { "Hello" };
+    auto data = unival { "Hello" };
     auto s    = ostringstream {};
     auto x    = u8string {};
 
@@ -105,7 +105,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_string) {
-    auto data = family { " Hello " };
+    auto data = unival { " Hello " };
     auto s    = ostringstream {};
     auto x    = u8string {};
 
@@ -116,7 +116,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_string2) {
-    auto data = family { "\"Hello\"" };
+    auto data = unival { "\"Hello\"" };
     auto s    = ostringstream {};
     auto x    = u8string {};
 
@@ -127,7 +127,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_string3) {
-    auto data = family { "_abcDEF123" };
+    auto data = unival { "_abcDEF123" };
     auto s    = ostringstream {};
     auto x    = u8string {};
 
@@ -138,7 +138,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_string4) {
-    auto data = family { "1abc" };
+    auto data = unival { "1abc" };
     auto s    = ostringstream {};
     auto x    = u8string {};
 
@@ -149,7 +149,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_bytes) {
-    auto data = family { vbyte { 0x11, 0x7f, 0xa0 } };
+    auto data = unival { vbyte { 0x11, 0x7f, 0xa0 } };
     auto s    = ostringstream {};
 
     auto success = encode(wrap(s), data);
@@ -163,8 +163,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_vector) {
-    auto data = family { core::vfamily { family { 1 }, family { 2 },
-                                         family { 3 } } };
+    auto data = unival { sl::vector<unival> { 1, 2, 3 } };
     auto s    = ostringstream {};
 
     auto success = encode(wrap(s), data);
@@ -174,10 +173,10 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_vector_complex) {
-    auto data = family {};
+    auto data = unival {};
     auto s    = ostringstream {};
 
-    data[0] = core::vfamily { family { 1 }, family { 2 } };
+    data[0] = sl::vector<unival> { unival { 1 }, unival { 2 } };
     data[1] = 3;
 
     auto success = encode(wrap(s), data);
@@ -187,7 +186,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_composite) {
-    auto data = family {};
+    auto data = unival {};
     auto s    = ostringstream {};
 
     data["a"] = 1;
@@ -200,7 +199,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_function) {
-    auto data = family {};
+    auto data = unival {};
     auto s    = ostringstream {};
 
     data[text::s_function]     = "call";
@@ -214,7 +213,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_composite_commands) {
-    auto data = family {};
+    auto data = unival {};
     auto s    = ostringstream {};
 
     data[text::s_commands][0][text::s_function]     = "call1";
@@ -426,7 +425,7 @@ namespace laplace::test {
   }
 
   TEST(format, text_encode_decode) {
-    auto src = family {};
+    auto src = unival {};
 
     src["int"]            = 1;
     src["float"]          = 3.1415;

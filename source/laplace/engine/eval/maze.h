@@ -21,13 +21,16 @@ namespace laplace::engine::eval::maze {
 
   using fn_random = std::function<uint64_t()>;
 
-  void generate(const vec2z size, const std::span<int8_t> map,
-                const fn_random random);
+  void generate(vec2z const             size,
+                std::span<int8_t> const map,
+                fn_random const         random);
 
-  void stretch(const vec2z dst_size, const std::span<int8_t> dst,
-               const vec2z src_size, const std::span<const int8_t> src,
-               const sl::index tunnel_size,
-               const sl::index gate_size) noexcept;
+  void stretch(vec2z const                   dst_size,
+               std::span<int8_t> const       dst,
+               vec2z const                   src_size,
+               std::span<const int8_t> const src,
+               sl::index const               tunnel_size,
+               sl::index const               gate_size) noexcept;
 }
 
 #endif

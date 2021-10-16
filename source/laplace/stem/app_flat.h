@@ -24,9 +24,9 @@ namespace laplace::stem {
     static constexpr graphics::vec4 clear_color = { .1f, .09f, .12f,
                                                     1.f };
 
-    app_flat(int               argc,
-             char **           argv,
-             core::cref_family def_cfg) noexcept;
+    app_flat(int                 argc,
+             char **             argv,
+             core::unival const &def_cfg) noexcept;
 
     ~app_flat() noexcept override = default;
 

@@ -20,7 +20,7 @@
 
 namespace laplace::format::text {
   using std::make_shared, std::string, std::u8string, core::parser,
-      core::family, std::function, std::ostringstream, std::hex,
+      core::unival, std::function, std::ostringstream, std::hex,
       std::numeric_limits, std::setprecision, std::string_view,
       std::u8string_view;
 
@@ -70,9 +70,9 @@ namespace laplace::format::text {
   }
 
   static bool parse(parser &in,
-                    family &f,
+                    unival &f,
                     bool    is_vec_elem = false) noexcept {
-    auto field = family {};
+    auto field = unival {};
 
     auto x_u64 = uint64_t {};
     auto x_64  = int64_t {};
@@ -117,13 +117,13 @@ namespace laplace::format::text {
     } else if (in.parse(" \"%s\" ", &x_s)) {
       field = unwrap_string(x_s);
     } else if (in.parse(" %a ", &x_s)) {
-      auto id = family(x_s);
+      auto id = unival { x_s };
 
       if (in.parse(" ( ")) {
         field[text::s_function] = id;
 
         if (!in.parse(" ) ")) {
-          auto args = family {};
+          auto args = unival {};
 
           if (!parse(in, args)) {
             return false;
@@ -143,7 +143,7 @@ namespace laplace::format::text {
         field = id;
       }
     } else if (in.parse(" ( ")) {
-      auto v = family {};
+      auto v = unival {};
 
       if (!parse(in, v)) {
         return false;
@@ -165,8 +165,8 @@ namespace laplace::format::text {
           continue;
         }
 
-        auto key   = family {};
-        auto value = family {};
+        auto key   = unival {};
+        auto value = unival {};
 
         if (!parse(in, key)) {
           return false;
@@ -228,14 +228,14 @@ namespace laplace::format::text {
       return 0;
     });
 
-    if (auto f = family {}; parse(in, f))
+    if (auto f = unival {}; parse(in, f))
       return f;
 
     return {};
   }
 
   static bool printdown(function<bool(string_view)> print,
-                        family const &              f,
+                        unival const &              f,
                         sl::whole                   indent = 0,
                         bool is_vec_elem = false) noexcept {
     if (f.is_boolean()) {

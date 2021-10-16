@@ -32,12 +32,10 @@ namespace laplace::engine::eval::hierarchical_grid {
   struct map_info {
     static constexpr auto no_block = vec2z { -1, 0 };
 
-    vec2z                   grid_size;
-    sl::whole               grid_stride = 0;
-    intval                  grid_scale  = 0;
-    std::span<int8_t const> grid_data;
-    vec2z                   block_size;
-    sl::whole               block_stride = 0;
+    intval          grid_scale   = 0;
+    grid::rect_area grid_area    = {};
+    vec2z           block_size   = {};
+    sl::whole       block_stride = 0;
 
     fn_available available;
 
@@ -62,16 +60,15 @@ namespace laplace::engine::eval::hierarchical_grid {
                                         map_info const &map) noexcept
       -> std::span<sl::index const>;
 
+  [[nodiscard]] auto generate(
+      vec2z const           block_size,
+      fn_available const    available,
+      intval const          grid_scale,
+      grid::rect_area const grid_area) noexcept -> map_info;
+
   [[nodiscard]] auto nearest_pivot(vec2z const &   position,
                                    map_info const &map) noexcept
       -> sl::index;
-
-  [[nodiscard]] auto generate(vec2z const  block_size,
-                              vec2z const  grid_size,
-                              intval const grid_scale,
-                              std::span<int8_t const> const grid_data,
-                              fn_available const available) noexcept
-      -> map_info;
 
   void process(map_info &map) noexcept;
 }

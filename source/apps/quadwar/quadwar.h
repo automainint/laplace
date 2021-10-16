@@ -52,7 +52,7 @@ namespace quadwar_app {
 
   private:
     static auto get_player_name() noexcept -> std::u8string_view;
-    static auto get_config() noexcept -> core::family;
+    static auto get_config() noexcept -> core::unival;
 
     ui::ptr_mainmenu m_mainmenu;
     ptr_session      m_session;
