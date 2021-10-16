@@ -21,8 +21,7 @@ namespace laplace::ui::elem {
     using filter = std::function<bool(char32_t c)>;
 
     struct update_result {
-      bool          event_status = false;
-      bool          has_focus    = false;
+      bool          has_focus = false;
       std::u8string text;
       sl::index     cursor    = 0;
       sl::index     selection = 0;
@@ -35,9 +34,7 @@ namespace laplace::ui::elem {
 
     void setup_filter(filter f);
 
-    auto tick(sl::time                 delta_msec,
-              core::cref_input_handler in,
-              bool                     is_handled) -> bool final;
+    void tick(sl::time delta_msec, core::cref_input_handler in) final;
 
     void render(context const &con) final;
 
@@ -58,7 +55,7 @@ namespace laplace::ui::elem {
                        core::input_event const &ev) -> update_result;
 
   private:
-    auto textedit_tick(core::cref_input_handler in) -> bool;
+    void textedit_tick(core::cref_input_handler in);
 
     filter        m_filter;
     sl::whole     m_length_limit = default_length_limit;

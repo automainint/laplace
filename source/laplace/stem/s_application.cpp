@@ -75,6 +75,7 @@ namespace laplace::stem {
     m_window->set_size(frame_width, frame_height);
     m_window->set_fullscreen_mode(frame_width, frame_height,
                                   frame_rate);
+    m_window->set_fullscreen(true);
 
     m_window->on_init([this]() { init(); });
 

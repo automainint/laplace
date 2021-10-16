@@ -140,19 +140,21 @@ namespace laplace::win32 {
     event_focus     m_on_focus;
     event_drop_file m_on_drop_file;
 
-    sl::index m_screen_x          = 0;
-    sl::index m_screen_y          = 0;
-    sl::whole m_screen_width      = 0;
-    sl::whole m_screen_height     = 0;
-    sl::whole m_fullscreen_width  = default_frame_width;
-    sl::whole m_fullscreen_height = default_frame_height;
-    sl::index m_x                 = 0;
-    sl::index m_y                 = 0;
-    sl::whole m_width             = 0;
-    sl::whole m_height            = 0;
-    sl::whole m_frame_width       = 0;
-    sl::whole m_frame_height      = 0;
-    sl::whole m_frame_rate        = default_frame_rate;
+    sl::index m_screen_x               = 0;
+    sl::index m_screen_y               = 0;
+    sl::whole m_screen_width           = 0;
+    sl::whole m_screen_height          = 0;
+    sl::whole m_fullscreen_width       = 0;
+    sl::whole m_fullscreen_height      = 0;
+    sl::index m_x                      = 0;
+    sl::index m_y                      = 0;
+    sl::whole m_width                  = 0;
+    sl::whole m_height                 = 0;
+    sl::whole m_frame_width            = 0;
+    sl::whole m_frame_height           = 0;
+    sl::whole m_init_fullscreen_width  = default_frame_width;
+    sl::whole m_init_fullscreen_height = default_frame_height;
+    sl::whole m_init_frame_rate        = default_frame_rate;
 
     bool m_is_inited     = false;
     bool m_is_visible    = default_is_visible;

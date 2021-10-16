@@ -29,12 +29,8 @@ namespace laplace::ui {
 
     virtual ~widget() = default;
 
-    /*  Widget live loop. Returns true if
-     *  any event was handled.
-     */
-    virtual auto tick(sl::time                 delta_msec,
-                      core::cref_input_handler in,
-                      bool                     is_handled) -> bool;
+    virtual void tick(sl::time                 delta_msec,
+                      core::cref_input_handler in);
 
     virtual void render(context const &con);
 
@@ -102,9 +98,8 @@ namespace laplace::ui {
     void draw_childs(context const &con);
     void up_to_date();
 
-    auto widget_tick(sl::time                 delta_msec,
-                     core::cref_input_handler in,
-                     bool                     is_handled) -> bool;
+    void widget_tick(sl::time                 delta_msec,
+                     core::cref_input_handler in);
 
     void widget_render(context const &con);
 

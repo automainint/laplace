@@ -18,6 +18,7 @@
 #include "window.h"
 
 #include "../../core/defs.h"
+#include "../../core/string.h"
 #include <chrono>
 #include <iostream>
 
@@ -35,7 +36,7 @@ namespace laplace::win32 {
   const bool      window::default_is_fullscreen = false;
   const sl::whole window::default_frame_width   = 960;
   const sl::whole window::default_frame_height  = 720;
-  const sl::whole window::default_frame_rate    = 60;
+  const sl::whole window::default_frame_rate    = 24;
 
   const uint32_t window::default_style_ex = WS_EX_ACCEPTFILES;
 
@@ -46,11 +47,7 @@ namespace laplace::win32 {
       WS_OVERLAPPED | WS_CAPTION | WS_BORDER | WS_SIZEBOX |
       WS_MAXIMIZEBOX | WS_MINIMIZEBOX);
 
-  void window::init(window::native_handle parent) {
-    if (!parent) {
-      SetProcessDPIAware();
-    }
-
+  void window::init(native_handle parent) {
     m_module_handle = GetModuleHandle(nullptr);
 
     m_handle = nullptr;
@@ -126,19 +123,27 @@ namespace laplace::win32 {
     }
   }
 
-  void window::set_visible(bool is_visible) {
-    m_is_visible = is_visible;
+  void window::set_visible(bool is_visible_) {
+    if (m_is_visible != is_visible_) {
+      m_is_visible = is_visible_;
 
-    if (m_handle) {
-      update_window();
+      if (m_handle) {
+        update_window();
 
-      ShowWindow(m_handle, is_visible ? SW_SHOW : SW_HIDE);
+        ShowWindow(m_handle, is_visible_
+                                 ? (is_fullscreen() ? SW_SHOWMAXIMIZED
+                                                    : SW_SHOWNORMAL)
+                                 : SW_HIDE);
+
+        if (is_fullscreen() && !is_fullscreen_windowed())
+          update_display();
+      }
     }
   }
 
-  void window::set_fullscreen(bool is_fullscreen) {
-    if (m_is_fullscreen != is_fullscreen) {
-      m_is_fullscreen = is_fullscreen;
+  void window::set_fullscreen(bool is_fullscreen_) {
+    if (m_is_fullscreen != is_fullscreen_) {
+      m_is_fullscreen = is_fullscreen_;
 
       if (m_handle) {
         auto style    = static_cast<LONG>(get_style());
@@ -146,9 +151,18 @@ namespace laplace::win32 {
 
         SetWindowLong(m_handle, GWL_STYLE, style);
         SetWindowLong(m_handle, GWL_EXSTYLE, style_ex);
+      }
 
-        update_window();
+      if (is_visible())
         update_display();
+
+      update_rect();
+
+      if (m_handle && is_visible()) {
+        if (is_fullscreen_)
+          ShowWindow(m_handle, SW_SHOWMAXIMIZED);
+        else
+          ShowWindow(m_handle, SW_SHOWNORMAL);
       }
     }
   }
@@ -182,15 +196,15 @@ namespace laplace::win32 {
   }
 
   void window::set_fullscreen_windowed() {
-    set_fullscreen_mode(0, 0, m_frame_rate);
+    set_fullscreen_mode(0, 0, m_init_frame_rate);
   }
 
   void window::set_fullscreen_mode(sl::whole frame_width,
                                    sl::whole frame_height,
                                    sl::whole frame_rate) {
-    m_fullscreen_width  = frame_width;
-    m_fullscreen_height = frame_height;
-    m_frame_rate        = frame_rate;
+    m_init_fullscreen_width  = frame_width;
+    m_init_fullscreen_height = frame_height;
+    m_init_frame_rate        = frame_rate;
 
     if (is_fullscreen()) {
       update_display();
@@ -231,13 +245,10 @@ namespace laplace::win32 {
       return -1;
     }
 
-    if (m_is_visible) {
-      ShowWindow(m_handle, SW_SHOWNORMAL);
+    if (is_visible()) {
+      ShowWindow(m_handle,
+                 is_fullscreen() ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
       UpdateWindow(m_handle);
-    }
-
-    if (m_is_fullscreen) {
-      update_display();
     }
 
     int  code = 0;
@@ -246,15 +257,13 @@ namespace laplace::win32 {
     auto msg = MSG {};
     memset(&msg, 0, sizeof msg);
 
-    if (m_on_init) {
+    if (m_on_init)
       m_on_init();
-    }
 
     m_is_inited = true;
 
-    if (m_on_size) {
+    if (m_on_size)
       m_on_size(get_frame_width(), get_frame_height());
-    }
 
     auto time = clock::now();
 
@@ -276,24 +285,22 @@ namespace laplace::win32 {
       auto delta = duration_cast<milliseconds>(clock::now() - time);
       auto delta_msec = static_cast<sl::whole>(delta.count());
 
-      if (m_input) {
+      if (m_input)
         m_input->tick(delta_msec);
-      }
 
-      if (m_on_frame) {
+      if (m_on_frame)
         m_on_frame(delta_msec);
-      }
 
-      if (m_input) {
+      if (m_input)
         m_input->refresh();
-      }
 
       time += delta;
     }
 
-    if (m_on_cleanup) {
+    m_is_inited = false;
+
+    if (m_on_cleanup)
       m_on_cleanup();
-    }
 
     destroy_window();
 
@@ -338,24 +345,24 @@ namespace laplace::win32 {
   }
 
   void window::create_window() {
-    if (register_class()) {
-      auto window_class = m_class_name.c_str();
-      auto window_name  = m_window_name.c_str();
+    if (!register_class())
+      return;
 
-      m_handle = CreateWindowExW(
-          static_cast<DWORD>(get_style_ex()), window_class,
-          window_name, static_cast<DWORD>(get_style()),
-          static_cast<int>(get_x()), static_cast<int>(get_y()),
-          static_cast<int>(get_width()),
-          static_cast<int>(get_height()), m_parent, nullptr,
-          m_module_handle, nullptr);
+    auto window_class = m_class_name.c_str();
+    auto window_name  = m_window_name.c_str();
 
-      if (m_handle) {
-        SetWindowLongPtr(m_handle, GWLP_USERDATA,
-                         reinterpret_cast<LONG_PTR>(this));
-      } else {
-        error_("CreateWindowEx failed.", __FUNCTION__);
-      }
+    m_handle = CreateWindowExW(
+        static_cast<DWORD>(get_style_ex()), window_class, window_name,
+        static_cast<DWORD>(get_style()), static_cast<int>(get_x()),
+        static_cast<int>(get_y()), static_cast<int>(get_width()),
+        static_cast<int>(get_height()), m_parent, nullptr,
+        m_module_handle, nullptr);
+
+    if (m_handle) {
+      SetWindowLongPtr(m_handle, GWLP_USERDATA,
+                       reinterpret_cast<LONG_PTR>(this));
+    } else {
+      error_("CreateWindowEx failed.", __FUNCTION__);
     }
   }
 
@@ -375,62 +382,67 @@ namespace laplace::win32 {
   }
 
   void window::update_rect() {
-    if (m_handle) {
-      const auto x      = get_x();
-      const auto y      = get_y();
-      const auto width  = get_width();
-      const auto height = get_height();
+    update_window();
 
-      MoveWindow(m_handle, static_cast<int>(get_x()),
-                 static_cast<int>(get_y()),
-                 static_cast<int>(get_width()),
-                 static_cast<int>(get_height()), m_is_visible);
-
-      if (m_input) {
-        m_input->set_window_rect(x, y, width, height);
-      }
-    }
+    if (m_input)
+      m_input->set_window_rect(get_x(), get_y(), get_width(),
+                               get_height());
   }
 
   void window::update_window() {
-    if (m_is_visible) {
-      MoveWindow(m_handle, static_cast<int>(get_x()),
-                 static_cast<int>(get_y()),
-                 static_cast<int>(get_width()),
-                 static_cast<int>(get_height()), true);
-    }
+    if (!is_visible() || !m_handle)
+      return;
+
+    MoveWindow(m_handle, static_cast<int>(get_x()),
+               static_cast<int>(get_y()),
+               static_cast<int>(get_width()),
+               static_cast<int>(get_height()), true);
   }
 
   void window::update_display() {
-    bool toggle_on = (m_handle != nullptr) && is_fullscreen() &&
+    bool toggle_on = is_visible() && is_fullscreen() &&
                      !is_fullscreen_windowed();
 
     if (toggle_on) {
-      auto mode = DEVMODE {};
+      auto mode = DEVMODEW {};
       memset(&mode, 0, sizeof mode);
 
-      mode.dmSize   = sizeof mode;
+      mode.dmSize = sizeof mode;
+
+      bool mode_found = false;
+
+      for (int i = 0; EnumDisplaySettingsW(nullptr, i, &mode) != 0;
+           i++)
+        if (mode.dmBitsPerPel >= 24 &&
+            mode.dmPelsWidth >= m_init_fullscreen_width &&
+            mode.dmPelsHeight >= m_init_fullscreen_height &&
+            mode.dmDisplayFrequency >= m_init_frame_rate) {
+          m_init_fullscreen_width  = mode.dmPelsWidth;
+          m_init_fullscreen_height = mode.dmPelsHeight;
+          m_init_frame_rate        = mode.dmDisplayFrequency;
+          mode_found               = true;
+          break;
+        }
+
+      if (!mode_found) {
+        error_("No required display settings available.",
+               __FUNCTION__);
+        return;
+      }
+
       mode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT |
                       DM_DISPLAYFREQUENCY;
 
-      mode.dmBitsPerPel = 32;
-      mode.dmPelsWidth  = static_cast<DWORD>(m_fullscreen_width);
-      mode.dmPelsHeight = static_cast<DWORD>(m_fullscreen_height);
-      mode.dmDisplayFrequency = static_cast<DWORD>(m_frame_rate);
-
-      if (ChangeDisplaySettings(&mode, CDS_FULLSCREEN) !=
+      if (ChangeDisplaySettingsW(&mode, CDS_FULLSCREEN) !=
           DISP_CHANGE_SUCCESSFUL) {
-        error_("Toggle on. ChangeDisplaySettings failed.",
-               __FUNCTION__);
+        error_("ChangeDisplaySettings failed.", __FUNCTION__);
       }
     } else {
       /*  Reset to default settings.
        */
-
-      if (ChangeDisplaySettings(nullptr, 0) !=
+      if (ChangeDisplaySettingsW(nullptr, 0) !=
           DISP_CHANGE_SUCCESSFUL) {
-        error_("Toggle off. ChangeDisplaySettings failed.",
-               __FUNCTION__);
+        error_("ChangeDisplaySettings failed.", __FUNCTION__);
       }
     }
   }
@@ -441,9 +453,7 @@ namespace laplace::win32 {
       m_handle = nullptr;
     }
 
-    if (is_fullscreen() && !is_fullscreen_windowed()) {
-      update_display();
-    }
+    set_fullscreen(false);
   }
 
   void window::accept_files(void *drop_data) {
@@ -479,14 +489,33 @@ namespace laplace::win32 {
 
         break;
 
-      case WM_SIZE:
-        if (m_on_size && m_is_inited) {
-          auto width  = static_cast<sl::whole>(LOWORD(lparam));
-          auto height = static_cast<sl::whole>(HIWORD(lparam));
+      case WM_SIZE: {
+        auto r = RECT {};
+        GetWindowRect(m_handle, &r);
 
-          m_on_size(width, height);
+        m_x = r.left;
+        m_y = r.right;
+
+        if (!is_fullscreen()) {
+          m_width  = static_cast<sl::whole>(r.right) - r.left;
+          m_height = static_cast<sl::whole>(r.bottom) - r.top;
         }
-        break;
+
+        GetClientRect(m_handle, &r);
+
+        if (is_fullscreen()) {
+          m_fullscreen_width = static_cast<sl::whole>(r.right) -
+                               r.left;
+          m_fullscreen_height = static_cast<sl::whole>(r.bottom) -
+                                r.top;
+        } else {
+          m_frame_width  = static_cast<sl::whole>(r.right) - r.left;
+          m_frame_height = static_cast<sl::whole>(r.bottom) - r.top;
+        }
+
+        if (m_on_size && m_is_inited)
+          m_on_size(get_frame_width(), get_frame_height());
+      } break;
 
       case WM_ACTIVATE:
         switch (LOWORD(wparam)) {
@@ -594,11 +623,11 @@ namespace laplace::win32 {
   }
 
   auto window::get_frame_width() const -> sl::whole {
-    return m_frame_width;
+    return m_is_fullscreen ? get_fullscreen_width() : m_frame_width;
   }
 
   auto window::get_frame_height() const -> sl::whole {
-    return m_frame_height;
+    return m_is_fullscreen ? get_fullscreen_height() : m_frame_height;
   }
 
   auto window::is_visible() const -> bool {
@@ -610,7 +639,8 @@ namespace laplace::win32 {
   }
 
   auto window::is_fullscreen_windowed() const -> bool {
-    return m_fullscreen_width == 0 || m_fullscreen_height == 0;
+    return m_init_fullscreen_width == 0 ||
+           m_init_fullscreen_height == 0;
   }
 
   auto window::has_focus() const -> bool {

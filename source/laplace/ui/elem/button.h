@@ -21,18 +21,15 @@ namespace laplace::ui::elem {
   class button : public panel {
   public:
     struct update_result {
-      bool event_status;
-      bool is_pressed;
-      bool has_cursor;
+      bool is_pressed = false;
+      bool has_cursor = false;
     };
 
     ~button() override = default;
 
     void on_click(event_button_click ev);
 
-    auto tick(sl::time                 delta_msec,
-              core::cref_input_handler in,
-              bool                     is_handled) -> bool final;
+    void tick(sl::time delta_msec, core::cref_input_handler in) final;
 
     void render(context const &con) override;
 
@@ -50,7 +47,7 @@ namespace laplace::ui::elem {
                        core::cref_input_handler in) -> update_result;
 
   private:
-    auto button_tick(core::cref_input_handler in) -> bool;
+    void button_tick(core::cref_input_handler in);
 
     event_button_click m_on_click;
 
