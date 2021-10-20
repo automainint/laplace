@@ -14,6 +14,22 @@
 #include <gtest/gtest.h>
 
 namespace laplace::test {
+  TEST(core, utils_index_arg_types) {
+    EXPECT_EQ(as_index(static_cast<signed char>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<signed short>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<signed int>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<signed long>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<signed long long>(0)),
+              sl::index {});
+
+    EXPECT_EQ(as_index(static_cast<unsigned char>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<unsigned short>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<unsigned int>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<unsigned long>(0)), sl::index {});
+    EXPECT_EQ(as_index(static_cast<unsigned long long>(0)),
+              sl::index {});
+  }
+
   TEST(core, utils_index_unsigned) {
     if constexpr (sizeof(sl::index) == 8) {
       constexpr uint64_t a = 0x1020304050607080;

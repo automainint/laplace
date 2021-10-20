@@ -189,6 +189,13 @@ namespace laplace {
   inline void small_vector<elem_, small_size_, unsafe_>::insert(
       const_iterator position, const elem_ &value) noexcept {
 
+    if constexpr (!unsafe_) {
+      if (position < m_values || position > m_values + m_size) {
+        error_("Invalid position.", __FUNCTION__);
+        return;
+      }
+    }
+
     reserve(m_size + 1);
 
     _fill_one(m_values + m_size, m_values[m_size - 1]);
@@ -206,6 +213,11 @@ namespace laplace {
       const_iterator position, auto begin, auto end) noexcept {
 
     if constexpr (!unsafe_) {
+      if (position < m_values || position > m_values + m_size) {
+        error_("Invalid position.", __FUNCTION__);
+        return;
+      }
+
       if (end < begin) {
         error_("Invalid range.", __FUNCTION__);
         return;
@@ -239,6 +251,13 @@ namespace laplace {
   inline void small_vector<elem_, small_size_, unsafe_>::emplace(
       const_iterator position, auto &&...args) noexcept {
 
+    if constexpr (!unsafe_) {
+      if (position < m_values || position > m_values + m_size) {
+        error_("Invalid position.", __FUNCTION__);
+        return;
+      }
+    }
+
     reserve(m_size + 1);
 
     const auto p = position - m_values;
@@ -266,6 +285,13 @@ namespace laplace {
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
   inline void small_vector<elem_, small_size_, unsafe_>::erase(
       const_iterator position) noexcept {
+    if constexpr (!unsafe_) {
+      if (position < m_values || position >= m_values + m_size) {
+        error_("Invalid position.", __FUNCTION__);
+        return;
+      }
+    }
+
     const auto p = position - m_values;
     std::move(m_values + p + 1, m_values + m_size, m_values + p);
     m_size--;
@@ -277,7 +303,8 @@ namespace laplace {
       const_iterator begin, const_iterator end) noexcept {
 
     if constexpr (!unsafe_) {
-      if (end < begin) {
+      if (end < begin || begin < m_values ||
+          end >= m_values + m_size) {
         error_("Invalid range.", __FUNCTION__);
         return;
       }
@@ -295,6 +322,13 @@ namespace laplace {
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
   inline void small_vector<elem_, small_size_, unsafe_>::reserve(
       const ptrdiff_t size) {
+
+    if constexpr (!unsafe_) {
+      if (size < 0) {
+        error_("Invalid size.", __FUNCTION__);
+        return;
+      }
+    }
 
     if (size < m_capacity) {
       return;

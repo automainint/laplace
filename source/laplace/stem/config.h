@@ -13,7 +13,7 @@
 #ifndef laplace_stem_config_h
 #define laplace_stem_config_h
 
-#include "../core/family.h"
+#include "../core/unival.h"
 #include "../platform/wrap.h"
 
 namespace laplace::stem::config {
@@ -96,19 +96,22 @@ namespace laplace::stem::config {
 
   auto scan_flag(int argc, char **argv, char c) -> bool;
 
-  auto scan_flag(int argc, char **argv, std::string_view name) -> bool;
+  auto scan_flag(int argc, char **argv, std::string_view name)
+      -> bool;
 
   auto scan_flag(int argc, char **argv, char c, std::string_view name)
       -> bool;
 
-  auto get_default() -> core::family;
+  auto get_default() -> core::unival;
 
   auto parse_cmdline(const char *args) -> std::pair<int, char **>;
 
-  auto load(int argc, char **argv,
-            core::cref_family def_cfg = get_default()) -> core::family;
+  auto load(int                 argc,
+            char **             argv,
+            core::unival const &def_cfg = get_default())
+      -> core::unival;
 
-  void save(core::cref_family cfg);
+  void save(core::unival const &cfg);
 }
 
 #endif

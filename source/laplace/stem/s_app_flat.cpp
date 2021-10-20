@@ -17,11 +17,11 @@
 #include "../graphics/utils.h"
 
 namespace laplace::stem {
-  using std::make_shared, std::abs, core::cref_family, ui::frame;
+  using std::make_shared, std::abs, core::unival, ui::frame;
 
-  app_flat::app_flat(int         argc,
-                     char **     argv,
-                     cref_family def_cfg) noexcept :
+  app_flat::app_flat(int           argc,
+                     char **       argv,
+                     unival const &def_cfg) noexcept :
       application(argc, argv, def_cfg) { }
 
   void app_flat::init() noexcept {
@@ -37,7 +37,7 @@ namespace laplace::stem {
   }
 
   void app_flat::update(sl::time delta_msec) noexcept {
-    m_ui->tick(delta_msec, get_input(), false);
+    m_ui->tick(delta_msec, get_input());
   }
 
   void app_flat::render() noexcept {
@@ -50,9 +50,11 @@ namespace laplace::stem {
                                sl::whole height) noexcept {
     application::adjust_layout(width, height);
 
+    if (!m_ui)
+      return;
+
     m_ui->set_rect(
         { .x = 0, .y = 0, .width = width, .height = height });
-
     m_ui->refresh();
   }
 }

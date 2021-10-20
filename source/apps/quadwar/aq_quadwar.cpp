@@ -19,7 +19,7 @@
 #include <random>
 
 namespace quadwar_app {
-  using std::make_shared, core::family, std::string,
+  using std::make_shared, core::unival, std::string,
       std::u8string_view, std::random_device,
       std::uniform_int_distribution;
 
@@ -59,7 +59,7 @@ namespace quadwar_app {
     return default_player_names[dist(dev)];
   }
 
-  auto quadwar::get_config() noexcept -> family {
+  auto quadwar::get_config() noexcept -> unival {
     using namespace stem::config;
 
     auto cfg = get_default();

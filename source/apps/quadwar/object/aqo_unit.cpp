@@ -315,8 +315,8 @@ namespace quadwar_app::object {
       m_destination = grid::nearest(p1, m_size, m_pathmap);
 
       m_search = grid::path_search_init(
-          m_size, 16, m_pathmap,
-          [](const int8_t x) { return x <= 0; }, p0, m_destination);
+          p0, m_destination, [](int8_t const x) { return x <= 0; },
+          16, grid::area_of(m_size, m_pathmap));
 
       m_searching = true;
       m_movement  = true;

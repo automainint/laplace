@@ -24,8 +24,7 @@ namespace laplace::stem::config {
   namespace fs   = std::filesystem;
 
   using std::string_view, std::string, std::pair, std::ifstream,
-      std::ofstream, core::family, core::ref_family,
-      core::cref_family, platform::window, format::wrap;
+      std::ofstream, core::unival, platform::window, format::wrap;
 
   auto scan_flag(int argc, char **argv, char c) -> bool {
     for (auto i = 0; i < argc; i++)
@@ -105,8 +104,8 @@ namespace laplace::stem::config {
     return { g_argc, g_argv };
   }
 
-  auto get_default() -> family {
-    auto cfg = family {};
+  auto get_default() -> unival {
+    auto cfg = unival {};
 
     cfg[k_frame][0] = window::default_frame_width;
     cfg[k_frame][1] = window::default_frame_height;
@@ -128,7 +127,7 @@ namespace laplace::stem::config {
     return cfg;
   }
 
-  auto read_config(char **tag, char **end, ref_family cfg) -> int {
+  auto read_config(char **tag, char **end, unival &cfg) -> int {
     if (tag < end && tag[0]) {
       cfg[k_file] = string { tag[0] };
 
@@ -143,8 +142,7 @@ namespace laplace::stem::config {
     return 1;
   }
 
-  auto read_frame_size(char **tag, char **end, ref_family cfg)
-      -> int {
+  auto read_frame_size(char **tag, char **end, unival &cfg) -> int {
     if (tag + 2 < end && tag[0] && tag[1] && tag[2]) {
       cfg[k_frame][0] = atoi(tag[0]);
       cfg[k_frame][1] = atoi(tag[1]);
@@ -154,8 +152,7 @@ namespace laplace::stem::config {
     return 3;
   }
 
-  auto process_tag(char **arg, char **end, ref_family cfg)
-      -> char ** {
+  auto process_tag(char **arg, char **end, unival &cfg) -> char ** {
     if (arg && *arg && arg < end) {
       auto tag = *arg;
 
@@ -211,8 +208,8 @@ namespace laplace::stem::config {
     return nullptr;
   }
 
-  auto load(int argc, char **argv, cref_family def_cfg) -> family {
-    family cfg = def_cfg;
+  auto load(int argc, char **argv, unival const &def_cfg) -> unival {
+    auto cfg = unival { def_cfg };
 
     auto arg = argv + 1;
     auto end = argv + argc;
@@ -222,7 +219,7 @@ namespace laplace::stem::config {
     return cfg;
   }
 
-  void save(cref_family cfg) {
+  void save(unival const &cfg) {
     if (!cfg.has(k_file))
       return;
 

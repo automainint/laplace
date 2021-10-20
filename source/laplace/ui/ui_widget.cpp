@@ -20,10 +20,8 @@ namespace laplace::ui {
 
   weak_ptr<context> widget::m_default_context;
 
-  auto widget::tick(sl::time           delta_msec,
-                    cref_input_handler in,
-                    bool               is_handled) -> bool {
-    return widget_tick(delta_msec, in, is_handled);
+  void widget::tick(sl::time delta_msec, cref_input_handler in) {
+    widget_tick(delta_msec, in);
   }
 
   void widget::render(context const &con) {
@@ -149,9 +147,8 @@ namespace laplace::ui {
     m_is_changed = false;
   }
 
-  auto widget::widget_tick(sl::time           delta_msec,
-                           cref_input_handler in,
-                           bool               is_handled) -> bool {
+  void widget::widget_tick(sl::time           delta_msec,
+                           cref_input_handler in) {
     if (!m_is_attached) {
       m_absolute_x = m_rect.x;
       m_absolute_y = m_rect.y;
@@ -162,16 +159,11 @@ namespace laplace::ui {
       list.reserve(m_childs.size());
 
       for (auto &c : m_childs)
-        if (c->is_visible() && c->is_enabled()) {
+        if (c->is_visible() && c->is_enabled())
           list.emplace_back(c.get());
-        }
 
-      for (auto &c : list) {
-        is_handled |= c->tick(delta_msec, in, is_handled);
-      }
+      for (auto &c : list) c->tick(delta_msec, in);
     }
-
-    return is_handled;
   }
 
   void widget::widget_render(context const &con) {

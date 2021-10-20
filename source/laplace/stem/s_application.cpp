@@ -30,19 +30,19 @@ namespace laplace::stem {
   using std::make_shared, std::make_unique, config::load,
       config::k_frame, config::k_caption, config::k_shaders,
       config::k_flat_solid, config::k_flat_sprite, config::k_vertex,
-      config::k_fragment, config::k_folder, platform::window,
-      platform::input, platform::glcontext, platform::ref_window,
-      core::cref_input_handler, platform::ref_glcontext,
-      graphics::flat::solid_shader, graphics::flat::sprite_shader,
-      core::cref_family, std::wstring, std::wstring_view,
+      config::k_fragment, config::k_folder, core::unival,
+      platform::window, platform::input, platform::glcontext,
+      platform::ref_window, core::cref_input_handler,
+      platform::ref_glcontext, graphics::flat::solid_shader,
+      graphics::flat::sprite_shader, std::wstring, std::wstring_view,
       std::unique_ptr, std::istream, std::ifstream,
       std::filesystem::path, std::chrono::steady_clock,
       std::chrono::time_point, std::chrono::milliseconds,
       std::chrono::duration_cast;
 
-  application::application(int         argc,
-                           char **     argv,
-                           cref_family def_cfg) noexcept {
+  application::application(int           argc,
+                           char **       argv,
+                           unival const &def_cfg) noexcept {
     m_config     = load(argc, argv, def_cfg);
     m_frame_time = steady_clock::now();
   }
@@ -75,6 +75,7 @@ namespace laplace::stem {
     m_window->set_size(frame_width, frame_height);
     m_window->set_fullscreen_mode(frame_width, frame_height,
                                   frame_rate);
+    m_window->set_fullscreen(true);
 
     m_window->on_init([this]() { init(); });
 

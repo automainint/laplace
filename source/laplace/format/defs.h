@@ -13,15 +13,15 @@
 #ifndef laplace_format_defs_h
 #define laplace_format_defs_h
 
-#include "../core/family.h"
+#include "../core/unival.h"
 #include <functional>
 #include <optional>
 
 namespace laplace::format {
   enum class mode { text, binary };
 
-  using pack_type       = std::optional<core::family>;
-  using const_pack_type = core::cref_family;
+  using pack_type       = std::optional<core::unival>;
+  using const_pack_type = core::unival const &;
   using fn_read         = std::function<vbyte(sl::whole)>;
   using fn_write        = std::function<sl::whole(span_cbyte)>;
 }

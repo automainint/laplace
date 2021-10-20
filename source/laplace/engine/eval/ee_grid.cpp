@@ -68,10 +68,9 @@ namespace laplace::engine::eval::grid {
     }
   }
 
-  [[nodiscard]] auto trace_line(vec2z const    a,
-                                vec2z const    b,
-                                fn_point const point) noexcept
-      -> bool {
+  auto trace_line(vec2z const    a,
+                  vec2z const    b,
+                  fn_point const point) noexcept -> bool {
 
     auto const abs_delta = [](sl::index const x0,
                               sl::index const x1) {
@@ -160,369 +159,320 @@ namespace laplace::engine::eval::grid {
     return true;
   }
 
-  [[nodiscard]] auto neighbors4(sl::whole const          width,
-                                sl::whole const          stride,
-                                intval const             scale,
-                                span<int8_t const> const map,
-                                fn_available const       available,
-                                sl::index const          position,
-                                sl::index const n) noexcept -> link {
-
-    if (position < 0 || position >= map.size() || stride <= 0) {
-      return {};
-    }
-
-    auto const x = position % stride;
-    auto const y = position / stride;
-
-    if (x < 0 || y < 0 || x >= width) {
-      return {};
-    }
-
-    if (!available(map[position])) {
-      return {};
-    }
-
-    auto check = [&](sl::index x, sl::index y) -> link {
-      if (x < 0 || x >= width || y < 0) {
-        return { .node = link::skip };
+  auto area_of(vec2z const                   size,
+               std::span<int8_t const> const map) noexcept
+      -> rect_area {
+    if constexpr (!_unsafe) {
+      if (size.x() * size.y() < map.size()) {
+        error_("Invalid size.", __FUNCTION__);
+        return {};
       }
+    }
 
-      auto const n = y * stride + x;
-      if (n >= map.size() || !available(map[n])) {
-        return { .node = link::skip };
+    return rect_area { .map    = map,
+                       .stride = size.x(),
+                       .width  = size.x() };
+  }
+
+  auto submap(vec2z const     min,
+              vec2z const     max,
+              rect_area const area) noexcept -> rect_area {
+    if (max.x() <= min.x() || max.y() <= min.y())
+      return {};
+
+    auto const a = min - area.origin;
+    auto const b = max - area.origin;
+
+    auto const i = a.y() * area.stride + a.x();
+    auto const j = (b.y() - 1) * area.stride + b.x();
+
+    if constexpr (!_unsafe) {
+      if (i < 0 || i > area.map.size() || j < 0 ||
+          j > area.map.size() || j < i) {
+        error_("Invalid bounds.", __FUNCTION__);
+        return {};
       }
+    }
+
+    return rect_area { .map    = span { area.map.begin() + i,
+                                     area.map.begin() + j },
+                       .stride = area.stride,
+                       .width  = max.x() - min.x(),
+                       .origin = min };
+  }
+
+  auto index_of(rect_area const area,
+                vec2z const     position,
+                sl::index const invalid) noexcept -> sl::index {
+    auto const p = position - area.origin;
+
+    if (p.x() < 0 || p.y() < 0 || p.x() >= area.width)
+      return invalid;
+
+    auto const n = p.y() * area.stride + p.x();
+
+    if (n >= area.map.size())
+      return invalid;
+
+    return n;
+  }
+
+  auto point_of(sl::whole const stride, sl::index const n) noexcept
+      -> vec2z {
+    if (stride <= 0)
+      return {};
+
+    return vec2z { n % stride, n / stride };
+  }
+
+  auto point_of(rect_area const area, sl::index const n) noexcept
+      -> vec2z {
+    if (area.stride <= 0)
+      return {};
+
+    return area.origin + vec2z { n % area.stride, n / area.stride };
+  }
+
+  auto contains(rect_area const area, vec2z const position) noexcept
+      -> bool {
+    return index_of(area, position) >= 0;
+  }
+
+  auto value(rect_area const area,
+             sl::index const n,
+             int8_t const    invalid) noexcept -> int8_t {
+    if (n < 0 || n >= area.map.size())
+      return invalid;
+    return area.map[n];
+  }
+
+  auto value(rect_area const area,
+             vec2z const     position,
+             int8_t const    invalid) noexcept -> int8_t {
+    auto const n = index_of(area, position);
+    if (n < 0)
+      return invalid;
+    return area.map[n];
+  }
+
+  auto neighbors4(vec2z const        position,
+                  sl::index const    n,
+                  fn_available const available,
+                  intval const       scale,
+                  rect_area const    area) noexcept -> link {
+
+    if (!contains(area, position))
+      return {};
+
+    if (!available(value(area, position)))
+      return {};
+
+    auto const check = [&](sl::index x, sl::index y) -> link {
+      auto const n = index_of(area, { x, y });
+
+      if (n < 0 || !available(value(area, n)))
+        return { .node = link::skip };
 
       return link { .node = n, .distance = scale };
     };
 
     switch (n) {
-      case 0: return check(x, y - 1);
-      case 1: return check(x, y + 1);
-      case 2: return check(x - 1, y);
-      case 3: return check(x + 1, y);
+      case 0: return check(position.x(), position.y() - 1);
+      case 1: return check(position.x(), position.y() + 1);
+      case 2: return check(position.x() - 1, position.y());
+      case 3: return check(position.x() + 1, position.y());
     }
 
     return {};
   }
 
-  [[nodiscard]] auto neighbors8(sl::whole const          width,
-                                sl::whole const          stride,
-                                intval const             scale,
-                                span<int8_t const> const map,
-                                fn_available const       available,
-                                sl::index const          position,
-                                sl::index const n) noexcept -> link {
+  auto neighbors8(vec2z const        position,
+                  sl::index const    n,
+                  fn_available const available,
+                  intval const       scale_ortho,
+                  intval const       scale_diagonal,
+                  rect_area const    area) noexcept -> link {
 
-    if (position < 0 || position >= map.size() || stride <= 0) {
+    if (!contains(area, position))
       return {};
-    }
 
-    auto const x = position % stride;
-    auto const y = position / stride;
-
-    if (x < 0 || y < 0 || x >= width) {
+    if (!available(value(area, position)))
       return {};
-    }
 
-    if (!available(map[position])) {
-      return {};
-    }
+    auto const check = [&](sl::index x, sl::index y,
+                           intval distance) -> link {
+      auto const n = index_of(area, { x, y });
 
-    auto check = [&](sl::index x, sl::index y,
-                     intval distance) -> link {
-      if (x < 0 || x >= width || y < 0) {
+      if (n < 0 || !available(value(area, n)))
         return { .node = link::skip };
-      }
-
-      auto const n = y * stride + x;
-      if (n >= map.size() || !available(map[n])) {
-        return { .node = link::skip };
-      }
 
       return link { .node = n, .distance = distance };
     };
 
     switch (n) {
-      case 0: return check(x, y - 1, scale);
-      case 1: return check(x, y + 1, scale);
-      case 2: return check(x - 1, y, scale);
-      case 3: return check(x + 1, y, scale);
+      case 0:
+        return check(position.x(), position.y() - 1, scale_ortho);
+      case 1:
+        return check(position.x(), position.y() + 1, scale_ortho);
+      case 2:
+        return check(position.x() - 1, position.y(), scale_ortho);
+      case 3:
+        return check(position.x() + 1, position.y(), scale_ortho);
     }
 
-    auto const d = scale > 1 ? eval::sqrt2(scale) : 1;
-
     switch (n) {
-      case 4: return check(x - 1, y - 1, d);
-      case 5: return check(x + 1, y - 1, d);
-      case 6: return check(x - 1, y + 1, d);
-      case 7: return check(x + 1, y + 1, d);
+      case 4:
+        return check(position.x() - 1, position.y() - 1,
+                     scale_diagonal);
+      case 5:
+        return check(position.x() + 1, position.y() - 1,
+                     scale_diagonal);
+      case 6:
+        return check(position.x() - 1, position.y() + 1,
+                     scale_diagonal);
+      case 7:
+        return check(position.x() + 1, position.y() + 1,
+                     scale_diagonal);
     }
 
     return {};
   }
 
-  [[nodiscard]] auto manhattan(sl::whole const stride,
-                               intval const    scale,
-                               sl::index const source,
-                               sl::index const destination) noexcept
-      -> intval {
-
-    if (stride <= 0) {
-      return 0;
-    }
-
-    auto const x0 = source % stride;
-    auto const y0 = source / stride;
-
-    auto const x1 = destination % stride;
-    auto const y1 = destination / stride;
-
-    auto const dx = x0 < x1 ? x1 - x0 : x0 - x1;
-    auto const dy = y0 < y1 ? y1 - y0 : y0 - y1;
+  auto manhattan(vec2z const  a,
+                 vec2z const  b,
+                 intval const scale) noexcept -> intval {
+    auto const dx = a.x() < b.x() ? b.x() - a.x() : a.x() - b.x();
+    auto const dy = a.y() < b.y() ? b.y() - a.y() : a.y() - b.y();
 
     return (dx + dy) * scale;
   }
 
-  [[nodiscard]] auto diagonal(sl::whole const stride,
-                              intval const    scale,
-                              sl::index const a,
-                              sl::index const b) noexcept -> intval {
+  auto diagonal(vec2z const  a,
+                vec2z const  b,
+                intval const scale) noexcept -> intval {
+    auto const dx = a.x() < b.x() ? b.x() - a.x() : a.x() - b.x();
+    auto const dy = a.y() < b.y() ? b.y() - a.y() : a.y() - b.y();
 
-    if (stride <= 0) {
-      return 0;
-    }
-
-    auto const x0 = a % stride;
-    auto const y0 = a / stride;
-
-    auto const x1 = b % stride;
-    auto const y1 = b / stride;
-
-    auto const dx = x0 < x1 ? x1 - x0 : x0 - x1;
-    auto const dy = y0 < y1 ? y1 - y0 : y0 - y1;
-
-    if (dx < dy) {
+    if (dx < dy)
       return eval::sqrt2(scale) * dx + (dy - dx) * scale;
-    }
 
     return eval::sqrt2(scale) * dy + (dx - dy) * scale;
   }
 
-  [[nodiscard]] auto euclidean(sl::whole const stride,
-                               intval const    scale,
-                               sl::index const a,
-                               sl::index const b) noexcept -> intval {
-
-    if (stride <= 0) {
-      return 0;
-    }
-
-    auto const x0 = a % stride;
-    auto const y0 = a / stride;
-
-    auto const x1 = b % stride;
-    auto const y1 = b / stride;
-
-    auto const dx = x0 < x1 ? x1 - x0 : x0 - x1;
-    auto const dy = y0 < y1 ? y1 - y0 : y0 - y1;
+  auto euclidean(vec2z const  a,
+                 vec2z const  b,
+                 intval const scale) noexcept -> intval {
+    auto const dx = a.x() < b.x() ? b.x() - a.x() : a.x() - b.x();
+    auto const dy = a.y() < b.y() ? b.y() - a.y() : a.y() - b.y();
 
     return eval::sqrt((dx * dx + dy * dy) * scale, scale);
   }
 
-  [[nodiscard]] auto path_exists(sl::whole const          width,
-                                 sl::whole const          stride,
-                                 span<int8_t const> const map,
-                                 fn_available const       available,
-                                 vec2z const              source,
-                                 vec2z const destination) noexcept
-      -> bool {
+  auto path_exists(vec2z const        source,
+                   vec2z const        destination,
+                   fn_available const available,
+                   rect_area const    area) noexcept -> bool {
 
-    if (stride <= 0) {
+    if (area.stride <= 0 || area.width <= 0)
       return false;
-    }
 
-    if (source.x() < 0 || source.x() >= width || source.y() < 0 ||
-        destination.x() < 0 || destination.x() >= width ||
-        destination.y() < 0) {
+    if (!contains(area, source))
       return false;
-    }
 
-    if (source.y() * stride + source.x() >= map.size() ||
-        destination.y() * stride + destination.x() >= map.size()) {
+    if (!contains(area, destination))
       return false;
-    }
 
-    if (trace_line(source, destination, [&](const vec2z p) {
-          return available(map[p.y() * stride + p.x()]);
-        })) {
+    if (trace_line(source - area.origin, destination - area.origin,
+                   [&](vec2z const p) {
+                     return contains(area, p) &&
+                            available(value(area, p));
+                   })) {
       return true;
     }
 
-    auto const sight = [](sl::index const a, sl::index const b) {
+    auto const sight = [](sl::index const, sl::index const) {
       return false;
     };
 
     auto const heuristic = [&](sl::index const a,
                                sl::index const b) -> intval {
-      return manhattan(stride, 1, a, b);
+      return manhattan(point_of(area.stride, a),
+                       point_of(area.stride, b), 1);
     };
 
     auto const neighbors = [&](sl::index const p,
                                sl::index const n) -> link {
-      return neighbors8(width, stride, 1, map, available, p, n);
-    };
-
-    auto const index_of = [&](vec2z const p) {
-      return p.y() * stride + p.x();
+      return neighbors8(point_of(area, p), n, available, 1, 1, area);
     };
 
     auto state = astar::init<false, astar::_basic_node>(
-        index_of(source), index_of(destination));
+        index_of(area, source), index_of(area, destination));
 
     for (;;) {
-      auto result = astar::loop(sight, neighbors, heuristic, state);
+      auto const result = astar::loop(sight, neighbors, heuristic,
+                                      state);
 
-      if (result == astar::status::success) {
+      if (result == astar::status::success)
         return true;
-      }
 
-      if (result == astar::status::failed) {
+      if (result == astar::status::failed)
         break;
-      }
     }
 
     return false;
   }
 
-  [[nodiscard]] auto path_exists(sl::whole const          width,
-                                 span<int8_t const> const map,
-                                 fn_available const       available,
-                                 vec2z const              source,
-                                 vec2z const destination) noexcept
-      -> bool {
+  auto path_search_init(vec2z const        source,
+                        vec2z const        destination,
+                        fn_available const available,
+                        intval const       scale,
+                        rect_area const    area) noexcept -> _state {
 
-    return path_exists(width, width, map, available, source,
-                       destination);
-  }
-
-  [[nodiscard]] auto path_exists(sl::whole const          width,
-                                 vec2z const              min,
-                                 vec2z const              max,
-                                 span<int8_t const> const map,
-                                 fn_available const       available,
-                                 vec2z const              source,
-                                 vec2z const destination) noexcept
-      -> bool {
-
-    return path_exists(
-        max.x() - min.x(), width,
-        span { map.begin() + min.y() * width + min.x(),
-               map.begin() + (max.y() - 1) * width + max.x() },
-        available, source - min, destination - min);
-  }
-
-  [[nodiscard]] auto path_search_init(
-      vec2z const              size,
-      vec2z const              origin,
-      sl::whole const          stride,
-      intval const             scale,
-      span<int8_t const> const map,
-      fn_available const       available,
-      vec2z const              source,
-      vec2z const              destination) noexcept -> _state {
-
-    if (size.x() * size.y() > map.size()) {
-      error_("Invalid map size.", __FUNCTION__);
+    if (area.stride <= 0 || area.width <= 0)
       return {};
-    }
-
-    if (size.x() <= 0 || size.y() <= 0) {
-      return {};
-    }
-
-    auto const width = size.x();
 
     auto s = _state {};
 
-    auto const index_of = [&](vec2z const p) {
-      return p.y() * stride + p.x();
-    };
-
     s.astar = astar::init<true, astar::_node_theta>(
-        index_of(source - origin), index_of(destination - origin));
+        index_of(area, source), index_of(area, destination));
 
-    s.origin = origin;
-    s.stride = stride;
+    s.origin = area.origin;
+    s.stride = area.stride;
 
-    s.heuristic = [stride, scale](sl::index const a,
-                                  sl::index const b) -> intval {
-      return euclidean(stride, scale, a, b);
+    s.heuristic = [stride = area.stride,
+                   scale](sl::index const a,
+                          sl::index const b) -> intval {
+      return euclidean(point_of(stride, a), point_of(stride, b),
+                       scale);
     };
 
-    s.neighbors = [width, stride, scale, map, available](
+    s.neighbors = [area, available, scale,
+                   scale_diagonal = eval::sqrt2(scale)](
                       sl::index const p, sl::index const n) -> link {
-      return neighbors8(width, stride, scale, map, available, p, n);
+      return neighbors8(point_of(area, p), n, available, scale,
+                        scale_diagonal, area);
     };
 
-    s.sight = [size, stride, available,
-               map](sl::index const a, sl::index const b) -> bool {
-      auto const point_of = [&](const sl::index n) {
-        return vec2z { n % stride, n / stride };
-      };
-
-      auto const p0 = point_of(a);
-      auto const p1 = point_of(b);
-
-      if (p0.x() < 0 || p0.x() >= size.x() || p0.y() < 0 ||
-          p0.y() >= size.y() || p1.x() < 0 || p1.x() >= size.x() ||
-          p1.y() < 0 || p1.y() >= size.y()) {
-        return false;
-      }
+    s.sight = [available, area](sl::index const a,
+                                sl::index const b) -> bool {
+      auto const p0 = point_of(area, a);
+      auto const p1 = point_of(area, b);
 
       return trace_line(p0, p1, [&](vec2z const p) {
-        return available(map[p.y() * stride + p.x()]);
+        return available(value(area, p));
       });
     };
 
     return s;
   }
 
-  auto path_search_init(vec2z const              size,
-                        intval const             scale,
-                        span<int8_t const> const map,
-                        fn_available const       available,
-                        vec2z const              source,
-                        vec2z const destination) noexcept -> _state {
-
-    return path_search_init(size, {}, size.x(), scale, map, available,
-                            source, destination);
-  }
-
-  auto path_search_init(vec2z const              size,
-                        vec2z const              min,
-                        vec2z const              max,
-                        intval const             scale,
-                        span<int8_t const> const map,
-                        fn_available const       available,
-                        vec2z const              source,
-                        vec2z const destination) noexcept -> _state {
-
-    return path_search_init(
-        max - min, min, size.x(), scale,
-        span { map.begin() + min.y() * size.x() + min.x(),
-               map.begin() + (max.y() - 1) * size.x() + max.x() },
-        available, source, destination);
-  }
-
-  [[nodiscard]] auto path_search_loop(_state &state) noexcept
-      -> astar::status {
+  auto path_search_loop(_state &state) noexcept -> astar::status {
 
     return astar::loop(state.sight, state.neighbors, state.heuristic,
                        state.astar);
   }
 
-  [[nodiscard]] auto path_search_finish(_state const &state) noexcept
+  auto path_search_finish(_state const &state) noexcept
       -> sl::vector<vec2z> {
     if (state.stride <= 0) {
       return {};
@@ -531,16 +481,11 @@ namespace laplace::engine::eval::grid {
     auto const v = astar::finish<astar::_node_theta>(
         state.astar.closed, state.astar.source, state.astar.nearest);
 
-    auto path = sl::vector<vec2z>(v.size());
+    auto path = sl::vector<vec2z> {};
+    path.reserve(v.size());
 
-    auto const point_of = [&](sl::index const n) {
-      return state.origin +
-             vec2z { n % state.stride, n / state.stride };
-    };
-
-    for (sl::index i = 0; i < v.size(); i++) {
-      path[i] = point_of(v[i]);
-    }
+    for (auto &p : v)
+      path.emplace_back(state.origin + point_of(state.stride, p));
 
     return path;
   }
@@ -579,9 +524,8 @@ namespace laplace::engine::eval::grid {
 
     for (sl::index j = 0; j < size.y(); j++)
       for (sl::index i = 0; i < size.x(); i++) {
-        if (src[j * size.x() + i] <= 0) {
+        if (src[j * size.x() + i] <= 0)
           continue;
-        }
 
         auto const i0 = i - center.x();
         auto const j0 = j - center.y();
@@ -595,9 +539,8 @@ namespace laplace::engine::eval::grid {
 
         for (sl::index y = y0; y < y1; y++)
           for (sl::index x = x0; x < x1; x++) {
-            if (footprint[y * fp_size.x() + x] <= 0) {
+            if (footprint[y * fp_size.x() + x] <= 0)
               continue;
-            }
 
             dst[(j0 + y) * size.x() + i0 + x] = 1;
           }
@@ -625,18 +568,16 @@ namespace laplace::engine::eval::grid {
     auto const y0 = max<sl::index>(0,
                                    min(position.y(), size.y() - 1));
 
-    if (map[y0 * size.x() + x0] <= 0) {
+    if (map[y0 * size.x() + x0] <= 0)
       return { x0, y0 };
-    }
 
     auto x        = x0;
     auto y        = y0;
     auto distance = sl::index { -1 };
 
     auto do_point = [&](sl::index const i, sl::index const j) {
-      if (!condition(map[j * size.x() + i])) {
+      if (!condition(map[j * size.x() + i]))
         return;
-      }
 
       auto const s = math::square_length(vec2z { i, j } -
                                          vec2z { x0, y0 });
@@ -670,9 +611,8 @@ namespace laplace::engine::eval::grid {
       if (y0 + radius < size.y())
         for (sl::index i = i0; i <= i1; i++) { do_point(i, j1); }
 
-      if (0 < distance && distance <= radius * radius) {
+      if (0 < distance && distance <= radius * radius)
         break;
-      }
     }
 
     return { x, y };

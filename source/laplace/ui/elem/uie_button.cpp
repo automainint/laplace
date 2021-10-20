@@ -23,10 +23,8 @@ namespace laplace::ui::elem {
     m_on_click = ev;
   }
 
-  auto button::tick(sl::time           delta_msec,
-                    cref_input_handler in,
-                    bool               is_handled) -> bool {
-    return is_handled || button_tick(in);
+  void button::tick(sl::time delta_msec, cref_input_handler in) {
+    button_tick(in);
   }
 
   void button::render(context const &con) {
@@ -64,8 +62,7 @@ namespace laplace::ui::elem {
                       button_state       button_state,
                       event_button_click on_button_click,
                       cref_input_handler in) -> update_result {
-    auto event_status = false;
-    auto is_pressed   = button_state.is_pressed;
+    auto is_pressed = button_state.is_pressed;
 
     for (auto const &ev : in.get_events()) {
       if (ev.key != key_lbutton)
@@ -84,12 +81,10 @@ namespace laplace::ui::elem {
             on_button_click(object);
           }
 
-          event_status = true;
-          is_pressed   = false;
+          is_pressed = false;
         }
       } else if (is_key_down(ev) && has_cursor) {
-        event_status = true;
-        is_pressed   = true;
+        is_pressed = true;
       }
     }
 
@@ -102,16 +97,14 @@ namespace laplace::ui::elem {
                             (is_pressed ||
                              !in.is_key_down(key_lbutton));
 
-    return { event_status, is_pressed, has_cursor };
+    return { is_pressed, has_cursor };
   }
 
-  auto button::button_tick(cref_input_handler in) -> bool {
+  void button::button_tick(cref_input_handler in) {
     auto status = update(shared_from_this(), get_state(), m_on_click,
                          in);
 
     set_pressed(status.is_pressed);
     set_cursor(status.has_cursor);
-
-    return status.event_status;
   }
 }

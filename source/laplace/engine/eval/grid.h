@@ -18,14 +18,21 @@
 namespace laplace::engine::eval::grid {
   using op = std::function<int8_t(int8_t dst, int8_t src)>;
 
-  static constexpr auto op_and =
-      [](int8_t const dst, int8_t const src) { return dst & src; };
+  constexpr auto op_and(int8_t const dst, int8_t const src) noexcept {
+    return dst & src;
+  }
 
-  static constexpr auto op_or =
-      [](int8_t const dst, int8_t const src) { return dst | src; };
+  constexpr auto op_or(int8_t const dst, int8_t const src) noexcept {
+    return dst | src;
+  }
 
-  static constexpr auto op_xor =
-      [](int8_t const dst, int8_t const src) { return dst ^ src; };
+  constexpr auto op_xor(int8_t const dst, int8_t const src) noexcept {
+    return dst ^ src;
+  }
+
+  constexpr auto is_zero(int8_t const x) noexcept {
+    return x == 0;
+  }
 
   void merge(vec2z const                   size,
              std::span<int8_t> const       dst,
@@ -47,67 +54,77 @@ namespace laplace::engine::eval::grid {
                                 fn_point const point) noexcept
       -> bool;
 
-  [[nodiscard]] auto neighbors4(sl::whole const               width,
-                                sl::whole const               stride,
-                                intval const                  scale,
-                                std::span<int8_t const> const map,
+  struct rect_area {
+    std::span<int8_t const> map    = {};
+    sl::whole               stride = {};
+    sl::whole               width  = {};
+    vec2z                   origin = {};
+  };
+
+  [[nodiscard]] auto area_of(
+      vec2z const size, std::span<int8_t const> const map) noexcept
+      -> rect_area;
+
+  [[nodiscard]] auto submap(vec2z const     min,
+                            vec2z const     max,
+                            rect_area const area) noexcept
+      -> rect_area;
+
+  [[nodiscard]] auto index_of(rect_area const area,
+                              vec2z const     position,
+                              sl::index const invalid = -1) noexcept
+      -> sl::index;
+
+  [[nodiscard]] auto point_of(sl::whole const stride,
+                              sl::index const n) noexcept -> vec2z;
+
+  [[nodiscard]] auto point_of(rect_area const area,
+                              sl::index const n) noexcept -> vec2z;
+
+  [[nodiscard]] auto contains(rect_area const area,
+                              vec2z const position) noexcept -> bool;
+
+  [[nodiscard]] auto value(rect_area const area,
+                           sl::index const n,
+                           int8_t const    invalid = -1) noexcept
+      -> int8_t;
+
+  [[nodiscard]] auto value(rect_area const area,
+                           vec2z const     position,
+                           int8_t const    invalid = -1) noexcept
+      -> int8_t;
+
+  [[nodiscard]] auto neighbors4(vec2z const        position,
+                                sl::index const    n,
                                 fn_available const available,
-                                sl::index const    position,
-                                sl::index const    n) noexcept
+                                intval const       scale,
+                                rect_area const    area) noexcept
       -> astar::link;
 
-  [[nodiscard]] auto neighbors8(sl::whole const               width,
-                                sl::whole const               stride,
-                                intval const                  scale,
-                                std::span<int8_t const> const map,
+  [[nodiscard]] auto neighbors8(vec2z const        position,
+                                sl::index const    n,
                                 fn_available const available,
-                                sl::index const    position,
-                                sl::index const    n) noexcept
+                                intval const       scale_ortho,
+                                intval const       scale_diagonal,
+                                rect_area const    area) noexcept
       -> astar::link;
 
-  [[nodiscard]] auto manhattan(sl::whole const stride,
-                               intval const    scale,
-                               sl::index const a,
-                               sl::index const b) noexcept -> intval;
+  [[nodiscard]] auto manhattan(vec2z const  a,
+                               vec2z const  b,
+                               intval const scale) noexcept -> intval;
 
-  [[nodiscard]] auto diagonal(sl::whole const stride,
-                              intval const    scale,
-                              sl::index const a,
-                              sl::index const b) noexcept -> intval;
+  [[nodiscard]] auto diagonal(vec2z const  a,
+                              vec2z const  b,
+                              intval const scale) noexcept -> intval;
 
-  [[nodiscard]] auto euclidean(sl::whole const stride,
-                               intval const    scale,
-                               sl::index const a,
-                               sl::index const b) noexcept -> intval;
+  [[nodiscard]] auto euclidean(vec2z const  a,
+                               vec2z const  b,
+                               intval const scale) noexcept -> intval;
 
-  /*  Returns true if path exists with specified stride.
-   */
-  [[nodiscard]] auto path_exists(sl::whole const               width,
-                                 sl::whole const               stride,
-                                 std::span<int8_t const> const map,
+  [[nodiscard]] auto path_exists(vec2z const        source,
+                                 vec2z const        destination,
                                  fn_available const available,
-                                 vec2z const        source,
-                                 vec2z const destination) noexcept
-      -> bool;
-
-  /*  Returns true if path exists.
-   */
-  [[nodiscard]] auto path_exists(sl::whole const               width,
-                                 std::span<int8_t const> const map,
-                                 fn_available const available,
-                                 vec2z const        source,
-                                 vec2z const destination) noexcept
-      -> bool;
-
-  /*  Returns true if path exists in bounds [min; max).
-   */
-  [[nodiscard]] auto path_exists(sl::whole const               width,
-                                 vec2z const                   min,
-                                 vec2z const                   max,
-                                 std::span<int8_t const> const map,
-                                 fn_available const available,
-                                 vec2z const        source,
-                                 vec2z const destination) noexcept
+                                 rect_area const    area) noexcept
       -> bool;
 
   struct _state {
@@ -121,39 +138,12 @@ namespace laplace::engine::eval::grid {
     astar::fn_sight     sight;
   };
 
-  /*  Search in entire map with specified stride and origin offset.
-   */
-  [[nodiscard]] auto path_search_init(
-      vec2z const                   size,
-      vec2z const                   origin,
-      sl::whole const               stride,
-      intval const                  scale,
-      std::span<int8_t const> const map,
-      fn_available const            available,
-      vec2z const                   source,
-      vec2z const                   destination) noexcept -> _state;
-
-  /*  Search in entire map.
-   */
-  [[nodiscard]] auto path_search_init(
-      vec2z const                   size,
-      intval const                  scale,
-      std::span<int8_t const> const map,
-      fn_available const            available,
-      vec2z const                   source,
-      vec2z const                   destination) noexcept -> _state;
-
-  /*  Search in bounds [min; max).
-   */
-  [[nodiscard]] auto path_search_init(
-      vec2z const                   size,
-      vec2z const                   min,
-      vec2z const                   max,
-      intval const                  scale,
-      std::span<int8_t const> const map,
-      fn_available const            available,
-      vec2z const                   source,
-      vec2z const                   destination) noexcept -> _state;
+  [[nodiscard]] auto path_search_init(vec2z const        source,
+                                      vec2z const        destination,
+                                      fn_available const available,
+                                      intval const       scale,
+                                      rect_area const area) noexcept
+      -> _state;
 
   [[nodiscard]] auto path_search_loop(_state &state) noexcept
       -> astar::status;

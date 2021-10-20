@@ -29,10 +29,8 @@ namespace laplace::ui::elem {
     m_filter = f;
   }
 
-  auto textedit::tick(sl::time           delta_msec,
-                      cref_input_handler in,
-                      bool               is_handled) -> bool {
-    return is_handled || textedit_tick(in);
+  void textedit::tick(sl::time delta_msec, cref_input_handler in) {
+    textedit_tick(in);
   }
 
   void textedit::render(context const &con) {
@@ -92,8 +90,7 @@ namespace laplace::ui::elem {
                         textedit::filter   f,
                         input_event const &ev) -> update_result {
 
-    auto event_status = false;
-    auto has_focus    = state.has_focus;
+    auto has_focus = state.has_focus;
 
     auto text      = u8string { state.text };
     auto cursor    = state.cursor;
@@ -131,21 +128,17 @@ namespace laplace::ui::elem {
 
     } else if (has_cursor && ev.key == key_lbutton &&
                is_key_down(ev)) {
-      event_status = true;
-      has_focus    = true;
+      has_focus = true;
     }
 
-    return { event_status, has_focus, text, cursor, selection };
+    return { has_focus, text, cursor, selection };
   }
 
-  auto textedit::textedit_tick(cref_input_handler in) -> bool {
-    bool event_status = false;
-
+  void textedit::textedit_tick(cref_input_handler in) {
     for (auto const &ev : in.get_events()) {
       if (ev.key == key_tab && is_key_down(ev)) {
         if (auto p = get_parent(); p) {
           p->next_tab();
-          event_status = true;
         }
       } else {
         auto const s = update(shared_from_this(), get_state(),
@@ -155,11 +148,7 @@ namespace laplace::ui::elem {
         set_text(s.text);
         set_cursor(s.cursor);
         set_selection(s.selection);
-
-        event_status |= s.event_status;
       }
     }
-
-    return event_status;
   }
 }

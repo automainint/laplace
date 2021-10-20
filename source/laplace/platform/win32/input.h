@@ -33,8 +33,8 @@ namespace laplace::win32 {
    */
   class input {
   public:
-    static const sl::time char_predelay_msec;
-    static const sl::time char_period_msec;
+    static const sl::time  char_predelay_msec;
+    static const sl::time  char_period_msec;
     static const sl::whole default_resolution_x;
     static const sl::whole default_resolution_y;
 
@@ -129,7 +129,7 @@ namespace laplace::win32 {
     bool           m_is_char_pressed   = false;
     char32_t       m_last_char         = 0;
     uint8_t        m_last_char_key     = 0;
-    sl::time      m_char_period_msec  = char_predelay_msec;
+    sl::time       m_char_period_msec  = char_predelay_msec;
 
     sl::vector<core::input_event> m_events;
 

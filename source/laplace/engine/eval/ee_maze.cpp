@@ -17,8 +17,9 @@
 namespace laplace::engine::eval::maze {
   using std::span, std::function, std::tuple, std::tie, std::min;
 
-  void generate(const vec2z size, const span<int8_t> map,
-                const fn_random random) {
+  void generate(vec2z const        size,
+                span<int8_t> const map,
+                fn_random const    random) {
 
     if (size.x() < 0 || size.y() < 0) {
       error_("Invalid size value.", __FUNCTION__);
@@ -56,8 +57,9 @@ namespace laplace::engine::eval::maze {
       }
     }
 
-    const auto gen_caves = [](const sl::index cols,
-                              const sl::index rows) -> sl::vector<vec2z> {
+    const auto gen_caves =
+        [](const sl::index cols,
+           const sl::index rows) -> sl::vector<vec2z> {
       auto caves = sl::vector<vec2z>(cols * rows);
 
       for (sl::index i = 0; i < cols; i++) {
@@ -129,11 +131,8 @@ namespace laplace::engine::eval::maze {
       const auto dir0  = dir;
 
       while (grid::path_exists(
-          size.x(), map,
-          [](const int8_t state) {
-            return state == walkable;
-          },
-          a, b)) {
+          a, b, [](int8_t const state) { return state == walkable; },
+          grid::area_of(size, map))) {
 
         cave = (cave + 1) % caves.size();
         a    = caves[cave];
@@ -155,10 +154,12 @@ namespace laplace::engine::eval::maze {
     }
   }
 
-  void stretch(const vec2z dst_size, const span<int8_t> dst,
-               const vec2z src_size, const span<const int8_t> src,
-               const sl::index tunnel_size,
-               const sl::index gate_size) noexcept {
+  void stretch(vec2z const              dst_size,
+               span<int8_t> const       dst,
+               vec2z const              src_size,
+               span<const int8_t> const src,
+               sl::index const          tunnel_size,
+               sl::index const          gate_size) noexcept {
 
     if (dst_size.x() < 0 || dst_size.y() < 0 || src_size.x() < 0 ||
         src_size.y() < 0) {
@@ -188,8 +189,10 @@ namespace laplace::engine::eval::maze {
           continue;
         }
 
-        auto x0 = (i * dst_size.x() + src_size.x() / 2) / src_size.x();
-        auto y0 = (j * dst_size.y() + src_size.y() / 2) / src_size.y();
+        auto x0 = (i * dst_size.x() + src_size.x() / 2) /
+                  src_size.x();
+        auto y0 = (j * dst_size.y() + src_size.y() / 2) /
+                  src_size.y();
 
         auto x1 = ((i + 1) * dst_size.x() + src_size.x() / 2) /
                   src_size.x();

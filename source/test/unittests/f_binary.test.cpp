@@ -20,12 +20,11 @@ namespace laplace::test {
   namespace binary = format::binary;
   namespace text   = format::text;
 
-  using core::family, core::vfamily, binary::encode, binary::decode,
-      format::wrap, std::ostringstream, std::istringstream,
-      std::string;
+  using core::unival, binary::encode, binary::decode, format::wrap,
+      std::ostringstream, std::istringstream, std::string;
 
   TEST(format, binary_empty) {
-    auto src = family {};
+    auto src = unival {};
     auto ss  = ostringstream {};
 
     auto success = encode(wrap(ss), src);
@@ -39,7 +38,7 @@ namespace laplace::test {
   }
 
   TEST(format, binary_true) {
-    auto src = family { true };
+    auto src = unival { true };
     auto ss  = ostringstream {};
 
     auto success = encode(wrap(ss), src);
@@ -53,7 +52,7 @@ namespace laplace::test {
   }
 
   TEST(format, binary_false) {
-    auto src = family { false };
+    auto src = unival { false };
     auto ss  = ostringstream {};
 
     auto success = encode(wrap(ss), src);
@@ -67,7 +66,7 @@ namespace laplace::test {
   }
 
   TEST(format, binary_integer) {
-    auto src = family { 100 };
+    auto src = unival { 100 };
     auto ss  = ostringstream {};
 
     auto success = encode(wrap(ss), src);
@@ -81,7 +80,7 @@ namespace laplace::test {
   }
 
   TEST(format, binary_uint) {
-    auto src = family { 0x8000000000000000 };
+    auto src = unival { 0x8000000000000000 };
     auto ss  = ostringstream {};
 
     auto success = encode(wrap(ss), src);
@@ -95,7 +94,7 @@ namespace laplace::test {
   }
 
   TEST(format, binary_float) {
-    auto src = family { 3.1415 };
+    auto src = unival { 3.1415 };
     auto ss  = ostringstream {};
 
     auto success = encode(wrap(ss), src);
@@ -109,7 +108,7 @@ namespace laplace::test {
   }
 
   TEST(format, binary_float2) {
-    auto src = family { 0.0000001 };
+    auto src = unival { 0.0000001 };
     auto ss  = ostringstream {};
 
     auto success = encode(wrap(ss), src);
@@ -123,7 +122,7 @@ namespace laplace::test {
   }
 
   TEST(format, binary_float3) {
-    auto src = family { 1e100 };
+    auto src = unival { 1e100 };
     auto ss  = ostringstream {};
 
     auto success = encode(wrap(ss), src);
@@ -137,7 +136,7 @@ namespace laplace::test {
   }
 
   TEST(format, binary_string) {
-    auto src = family { u8"Foo bar" };
+    auto src = unival { u8"Foo bar" };
     auto ss  = ostringstream {};
 
     auto success = encode(wrap(ss), src);
@@ -151,7 +150,7 @@ namespace laplace::test {
   }
 
   TEST(format, binary_bytes) {
-    auto src = family { vbyte { 1, 2, 3, 4, 5 } };
+    auto src = unival { vbyte { 1, 2, 3, 4, 5 } };
     auto ss  = ostringstream {};
 
     auto success = encode(wrap(ss), src);
@@ -165,8 +164,9 @@ namespace laplace::test {
   }
 
   TEST(format, binary_bitfield) {
-    auto src = family { vfamily { true, false, false, true, true,
-                                  true, false, true, false, true } };
+    auto src = unival { sl::vector<unival> { true, false, false, true,
+                                             true, true, false, true,
+                                             false, true } };
     auto ss  = ostringstream {};
 
     auto success = encode(wrap(ss), src);
@@ -180,7 +180,7 @@ namespace laplace::test {
   }
 
   TEST(format, binary_vector) {
-    auto src = family { vfamily { 1, 2, 3, 4, 5 } };
+    auto src = unival { sl::vector<unival> { 1, 2, 3, 4, 5 } };
     auto ss  = ostringstream {};
 
     auto success = encode(wrap(ss), src);
@@ -194,7 +194,7 @@ namespace laplace::test {
   }
 
   TEST(format, binary_composite) {
-    auto src   = family {};
+    auto src   = unival {};
     src["foo"] = 42;
     src["bar"] = "Hello";
 
@@ -211,7 +211,7 @@ namespace laplace::test {
   }
 
   TEST(format, binary_compact_composite) {
-    auto src = family {};
+    auto src = unival {};
     src[3]   = "Foo";
     src[1]   = "Bar";
     src[10]  = 42;
@@ -229,7 +229,7 @@ namespace laplace::test {
   }
 
   TEST(format, binary_function) {
-    auto src = family {};
+    auto src = unival {};
 
     src[text::s_function]     = "foo";
     src[text::s_arguments][0] = "bar";
