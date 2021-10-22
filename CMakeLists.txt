@@ -40,11 +40,13 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
 
   find_package(Python3 REQUIRED)
 
+  message(STATUS "Laplace code generation")
   execute_process(
     COMMAND ${Python3_EXECUTABLE} embed.py
     COMMAND ${Python3_EXECUTABLE} gen-gl.py
-    WORKING_DIRECTORY tools
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools
   )
+  message(STATUS "Laplace code generation - done")
 
   if(LAPLACE_VERBOSE)
     add_compile_definitions(LAPLACE_VERBOSE)

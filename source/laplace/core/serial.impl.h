@@ -33,13 +33,13 @@ namespace laplace::serial {
     return std::bit_cast<type_>(buf);
   }
 
-  template <typename type_>
+  template <trivial type_>
   constexpr auto _str(std::string_view s) noexcept -> type_ {
     auto x = type_ {};
 
-    for (sl::index i = 0; i < s.size(); i++) {
+    for (auto c : s) {
       x <<= 8;
-      x |= s[i];
+      x |= c;
     }
 
     return x;

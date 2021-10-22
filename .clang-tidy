@@ -1,1 +1,1 @@
-Checks: '*'
+Checks: '*,-llvmlibc-*,-google-readability-avoid-underscore-in-googletest-name,-fuchsia-*,-modernize-avoid-c-arrays,-altera-*,-readability-braces-around-statements,-magic-numbers,-named-parameter'

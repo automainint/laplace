@@ -84,7 +84,6 @@ namespace laplace {
 
   void error_(string_view message, string_view loc) noexcept {
     if constexpr (_log_enabled) {
-      auto _ul = unique_lock(g_log_lock);
       auto ss  = ostringstream {};
       ss << "[ error";
       if (!loc.empty())

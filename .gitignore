@@ -4,6 +4,7 @@
 /include/**
 
 /.vs/
+/.idea/
 *.sln
 *.vcxproj
 *.filters

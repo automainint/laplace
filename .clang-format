@@ -39,9 +39,9 @@ SpacesInConditionalStatement: false
 SpacesInSquareBrackets: false
 
 AlignAfterOpenBracket: Align
-AlignConsecutiveAssignments: true
-AlignConsecutiveBitFields: true
-AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveDeclarations: Consecutive
 AlignEscapedNewlines: Left
 AllowShortLambdasOnASingleLine: All
 AllowShortFunctionsOnASingleLine: Empty
@@ -61,5 +61,5 @@ EmptyLineBeforeAccessModifier: LogicalBlock
 FixNamespaceComments: false
 PointerAlignment: Right
 ReflowComments: true
-SortIncludes: true
+SortIncludes: CaseInsensitive
 SortUsingDeclarations: true

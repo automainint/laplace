@@ -47,7 +47,7 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR args, int) -> int {
 #endif
 
 #ifndef _CONSOLE
-  freopen(quadwar_app::log_file_name, "w", stderr);
+  std::ignore = freopen(quadwar_app::log_file_name, "w", stderr);
 #endif
 
   int  status = 0;

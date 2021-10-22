@@ -80,7 +80,7 @@ namespace laplace::test {
 
     EXPECT_EQ(info.pivots.size(), 2);
 
-    if (info.pivots.size() >= 0) {
+    if (info.pivots.size() > 0) {
       EXPECT_EQ(info.pivots[0].block.x(), 0);
       EXPECT_EQ(info.pivots[0].block.y(), 0);
       EXPECT_EQ(info.pivots[0].position.x(), 0);
@@ -89,7 +89,7 @@ namespace laplace::test {
       EXPECT_TRUE(info.pivots[0].is_vertical);
     }
 
-    if (info.pivots.size() >= 1) {
+    if (info.pivots.size() > 1) {
       EXPECT_EQ(info.pivots[1].block.x(), 0);
       EXPECT_EQ(info.pivots[1].block.y(), 1);
       EXPECT_EQ(info.pivots[1].position.x(), 0);
