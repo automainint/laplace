@@ -32,6 +32,7 @@ jobs:
           cmake --build build --config $BUILD_TYPE
 
       - name: Run tests & generate coverage
+        shell: cmd
         working-directory: ${{github.workspace}}/build
         run: |
          "C:/Program Files/OpenCppCoverage/OpenCppCoverage.exe" --sources quadwar --export_type cobertura:coverage.xml --cover_children -- ctest -V -C $BUILD_TYPE
