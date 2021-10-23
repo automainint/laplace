@@ -30,13 +30,14 @@ jobs:
 
       - name: Build
         run: |
-          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D LAPLACE_ENABLE_TESTING=ON -D LAPLACE_VERBOSE=ON -B build -S .
+          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D LAPLACE_ENABLE_TESTING=ON -D LAPLACE_VERBOSE=OFF -B build -S .
           cmake --build build --config $BUILD_TYPE
 
       - name: Run tests & generate coverage
+        shell: bash
         working-directory: ${{github.workspace}}/build
         run: |
-         OpenCppCoverage.exe --sources ../source --export_type cobertura:coverage.xml --cover_children -- ctest -V -C Debug
+         OpenCppCoverage.exe --sources source/* --excluded_sources source/test/* --export_type cobertura:coverage.xml --cover_children -- ctest -V -C $BUILD_TYPE
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
