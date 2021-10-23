@@ -23,6 +23,7 @@ set(LAPLACE_CONFIG    laplace-config)
 set(LAPLACE_SOCKETS   laplace-sockets)
 set(LAPLACE_UNITTESTS laplace-unittests)
 set(QUADWAR_OBJ       quadwar-obj)
+set(QUADWAR_EXE       quadwar)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -55,7 +56,6 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
     add_compile_definitions(LAPLACE_UNSAFE)
   endif()
 
-  add_executable(${QUADWAR_EXE})
   add_library(${LAPLACE_OBJ} OBJECT)
   add_library(${QUADWAR_OBJ} OBJECT)
   add_subdirectory(source)
