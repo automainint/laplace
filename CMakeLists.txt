@@ -17,12 +17,15 @@ option(LAPLACE_VERBOSE          "Enable verbose logging" ON)
 option(LAPLACE_UNSAFE           "Disable safety checks" OFF)
 
 set(LAPLACE_PROJECT   laplace)
-set(LAPLACE_OBJ       laplace-obj)
-set(LAPLACE_LIB       laplace)
+#set(LAPLACE_OBJ       laplace-obj)
+#set(LAPLACE_LIB       laplace)
 set(LAPLACE_CONFIG    laplace-config)
 set(LAPLACE_SOCKETS   laplace-sockets)
 set(LAPLACE_UNITTESTS laplace-unittests)
-set(QUADWAR_OBJ       quadwar-obj)
+#set(QUADWAR_OBJ       quadwar-obj)
+
+set(LAPLACE_OBJ       quadwar)
+set(QUADWAR_OBJ       quadwar)
 set(QUADWAR_EXE       quadwar)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -56,42 +59,48 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
     add_compile_definitions(LAPLACE_UNSAFE)
   endif()
 
-  add_library(${LAPLACE_OBJ} OBJECT)
-  add_library(${QUADWAR_OBJ} OBJECT)
+  add_executable(${QUADWAR_EXE})
+  #add_library(${LAPLACE_OBJ} OBJECT)
+  #add_library(${QUADWAR_OBJ} OBJECT)
   add_subdirectory(source)
 
   include(cmake/config.cmake)
 
-  target_link_libraries(
-    ${LAPLACE_OBJ}
-      PUBLIC
-        ${LAPLACE_CONFIG}
-        gtest benchmark wolfssl freetype)
+  #target_link_libraries(
+  #  ${LAPLACE_OBJ}
+  #    PUBLIC
+  #      ${LAPLACE_CONFIG}
+  #      gtest benchmark wolfssl freetype)
 
-  target_link_libraries(
-    ${QUADWAR_OBJ}
-      PUBLIC
-        ${LAPLACE_CONFIG}
-        ${LAPLACE_OBJ})
+  #target_link_libraries(
+  #  ${QUADWAR_OBJ}
+  #    PUBLIC
+  #      ${LAPLACE_CONFIG}
+  #      ${LAPLACE_OBJ})
 
   if(LAPLACE_ENABLE_LIB)
-    add_library(${LAPLACE_LIB} STATIC)
+    #add_library(${LAPLACE_LIB} STATIC)
 
-    target_link_libraries(
-      ${LAPLACE_LIB}
-        PUBLIC
-          ${LAPLACE_CONFIG}
-          ${LAPLACE_OBJ})
+    #target_link_libraries(
+    #  ${LAPLACE_LIB}
+    #    PUBLIC
+    #      ${LAPLACE_CONFIG}
+    #      ${LAPLACE_OBJ})
   endif()
 
   if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_TESTING OR LAPLACE_ENABLE_COVERAGE)
-    add_executable(${QUADWAR_EXE})
+    #add_executable(${QUADWAR_EXE})
+
+    #target_link_libraries(
+    #  ${QUADWAR_EXE}
+    #    ${LAPLACE_CONFIG}
+    #    ${QUADWAR_OBJ}
+    #    ${LAPLACE_OBJ})
 
     target_link_libraries(
       ${QUADWAR_EXE}
         ${LAPLACE_CONFIG}
-        ${QUADWAR_OBJ}
-        ${LAPLACE_OBJ})
+        gtest benchmark wolfssl freetype)
 
     if(MSVC)
       target_link_options(${QUADWAR_EXE} PRIVATE "/SUBSYSTEM:CONSOLE")
