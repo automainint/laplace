@@ -1,4 +1,4 @@
-name: linux-build
+name: macos-build
 
 on:
   push:
@@ -13,7 +13,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -21,10 +21,6 @@ jobs:
       uses: jwlawson/actions-setup-cmake@v1.8
       with:
         cmake-version: 3.18
-
-    - name: Install GCC 11
-      run: |
-          sudo apt-get install gcc-11 g++-11
 
     - name: Build
       run: |
