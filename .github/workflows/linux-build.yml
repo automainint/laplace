@@ -28,7 +28,7 @@ jobs:
 
     - name: Install gcovr
       run: |
-        pip install gcovr
+        pip3 install gcovr
 
     - name: Build
       run: |
