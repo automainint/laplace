@@ -44,6 +44,6 @@ jobs:
       uses: codecov/codecov-action@v2
       with:
         files: ${{github.workspace}}/build/coverage.xml
-        flags: ${{ runner.os }}
-        name: ${{ runner.os }} build
+        flags: ${{runner.os}}
+        name: ${{runner.os}} build
         fail_ci_if_error: true

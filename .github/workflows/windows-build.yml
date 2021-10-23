@@ -38,14 +38,11 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: |
         OpenCppCoverage.exe --sources source\\* --excluded_sources source\\test\\* --export_type cobertura:coverage.xml --cover_children -- ctest -V -C $BUILD_TYPE
-        dir
-        cd ..
-        dir
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       with:
-        files: ${{github.workspace}}/build/coverage.xml
-        flags: ${{ runner.os }}
-        name: ${{ runner.os }} build
+        files: ./build/coverage.xml
+        flags: ${{runner.os}}
+        name: ${{runner.os}} build
         fail_ci_if_error: true
