@@ -16,31 +16,33 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up CMake 3.18
-        uses: jwlawson/actions-setup-cmake@v1.8
-        with:
-          cmake-version: 3.18
+    - uses: actions/checkout@v2
+    - name: Set up CMake 3.18
+      uses: jwlawson/actions-setup-cmake@v1.8
+      with:
+        cmake-version: 3.18
 
-      - name: Install OpenCppCoverage
-        shell: bash
-        run: |
-          choco install opencppcoverage
-          echo "C:/Program Files/OpenCppCoverage" >> $GITHUB_PATH
+    - name: Install OpenCppCoverage
+      shell: bash
+      run: |
+        choco install opencppcoverage
+        echo "C:/Program Files/OpenCppCoverage" >> $GITHUB_PATH
 
-      - name: Build
-        run: |
-          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D LAPLACE_ENABLE_TESTING=ON -D LAPLACE_VERBOSE=OFF -B build -S .
-          cmake --build build --config $BUILD_TYPE
+    - name: Build
+      run: |
+        cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D LAPLACE_ENABLE_TESTING=ON -D LAPLACE_VERBOSE=OFF -B build -S .
+        cmake --build build --config $BUILD_TYPE
 
-      - name: Run tests & generate coverage
-        shell: bash
-        working-directory: ${{github.workspace}}/build
-        run: |
-         OpenCppCoverage.exe --sources source/* --excluded_sources source/test/* --export_type cobertura:coverage.xml --cover_children -- ctest -V -C $BUILD_TYPE
+    - name: Run tests & generate coverage
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      run: |
+       OpenCppCoverage.exe --sources source\* --excluded_sources source\test\* --export_type cobertura:coverage.xml --cover_children -- ctest -V -C $BUILD_TYPE
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          files: ${{github.workspace}}/build/coverage.xml
-          fail_ci_if_error: true
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        files: ${{github.workspace}}/build/coverage.xml
+        flags: ${{ runner.os }}
+        name: ${{ runner.os }}-build
+        fail_ci_if_error: true
