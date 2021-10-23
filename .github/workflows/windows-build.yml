@@ -23,8 +23,10 @@ jobs:
           cmake-version: 3.18
 
       - name: Install OpenCppCoverage
+        shell: bash
         run: |
           choco install opencppcoverage
+          echo "C:/Program Files/OpenCppCoverage" >> $GITHUB_PATH
 
       - name: Build
         run: |
@@ -32,10 +34,9 @@ jobs:
           cmake --build build --config $BUILD_TYPE
 
       - name: Run tests & generate coverage
-        shell: cmd
         working-directory: ${{github.workspace}}/build
         run: |
-         "C:/Program Files/OpenCppCoverage/OpenCppCoverage.exe" --sources quadwar --export_type cobertura:coverage.xml --cover_children -- ctest -V -C %BUILD_TYPE%
+         OpenCppCoverage.exe --sources quadwar --export_type cobertura:coverage.xml --cover_children -- ctest -V -C $BUILD_TYPE
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
