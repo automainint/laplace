@@ -65,42 +65,44 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
   target_link_libraries(
     ${LAPLACE_OBJ}
       PUBLIC
-        ${LAPLACE_CONFIG}
-        gtest benchmark wolfssl freetype
-  )
-
-  target_link_libraries(${QUADWAR_OBJ} PUBLIC ${LAPLACE_OBJ})
-
-  target_compile_features(${LAPLACE_OBJ} PRIVATE cxx_std_20)
-  target_compile_features(${QUADWAR_OBJ} PRIVATE cxx_std_20)
+        gtest benchmark wolfssl freetype)
 
   if(LAPLACE_ENABLE_LIB)
     add_library(${LAPLACE_LIB} STATIC)
-    target_link_libraries(${LAPLACE_LIB} PUBLIC ${LAPLACE_OBJ})
+
+    target_link_libraries(
+      ${LAPLACE_LIB}
+        PUBLIC
+          ${LAPLACE_CONFIG}
+          ${LAPLACE_OBJ})
   endif()
 
-  if(LAPLACE_ENABLE_EXE)
+  if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_TESTING OR LAPLACE_ENABLE_COVERAGE)
     add_executable(${QUADWAR_EXE})
-    target_link_libraries(${QUADWAR_EXE} PUBLIC ${QUADWAR_OBJ} ${LAPLACE_OBJ})
+
+    target_link_libraries(
+      ${QUADWAR_EXE}
+        PUBLIC
+          ${LAPLACE_CONFIG}
+          ${QUADWAR_OBJ}
+          ${LAPLACE_OBJ})
 
     if(MSVC)
       target_link_options(${QUADWAR_EXE} PRIVATE "/SUBSYSTEM:CONSOLE")
     endif()
+  endif()
 
-    if(LAPLACE_ENABLE_TESTING OR LAPLACE_ENABLE_COVERAGE)
-      enable_testing()
+  if(LAPLACE_ENABLE_TESTING OR LAPLACE_ENABLE_COVERAGE)
+    enable_testing()
 
-      add_test(
-        NAME ${LAPLACE_UNITTESTS}
-        COMMAND ${QUADWAR_EXE} --tests
-      )
+    add_test(
+      NAME ${LAPLACE_UNITTESTS}
+      COMMAND ${QUADWAR_EXE} --tests)
 
-      set_tests_properties(
-        ${LAPLACE_UNITTESTS}
-          PROPERTIES
-            TIMEOUT "40"
-      )
-    endif()
+    set_tests_properties(
+      ${LAPLACE_UNITTESTS}
+        PROPERTIES
+          TIMEOUT "40")
   endif()
 
 endif()

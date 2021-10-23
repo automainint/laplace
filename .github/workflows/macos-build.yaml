@@ -24,7 +24,7 @@ jobs:
 
     - name: Install gcovr
       run: |
-        pip3 install gcovr
+        python3 -m pip install gcovr
 
     - name: Build
       run: |
@@ -38,7 +38,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: |
         ctest -V -C $BUILD_TYPE
-        ~/.local/bin/gcovr -j 2 --delete --root ../source/ --exclude '\.\./source/test/' --print-summary --xml-pretty --xml coverage.xml .
+        $HOME/.local/bin/gcovr -j 2 --delete --root ../source/ --exclude '\.\./source/test/' --print-summary --xml-pretty --xml coverage.xml .
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
