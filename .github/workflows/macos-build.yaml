@@ -22,9 +22,9 @@ jobs:
       with:
         cmake-version: 3.18
 
-    - name: Install gcovr
+    - name: Install gcovr 4.2
       run: |
-        python3 -m pip install gcovr
+        python3 -m pip install gcovr==4.2
 
     - name: Build
       run: |

@@ -36,7 +36,7 @@ jobs:
       - name: Run tests & generate coverage
         working-directory: ${{github.workspace}}/build
         run: |
-         OpenCppCoverage.exe --sources quadwar --export_type cobertura:coverage.xml --cover_children -- ctest -V -C $BUILD_TYPE
+         OpenCppCoverage.exe --sources ../source --export_type cobertura:coverage.xml --cover_children -- ctest -V -C Debug
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
