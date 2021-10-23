@@ -62,8 +62,17 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
 
   include(cmake/config.cmake)
 
-  target_link_libraries(${LAPLACE_OBJ} PUBLIC gtest benchmark wolfssl freetype)
-  target_link_libraries(${QUADWAR_OBJ} PUBLIC ${LAPLACE_OBJ})
+  target_link_libraries(
+    ${LAPLACE_OBJ}
+      PUBLIC
+        ${LAPLACE_CONFIG}
+        gtest benchmark wolfssl freetype)
+
+  target_link_libraries(
+    ${QUADWAR_OBJ}
+      PUBLIC
+        ${LAPLACE_CONFIG}
+        ${LAPLACE_OBJ})
 
   if(LAPLACE_ENABLE_LIB)
     add_library(${LAPLACE_LIB} STATIC)
