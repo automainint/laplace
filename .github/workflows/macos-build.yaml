@@ -45,5 +45,5 @@ jobs:
       with:
         files: ${{github.workspace}}/build/coverage.xml
         flags: ${{ runner.os }}
-        name: ${{ runner.os }}-build
+        name: ${{ runner.os }} build
         fail_ci_if_error: true
