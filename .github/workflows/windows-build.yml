@@ -22,9 +22,10 @@ jobs:
         with:
           cmake-version: 3.18
 
-      - name: Set up OpenCppCoverage
+      - name: Install OpenCppCoverage
         run: |
           choco install opencppcoverage
+          echo "C:/Program Files/OpenCppCoverage" >> $GITHUB_PATH
 
       - name: Build
         run: |
