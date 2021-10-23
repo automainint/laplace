@@ -28,8 +28,8 @@ jobs:
 
     - name: Build
       run: |
-          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D LAPLACE_ENABLE_TESTING=ON -D LAPLACE_ENABLE_COVERAGE=ON -D LAPLACE_VERBOSE=OFF -B build -S .
-          cmake --build build --config $BUILD_TYPE
+        cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D LAPLACE_ENABLE_TESTING=ON -D LAPLACE_ENABLE_COVERAGE=ON -D LAPLACE_VERBOSE=OFF -B build -S .
+        cmake --build build --config $BUILD_TYPE
       env:
         CC: gcc-11
         CXX: g++-11
