@@ -37,7 +37,10 @@ jobs:
       shell: bash
       working-directory: ${{github.workspace}}/build
       run: |
-       OpenCppCoverage.exe --sources source\\* --excluded_sources source\\test\\* --export_type cobertura:coverage.xml --cover_children -- ctest -V -C $BUILD_TYPE
+        OpenCppCoverage.exe --sources source\\* --excluded_sources source\\test\\* --export_type cobertura:coverage.xml --cover_children -- ctest -V -C $BUILD_TYPE
+        dir
+        cd ..
+        dir
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
