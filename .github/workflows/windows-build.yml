@@ -25,8 +25,6 @@ jobs:
       - name: Install OpenCppCoverage
         run: |
           choco install opencppcoverage
-          echo "C:/Program Files/OpenCppCoverage" >> $GITHUB_PATH
-          refreshenv
 
       - name: Build
         run: |
@@ -36,7 +34,7 @@ jobs:
       - name: Run tests & generate coverage
         working-directory: ${{github.workspace}}/build
         run: |
-          OpenCppCoverage.exe --sources quadwar --export_type cobertura:coverage.xml --cover_children -- ctest -V -C $BUILD_TYPE
+          C:/Program Files/OpenCppCoverage/OpenCppCoverage.exe --sources quadwar --export_type cobertura:coverage.xml --cover_children -- ctest -V -C $BUILD_TYPE
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2

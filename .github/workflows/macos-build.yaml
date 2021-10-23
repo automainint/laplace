@@ -38,7 +38,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: |
         ctest -V -C $BUILD_TYPE
-        gcovr -j 2 --delete --root ../source/ --exclude '\.\./source/test/' --print-summary --xml-pretty --xml coverage.xml .
+        ~/.local/bin/gcovr -j 2 --delete --root ../source/ --exclude '\.\./source/test/' --print-summary --xml-pretty --xml coverage.xml .
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
