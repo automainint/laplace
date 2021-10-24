@@ -33,7 +33,6 @@ namespace laplace::network {
 
   const sl::whole udp_server::default_chunk_size        = 2096;
   const sl::whole udp_server::chunk_size_increment      = 512;
-  const sl::whole udp_server::chunk_size_limit          = 0x4000;
   const sl::whole udp_server::default_loss_compensation = 4;
   const uint16_t  udp_server::default_max_command_id    = 400;
   const sl::index udp_server::max_index_delta           = 0x1000;
@@ -409,7 +408,7 @@ namespace laplace::network {
   }
 
   void udp_server::process_queue(sl::index slot) {
-    auto &    qu = m_slots[slot].queue;
+    auto     &qu = m_slots[slot].queue;
     sl::index n  = 0;
 
     for (; n < qu.events.size(); n++) {
@@ -840,32 +839,29 @@ namespace laplace::network {
   }
 
   void udp_server::send_chunks() {
-    if (m_node) {
-      for (auto &s : m_slots) {
+    if (!m_node)
+      return;
 
-        if (s.out.empty())
-          continue;
+    for (auto &s : m_slots) {
+      if (s.out.empty())
+        continue;
 
-        auto plain = sl::vector<span_cbyte> {};
+      auto plain = sl::vector<span_cbyte> {};
 
-        for (sl::index i = 0; i < s.out.size(); i++) {
-          plain.emplace_back(s.out[i].begin(), s.out[i].end());
-        }
+      for (auto &x : s.out) plain.emplace_back(x.begin(), x.end());
 
-        const auto chunk = s.is_encrypted ? s.tran.encode(plain)
-                                          : s.tran.pack(plain);
+      auto const chunk = s.is_encrypted ? s.tran.encode(plain)
+                                        : s.tran.pack(plain);
 
-        s.out.clear();
+      s.out.clear();
 
-        if (!chunk.empty()) {
-          s.is_encrypted = s.tran.is_encrypted();
+      if (!chunk.empty()) {
+        s.is_encrypted = s.tran.is_encrypted();
 
-          if (s.is_exclusive && s.node) {
-            add_bytes_sent(s.node->send_to(s.address, s.port, chunk));
-          } else {
-            add_bytes_sent(m_node->send_to(s.address, s.port, chunk));
-          }
-        }
+        if (s.is_exclusive && s.node)
+          add_bytes_sent(s.node->send_to(s.address, s.port, chunk));
+        else
+          add_bytes_sent(m_node->send_to(s.address, s.port, chunk));
       }
     }
   }

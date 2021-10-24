@@ -30,7 +30,6 @@ namespace laplace::network {
 
     static const sl::whole default_chunk_size;
     static const sl::whole chunk_size_increment;
-    static const sl::whole chunk_size_limit;
     static const sl::whole default_loss_compensation;
     static const uint16_t  default_max_command_id;
     static const sl::index max_index_delta;

@@ -16,10 +16,7 @@
 
 #include "../core/embedded.h"
 #include "../core/utils.h"
-#include "../graphics/flat/solid_shader.h"
-#include "../graphics/flat/sprite_shader.h"
 #include "../graphics/utils.h"
-#include "../ui/widget.h"
 #include "config.h"
 #include "ui/context.h"
 #include <filesystem>
@@ -75,7 +72,7 @@ namespace laplace::stem {
     m_window->set_size(frame_width, frame_height);
     m_window->set_fullscreen_mode(frame_width, frame_height,
                                   frame_rate);
-    m_window->set_fullscreen(true);
+    //m_window->set_fullscreen(true);
 
     m_window->on_init([this]() { init(); });
 

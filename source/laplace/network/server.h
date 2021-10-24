@@ -28,6 +28,11 @@ namespace laplace::network {
     static const sl::time  default_connection_timeout_msec;
     static const sl::whole default_overtake_factor;
 
+    server(server const &) = delete;
+    server(server &&)      = delete;
+    auto operator=(server const &) -> server & = delete;
+    auto operator=(server &&) -> server & = delete;
+
     server() = default;
     virtual ~server();
 
@@ -46,7 +51,8 @@ namespace laplace::network {
     [[nodiscard]] auto get_ping() const noexcept -> sl::time;
 
     [[nodiscard]] auto get_state() const noexcept -> server_state;
-    [[nodiscard]] auto get_tick_duration() noexcept -> sl::whole;
+    [[nodiscard]] auto get_tick_duration() const noexcept
+        -> sl::whole;
 
     [[nodiscard]] auto get_bytes_sent() const noexcept -> sl::whole;
     [[nodiscard]] auto get_bytes_received() const noexcept
@@ -100,9 +106,9 @@ namespace laplace::network {
     [[nodiscard]] auto get_overtake_factor() const noexcept
         -> sl::whole;
 
-    void verb_queue(sl::index n, span_cbyte seq);
-    void verb_slot(sl::index slot, sl::index n, span_cbyte seq);
-    void dump(span_cbyte bytes);
+    void verb_queue(sl::index n, span_cbyte seq) const;
+    void verb_slot(sl::index slot, sl::index n, span_cbyte seq) const;
+    void dump(span_cbyte bytes) const;
 
   private:
     bool m_verbose      = default_verbose;

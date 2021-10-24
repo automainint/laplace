@@ -23,12 +23,16 @@ namespace laplace {
   [[nodiscard]] constexpr auto hex_to_int(char16_t x) noexcept -> int;
   [[nodiscard]] constexpr auto hex_to_int(char32_t x) noexcept -> int;
 
+  /*  TODO
+   *  Use C++20 format library.
+   */
   [[nodiscard]] auto fmt(const char *c_format, ...) -> std::string;
 
   [[nodiscard]] auto fmt(const char *c_format, va_list ap)
       -> std::string;
 
-  [[nodiscard]] auto fmt(const char8_t *c_format, ...) -> std::u8string;
+  [[nodiscard]] auto fmt(const char8_t *c_format, ...)
+      -> std::u8string;
 
   [[nodiscard]] auto fmt(const char8_t *c_format, va_list ap)
       -> std::u8string;

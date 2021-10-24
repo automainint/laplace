@@ -16,6 +16,7 @@
 #include <cmath>
 #include <cstdarg>
 #include <iostream>
+#include <utility>
 
 #ifdef _MSC_VER
 /*  False va_arg warnings.
@@ -24,11 +25,10 @@
 #endif
 
 namespace laplace::core {
-  using namespace std;
+  using std::u8string;
 
-  parser::parser(parser::input_stream stream) noexcept {
-    m_stream = stream;
-  }
+  parser::parser(parser::input_stream stream) noexcept :
+      m_stream(std::move(stream)) { }
 
   void parser::push_offset() noexcept {
     if (!m_buffer_offset.empty()) {
@@ -175,17 +175,13 @@ namespace laplace::core {
   }
 
   auto parser::is_hex(char32_t c) noexcept -> bool {
-    bool result = false;
-
-    if (c >= '0' && c <= '9') {
-      result = true;
-    } else if (c >= 'a' && c <= 'f') {
-      result = true;
-    } else if (c >= 'A' && c <= 'F') {
-      result = true;
-    }
-
-    return result;
+    if (c >= '0' && c <= '9')
+      return true;
+    if (c >= 'a' && c <= 'f')
+      return true;
+    if (c >= 'A' && c <= 'F')
+      return true;
+    return false;
   }
 
   auto parser::string_end(char32_t c, const char *p) noexcept
@@ -226,13 +222,13 @@ namespace laplace::core {
     bool is_done   = false;
     bool is_silent = false;
 
-    auto p = format;
+    auto const *p = format;
 
     while (!is_done) {
       if (*p == '\0') {
         is_done = true;
       } else if (m_is_eof) {
-        for (; *p; p++) {
+        for (; *p != '\0'; p++) {
           if (*p != ' ') {
             result = false;
             break;
@@ -299,10 +295,10 @@ namespace laplace::core {
             if (i_value == -1) {
               i_value = 0;
             } else {
-              i_value <<= 1;
+              i_value *= 2;
             }
 
-            i_value |= static_cast<int64_t>(c) - '0';
+            i_value += static_cast<int64_t>(c) - '0';
 
             c = get_char();
           }
@@ -339,10 +335,10 @@ namespace laplace::core {
             if (i_value == -1) {
               i_value = 0;
             } else {
-              i_value <<= 3;
+              i_value *= 8;
             }
 
-            i_value |= static_cast<int64_t>(c) - '0';
+            i_value += static_cast<int64_t>(c) - '0';
 
             c = get_char();
           }
@@ -419,10 +415,10 @@ namespace laplace::core {
             if (i_value == -1) {
               i_value = 0;
             } else {
-              i_value <<= 4;
+              i_value *= 16;
             }
 
-            i_value |= hex_to_int(c);
+            i_value += hex_to_int(c);
 
             c = get_char();
           }
@@ -453,10 +449,10 @@ namespace laplace::core {
               is_set  = true;
               i_value = 0;
             } else {
-              i_value <<= 1;
+              i_value *= 2;
             }
 
-            i_value |= static_cast<int64_t>(c) - '0';
+            i_value += static_cast<int64_t>(c) - '0';
 
             c = get_char();
           }
@@ -483,10 +479,10 @@ namespace laplace::core {
               is_set  = true;
               i_value = 0;
             } else {
-              i_value <<= 3;
+              i_value *= 8;
             }
 
-            i_value |= static_cast<int64_t>(c) - '0';
+            i_value += static_cast<int64_t>(c) - '0';
 
             c = get_char();
           }
@@ -543,10 +539,10 @@ namespace laplace::core {
               is_set  = true;
               i_value = 0;
             } else {
-              i_value <<= 4;
+              i_value *= 16;
             }
 
-            i_value |= hex_to_int(c);
+            i_value += hex_to_int(c);
 
             c = get_char();
           }
@@ -650,7 +646,10 @@ namespace laplace::core {
               }
 
               if (f_frac_value != -1) {
-                f_value += f_frac_value * pow(10, -f_frac_power);
+                f_value += static_cast<decltype(f_value)>(
+                               f_frac_value) *
+                           pow(10,
+                               static_cast<double>(-f_frac_power));
               }
 
               if (f_exp_value != -1) {
@@ -658,7 +657,7 @@ namespace laplace::core {
                   f_exp_value = -f_exp_value;
                 }
 
-                f_value *= pow(10, f_exp_value);
+                f_value *= pow(10, static_cast<double>(f_exp_value));
               }
 
               if (f_negative) {
@@ -874,7 +873,7 @@ namespace laplace::core {
   }
 
   void parser::set_stream(parser::input_stream stream) noexcept {
-    this->m_stream = stream;
+    this->m_stream = std::move(stream);
   }
 
   auto parser::get_stream() const noexcept -> parser::input_stream {

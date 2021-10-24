@@ -23,7 +23,7 @@ namespace laplace::engine::eval::astar::impl {
 
   template <typename _node>
   [[nodiscard]] constexpr auto _get_parent_length(
-      const _node &n) noexcept -> intval {
+      const _node &) noexcept -> intval {
     return {};
   }
 
@@ -58,9 +58,9 @@ namespace laplace::engine::eval::astar {
 
   template <bool _nearest, typename _node>
   [[nodiscard]] inline auto loop(
-      fn_sight const           sight,
-      fn_neighbors const       neighbors,
-      fn_heuristic const       heuristic,
+      fn_sight const          &sight,
+      fn_neighbors const      &neighbors,
+      fn_heuristic const      &heuristic,
       _state<_nearest, _node> &state) noexcept -> status {
 
     if (state.open.empty())
@@ -217,7 +217,7 @@ namespace laplace::engine::eval::astar {
     }
 
     return v;
-  };
+  }
 
   template <bool _nearest, typename _node>
   inline auto length(_state<_nearest, _node> const &state) noexcept

@@ -33,8 +33,8 @@ namespace laplace::core {
     unival(cref_unival) noexcept = default;
     unival(unival &&) noexcept   = default;
 
-    auto operator=(cref_unival) noexcept -> ref_unival = default;
-    auto operator=(unival &&) noexcept -> ref_unival = default;
+    auto operator=(cref_unival) noexcept -> unival & = default;
+    auto operator=(unival &&) noexcept -> unival & = default;
 
     /*  Create array.
      */
@@ -122,71 +122,74 @@ namespace laplace::core {
 
     /*  Returns true if empty.
      */
-    auto is_empty() const noexcept -> bool;
+    [[nodiscard]] auto is_empty() const noexcept -> bool;
 
     /*  Returns true if is boolean.
      */
-    auto is_boolean() const noexcept -> bool;
+    [[nodiscard]] auto is_boolean() const noexcept -> bool;
 
     /*  Returns true if is integer.
      */
-    auto is_integer() const noexcept -> bool;
+    [[nodiscard]] auto is_integer() const noexcept -> bool;
 
     /*  Returns true if is unsigned integer.
      */
-    auto is_uint() const noexcept -> bool;
+    [[nodiscard]] auto is_uint() const noexcept -> bool;
 
     /*  Returns true if is floating-point number.
      */
-    auto is_real() const noexcept -> bool;
+    [[nodiscard]] auto is_real() const noexcept -> bool;
 
     /*  Returns true if is string.
      */
-    auto is_string() const noexcept -> bool;
+    [[nodiscard]] auto is_string() const noexcept -> bool;
 
     /*  Returns true if is byte array.
      */
-    auto is_bytes() const noexcept -> bool;
+    [[nodiscard]] auto is_bytes() const noexcept -> bool;
 
     /*  Returns true if is vector.
      */
-    auto is_vector() const noexcept -> bool;
+    [[nodiscard]] auto is_vector() const noexcept -> bool;
 
     /*  Returns true if is composite.
      */
-    auto is_composite() const noexcept -> bool;
+    [[nodiscard]] auto is_composite() const noexcept -> bool;
 
     /*  Returns boolean value.
      */
-    auto get_boolean() const noexcept -> bool;
+    [[nodiscard]] auto get_boolean() const noexcept -> bool;
 
     /*  Returns integer value.
      */
-    auto get_integer() const noexcept -> signed long long;
+    [[nodiscard]] auto get_integer() const noexcept
+        -> signed long long;
 
     /*  Returns unsigned integer value.
      */
-    auto get_uint() const noexcept -> unsigned long long;
+    [[nodiscard]] auto get_uint() const noexcept
+        -> unsigned long long;
 
     /*  Returns floating-point number value.
      */
-    auto get_real() const noexcept -> double;
+    [[nodiscard]] auto get_real() const noexcept -> double;
 
     /*  Returns string value.
      */
-    auto get_string() const noexcept -> std::u8string_view;
+    [[nodiscard]] auto get_string() const noexcept
+        -> std::u8string_view;
 
     /*  Returns byte array.
      */
-    auto get_bytes() const noexcept -> span_cbyte;
+    [[nodiscard]] auto get_bytes() const noexcept -> span_cbyte;
 
     /*  Return vector or composite size in elements.
      */
-    auto get_size() const noexcept -> sl::whole;
+    [[nodiscard]] auto get_size() const noexcept -> sl::whole;
 
     /*  Return true if composite has element by key.
      */
-    auto has(cref_unival key) const noexcept -> bool;
+    [[nodiscard]] auto has(cref_unival key) const noexcept -> bool;
 
     /*  Set composite key by index.
      *
@@ -208,31 +211,38 @@ namespace laplace::core {
 
     /*  Get composite key by index.
      */
-    auto get_key(signed long long n) const noexcept -> cref_unival;
+    [[nodiscard]] auto get_key(signed long long n) const noexcept
+        -> cref_unival;
 
     /*  Get vector element by index.
      */
-    auto get_value(signed long long n) const noexcept -> cref_unival;
+    [[nodiscard]] auto get_value(signed long long n) const noexcept
+        -> cref_unival;
 
     /*  Get composite element by key.
      */
-    auto get_value(cref_unival key) const noexcept -> cref_unival;
+    [[nodiscard]] auto get_value(cref_unival key) const noexcept
+        -> cref_unival;
 
     /*  Get composite element by key.
      */
-    auto by_key(signed long long key) noexcept -> ref_unival;
+    [[nodiscard]] auto by_key(signed long long key) noexcept
+        -> ref_unival;
 
     /*  Get composite element by key.
      */
-    auto by_key(signed long long key) const noexcept -> cref_unival;
+    [[nodiscard]] auto by_key(signed long long key) const noexcept
+        -> cref_unival;
 
     /*  Get composite element by index.
      */
-    auto by_index(signed long long n) noexcept -> ref_unival;
+    [[nodiscard]] auto by_index(signed long long n) noexcept
+        -> ref_unival;
 
     /*  Get composite element by index.
      */
-    auto by_index(signed long long n) const noexcept -> cref_unival;
+    [[nodiscard]] auto by_index(signed long long n) const noexcept
+        -> cref_unival;
 
     /*  Returns -1 if less, +1 if greater, 0 if equals.
      */
@@ -253,45 +263,73 @@ namespace laplace::core {
     auto value(const char *key) noexcept -> ref_unival;
     auto value(const char8_t *key) noexcept -> ref_unival;
 
-    auto get_key(signed int n) const noexcept -> cref_unival;
-    auto get_key(signed long n) const noexcept -> cref_unival;
-    auto get_key(unsigned int n) const noexcept -> cref_unival;
-    auto get_key(unsigned long n) const noexcept -> cref_unival;
-    auto get_key(unsigned long long n) const noexcept -> cref_unival;
-
-    auto get_value(signed int n) const noexcept -> cref_unival;
-    auto get_value(signed long n) const noexcept -> cref_unival;
-    auto get_value(unsigned int n) const noexcept -> cref_unival;
-    auto get_value(unsigned long n) const noexcept -> cref_unival;
-    auto get_value(unsigned long long n) const noexcept
+    [[nodiscard]] auto get_key(signed int n) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto get_key(signed long n) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto get_key(unsigned int n) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto get_key(unsigned long n) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto get_key(unsigned long long n) const noexcept
         -> cref_unival;
 
-    auto get_value(const char *key) const noexcept -> cref_unival;
-    auto get_value(const char8_t *key) const noexcept -> cref_unival;
+    [[nodiscard]] auto get_value(signed int n) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto get_value(signed long n) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto get_value(unsigned int n) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto get_value(unsigned long n) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto get_value(unsigned long long n) const noexcept
+        -> cref_unival;
 
-    auto by_key(signed int key) noexcept -> ref_unival;
-    auto by_key(signed long key) noexcept -> ref_unival;
-    auto by_key(unsigned int key) noexcept -> ref_unival;
-    auto by_key(unsigned long key) noexcept -> ref_unival;
-    auto by_key(unsigned long long key) noexcept -> ref_unival;
+    [[nodiscard]] auto get_value(const char *key) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto get_value(const char8_t *key) const noexcept
+        -> cref_unival;
 
-    auto by_key(signed int key) const noexcept -> cref_unival;
-    auto by_key(signed long key) const noexcept -> cref_unival;
-    auto by_key(unsigned int key) const noexcept -> cref_unival;
-    auto by_key(unsigned long key) const noexcept -> cref_unival;
-    auto by_key(unsigned long long key) const noexcept -> cref_unival;
+    [[nodiscard]] auto by_key(signed int key) noexcept -> ref_unival;
+    [[nodiscard]] auto by_key(signed long key) noexcept -> ref_unival;
+    [[nodiscard]] auto by_key(unsigned int key) noexcept
+        -> ref_unival;
+    [[nodiscard]] auto by_key(unsigned long key) noexcept
+        -> ref_unival;
+    [[nodiscard]] auto by_key(unsigned long long key) noexcept
+        -> ref_unival;
 
-    auto by_index(signed int key) noexcept -> ref_unival;
-    auto by_index(signed long key) noexcept -> ref_unival;
-    auto by_index(unsigned int key) noexcept -> ref_unival;
-    auto by_index(unsigned long key) noexcept -> ref_unival;
-    auto by_index(unsigned long long key) noexcept -> ref_unival;
+    [[nodiscard]] auto by_key(signed int key) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto by_key(signed long key) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto by_key(unsigned int key) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto by_key(unsigned long key) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto by_key(unsigned long long key) const noexcept
+        -> cref_unival;
 
-    auto by_index(signed int key) const noexcept -> cref_unival;
-    auto by_index(signed long key) const noexcept -> cref_unival;
-    auto by_index(unsigned int key) const noexcept -> cref_unival;
-    auto by_index(unsigned long key) const noexcept -> cref_unival;
-    auto by_index(unsigned long long key) const noexcept
+    [[nodiscard]] auto by_index(signed int key) noexcept
+        -> ref_unival;
+    [[nodiscard]] auto by_index(signed long key) noexcept
+        -> ref_unival;
+    [[nodiscard]] auto by_index(unsigned int key) noexcept
+        -> ref_unival;
+    [[nodiscard]] auto by_index(unsigned long key) noexcept
+        -> ref_unival;
+    [[nodiscard]] auto by_index(unsigned long long key) noexcept
+        -> ref_unival;
+
+    [[nodiscard]] auto by_index(signed int key) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto by_index(signed long key) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto by_index(unsigned int key) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto by_index(unsigned long key) const noexcept
+        -> cref_unival;
+    [[nodiscard]] auto by_index(unsigned long long key) const noexcept
         -> cref_unival;
 
     operator signed char() const noexcept;
@@ -304,30 +342,43 @@ namespace laplace::core {
     operator unsigned long() const noexcept;
     operator float() const noexcept;
 
-    auto operator[](signed int n) noexcept -> ref_unival;
-    auto operator[](signed int n) const noexcept -> cref_unival;
-
-    auto operator[](signed long n) noexcept -> ref_unival;
-    auto operator[](signed long n) const noexcept -> cref_unival;
-
-    auto operator[](unsigned int n) noexcept -> ref_unival;
-    auto operator[](unsigned int n) const noexcept -> cref_unival;
-
-    auto operator[](unsigned long n) noexcept -> ref_unival;
-    auto operator[](unsigned long n) const noexcept -> cref_unival;
-
-    auto operator[](unsigned long long n) noexcept -> ref_unival;
-    auto operator[](unsigned long long n) const noexcept
+    [[nodiscard]] auto operator[](signed int n) noexcept
+        -> ref_unival;
+    [[nodiscard]] auto operator[](signed int n) const noexcept
         -> cref_unival;
 
-    auto operator[](const char *key) noexcept -> ref_unival;
-    auto operator[](const char *key) const noexcept -> cref_unival;
+    [[nodiscard]] auto operator[](signed long n) noexcept
+        -> ref_unival;
+    [[nodiscard]] auto operator[](signed long n) const noexcept
+        -> cref_unival;
 
-    auto operator[](const char8_t *key) noexcept -> ref_unival;
-    auto operator[](const char8_t *key) const noexcept -> cref_unival;
+    [[nodiscard]] auto operator[](unsigned int n) noexcept
+        -> ref_unival;
+    [[nodiscard]] auto operator[](unsigned int n) const noexcept
+        -> cref_unival;
 
-    static auto logic_error() noexcept -> cref_unival;
-    static auto out_of_range() noexcept -> cref_unival;
+    [[nodiscard]] auto operator[](unsigned long n) noexcept
+        -> ref_unival;
+    [[nodiscard]] auto operator[](unsigned long n) const noexcept
+        -> cref_unival;
+
+    [[nodiscard]] auto operator[](unsigned long long n) noexcept
+        -> ref_unival;
+    [[nodiscard]] auto operator[](unsigned long long n) const noexcept
+        -> cref_unival;
+
+    [[nodiscard]] auto operator[](const char *key) noexcept
+        -> ref_unival;
+    [[nodiscard]] auto operator[](const char *key) const noexcept
+        -> cref_unival;
+
+    [[nodiscard]] auto operator[](const char8_t *key) noexcept
+        -> ref_unival;
+    [[nodiscard]] auto operator[](const char8_t *key) const noexcept
+        -> cref_unival;
+
+    [[nodiscard]] static auto logic_error() noexcept -> cref_unival;
+    [[nodiscard]] static auto out_of_range() noexcept -> cref_unival;
 
   private:
     void assign(cref_vec value) noexcept;

@@ -12,26 +12,20 @@
 
 #include "server.h"
 
-#include "../core/utils.h"
-#include "../engine/basic_factory.h"
-#include "../engine/protocol/ids.h"
 #include <iomanip>
 
 namespace laplace::network {
-  namespace pro = engine::protocol;
-  namespace ids = pro::ids;
-
   using std::ostringstream, std::hex, std::setw, std::make_shared,
       engine::ptr_factory, engine::ptr_world, engine::ptr_solver,
       engine::solver, engine::world, engine::seed_type,
       engine::basic_factory, engine::prime_impact;
 
-  const bool      server::default_verbose                 = false;
-  const sl::time  server::default_tick_duration_msec      = 10;
-  const sl::time  server::default_update_timeout_msec     = 10;
-  const sl::time  server::default_ping_timeout_msec       = 100;
-  const sl::time  server::default_connection_timeout_msec = 20000;
-  const sl::whole server::default_overtake_factor         = 3;
+  bool const      server::default_verbose                 = false;
+  sl::time const  server::default_tick_duration_msec      = 10;
+  sl::time const  server::default_update_timeout_msec     = 10;
+  sl::time const  server::default_ping_timeout_msec       = 100;
+  sl::time const  server::default_connection_timeout_msec = 20000;
+  sl::whole const server::default_overtake_factor         = 3;
 
   server::~server() {
     if (is_verbose()) {
@@ -82,7 +76,7 @@ namespace laplace::network {
     return m_state;
   }
 
-  auto server::get_tick_duration() noexcept -> sl::whole {
+  auto server::get_tick_duration() const noexcept -> sl::whole {
     return m_tick_duration_msec;
   }
 
@@ -125,14 +119,15 @@ namespace laplace::network {
   }
 
   void server::setup_world() {
-    if (!m_world) {
-      if (!m_solver) {
-        m_solver = make_shared<solver>();
-      }
+    if (m_world)
+      return;
 
-      m_world = make_shared<world>();
-      m_solver->set_world(m_world);
+    if (!m_solver) {
+      m_solver = make_shared<solver>();
     }
+
+    m_world = make_shared<world>();
+    m_solver->set_world(m_world);
   }
 
   void server::set_connected(bool is_connected) noexcept {
@@ -213,7 +208,7 @@ namespace laplace::network {
     return m_overtake_factor;
   }
 
-  void server::verb_queue(sl::index n, span_cbyte seq) {
+  void server::verb_queue(sl::index n, span_cbyte seq) const {
     if (m_verbose) {
       const auto id   = prime_impact::get_id(seq);
       const auto name = basic_factory::name_by_id_native(id);
@@ -229,7 +224,7 @@ namespace laplace::network {
 
   void server::verb_slot(sl::index  slot,
                          sl::index  n,
-                         span_cbyte seq) {
+                         span_cbyte seq) const {
     if (m_verbose) {
       const auto id   = prime_impact::get_id(seq);
       const auto name = basic_factory::name_by_id_native(id);
@@ -244,7 +239,7 @@ namespace laplace::network {
     }
   }
 
-  void server::dump(span_cbyte bytes) {
+  void server::dump(span_cbyte bytes) const {
     if (m_verbose) {
       auto ss = ostringstream {};
       ss << " ";
