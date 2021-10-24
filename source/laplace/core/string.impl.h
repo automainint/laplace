@@ -65,9 +65,8 @@ namespace laplace {
 
   template <>
   inline auto to_u8string<>(std::string_view s) -> std::u8string {
-    return std::u8string(                            //
-        reinterpret_cast<const char8_t *>(s.data()), //
-        s.size());
+    return std::u8string(reinterpret_cast<char8_t const *>(s.data()),
+                         s.size());
   }
 
   template <>

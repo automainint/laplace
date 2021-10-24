@@ -27,17 +27,17 @@ namespace laplace::serial {
   /*  Read value of specified type from specified offset.
    */
   template <trivial type_>
-  [[nodiscard]] constexpr auto rd(span_cbyte const seq,
-                                  sl::index const  offset,
-                                  type_ const invalid = -1) noexcept
+  [[nodiscard]] constexpr auto rd(span_cbyte seq,
+                                  sl::index  offset,
+                                  type_      invalid = -1) noexcept
       -> type_;
 
   /*  Write the value to specified offset.
    */
   template <trivial type_>
-  constexpr void wr(span_byte const seq,
-                    sl::index const offset,
-                    type_ const     value) noexcept;
+  constexpr void wr(span_byte seq,
+                    sl::index offset,
+                    type_     value) noexcept;
 
   [[nodiscard]] constexpr auto byte_count() noexcept -> sl::whole;
 

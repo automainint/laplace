@@ -126,142 +126,135 @@ namespace laplace::core {
   }
 
   auto unival::operator=(unival::cref_vec value) noexcept
-      -> ref_unival {
+      -> unival & {
     assign(value);
     return *this;
   }
 
   auto unival::operator=(unival::cref_composite value) noexcept
-      -> ref_unival {
+      -> unival & {
     assign(value);
     return *this;
   }
 
-  auto unival::operator=(bool value) noexcept -> ref_unival {
+  auto unival::operator=(bool value) noexcept -> unival & {
     assign(value);
     return *this;
   }
 
-  auto unival::operator=(signed char value) noexcept -> ref_unival {
+  auto unival::operator=(signed char value) noexcept -> unival & {
     assign(static_cast<signed long long>(value));
     return *this;
   }
 
-  auto unival::operator=(signed short value) noexcept -> ref_unival {
+  auto unival::operator=(signed short value) noexcept -> unival & {
     assign(static_cast<signed long long>(value));
     return *this;
   }
 
-  auto unival::operator=(signed int value) noexcept -> ref_unival {
+  auto unival::operator=(signed int value) noexcept -> unival & {
     assign(static_cast<signed long long>(value));
     return *this;
   }
 
-  auto unival::operator=(signed long value) noexcept -> ref_unival {
+  auto unival::operator=(signed long value) noexcept -> unival & {
     assign(static_cast<signed long long>(value));
     return *this;
   }
 
   auto unival::operator=(signed long long value) noexcept
-      -> ref_unival {
+      -> unival & {
     assign(value);
     return *this;
   }
 
-  auto unival::operator=(unsigned char value) noexcept -> ref_unival {
+  auto unival::operator=(unsigned char value) noexcept -> unival & {
     assign(static_cast<signed long long>(value));
     return *this;
   }
 
-  auto unival::operator=(unsigned short value) noexcept
-      -> ref_unival {
+  auto unival::operator=(unsigned short value) noexcept -> unival & {
     assign(static_cast<signed long long>(value));
     return *this;
   }
 
-  auto unival::operator=(unsigned int value) noexcept -> ref_unival {
+  auto unival::operator=(unsigned int value) noexcept -> unival & {
     assign(static_cast<signed long long>(value));
     return *this;
   }
 
-  auto unival::operator=(unsigned long value) noexcept -> ref_unival {
+  auto unival::operator=(unsigned long value) noexcept -> unival & {
     assign(static_cast<unsigned long long>(value));
     return *this;
   }
 
   auto unival::operator=(unsigned long long value) noexcept
-      -> ref_unival {
+      -> unival & {
     assign(value);
     return *this;
   }
 
-  auto unival::operator=(float value) noexcept -> ref_unival {
+  auto unival::operator=(float value) noexcept -> unival & {
     assign(static_cast<double>(value));
     return *this;
   }
 
-  auto unival::operator=(double value) noexcept -> ref_unival {
+  auto unival::operator=(double value) noexcept -> unival & {
     assign(value);
     return *this;
   }
 
-  auto unival::operator=(string_view value) noexcept -> ref_unival {
+  auto unival::operator=(string_view value) noexcept -> unival & {
     assign(value);
     return *this;
   }
 
-  auto unival::operator=(wstring_view value) noexcept -> ref_unival {
+  auto unival::operator=(wstring_view value) noexcept -> unival & {
     assign(value);
     return *this;
   }
 
-  auto unival::operator=(u8string_view value) noexcept -> ref_unival {
+  auto unival::operator=(u8string_view value) noexcept -> unival & {
     assign(value);
     return *this;
   }
 
-  auto unival::operator=(u16string_view value) noexcept
-      -> ref_unival {
+  auto unival::operator=(u16string_view value) noexcept -> unival & {
     assign(value);
     return *this;
   }
 
-  auto unival::operator=(u32string_view value) noexcept
-      -> ref_unival {
+  auto unival::operator=(u32string_view value) noexcept -> unival & {
     assign(value);
     return *this;
   }
 
-  auto unival::operator=(const char *value) noexcept -> ref_unival {
+  auto unival::operator=(const char *value) noexcept -> unival & {
     assign(string_view { value });
     return *this;
   }
 
-  auto unival::operator=(const wchar_t *value) noexcept
-      -> ref_unival {
+  auto unival::operator=(const wchar_t *value) noexcept -> unival & {
     assign(wstring_view { value });
     return *this;
   }
 
-  auto unival::operator=(const char8_t *value) noexcept
-      -> ref_unival {
+  auto unival::operator=(const char8_t *value) noexcept -> unival & {
     assign(u8string_view { value });
     return *this;
   }
 
-  auto unival::operator=(const char16_t *value) noexcept
-      -> ref_unival {
+  auto unival::operator=(const char16_t *value) noexcept -> unival & {
     assign(u16string_view { value });
     return *this;
   }
 
-  auto unival::operator=(const char32_t *value) noexcept
-      -> ref_unival {
+  auto unival::operator=(const char32_t *value) noexcept -> unival & {
     assign(u32string_view { value });
     return *this;
   }
 
-  auto unival::operator=(span_cbyte value) noexcept -> ref_unival {
+  auto unival::operator=(span_cbyte value) noexcept -> unival & {
     assign(value);
     return *this;
   }

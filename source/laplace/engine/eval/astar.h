@@ -71,22 +71,22 @@ namespace laplace::engine::eval::astar {
       std::function<intval(sl::index a, sl::index b)>;
 
   template <bool _nearest, typename _node>
-  [[nodiscard]] inline auto init(sl::index const source,
-                                 sl::index const destination) noexcept
+  [[nodiscard]] inline auto init(sl::index source,
+                                 sl::index destination) noexcept
       -> _state<_nearest, _node>;
 
   template <bool _nearest, typename _node>
   [[nodiscard]] inline auto loop(
-      fn_sight const           sight,
-      fn_neighbors const       neighbors,
-      fn_heuristic const       heuristic,
+      fn_sight const          &sight,
+      fn_neighbors const      &neighbors,
+      fn_heuristic const      &heuristic,
       _state<_nearest, _node> &state) noexcept -> status;
 
   template <typename _node>
-  [[nodiscard]] inline auto finish(
-      std::span<_node const> const closed,
-      sl::index const              source,
-      sl::index const destination) noexcept -> sl::vector<sl::index>;
+  [[nodiscard]] inline auto finish(std::span<_node const> closed,
+                                   sl::index              source,
+                                   sl::index destination) noexcept
+      -> sl::vector<sl::index>;
 
   template <bool _nearest, typename _node>
   [[nodiscard]] inline auto length(
