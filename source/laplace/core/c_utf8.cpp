@@ -29,31 +29,31 @@ namespace laplace::utf8 {
               sl::index    &offset,
               char32_t     &code) noexcept -> bool {
     if (offset < 0 || offset >= bytes.size() ||
-        (bytes[offset] & 0xf8) == 0xf8)
+        (bytes[offset] & 0xf8u) == 0xf8u)
       return false;
 
-    if ((bytes[offset] & 0x80) == 0x00) {
+    if ((bytes[offset] & 0x80u) == 0x00u) {
       code = bytes[offset];
       offset++;
-    } else if ((bytes[offset] & 0xc0) == 0x80) {
+    } else if ((bytes[offset] & 0xc0u) == 0x80u) {
       return false;
-    } else if ((bytes[offset] & 0xe0) == 0xc0) {
+    } else if ((bytes[offset] & 0xe0u) == 0xc0u) {
       if (offset + 1 >= bytes.size())
         return false;
 
-      if ((bytes[offset + 1] & 0xc0) != 0x80)
+      if ((bytes[offset + 1] & 0xc0u) != 0x80u)
         return false;
 
       code = ((bytes[offset] & 0x1fu) << 6u) |
              (bytes[offset + 1u] & 0x3fu);
 
       offset += 2;
-    } else if ((bytes[offset] & 0xf0) == 0xe0) {
+    } else if ((bytes[offset] & 0xf0u) == 0xe0u) {
       if (offset + 2 >= bytes.size())
         return false;
 
       for (sl::index j = 1; j <= 2; j++)
-        if ((bytes[offset + j] & 0xc0) != 0x80)
+        if ((bytes[offset + j] & 0xc0u) != 0x80)
           return false;
 
       code = ((bytes[offset] & 0x0fu) << 12u) |
@@ -66,7 +66,7 @@ namespace laplace::utf8 {
         return false;
 
       for (sl::index j = 1; j <= 3; j++)
-        if ((bytes[offset + j] & 0xc0) != 0x80)
+        if ((bytes[offset + j] & 0xc0u) != 0x80u)
           return false;
 
       code = ((bytes[offset] & 0x0fu) << 18u) |
@@ -96,14 +96,14 @@ namespace laplace::utf8 {
     auto temp = sl::vector<uint8_t> {};
     temp.reserve(4);
 
-    if (code <= 0x07ff) {
+    if (code <= 0x07ffu) {
       temp.emplace_back<uint8_t>(0xc0u | ((code >> 6u) & 0x1fu));
       temp.emplace_back<uint8_t>(0x80u | (code & 0x3fu));
-    } else if (code <= 0xffff) {
+    } else if (code <= 0xffffu) {
       temp.emplace_back<uint8_t>(0xe0u | ((code >> 12u) & 0x0fu));
       temp.emplace_back<uint8_t>(0x80u | ((code >> 6u) & 0x3fu));
       temp.emplace_back<uint8_t>(0x80u | (code & 0x3fu));
-    } else if (code <= 0x10ffff) {
+    } else if (code <= 0x10ffffu) {
       temp.emplace_back<uint8_t>(0xf0u | ((code >> 18u) & 0x0eu));
       temp.emplace_back<uint8_t>(0x80u | ((code >> 12u) & 0x3fu));
       temp.emplace_back<uint8_t>(0x80u | ((code >> 6u) & 0x3fu));

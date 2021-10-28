@@ -77,20 +77,82 @@ namespace laplace::test {
   }
 
   TEST(core, utf8_decode_invalid) {
+    auto s = u8string {};
     auto n = sl::index {};
     auto c = char32_t {};
 
-    EXPECT_FALSE(utf8::decode(u8"\xff", n, c));
-    EXPECT_FALSE(utf8::decode(u8"\xf8", n, c));
-    EXPECT_FALSE(utf8::decode(u8"\x80", n, c));
-    EXPECT_FALSE(utf8::decode(u8"\xc0", n, c));
-    EXPECT_FALSE(utf8::decode(u8"\xc0\xc0", n, c));
-    EXPECT_FALSE(utf8::decode(u8"\xe0", n, c));
-    EXPECT_FALSE(utf8::decode(u8"\xe0\xc0\x80", n, c));
-    EXPECT_FALSE(utf8::decode(u8"\xe0\x80\xc0", n, c));
-    EXPECT_FALSE(utf8::decode(u8"\xf0", n, c));
-    EXPECT_FALSE(utf8::decode(u8"\xf0\xc0\x80\x80", n, c));
-    EXPECT_FALSE(utf8::decode(u8"\xf0\x80\xc0\x80", n, c));
-    EXPECT_FALSE(utf8::decode(u8"\xf0\x80\x80\xc0", n, c));
+    s    = u8" ";
+    s[0] = 0xff;
+    n    = 0;
+    EXPECT_FALSE(utf8::decode(s, n, c));
+
+    s    = u8" ";
+    s[0] = 0xf8;
+    n    = 0;
+    EXPECT_FALSE(utf8::decode(s, n, c));
+
+    s    = u8" ";
+    s[0] = 0x80;
+    n    = 0;
+    EXPECT_FALSE(utf8::decode(s, n, c));
+
+    s    = u8" ";
+    s[0] = 0xc0;
+    n    = 0;
+    EXPECT_FALSE(utf8::decode(s, n, c));
+
+    s    = u8"  ";
+    s[0] = 0xc0;
+    s[1] = 0xc0;
+    n    = 0;
+    EXPECT_FALSE(utf8::decode(s, n, c));
+
+    s    = u8" ";
+    s[0] = 0xe0;
+    n    = 0;
+    EXPECT_FALSE(utf8::decode(s, n, c));
+
+    s    = u8"   ";
+    s[0] = 0xe0;
+    s[1] = 0xc0;
+    s[2] = 0x80;
+    n    = 0;
+    EXPECT_FALSE(utf8::decode(s, n, c));
+
+    s    = u8"   ";
+    s[0] = 0xe0;
+    s[1] = 0x80;
+    s[2] = 0xc0;
+    n    = 0;
+    EXPECT_FALSE(utf8::decode(s, n, c));
+
+    s    = u8" ";
+    s[0] = 0xf0;
+    n    = 0;
+    EXPECT_FALSE(utf8::decode(s, n, c));
+
+    s    = u8"    ";
+    s[0] = 0xf0;
+    s[1] = 0xc0;
+    s[2] = 0x80;
+    s[3] = 0x80;
+    n    = 0;
+    EXPECT_FALSE(utf8::decode(s, n, c));
+
+    s    = u8"    ";
+    s[0] = 0xf0;
+    s[1] = 0x80;
+    s[2] = 0xc0;
+    s[3] = 0x80;
+    n    = 0;
+    EXPECT_FALSE(utf8::decode(s, n, c));
+
+    s    = u8"    ";
+    s[0] = 0xf0;
+    s[1] = 0x80;
+    s[2] = 0x80;
+    s[3] = 0xc0;
+    n    = 0;
+    EXPECT_FALSE(utf8::decode(s, n, c));
   }
 }
