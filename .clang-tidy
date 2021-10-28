@@ -17,4 +17,5 @@ Checks: >
   -*-narrowing-conversions,
   -*-namespace-comment,
   -*-namespace-comments,
-  -*-return-braced-init-list
+  -*-return-braced-init-list,
+  -*-isolate-declaration

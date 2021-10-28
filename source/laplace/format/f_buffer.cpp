@@ -12,8 +12,6 @@
 
 #include "buffer.h"
 
-#include <algorithm>
-
 namespace laplace::format {
   buffer::buffer(fn_read read) noexcept {
     m_read = read;

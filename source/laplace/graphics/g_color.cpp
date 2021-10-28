@@ -28,8 +28,8 @@ namespace laplace::graphics {
       float chroma    = x_max - x_min;
       float lightness = (x_max + x_min) / 2.f;
 
-      float hue       = 0.f;
-      float saturaton = 0.f;
+      float hue        = 0.f;
+      float saturation = 0.f;
 
       if (chroma > feps) {
         if (rgb[0] >= rgb[1] && rgb[0] >= rgb[2]) {
@@ -44,11 +44,11 @@ namespace laplace::graphics {
       float l_opposite = 1.f - lightness;
 
       if (lightness > feps && l_opposite > feps) {
-        saturaton = (x_max - lightness) / min(lightness, l_opposite);
+        saturation = (x_max - lightness) / min(lightness, l_opposite);
       }
 
       hsl[0] = hue;
-      hsl[1] = saturaton;
+      hsl[1] = saturation;
       hsl[2] = lightness;
     }
   }
