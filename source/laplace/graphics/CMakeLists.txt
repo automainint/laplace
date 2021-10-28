@@ -1,10 +1,10 @@
 target_sources(
   ${LAPLACE_OBJ}
     PRIVATE
-      g_color.cpp g_image.cpp g_program.cpp g_texture.cpp
-      g_utils.cpp
+      g_color.cpp g_program.cpp g_utils.cpp g_image.cpp
+      g_texture.cpp
     PUBLIC
-      color.h defs.h image.h image.impl.h pixel.h pixel.impl.h
-      program.h texture.h utils.h
+      image.impl.h pixel.h utils.h pixel.impl.h program.h
+      color.h texture.h defs.h image.h
 )
 add_subdirectory(flat)

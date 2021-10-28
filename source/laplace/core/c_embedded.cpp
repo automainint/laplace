@@ -29,36 +29,39 @@ namespace laplace::embedded {
   extern vector<vector<uint8_t>> bytes;
 
   void init() noexcept {
-    if (!is_ready) {
-      auto size = aliases.size();
+    if (is_ready)
+      return;
 
-      auto indices = sl::vector<sl::index>(size);
+    auto size = aliases.size();
 
-      for (sl::index i = 0; i < size; i++) indices[i] = i;
+    auto indices = sl::vector<sl::index>(size);
 
-      sort(indices.begin(), indices.end(),
-           [](sl::index i, sl::index j) -> bool {
-             return aliases[i] < aliases[j];
-           });
+    for (sl::index i = 0; i < size; i++) indices[i] = i;
 
-      auto sorted_aliases = vector<wstring>(size);
-      auto sorted_bytes   = vector<vector<uint8_t>>(size);
+    sort(indices.begin(), indices.end(),
+         [](sl::index i, sl::index j) -> bool {
+           return aliases[i] < aliases[j];
+         });
 
-      if (bytes.size() != size)
-        bytes.resize(size);
+    auto sorted_aliases = vector<wstring>(size);
+    auto sorted_bytes   = vector<vector<uint8_t>>(size);
 
-      for (sl::index i = 0; i < size; i++) {
-        auto n = indices[i];
-
-        sorted_aliases[i] = aliases[n];
-        sorted_bytes[i]   = bytes[n];
-      }
-
-      aliases = sorted_aliases;
-      bytes   = sorted_bytes;
-
-      is_ready = true;
+    if (bytes.size() != size) {
+      error_("Invalid embedded data.", __FUNCTION__);
+      bytes.resize(size);
     }
+
+    for (sl::index i = 0; i < size; i++) {
+      auto n = indices[i];
+
+      sorted_aliases[i] = aliases[n];
+      sorted_bytes[i]   = bytes[n];
+    }
+
+    aliases = sorted_aliases;
+    bytes   = sorted_bytes;
+
+    is_ready = true;
   }
 
   auto scan(wstring_view file_name) noexcept -> bool {
@@ -81,9 +84,8 @@ namespace laplace::embedded {
 
     auto i = lower_bound(aliases.begin(), aliases.end(), file_name);
 
-    if (i != aliases.end() && *i == file_name) {
+    if (i != aliases.end() && *i == file_name)
       return bytes[i - aliases.begin()];
-    }
 
     return {};
   }

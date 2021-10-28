@@ -23,13 +23,14 @@ namespace laplace {
   public:
     bytestreambuf(span_cbyte bytes) noexcept {
       auto p = const_cast<char *>(
-          reinterpret_cast<const char *>(bytes.data()));
+          reinterpret_cast<char const *>(bytes.data()));
 
       this->setg(p, p, p + bytes.size());
     }
 
   protected:
-    auto seekoff(off_type off, std::ios_base::seekdir dir,
+    auto seekoff(off_type                off,
+                 std::ios_base::seekdir  dir,
                  std::ios_base::openmode which) -> pos_type override {
 
       if (dir == std::ios_base::cur) {
@@ -53,12 +54,13 @@ namespace laplace {
 
   /*  span<const uint8_t> wrapper for std::istream.
    */
-  class ibytestream final : private bytestreambuf, public std::istream {
+  class ibytestream final : private bytestreambuf,
+                            public std::istream {
   public:
     ibytestream(span_cbyte bytes) noexcept :
         bytestreambuf(bytes), std::istream(
-                                  static_cast<std::streambuf *>(this)) {
-    }
+                                  static_cast<std::streambuf *>(
+                                      this)) { }
   };
 }
 

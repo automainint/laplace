@@ -1,7 +1,7 @@
 target_sources(
   ${LAPLACE_OBJ}
     PRIVATE
-      su_context.cpp su_frame.cpp
+      su_frame.cpp su_context.cpp
     PUBLIC
-      context.h frame.h
+      frame.h context.h
 )

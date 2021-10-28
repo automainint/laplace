@@ -1,13 +1,13 @@
 target_sources(
   ${QUADWAR_OBJ}
     PRIVATE
-      aq_main.cpp aq_quadwar.cpp aq_qw_factory.cpp
-      aq_session.cpp
+      aq_main.cpp aq_session.cpp aq_quadwar.cpp
+      aq_qw_factory.cpp
     PUBLIC
-      defs.h quadwar.h qw_factory.h session.h
+      qw_factory.h quadwar.h session.h defs.h
 )
-add_subdirectory(action)
 add_subdirectory(object)
-add_subdirectory(protocol)
+add_subdirectory(action)
 add_subdirectory(ui)
 add_subdirectory(view)
+add_subdirectory(protocol)

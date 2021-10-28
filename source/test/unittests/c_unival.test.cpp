@@ -25,14 +25,17 @@ namespace laplace::test {
     EXPECT_TRUE(unival(unival::composite { { unival {}, unival {} } })
                     .is_composite());
     EXPECT_TRUE(unival(true).is_boolean());
-    EXPECT_TRUE(unival(int8_t(0)).is_integer());
-    EXPECT_TRUE(unival(int16_t(0)).is_integer());
-    EXPECT_TRUE(unival(int32_t(0)).is_integer());
-    EXPECT_TRUE(unival(int64_t(0)).is_integer());
-    EXPECT_TRUE(unival(uint8_t(0)).is_uint());
-    EXPECT_TRUE(unival(uint16_t(0)).is_uint());
-    EXPECT_TRUE(unival(uint32_t(0)).is_uint());
-    EXPECT_TRUE(unival(uint64_t(0)).is_uint());
+    EXPECT_TRUE(unival(static_cast<signed char>(0)).is_integer());
+    EXPECT_TRUE(unival(static_cast<signed short>(0)).is_integer());
+    EXPECT_TRUE(unival(static_cast<signed int>(0)).is_integer());
+    EXPECT_TRUE(unival(static_cast<signed long>(0)).is_integer());
+    EXPECT_TRUE(
+        unival(static_cast<signed long long>(0)).is_integer());
+    EXPECT_TRUE(unival(static_cast<unsigned char>(0)).is_uint());
+    EXPECT_TRUE(unival(static_cast<unsigned short>(0)).is_uint());
+    EXPECT_TRUE(unival(static_cast<unsigned int>(0)).is_uint());
+    EXPECT_TRUE(unival(static_cast<unsigned long>(0)).is_uint());
+    EXPECT_TRUE(unival(static_cast<unsigned long long>(0)).is_uint());
     EXPECT_TRUE(unival(0.f).is_real());
     EXPECT_TRUE(unival(0.).is_real());
     EXPECT_TRUE(unival(u8string()).is_string());
@@ -60,28 +63,34 @@ namespace laplace::test {
     f = true;
     EXPECT_TRUE(f.is_boolean());
 
-    f = int8_t {};
+    f = static_cast<signed char>(0);
     EXPECT_TRUE(f.is_integer());
 
-    f = int16_t {};
+    f = static_cast<signed short>(0);
     EXPECT_TRUE(f.is_integer());
 
-    f = int32_t {};
+    f = static_cast<signed int>(0);
     EXPECT_TRUE(f.is_integer());
 
-    f = int64_t {};
+    f = static_cast<signed long>(0);
     EXPECT_TRUE(f.is_integer());
 
-    f = uint8_t {};
+    f = static_cast<signed long long>(0);
+    EXPECT_TRUE(f.is_integer());
+
+    f = static_cast<unsigned char>(0);
     EXPECT_TRUE(f.is_uint());
 
-    f = uint16_t {};
+    f = static_cast<unsigned short>(0);
     EXPECT_TRUE(f.is_uint());
 
-    f = uint32_t {};
+    f = static_cast<unsigned int>(0);
     EXPECT_TRUE(f.is_uint());
 
-    f = uint64_t {};
+    f = static_cast<unsigned long>(0);
+    EXPECT_TRUE(f.is_uint());
+
+    f = static_cast<unsigned long long>(0);
     EXPECT_TRUE(f.is_uint());
 
     f = 0.f;
@@ -133,10 +142,16 @@ namespace laplace::test {
     EXPECT_TRUE(unival(false) < unival(true));
 
     EXPECT_TRUE(unival(0) == unival(0));
+    EXPECT_TRUE(unival(0) <= unival(0));
+    EXPECT_TRUE(unival(0) >= unival(0));
     EXPECT_TRUE(unival(0) < unival(1));
+    EXPECT_TRUE(unival(0) <= unival(1));
+    EXPECT_TRUE(unival(1) > unival(0));
+    EXPECT_TRUE(unival(1) >= unival(0));
 
     EXPECT_TRUE(unival(0.) == unival(0.));
     EXPECT_TRUE(unival(0.) < unival(1.));
+    EXPECT_TRUE(unival(1.) > unival(0.));
 
     EXPECT_TRUE(unival("abc") == unival("abc"));
     EXPECT_TRUE(unival("ab") < unival("abc"));
@@ -162,10 +177,71 @@ namespace laplace::test {
 
     EXPECT_TRUE(unival(unival::composite { { 0, 1 } }) ==
                 unival(unival::composite { { 0, 1 } }));
+    EXPECT_TRUE(unival(unival::composite { { 0, 1 } }) <=
+                unival(unival::composite { { 0, 1 } }));
+    EXPECT_TRUE(unival(unival::composite { { 0, 1 } }) >=
+                unival(unival::composite { { 0, 1 } }));
     EXPECT_TRUE(unival(unival::composite { { 0, 1 } }) <
+                unival(unival::composite { { 0, 1 }, { 2, 3 } }));
+    EXPECT_TRUE(unival(unival::composite { { 0, 1 } }) <=
                 unival(unival::composite { { 0, 1 }, { 2, 3 } }));
     EXPECT_TRUE(unival(unival::composite { { 0, 1 }, { 2, 3 } }) <
                 unival(unival::composite { { 2, 3 } }));
+    EXPECT_TRUE(unival(unival::composite { { 2, 3 } }) >=
+                unival(unival::composite { { 0, 1 }, { 2, 3 } }));
+  }
+
+  TEST(core, unival_conversion) {
+    signed char const        i8  = {};
+    signed short const       i16 = {};
+    signed int const         i32 = {};
+    signed long const        i   = {};
+    signed long long const   i64 = {};
+    unsigned char const      u8  = {};
+    unsigned short const     u16 = {};
+    unsigned int const       u32 = {};
+    unsigned long const      u   = {};
+    unsigned long long const u64 = {};
+    double const             f   = {};
+
+    EXPECT_EQ(static_cast<decltype(i8)>(unival { i8 }), i8);
+    EXPECT_EQ(static_cast<decltype(i16)>(unival { i16 }), i16);
+    EXPECT_EQ(static_cast<decltype(i32)>(unival { i32 }), i32);
+    EXPECT_EQ(static_cast<decltype(i)>(unival { i }), i);
+    EXPECT_EQ(static_cast<decltype(i64)>(unival { i64 }), i64);
+    EXPECT_EQ(static_cast<decltype(u8)>(unival { u8 }), u8);
+    EXPECT_EQ(static_cast<decltype(u16)>(unival { u16 }), u16);
+    EXPECT_EQ(static_cast<decltype(u32)>(unival { u32 }), u32);
+    EXPECT_EQ(static_cast<decltype(u)>(unival { u }), u);
+    EXPECT_EQ(static_cast<decltype(u64)>(unival { u64 }), u64);
+    EXPECT_EQ(static_cast<decltype(f)>(unival { f }), f);
+  }
+
+  TEST(core, unival_operator_index) {
+    auto       mut    = unival {};
+    auto const nonmut = unival {};
+
+    mut[static_cast<signed char>(0)]        = unival {};
+    mut[static_cast<signed short>(0)]       = unival {};
+    mut[static_cast<signed int>(0)]         = unival {};
+    mut[static_cast<signed long>(0)]        = unival {};
+    mut[static_cast<signed long long>(0)]   = unival {};
+    mut[static_cast<unsigned char>(0)]      = unival {};
+    mut[static_cast<unsigned short>(0)]     = unival {};
+    mut[static_cast<unsigned int>(0)]       = unival {};
+    mut[static_cast<unsigned long>(0)]      = unival {};
+    mut[static_cast<unsigned long long>(0)] = unival {};
+
+    std::ignore = nonmut[static_cast<signed char>(0)];
+    std::ignore = nonmut[static_cast<signed short>(0)];
+    std::ignore = nonmut[static_cast<signed int>(0)];
+    std::ignore = nonmut[static_cast<signed long>(0)];
+    std::ignore = nonmut[static_cast<signed long long>(0)];
+    std::ignore = nonmut[static_cast<unsigned char>(0)];
+    std::ignore = nonmut[static_cast<unsigned short>(0)];
+    std::ignore = nonmut[static_cast<unsigned int>(0)];
+    std::ignore = nonmut[static_cast<unsigned long>(0)];
+    std::ignore = nonmut[static_cast<unsigned long long>(0)];
   }
 
   TEST(core, unival_nothrow) {
@@ -194,7 +270,7 @@ namespace laplace::test {
   }
 
   TEST(core, unival_get_string) {
-    EXPECT_EQ(unival()["unexisting value"].get_string(),
+    EXPECT_EQ(unival()["nonexistent value"].get_string(),
               u8string_view(u8""));
     EXPECT_EQ(unival(u8"my string").get_string(),
               u8string_view(u8"my string"));
@@ -236,5 +312,12 @@ namespace laplace::test {
     EXPECT_TRUE(a.merge(b));
     EXPECT_FALSE(b.merge(c));
     EXPECT_EQ(b["y"].get_integer(), 3);
+  }
+
+  TEST(core, unival_logic_error) {
+    auto const non_composite = unival { 0 };
+
+    EXPECT_EQ(&non_composite.get_key(0), &unival::logic_error());
+    EXPECT_EQ(&non_composite.get_value(0), &unival::logic_error());
   }
 }

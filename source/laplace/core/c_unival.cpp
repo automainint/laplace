@@ -102,23 +102,23 @@ namespace laplace::core {
   }
 
   unival::unival(const char *value) noexcept {
-    assign(string_view(value));
+    assign(string_view { value });
   }
 
   unival::unival(const wchar_t *value) noexcept {
-    assign(wstring_view(value));
+    assign(wstring_view { value });
   }
 
   unival::unival(const char8_t *value) noexcept {
-    assign(u8string_view(value));
+    assign(u8string_view { value });
   }
 
   unival::unival(const char16_t *value) noexcept {
-    assign(u16string_view(value));
+    assign(u16string_view { value });
   }
 
   unival::unival(const char32_t *value) noexcept {
-    assign(u32string_view(value));
+    assign(u32string_view { value });
   }
 
   unival::unival(span_cbyte value) noexcept {
@@ -329,9 +329,8 @@ namespace laplace::core {
     constexpr auto max_int = static_cast<unsigned long long>(
         numeric_limits<signed long long>::max());
 
-    if (m_data.index() == n_uint && get<n_uint>(m_data) <= max_int) {
+    if (m_data.index() == n_uint && get<n_uint>(m_data) <= max_int)
       return true;
-    }
 
     return m_data.index() == n_int;
   }
@@ -372,17 +371,15 @@ namespace laplace::core {
     constexpr auto max_int = static_cast<unsigned long long>(
         numeric_limits<signed long long>::max());
 
-    if (m_data.index() == n_uint && get<n_uint>(m_data) <= max_int) {
+    if (m_data.index() == n_uint && get<n_uint>(m_data) <= max_int)
       return static_cast<signed long long>(get<n_uint>(m_data));
-    }
 
     return m_data.index() == n_int ? get<n_int>(m_data) : 0ll;
   }
 
   auto unival::get_uint() const noexcept -> unsigned long long {
-    if (m_data.index() == n_int && get<n_int>(m_data) >= 0) {
+    if (m_data.index() == n_int && get<n_int>(m_data) >= 0)
       return static_cast<unsigned long long>(get<n_int>(m_data));
-    }
 
     return m_data.index() == n_uint ? get<n_uint>(m_data) : 0ull;
   }
@@ -527,26 +524,22 @@ namespace laplace::core {
 
   auto unival::get_key(signed long long n) const noexcept
       -> cref_unival {
-    if (m_data.index() != n_composite) {
+    if (m_data.index() != n_composite)
       return logic_error();
-    }
 
-    if (n < 0 || get<n_composite>(m_data).size() <= n) {
+    if (n < 0 || get<n_composite>(m_data).size() <= n)
       return out_of_range();
-    }
 
     return get<n_composite>(m_data)[n].first;
   }
 
   auto unival::get_value(signed long long n) const noexcept
       -> cref_unival {
-    if (m_data.index() != n_vector) {
+    if (m_data.index() != n_vector)
       return logic_error();
-    }
 
-    if (n < 0 || get<n_vector>(m_data).size() <= n) {
+    if (n < 0 || get<n_vector>(m_data).size() <= n)
       return out_of_range();
-    }
 
     return get<n_vector>(m_data)[n];
   }
@@ -564,19 +557,17 @@ namespace laplace::core {
           return x.first.compare(k) < 0;
         });
 
-    if (i == get<n_composite>(m_data).end()) {
+    if (i == get<n_composite>(m_data).end())
       return out_of_range();
-    } else if (i->first != key) {
+    if (i->first != key)
       return out_of_range();
-    }
 
     return i->second;
   }
 
   auto unival::by_key(signed long long key) noexcept -> ref_unival {
-    if (m_data.index() != n_composite) {
+    if (m_data.index() != n_composite)
       m_data = composite {};
-    }
 
     auto i = lower_bound(
         get<n_composite>(m_data).begin(),
@@ -589,24 +580,23 @@ namespace laplace::core {
           return get<n_int>(x.first.m_data) < k;
         });
 
-    if (i == get<n_composite>(m_data).end()) {
+    if (i == get<n_composite>(m_data).end())
       return get<n_composite>(m_data)
           .emplace_back(pair { key, unival() })
           .second;
-    } else if (!i->first.is_uint() || i->first.get_uint() != key) {
+
+    if (!i->first.is_uint() || i->first.get_uint() != key)
       return get<n_composite>(m_data)
           .emplace(i, pair { key, unival() })
           ->second;
-    } else {
-      return i->second;
-    }
+
+    return i->second;
   }
 
   auto unival::by_key(signed long long key) const noexcept
       -> cref_unival {
-    if (m_data.index() != n_composite) {
+    if (m_data.index() != n_composite)
       return logic_error();
-    }
 
     auto i = lower_bound(
         get<n_composite>(m_data).begin(),
@@ -619,40 +609,34 @@ namespace laplace::core {
           return get<n_int>(x.first.m_data) < k;
         });
 
-    if (i == get<n_composite>(m_data).end()) {
+    if (i == get<n_composite>(m_data).end())
       return out_of_range();
-    } else if (!i->first.is_uint() || i->first.get_uint() != key) {
+    if (!i->first.is_uint() || i->first.get_uint() != key)
       return out_of_range();
-    }
 
     return i->second;
   }
 
   auto unival::by_index(signed long long n) noexcept -> ref_unival {
-    if (m_data.index() != n_composite) {
+    if (m_data.index() != n_composite)
       m_data = composite {};
-    }
 
-    if (n < 0) {
+    if (n < 0)
       n = get<n_composite>(m_data).size();
-    }
 
-    if (get<n_composite>(m_data).size() <= n) {
+    if (get<n_composite>(m_data).size() <= n)
       get<n_composite>(m_data).resize(n + 1);
-    }
 
     return get<n_composite>(m_data)[n].second;
   }
 
   auto unival::by_index(signed long long n) const noexcept
       -> cref_unival {
-    if (m_data.index() != n_composite) {
+    if (m_data.index() != n_composite)
       return logic_error();
-    }
 
-    if (n < 0 || n >= get<n_composite>(m_data).size()) {
+    if (n < 0 || n >= get<n_composite>(m_data).size())
       return out_of_range();
-    }
 
     return get<n_composite>(m_data)[n].second;
   }
@@ -667,7 +651,7 @@ namespace laplace::core {
     if (m_data.index() == n_uint) {
       if (get<n_uint>(m_data) == get<n_uint>(value.m_data))
         return 0;
-      else if (get<n_uint>(m_data) < get<n_uint>(value.m_data))
+      if (get<n_uint>(m_data) < get<n_uint>(value.m_data))
         return -1;
       return 1;
     }
@@ -675,7 +659,7 @@ namespace laplace::core {
     if (m_data.index() == n_int) {
       if (get<n_int>(m_data) == get<n_int>(value.m_data))
         return 0;
-      else if (get<n_int>(m_data) < get<n_int>(value.m_data))
+      if (get<n_int>(m_data) < get<n_int>(value.m_data))
         return -1;
       return 1;
     }
@@ -683,7 +667,7 @@ namespace laplace::core {
     if (m_data.index() == n_bool) {
       if (get<n_bool>(m_data) == get<n_bool>(value.m_data))
         return 0;
-      else if (get<n_bool>(m_data) == true)
+      if (get<n_bool>(m_data) == true)
         return 1;
       return -1;
     }
@@ -697,15 +681,14 @@ namespace laplace::core {
 
       if (x < eps && x > -eps)
         return 0;
-      else if (a < b)
+      if (a < b)
         return -1;
       return 1;
     }
 
-    if (m_data.index() == n_string) {
+    if (m_data.index() == n_string)
       return get<n_string>(m_data).compare(
           get<n_string>(value.m_data));
-    }
 
     if (m_data.index() == n_bytes) {
       auto na = get<n_bytes>(m_data).size();
@@ -827,7 +810,7 @@ namespace laplace::core {
     if (value.size() > 0) {
       m_data = value;
     } else {
-      m_data = monostate();
+      m_data = monostate {};
     }
   }
 
@@ -843,7 +826,7 @@ namespace laplace::core {
            });
 
     } else {
-      m_data = monostate();
+      m_data = monostate {};
     }
   }
 
