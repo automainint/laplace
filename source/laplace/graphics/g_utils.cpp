@@ -34,6 +34,10 @@ namespace laplace::graphics {
     glViewport(x0, y0, w, h);
   }
 
+  void finish() {
+    glFinish();
+  }
+
   void clear(cref_vec4 color) {
     glClearColor(color[0], color[1], color[2], color[3]);
     glClearDepth(1.0);

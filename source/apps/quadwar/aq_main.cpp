@@ -15,6 +15,7 @@
 #include "../../laplace/stem/config.h"
 #include "quadwar.h"
 #include <benchmark/benchmark.h>
+#include <cstdio>
 #include <gtest/gtest.h>
 
 namespace cfg = laplace::stem::config;
@@ -42,11 +43,13 @@ void run_benchmarks(int &argc, char **argv) {
 auto main(int argc, char **argv) -> int {
 #else
 auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR args, int) -> int {
-  freopen(quadwar_app::log_file_name, "w", stderr);
-
   auto [argc, argv] = parse_cmdline(args);
-
 #endif
+
+#ifndef _CONSOLE
+  std::ignore = freopen(quadwar_app::log_file_name, "w", stderr);
+#endif
+
   int  status = 0;
   bool run    = true;
 
@@ -60,7 +63,8 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR args, int) -> int {
     status = run_tests(argc, argv);
   }
 
-  if (status == 0 && scan_flag(argc, argv, f_benchmarks, a_benchmarks)) {
+  if (status == 0 &&
+      scan_flag(argc, argv, f_benchmarks, a_benchmarks)) {
     run = false;
     run_benchmarks(argc, argv);
   }

@@ -21,13 +21,15 @@ namespace quadwar_app::ui {
     using event_abort = std::function<void()>;
     using event_start = std::function<void()>;
 
-    static constexpr int spacing      = 4;
-    static constexpr int side_size    = 16;
-    static constexpr int button_width = 260;
-    static constexpr int line_height  = 60;
+    static sl::whole const spacing;
+    static sl::whole const side_size;
+    static sl::whole const button_width;
+    static sl::whole const line_height;
 
-    static constexpr auto c_abort = u8"Abort";
-    static constexpr auto c_start = u8"Start";
+    static std::u8string_view const c_abort;
+    static std::u8string_view const c_start;
+    static std::u8string_view const c_slot_open;
+    static std::u8string_view const c_status_loading;
 
     lobby();
     ~lobby();
@@ -41,7 +43,8 @@ namespace quadwar_app::ui {
     void show_info(std::u8string_view text);
     void show_loading();
 
-    void set_slot(size_t index, size_t id_actor,
+    void set_slot(size_t             index,
+                  size_t             id_actor,
                   std::u8string_view name);
 
     void remove_slot(size_t index);

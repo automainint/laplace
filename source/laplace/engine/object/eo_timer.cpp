@@ -17,7 +17,7 @@
 namespace laplace::engine::object {
   timer timer::m_proto(timer::proto);
 
-  timer::timer(proto_tag) : basic_entity(default_tick_period) { }
+  timer::timer(proto_tag) : basic_entity(dynamic) { }
 
   timer::timer(impact_gen gen, intval period, sl::whole count) {
     *this = m_proto;
@@ -31,12 +31,10 @@ namespace laplace::engine::object {
   }
 
   void timer::tick(access::world w) {
-    if (m_gen) {
+    if (m_gen)
       w.queue(m_gen());
-    }
 
-    if (m_count > 0 && --m_count == 0) {
+    if (m_count > 0 && --m_count == 0)
       self_destruct(w);
-    }
   }
 }

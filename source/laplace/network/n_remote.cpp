@@ -62,8 +62,9 @@ namespace laplace::network {
     emit<client_enter>();
   }
 
-  void remote::connect(string_view host_address, uint16_t host_port,
-                       uint16_t client_port) {
+  void remote::connect(string_view host_address,
+                       uint16_t    host_port,
+                       uint16_t    client_port) {
 
     m_host_address = host_address;
     m_host_port    = host_port;
@@ -72,7 +73,8 @@ namespace laplace::network {
     reconnect();
   }
 
-  auto remote::perform_control(sl::index slot, span_cbyte seq) -> bool {
+  auto remote::perform_control(sl::index slot, span_cbyte seq)
+      -> bool {
 
     if (session_response::scan(seq)) {
       if (slot < 0 || slot >= m_slots.size()) {
@@ -84,7 +86,8 @@ namespace laplace::network {
 
       if (!key.empty()) {
         m_slots[slot].tran.set_remote_key(key);
-        m_slots[slot].is_encrypted = m_slots[slot].tran.is_encrypted();
+        m_slots[slot].is_encrypted =
+            m_slots[slot].tran.is_encrypted();
       }
 
       m_slots[slot].node         = make_unique<udp_node>(any_port);

@@ -23,8 +23,7 @@ namespace laplace::bench {
 
   class my_entity : public basic_entity {
   public:
-    my_entity() : basic_entity(true) {
-
+    my_entity() : basic_entity(dynamic) {
       setup_sets({ { sets::debug_value, 0, 0 } });
       n_value = index_of(sets::debug_value);
     }
@@ -36,7 +35,7 @@ namespace laplace::bench {
     }
 
   private:
-    size_t n_value = 0;
+    sl::index n_value = 0;
   };
 
   static void engine_world_startup(benchmark::State &state) {

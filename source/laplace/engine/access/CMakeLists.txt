@@ -1,7 +1,7 @@
 target_sources(
   ${LAPLACE_OBJ}
     PRIVATE
-      ex_entity.cpp ex_world.cpp
+      ex_world.cpp ex_entity.cpp
     PUBLIC
-      entity.h mode.h world.h world.impl.h world.predef.h
+      world.predef.h mode.h world.h world.impl.h entity.h
 )

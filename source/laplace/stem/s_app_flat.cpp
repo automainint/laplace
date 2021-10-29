@@ -12,46 +12,49 @@
  *  the MIT License for more details.
  */
 
-#include "../graphics/utils.h"
 #include "app_flat.h"
 
-namespace laplace::stem {
-  using std::make_shared, std::abs, core::cref_family, ui::frame;
+#include "../graphics/utils.h"
 
-  app_flat::app_flat(int argc, char **argv, cref_family def_cfg) :
+namespace laplace::stem {
+  using std::make_shared, std::abs, core::unival, ui::frame;
+
+  app_flat::app_flat(int           argc,
+                     char **       argv,
+                     unival const &def_cfg) noexcept :
       application(argc, argv, def_cfg) { }
 
-  app_flat::~app_flat() { }
-
-  void app_flat::init() {
+  void app_flat::init() noexcept {
     application::init();
 
     m_ui = make_shared<frame>();
   }
 
-  void app_flat::cleanup() {
+  void app_flat::cleanup() noexcept {
     m_ui.reset();
 
     application::cleanup();
   }
 
-  void app_flat::update(uint64_t delta_msec) {
-    m_ui->tick(delta_msec, get_input(), false);
+  void app_flat::update(sl::time delta_msec) noexcept {
+    m_ui->tick(delta_msec, get_input());
   }
 
-  void app_flat::render() {
+  void app_flat::render() noexcept {
     graphics::clear(clear_color);
-
-    m_ui->render();
-
-    get_gl().swap_buffers();
+    m_ui->render(get_ui_context());
+    finish_and_swap();
   }
 
-  void app_flat::adjust_layout(sl::whole width, sl::whole height) {
+  void app_flat::adjust_layout(sl::whole width,
+                               sl::whole height) noexcept {
     application::adjust_layout(width, height);
 
-    m_ui->set_rect({ .x = 0, .y = 0, .width = width, .height = height });
+    if (!m_ui)
+      return;
 
+    m_ui->set_rect(
+        { .x = 0, .y = 0, .width = width, .height = height });
     m_ui->refresh();
   }
 }

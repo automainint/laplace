@@ -1,10 +1,8 @@
 target_sources(
   ${LAPLACE_OBJ}
     PRIVATE
-      ui_context.cpp ui_frame.cpp ui_layout.cpp ui_rect.cpp
-      ui_widget.cpp
+      ui_rect.cpp ui_layout.cpp ui_widget.cpp
     PUBLIC
-      context.h frame.h helper.h layout.h rect.h widget.h
+      widget.h helper.h rect.h context.h layout.h
 )
 add_subdirectory(elem)
-add_subdirectory(text)

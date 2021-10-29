@@ -21,19 +21,25 @@ namespace laplace::engine {
 
       while (!m_is_done) {
         while (!m_queue.empty()) {
-          auto task = ptr_impact { m_queue.front() };
+          if (!m_factory) {
+            error_("No factory.", __FUNCTION__);
+            break;
+          }
+
+          if (!m_world) {
+            error_("No world.", __FUNCTION__);
+            break;
+          }
+
+          auto task = m_factory->decode(m_queue.front());
           m_queue.erase(m_queue.begin());
 
-          if (m_world) {
-            _ul.unlock();
+          _ul.unlock();
 
-            task->perform({ *m_world, access::data });
+          task->perform({ *m_world, access::data });
 
-            _ul.lock();
-            m_progress++;
-          } else {
-            error_("No world.", __FUNCTION__);
-          }
+          _ul.lock();
+          m_progress++;
         }
 
         m_is_ready = true;
@@ -56,10 +62,15 @@ namespace laplace::engine {
     m_world  = w;
   }
 
-  void loader::add_task(ptr_impact task) {
+  void loader::set_factory(ptr_factory f) {
+    auto _ul  = unique_lock(m_lock);
+    m_factory = f;
+  }
+
+  void loader::add_task(span_cbyte task) {
     auto _ul   = unique_lock(m_lock);
     m_is_ready = false;
-    m_queue.emplace_back(task);
+    m_queue.emplace_back(vbyte { task.begin(), task.end() });
     m_sync.notify_all();
   }
 

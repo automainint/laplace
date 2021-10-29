@@ -15,6 +15,16 @@
 namespace quadwar_app::ui {
   using std::u8string_view;
 
+  sl::whole const lobby::spacing      = 4;
+  sl::whole const lobby::side_size    = 16;
+  sl::whole const lobby::button_width = 260;
+  sl::whole const lobby::line_height  = 60;
+
+  u8string_view const lobby::c_abort          = u8"Abort";
+  u8string_view const lobby::c_start          = u8"Start";
+  u8string_view const lobby::c_slot_open      = u8"[ Open ]";
+  u8string_view const lobby::c_status_loading = u8"Loading...";
+
   lobby::lobby() {
     m_abort->set_text(c_abort);
     m_start->set_text(c_start);
@@ -23,7 +33,7 @@ namespace quadwar_app::ui {
 
     for (auto &s : m_slots) {
       m_slots_area->attach(s.ui_name);
-      s.ui_name->set_text(u8"[ Open ]");
+      s.ui_name->set_text(c_slot_open);
     }
   }
 
@@ -37,15 +47,11 @@ namespace quadwar_app::ui {
   }
 
   void lobby::on_abort(lobby::event_abort ev) {
-    m_abort->on_click([=](ui::ptr_widget) {
-      ev();
-    });
+    m_abort->on_click([=](ui::ptr_widget) { ev(); });
   }
 
   void lobby::on_start(lobby::event_start ev) {
-    m_start->on_click([=](ui::ptr_widget) {
-      ev();
-    });
+    m_start->on_click([=](ui::ptr_widget) { ev(); });
   }
 
   void lobby::attach_to(ui::ptr_widget w) {
@@ -80,9 +86,9 @@ namespace quadwar_app::ui {
 
     const auto area_width = m_slots_area->get_rect().width;
 
-    for (size_t i = 0; i < m_slots.size(); i++) {
+    for (sl::index i = 0; i < m_slots.size(); i++) {
       m_slots[i].ui_name->set_rect(
-          { spacing, line_height * static_cast<int>(i) + spacing,
+          { spacing, line_height * i + spacing,
             area_width - spacing * 2, line_height - spacing * 2 });
     }
   }
@@ -92,13 +98,14 @@ namespace quadwar_app::ui {
   }
 
   void lobby::show_loading() {
-    m_info->set_text(u8"Loading...");
+    m_info->set_text(c_status_loading);
 
     m_abort->set_visible(false);
     m_start->set_visible(false);
   }
 
-  void lobby::set_slot(size_t index, size_t id_actor,
+  void lobby::set_slot(size_t        index,
+                       size_t        id_actor,
                        u8string_view name) {
     if (index < m_slots.size()) {
       m_slots[index].id_actor = id_actor;
@@ -109,7 +116,7 @@ namespace quadwar_app::ui {
   void lobby::remove_slot(size_t index) {
     if (index < m_slots.size()) {
       m_slots[index].id_actor = -1;
-      m_slots[index].ui_name->set_text(u8"[ Open ]");
+      m_slots[index].ui_name->set_text(c_slot_open);
     }
   }
 

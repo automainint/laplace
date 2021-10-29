@@ -1,9 +1,9 @@
 target_sources(
   ${LAPLACE_OBJ}
     PRIVATE
-      nc_basic_cipher.cpp nc_ecc.cpp nc_ecc_rabbit.cpp
-      nc_rabbit.cpp nc_stream_cipher.cpp
+      nc_ecc_rabbit.cpp nc_ecc.cpp nc_basic_cipher.cpp
+      nc_stream_cipher.cpp nc_rabbit.cpp
     PUBLIC
-      basic_cipher.h ecc.h ecc_rabbit.h rabbit.h
-      stream_cipher.h
+      ecc.h rabbit.h stream_cipher.h basic_cipher.h
+      ecc_rabbit.h
 )

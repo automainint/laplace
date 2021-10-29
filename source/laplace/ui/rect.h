@@ -13,7 +13,7 @@
 #ifndef laplace_ui_rect_h
 #define laplace_ui_rect_h
 
-#include "../core/slib.h"
+#include "../core/defs.h"
 
 namespace laplace::ui {
   struct rect {

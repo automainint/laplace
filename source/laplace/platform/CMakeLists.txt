@@ -3,7 +3,7 @@ target_sources(
     PRIVATE
       p_opengl.cpp
     PUBLIC
-      dummy.h events.h gldef.h opengl.h thread.h wrap.h
+      opengl.h thread.h events.h gldef.h wrap.h dummy.h
 )
 if(WIN32)
   add_subdirectory(win32)

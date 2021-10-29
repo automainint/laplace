@@ -18,17 +18,17 @@
 namespace laplace::format {
   class buffer {
   public:
-    buffer(fn_read read);
-    ~buffer() = default;
+    buffer(fn_read read) noexcept;
+    ~buffer() noexcept = default;
 
-    auto read(sl::whole count) -> vbyte;
+    [[nodiscard]] auto read(sl::whole count) noexcept -> vbyte;
 
-    void keep();
-    void restore();
+    void keep() noexcept;
+    void restore() noexcept;
 
   private:
     fn_read   m_read;
-    sl::index m_offset;
+    sl::index m_offset = 0;
     vbyte     m_data;
   };
 }

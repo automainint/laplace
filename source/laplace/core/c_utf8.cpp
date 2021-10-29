@@ -13,70 +13,66 @@
 #include "utf8.h"
 
 namespace laplace::utf8 {
-  using std::u8string_view, std::u8string, std::vector;
+  using std::u8string_view, std::u8string;
 
   auto length(u8string_view bytes) noexcept -> sl::whole {
-    sl::index n = 0, i = 0;
-    char32_t  code = 0;
+    auto n    = sl::index {};
+    auto i    = sl::index {};
+    auto code = char32_t {};
 
     for (; decode(bytes, i, code); n++) { }
 
     return n;
   }
 
-  auto decode(u8string_view bytes, sl::index &offset,
-              char32_t &code) noexcept -> bool {
-    if (offset < 0 || offset >= bytes.size() || bytes[offset] == 0xFF) {
+  auto decode(u8string_view bytes,
+              sl::index    &offset,
+              char32_t     &code) noexcept -> bool {
+    if (offset < 0 || offset >= bytes.size() ||
+        (bytes[offset] & 0xf8u) == 0xf8u)
       return false;
-    } else if ((bytes[offset] & 0x80) == 0x00) {
+
+    if ((bytes[offset] & 0x80u) == 0x00u) {
       code = bytes[offset];
       offset++;
-    } else if ((bytes[offset] & 0xC0) == 0x80) {
+    } else if ((bytes[offset] & 0xc0u) == 0x80u) {
       return false;
-    } else if ((bytes[offset] & 0xE0) == 0xC0) {
-      if (offset + 1 >= bytes.size()) {
+    } else if ((bytes[offset] & 0xe0u) == 0xc0u) {
+      if (offset + 1 >= bytes.size())
         return false;
-      }
 
-      if ((bytes[offset + 1] & 0xC0) != 0x80) {
+      if ((bytes[offset + 1] & 0xc0u) != 0x80u)
         return false;
-      }
 
-      code = ((bytes[offset] & 0x1Fu) << 6u) |
-             (bytes[offset + 1u] & 0x3Fu);
+      code = ((bytes[offset] & 0x1fu) << 6u) |
+             (bytes[offset + 1u] & 0x3fu);
 
       offset += 2;
-    } else if ((bytes[offset] & 0xF0) == 0xE0) {
-      if (offset + 2 >= bytes.size()) {
+    } else if ((bytes[offset] & 0xf0u) == 0xe0u) {
+      if (offset + 2 >= bytes.size())
         return false;
-      }
 
-      for (sl::index j = 1; j < 2; j++) {
-        if ((bytes[offset + j] & 0xC0) != 0x80) {
+      for (sl::index j = 1; j <= 2; j++)
+        if ((bytes[offset + j] & 0xc0u) != 0x80)
           return false;
-        }
-      }
 
-      code = ((bytes[offset] & 0x0Fu) << 12u) |
-             ((bytes[offset + 1u] & 0x3Fu) << 6u) |
-             (bytes[offset + 2u] & 0x3Fu);
+      code = ((bytes[offset] & 0x0fu) << 12u) |
+             ((bytes[offset + 1u] & 0x3fu) << 6u) |
+             (bytes[offset + 2u] & 0x3fu);
 
       offset += 3;
-    } else if ((bytes[offset] & 0xF8) == 0xF0) {
-      if (offset + 3 >= bytes.size()) {
+    } else {
+      if (offset + 3 >= bytes.size())
         return false;
-      }
 
-      for (sl::index j = 1; j < 3; j++) {
-        if ((bytes[offset + j] & 0xC0) != 0x80) {
+      for (sl::index j = 1; j <= 3; j++)
+        if ((bytes[offset + j] & 0xc0u) != 0x80u)
           return false;
-        }
-      }
 
-      code = ((bytes[offset] & 0x0Fu) << 18u) |
-             ((bytes[offset + 1u] & 0x3Fu) << 12u) |
-             ((bytes[offset + 2u] & 0x3Fu) << 6u) |
-             (bytes[offset + 3u] & 0x3Fu);
+      code = ((bytes[offset] & 0x0fu) << 18u) |
+             ((bytes[offset + 1u] & 0x3fu) << 12u) |
+             ((bytes[offset + 2u] & 0x3fu) << 6u) |
+             (bytes[offset + 3u] & 0x3fu);
 
       offset += 4;
     }
@@ -84,14 +80,15 @@ namespace laplace::utf8 {
     return true;
   }
 
-  auto encode(char32_t code, u8string &bytes,
+  auto encode(char32_t   code,
+              u8string  &bytes,
               sl::index &offset) noexcept -> bool {
-    if (offset < 0 || offset > bytes.size()) {
+    if (offset < 0 || offset > bytes.size())
       return false;
-    }
 
-    if (code <= 0x7Fu) {
-      bytes.insert(bytes.begin() + offset, static_cast<uint8_t>(code));
+    if (code <= 0x7fu) {
+      bytes.insert(bytes.begin() + offset,
+                   static_cast<uint8_t>(code));
       offset++;
       return true;
     }
@@ -99,24 +96,18 @@ namespace laplace::utf8 {
     auto temp = sl::vector<uint8_t> {};
     temp.reserve(4);
 
-    if (code <= 0x07FF) {
-      temp.emplace_back(
-          static_cast<uint8_t>(0xC0 | ((code >> 6) & 0x1F)));
-      temp.emplace_back(static_cast<uint8_t>(0x80 | (code & 0x3F)));
-    } else if (code <= 0xFFFF) {
-      temp.emplace_back(
-          static_cast<uint8_t>(0xE0 | ((code >> 12) & 0x0F)));
-      temp.emplace_back(
-          static_cast<uint8_t>(0x80 | ((code >> 6) & 0x3F)));
-      temp.emplace_back(static_cast<uint8_t>(0x80 | (code & 0x3F)));
-    } else if (code <= 0x10FFFF) {
-      temp.emplace_back(
-          static_cast<uint8_t>(0xF0 | ((code >> 18) & 0x0E)));
-      temp.emplace_back(
-          static_cast<uint8_t>(0x80 | ((code >> 12) & 0x3F)));
-      temp.emplace_back(
-          static_cast<uint8_t>(0x80 | ((code >> 6) & 0x3F)));
-      temp.emplace_back(static_cast<uint8_t>(0x80 | (code & 0x3F)));
+    if (code <= 0x07ffu) {
+      temp.emplace_back<uint8_t>(0xc0u | ((code >> 6u) & 0x1fu));
+      temp.emplace_back<uint8_t>(0x80u | (code & 0x3fu));
+    } else if (code <= 0xffffu) {
+      temp.emplace_back<uint8_t>(0xe0u | ((code >> 12u) & 0x0fu));
+      temp.emplace_back<uint8_t>(0x80u | ((code >> 6u) & 0x3fu));
+      temp.emplace_back<uint8_t>(0x80u | (code & 0x3fu));
+    } else if (code <= 0x10ffffu) {
+      temp.emplace_back<uint8_t>(0xf0u | ((code >> 18u) & 0x0eu));
+      temp.emplace_back<uint8_t>(0x80u | ((code >> 12u) & 0x3fu));
+      temp.emplace_back<uint8_t>(0x80u | ((code >> 6u) & 0x3fu));
+      temp.emplace_back<uint8_t>(0x80u | (code & 0x3fu));
     } else {
       return false;
     }

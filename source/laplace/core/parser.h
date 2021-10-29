@@ -27,7 +27,8 @@ namespace laplace::core {
     parser(parser &&) noexcept = default;
     auto operator=(parser &&) noexcept -> parser & = default;
 
-    parser(input_stream stream = nullptr) noexcept;
+    explicit parser(input_stream stream = nullptr) noexcept;
+    ~parser() = default;
 
     /*  "% "    - one whitespace
      *  "%n"    - one line end
@@ -49,13 +50,13 @@ namespace laplace::core {
      */
     auto parse(const char *format, ...) noexcept -> bool;
 
-    void set_stream(input_stream stream) noexcept;
-    auto get_stream() const noexcept -> input_stream;
+    void               set_stream(input_stream stream) noexcept;
+    [[nodiscard]] auto get_stream() const noexcept -> input_stream;
 
-    auto is_eof() const noexcept -> bool;
+    [[nodiscard]] auto is_eof() const noexcept -> bool;
 
-    auto get_line() const noexcept -> sl::index;
-    auto get_column() const noexcept -> sl::index;
+    [[nodiscard]] auto get_line() const noexcept -> sl::index;
+    [[nodiscard]] auto get_column() const noexcept -> sl::index;
 
     void push_offset() noexcept;
 
@@ -63,8 +64,10 @@ namespace laplace::core {
      */
     void pop_offset(bool apply) noexcept;
 
-    static auto wrap(std::string_view s) noexcept -> parser;
-    static auto wrap(std::u8string_view s) noexcept -> parser;
+    [[nodiscard]] static auto wrap(std::string_view s) noexcept
+        -> parser;
+    [[nodiscard]] static auto wrap(std::u8string_view s) noexcept
+        -> parser;
 
   private:
     enum control_chars : char {
@@ -96,7 +99,8 @@ namespace laplace::core {
     static auto is_url(char32_t c) noexcept -> bool;
     static auto is_hex(char32_t c) noexcept -> bool;
 
-    static auto string_end(char32_t c, const char *p) noexcept -> bool;
+    static auto string_end(char32_t c, const char *p) noexcept
+        -> bool;
 
     struct position {
       sl::index line   = 0;

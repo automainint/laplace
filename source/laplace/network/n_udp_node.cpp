@@ -40,8 +40,8 @@ namespace laplace::network {
     memset(&name, 0, sizeof name);
 
     name.sin_family      = AF_INET;
-    name.sin_port        = ::htons(port);
-    name.sin_addr.s_addr = ::htonl(INADDR_ANY);
+    name.sin_port        = htons(port);
+    name.sin_addr.s_addr = htonl(INADDR_ANY);
 
     auto status = ::bind(m_socket,
                          reinterpret_cast<const ::sockaddr *>(&name),
@@ -63,7 +63,7 @@ namespace laplace::network {
         return;
       }
 
-      m_port = ::ntohs(name.sin_port);
+      m_port = ntohs(name.sin_port);
     } else {
       m_port = port;
     }
@@ -142,7 +142,7 @@ namespace laplace::network {
     memset(&name, 0, sizeof name);
 
     name.sin_family = AF_INET;
-    name.sin_port   = ::htons(port);
+    name.sin_port   = htons(port);
 
     const auto status = ::inet_pton(AF_INET, address.data(),
                                     &name.sin_addr.s_addr);
@@ -165,7 +165,7 @@ namespace laplace::network {
   }
 
   auto udp_node::get_remote_port() const -> uint16_t {
-    return ::ntohs(m_remote.sin_port);
+    return ntohs(m_remote.sin_port);
   }
 
   auto udp_node::is_msgsize() const noexcept -> bool {

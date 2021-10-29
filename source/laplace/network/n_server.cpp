@@ -12,26 +12,20 @@
 
 #include "server.h"
 
-#include "../core/utils.h"
-#include "../engine/basic_factory.h"
-#include "../engine/protocol/ids.h"
 #include <iomanip>
 
 namespace laplace::network {
-  namespace pro = engine::protocol;
-  namespace ids = pro::ids;
-
   using std::ostringstream, std::hex, std::setw, std::make_shared,
       engine::ptr_factory, engine::ptr_world, engine::ptr_solver,
       engine::solver, engine::world, engine::seed_type,
       engine::basic_factory, engine::prime_impact;
 
-  const bool      server::default_verbose                 = false;
-  const uint64_t  server::default_tick_duration_msec      = 10;
-  const uint64_t  server::default_update_timeout_msec     = 10;
-  const uint64_t  server::default_ping_timeout_msec       = 100;
-  const uint64_t  server::default_connection_timeout_msec = 20000;
-  const sl::whole server::default_overtake_factor         = 3;
+  bool const      server::default_verbose                 = false;
+  sl::time const  server::default_tick_duration_msec      = 10;
+  sl::time const  server::default_update_timeout_msec     = 10;
+  sl::time const  server::default_ping_timeout_msec       = 100;
+  sl::time const  server::default_connection_timeout_msec = 20000;
+  sl::whole const server::default_overtake_factor         = 3;
 
   server::~server() {
     if (is_verbose()) {
@@ -48,6 +42,10 @@ namespace laplace::network {
 
   void server::set_factory(ptr_factory fac) {
     m_factory = fac;
+
+    if (m_solver) {
+      m_solver->set_factory(fac);
+    }
   }
 
   void server::set_verbose(bool verbose) noexcept {
@@ -55,7 +53,7 @@ namespace laplace::network {
   }
 
   void server::queue(span_cbyte seq) { }
-  void server::tick(uint64_t delta_msec) { }
+  void server::tick(sl::time delta_msec) { }
   void server::reconnect() { }
 
   auto server::get_factory() const -> ptr_factory {
@@ -70,7 +68,7 @@ namespace laplace::network {
     return m_world;
   }
 
-  auto server::get_ping() const noexcept -> uint64_t {
+  auto server::get_ping() const noexcept -> sl::time {
     return m_ping_msec;
   }
 
@@ -78,7 +76,7 @@ namespace laplace::network {
     return m_state;
   }
 
-  auto server::get_tick_duration() noexcept -> sl::whole {
+  auto server::get_tick_duration() const noexcept -> sl::whole {
     return m_tick_duration_msec;
   }
 
@@ -113,18 +111,23 @@ namespace laplace::network {
       if (m_world) {
         m_solver->set_world(m_world);
       }
+
+      if (m_factory) {
+        m_solver->set_factory(m_factory);
+      }
     }
   }
 
   void server::setup_world() {
-    if (!m_world) {
-      if (!m_solver) {
-        m_solver = make_shared<solver>();
-      }
+    if (m_world)
+      return;
 
-      m_world = make_shared<world>();
-      m_solver->set_world(m_world);
+    if (!m_solver) {
+      m_solver = make_shared<solver>();
     }
+
+    m_world = make_shared<world>();
+    m_solver->set_world(m_world);
   }
 
   void server::set_connected(bool is_connected) noexcept {
@@ -135,7 +138,8 @@ namespace laplace::network {
     m_is_quit = is_quit;
   }
 
-  void server::set_tick_duration(uint64_t tick_duration_msec) noexcept {
+  void server::set_tick_duration(
+      sl::time tick_duration_msec) noexcept {
     m_tick_duration_msec = tick_duration_msec;
   }
 
@@ -145,7 +149,7 @@ namespace laplace::network {
     }
   }
 
-  void server::set_ping(uint64_t ping_msec) noexcept {
+  void server::set_ping(sl::time ping_msec) noexcept {
     m_ping_msec = ping_msec;
   }
 
@@ -175,26 +179,28 @@ namespace laplace::network {
     m_bytes_loss += count;
   }
 
-  auto server::adjust_delta(uint64_t delta_msec) noexcept -> uint64_t {
-    uint64_t delta = 0;
+  auto server::adjust_delta(sl::time delta_msec) noexcept
+      -> sl::time {
+    auto delta = sl::time {};
 
     if (m_tick_duration_msec > 0) {
       delta = (m_tick_clock_msec + delta_msec) / m_tick_duration_msec;
-      m_tick_clock_msec = delta_msec % m_tick_duration_msec;
+      m_tick_clock_msec = (m_tick_clock_msec + delta_msec) %
+                          m_tick_duration_msec;
     }
 
     return delta;
   }
 
-  auto server::get_connection_timeout() const noexcept -> uint64_t {
+  auto server::get_connection_timeout() const noexcept -> sl::time {
     return m_connection_timeout_msec;
   }
 
-  auto server::get_update_timeout() const noexcept -> uint64_t {
+  auto server::get_update_timeout() const noexcept -> sl::time {
     return m_update_timeout_msec;
   }
 
-  auto server::get_ping_timeout() const noexcept -> uint64_t {
+  auto server::get_ping_timeout() const noexcept -> sl::time {
     return m_ping_timeout_msec;
   }
 
@@ -202,7 +208,7 @@ namespace laplace::network {
     return m_overtake_factor;
   }
 
-  void server::verb_queue(sl::index n, span_cbyte seq) {
+  void server::verb_queue(sl::index n, span_cbyte seq) const {
     if (m_verbose) {
       const auto id   = prime_impact::get_id(seq);
       const auto name = basic_factory::name_by_id_native(id);
@@ -216,7 +222,9 @@ namespace laplace::network {
     }
   }
 
-  void server::verb_slot(sl::index slot, sl::index n, span_cbyte seq) {
+  void server::verb_slot(sl::index  slot,
+                         sl::index  n,
+                         span_cbyte seq) const {
     if (m_verbose) {
       const auto id   = prime_impact::get_id(seq);
       const auto name = basic_factory::name_by_id_native(id);
@@ -231,12 +239,13 @@ namespace laplace::network {
     }
   }
 
-  void server::dump(span_cbyte bytes) {
+  void server::dump(span_cbyte bytes) const {
     if (m_verbose) {
       auto ss = ostringstream {};
       ss << " ";
       for (sl::index i = 0; i < bytes.size(); i++) {
-        ss << " " << setw(2) << hex << static_cast<unsigned>(bytes[i]);
+        ss << " " << setw(2) << hex
+           << static_cast<unsigned>(bytes[i]);
         if ((i % 16) == 15)
           ss << "\n ";
       }

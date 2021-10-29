@@ -13,24 +13,31 @@
 #ifndef laplace_core_log_h
 #define laplace_core_log_h
 
+#include "options.h"
 //#include <source_location>
+#include <functional>
 #include <string>
 
 namespace laplace {
+  using fn_log = std::function<void(std::string_view)>;
+
+  void setup_log(fn_log fn) noexcept;
   void set_verbose(bool is_verbose) noexcept;
   auto is_verbose() noexcept -> bool;
 
   void log(std::string_view s) noexcept;
   void log(std::u8string_view s) noexcept;
 
+  void verb(std::string_view s) noexcept;
+  void verb(std::u8string_view s) noexcept;
+
   /*  TODO
    *  Use source_location.
    */
-  void error_(std::string_view message, std::string_view loc) noexcept;
-  void error_(std::u8string_view message, std::string_view loc) noexcept;
-
-  void verb(std::string_view s) noexcept;
-  void verb(std::u8string_view s) noexcept;
+  void error_(std::string_view message,
+              std::string_view loc) noexcept;
+  void error_(std::u8string_view message,
+              std::string_view   loc) noexcept;
 }
 
 #endif

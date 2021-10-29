@@ -16,14 +16,12 @@
 #include "sets.h"
 
 namespace quadwar_app::object {
-  using engine::basic_entity;
-
   sl::index game_clock::n_clock_time = 0;
 
-  game_clock game_clock::m_proto(basic_entity::proto);
+  game_clock game_clock::m_proto(proto);
 
-  game_clock::game_clock(basic_entity::proto_tag) :
-      basic_entity(tick_period) {
+  game_clock::game_clock(proto_tag) :
+      basic_entity(dynamic, tick_period) {
 
     setup_sets({ { .id    = sets::game_clock_time,
                    .scale = sets::scale_time } });
@@ -41,6 +39,7 @@ namespace quadwar_app::object {
 
     verb(fmt("Time: %jd:%02jd", seconds / 60, seconds % 60));
 
-    apply_delta(n_clock_time, static_cast<int64_t>(get_tick_period()));
+    apply_delta(n_clock_time,
+                static_cast<int64_t>(get_tick_period()));
   }
 }

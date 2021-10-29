@@ -13,7 +13,6 @@
 #ifndef laplace_ui_elem_textbutton_h
 #define laplace_ui_elem_textbutton_h
 
-#include "../text/renderer.h"
 #include "button.h"
 
 namespace laplace::ui::elem {
@@ -21,9 +20,11 @@ namespace laplace::ui::elem {
   public:
     ~textbutton() final = default;
 
-    void render() final;
+    void render(context const &con) final;
 
     void set_text(std::u8string_view text);
+
+    auto get_state() const -> textbutton_state;
 
   private:
     std::u8string m_text;

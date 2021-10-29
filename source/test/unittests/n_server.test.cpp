@@ -27,7 +27,7 @@ namespace laplace::test {
 
   TEST(network, server_echo) {
     constexpr sl::index test_count     = 3;
-    constexpr sl::index test_threshold = 1;
+    constexpr sl::index test_threshold = 2;
 
     sl::index success = 0;
 
@@ -85,7 +85,7 @@ namespace laplace::test {
 
   TEST(network, server_encryption) {
     constexpr sl::index test_count     = 3;
-    constexpr sl::index test_threshold = 1;
+    constexpr sl::index test_threshold = 2;
 
     sl::index success = 0;
 

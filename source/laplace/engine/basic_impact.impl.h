@@ -17,14 +17,16 @@
 
 namespace laplace::engine {
   constexpr void basic_impact::set_index(sl::index n) {
-    set_order({ eventorder::root + n });
+    if (n >= 0) {
+      set_order({ eventorder::root + n });
+    }
   }
 
   constexpr void basic_impact::set_order(cref_eventorder order) {
     this->m_order = order;
   }
 
-  constexpr void basic_impact::set_time(uint64_t time) {
+  constexpr void basic_impact::set_time(sl::time time) {
     this->m_time = time;
   }
 
@@ -35,14 +37,18 @@ namespace laplace::engine {
   inline void basic_impact::perform(access::world) const { }
 
   constexpr auto basic_impact::get_index() const -> sl::index {
-    return this->m_order.get_index() - eventorder::root;
+    const auto n = this->m_order.get_index();
+    if (n < eventorder::root) {
+      return id_undefined;
+    }
+    return n - eventorder::root;
   }
 
   constexpr auto basic_impact::get_order() const -> cref_eventorder {
     return this->m_order;
   }
 
-  constexpr auto basic_impact::get_time() const -> uint64_t {
+  constexpr auto basic_impact::get_time() const -> sl::time {
     return this->m_time;
   }
 
@@ -55,15 +61,15 @@ namespace laplace::engine {
   }
 
   constexpr auto basic_impact::get_index64() const -> sl::index64 {
-    return static_cast<uint64_t>(this->get_index());
+    return static_cast<sl::index64>(this->get_index());
   }
 
-  constexpr auto basic_impact::get_time64() const -> uint64_t {
-    return static_cast<uint64_t>(this->get_time());
+  constexpr auto basic_impact::get_time64() const -> sl::time64 {
+    return static_cast<sl::time64>(this->get_time());
   }
 
   constexpr auto basic_impact::get_actor64() const -> sl::index64 {
-    return static_cast<uint64_t>(this->get_actor());
+    return static_cast<sl::index64>(this->get_actor());
   }
 
   constexpr void basic_impact::set_async(bool is_async) {
@@ -81,9 +87,7 @@ namespace laplace::engine {
 
   template <typename basic_impact_>
   inline auto gen() -> impact_gen {
-    return [] {
-      return std::make_shared<basic_impact_>();
-    };
+    return [] { return std::make_shared<basic_impact_>(); };
   }
 }
 

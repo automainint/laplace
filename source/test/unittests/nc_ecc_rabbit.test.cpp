@@ -42,7 +42,8 @@ namespace laplace::test {
       EXPECT_NE(akey.size(), 0u);
       EXPECT_EQ(akey.size(), bkey.size());
 
-      if (!akey.empty() && !bkey.empty() && akey.size() == bkey.size()) {
+      if (!akey.empty() && !bkey.empty() &&
+          akey.size() == bkey.size()) {
         EXPECT_EQ(memcmp(akey.data(), bkey.data(), akey.size()), 0);
       }
     }

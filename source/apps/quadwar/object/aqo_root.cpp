@@ -17,8 +17,7 @@
 #include <algorithm>
 
 namespace quadwar_app::object {
-  using std::make_shared, std::lower_bound, std::unique_lock, std::shared_lock,
-      std::span, engine::id_undefined;
+  using std::make_shared, engine::id_undefined;
 
   sl::index root::n_version     = {};
   sl::index root::n_is_loading  = {};
@@ -57,8 +56,10 @@ namespace quadwar_app::object {
 
     auto r = w.get_entity(w.get_root());
 
-    r.set(n_slots, w.spawn(make_shared<basic_entity>(), id_undefined));
-    r.set(n_units, w.spawn(make_shared<basic_entity>(), id_undefined));
+    r.set(n_slots,
+          w.spawn(make_shared<basic_entity>(), id_undefined));
+    r.set(n_units,
+          w.spawn(make_shared<basic_entity>(), id_undefined));
     r.adjust();
   }
 
@@ -110,7 +111,7 @@ namespace quadwar_app::object {
   auto root::get_slots(entity en) -> sl::index {
     return as_index(en.get(n_slots, -1));
   }
-  
+
   auto root::get_units(entity en) -> sl::index {
     return as_index(en.get(n_units, -1));
   }

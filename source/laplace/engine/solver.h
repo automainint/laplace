@@ -13,6 +13,7 @@
 #ifndef laplace_engine_solver_h
 #define laplace_engine_solver_h
 
+#include "basic_factory.h"
 #include "basic_impact.h"
 #include "world.h"
 
@@ -26,22 +27,25 @@ namespace laplace::engine {
     solver()  = default;
     ~solver() = default;
 
+    void set_factory(ptr_factory f);
     void set_world(ptr_world w);
+
+    void reset_factory();
     void reset_world();
 
-    /*  Add Impact to the queue. Adjust the Impact
-     *  time due performing if needed.
+    /*  Apply an event. May cause recalculation of the
+     *  entire timeline if event time is set befure
+     *  current time.
      *
-     *  If an Impact time is set, it can change
-     *  the previous World state, which will
-     *  cause rewind and recalculating of the
-     *  entire timeline.
+     *  If event time not set, uses current time.
+     *
+     *  Returns adjusted event time.
      */
-    void apply(ptr_impact imp);
+    auto apply(span_cbyte ev) -> sl::time;
 
-    void rewind_to(uint64_t time);
+    void rewind_to(sl::time time);
 
-    void schedule(uint64_t delta);
+    void schedule(sl::time delta);
     void join();
 
     /*  Allow to automatically rewind the timeline when an
@@ -51,7 +55,7 @@ namespace laplace::engine {
 
     [[nodiscard]] auto is_rewind_allowed() const -> bool;
 
-    [[nodiscard]] auto get_time() const -> uint64_t;
+    [[nodiscard]] auto get_time() const -> sl::time;
     [[nodiscard]] auto get_position() const -> sl::index;
 
     void               set_seed(seed_type seed);
@@ -60,17 +64,18 @@ namespace laplace::engine {
     void clear_history();
 
     [[nodiscard]] auto get_history_count() const -> sl::whole;
-    [[nodiscard]] auto get_history(sl::index index) const -> ptr_impact;
+    [[nodiscard]] auto get_history(sl::index n) const -> vbyte;
 
     [[nodiscard]] static auto generate_seed() -> seed_type;
 
   private:
-    void adjust(uint64_t time);
+    void adjust(sl::time time);
 
-    ptr_world   m_world;
-    vptr_impact m_history;
+    ptr_world         m_world;
+    ptr_factory       m_factory;
+    sl::vector<vbyte> m_history;
 
-    uint64_t  m_time              = 0;
+    sl::time  m_time              = 0;
     sl::index m_position          = 0;
     bool      m_is_rewind_allowed = default_allow_rewind;
     seed_type m_seed              = 0;

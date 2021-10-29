@@ -1,11 +1,13 @@
 target_sources(
   ${LAPLACE_OBJ}
     PRIVATE
-      c_embedded.cpp c_family.cpp c_log.cpp c_parser.cpp
-      c_socket.cpp c_string.cpp c_utf8.cpp
+      c_socket.cpp c_embedded.cpp c_log.cpp c_parser.cpp
+      c_profiler.cpp c_string.cpp c_utf8.cpp c_options.cpp c_unival.cpp
+      c_serial.cpp
     PUBLIC
-      bytestream.h defs.h embedded.h family.h family.impl.h
-      input_handler.h keys.h log.h options.h parser.h serial.h serial.impl.h
-      slib.h socket.h string.h string.impl.h utf8.h utils.h
-      utils.impl.h
+      unival.h input_handler.impl.h string.h
+      small_vector.impl.h utf8.h profiler.h socket.h utils.h bytestream.h
+      small_vector.h unival.impl.h keys.h serial.h embedded.h utils.impl.h
+      string.impl.h slib.h log.h parser.h input_handler.h serial.impl.h
+      options.h defs.h
 )

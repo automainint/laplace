@@ -26,13 +26,13 @@ namespace quadwar_app {
     using event_done = std::function<void()>;
     using event_quit = std::function<void()>;
 
-    static const uint16_t  allowed_commands[];
-    static const char      host_info_file[];
-    static const char      default_server_ip[];
-    static const uint16_t  default_port;
-    static const sl::whole thread_count;
-    static const float     sense_move;
-    static const float     sense_scale;
+    static uint16_t const  allowed_commands[];
+    static char const      host_info_file[];
+    static char const      default_server_ip[];
+    static uint16_t const  default_port;
+    static sl::whole const thread_count;
+    static float const     sense_move;
+    static float const     sense_scale;
 
     session();
     ~session();
@@ -40,7 +40,7 @@ namespace quadwar_app {
     void on_done(event_done ev);
     void on_quit(event_quit ev);
 
-    void tick(uint64_t delta_msec, core::cref_input_handler in);
+    void tick(sl::time delta_msec, core::cref_input_handler in);
     void render();
 
     void attach_to(ui::ptr_widget w);
@@ -50,9 +50,9 @@ namespace quadwar_app {
     void set_server_port(uint16_t port);
     void set_game_name(std::u8string_view game_name);
     void set_player_name(std::u8string_view player_name);
-    void set_map_size(size_t map_size);
-    void set_player_count(size_t player_count);
-    void set_unit_count(size_t unit_count);
+    void set_map_size(sl::whole map_size);
+    void set_player_count(sl::whole player_count);
+    void set_unit_count(sl::whole unit_count);
 
     void create();
     void join();
@@ -61,7 +61,7 @@ namespace quadwar_app {
         std::string_view default_address) -> std::string;
 
   private:
-    void update_control(uint64_t                 delta_msec,
+    void update_control(sl::time                 delta_msec,
                         core::cref_input_handler in);
     void update_lobby();
     void save_host_info(uint16_t port);

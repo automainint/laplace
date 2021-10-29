@@ -36,26 +36,26 @@ namespace quadwar_app::ui {
     using event_join   = std::function<void(join_info)>;
     using event_quit   = std::function<void()>;
 
-    static constexpr int spacing     = 4;
-    static constexpr int line_count  = 7;
-    static constexpr int menu_width  = 640;
-    static constexpr int info_height = 80;
-    static constexpr int line_height = 60;
+    static sl::whole const spacing;
+    static sl::whole const line_count;
+    static sl::whole const menu_width;
+    static sl::whole const info_height;
+    static sl::whole const line_height;
 
-    static constexpr auto c_welcome      = u8"Welcome";
-    static constexpr auto c_create       = u8"Create";
-    static constexpr auto c_join         = u8"Join";
-    static constexpr auto c_quit         = u8"Quit";
-    static constexpr auto c_create_game  = u8"Create Game";
-    static constexpr auto c_join_game    = u8"Join Game";
-    static constexpr auto c_server_ip    = u8"Server IP";
-    static constexpr auto c_game_name    = u8"Game name";
-    static constexpr auto c_player_name  = u8"Player name";
-    static constexpr auto c_map_size     = u8"Map size";
-    static constexpr auto c_player_count = u8"Player count";
-    static constexpr auto c_unit_count   = u8"Unit count";
-    static constexpr auto c_cancel       = u8"Cancel";
-    static constexpr auto c_continue     = u8"Continue";
+    static std::u8string_view const c_welcome;
+    static std::u8string_view const c_create;
+    static std::u8string_view const c_join;
+    static std::u8string_view const c_quit;
+    static std::u8string_view const c_create_game;
+    static std::u8string_view const c_join_game;
+    static std::u8string_view const c_server_ip;
+    static std::u8string_view const c_game_name;
+    static std::u8string_view const c_player_name;
+    static std::u8string_view const c_map_size;
+    static std::u8string_view const c_player_count;
+    static std::u8string_view const c_unit_count;
+    static std::u8string_view const c_cancel;
+    static std::u8string_view const c_continue;
 
     mainmenu();
     ~mainmenu();

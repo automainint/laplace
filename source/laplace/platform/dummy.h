@@ -13,7 +13,7 @@
 #ifndef laplace_platform_dummy_h
 #define laplace_platform_dummy_h
 
-#include "../core/slib.h"
+#include "../core/input_handler.h"
 #include "events.h"
 #include "opengl.h"
 #include "thread.h"
@@ -40,9 +40,6 @@ namespace laplace::platform::dummy {
   public:
     input() { }
     ~input() { }
-
-    void on_key_down(event_key_down) { }
-    void on_wheel(event_wheel) { }
 
     void use_system_cursor(bool) { }
     void set_cursor_enabled(bool) { }
@@ -129,9 +126,8 @@ namespace laplace::platform::dummy {
       return 0;
     }
 
-    auto get_text() const -> std::u8string_view {
-      static constexpr auto nil = u8"";
-      return nil;
+    auto get_events() const -> std::span<const core::input_event> {
+      return {};
     }
 
     void refresh() { }

@@ -159,6 +159,8 @@ namespace laplace::core::keys {
     key_backslash,   /* \| */
     key_close,       /* ]} */
     key_quote,       /* '" */
+
+    key_wheel = 0x100
   };
 }
 

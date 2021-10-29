@@ -30,12 +30,14 @@ namespace laplace::engine {
   public:
     class dummy_tag { };
     class proto_tag { };
+    class dynamic_tag { };
 
-    static constexpr auto dummy = dummy_tag {};
-    static constexpr auto proto = proto_tag {};
+    static constexpr auto dummy   = dummy_tag {};
+    static constexpr auto proto   = proto_tag {};
+    static constexpr auto dynamic = dynamic_tag {};
 
     static const std::chrono::milliseconds lock_timeout;
-    static const uint64_t                  default_tick_period;
+    static const sl::time                  default_tick_period;
 
     basic_entity(cref_entity en) noexcept;
     basic_entity(basic_entity &&en) noexcept;
@@ -52,7 +54,8 @@ namespace laplace::engine {
 
     /*  Initialize dynamic entity.
      */
-    basic_entity(uint64_t tick_period);
+    basic_entity(dynamic_tag,
+                 sl::time tick_period = default_tick_period);
 
     virtual ~basic_entity() = default;
 
@@ -64,31 +67,26 @@ namespace laplace::engine {
     /*  Set the Entity tick period.
      *  Thread-safe.
      */
-    void set_tick_period(uint64_t tick_period);
+    void set_tick_period(sl::time tick_period);
 
     /*  Set the Entity clock current time.
      *  Thread-safe.
      */
-    void set_clock(uint64_t clock_msec);
+    void set_clock(sl::time clock_msec);
 
     /*  Set the Entity clock.
      *  Thread-safe.
      */
     void reset_clock();
 
-    /*  Set the Entity id. Do not modify the
-     *  id set by the World.
-     */
-    void set_id(sl::index id);
-
-    void set_world(ptr_world w);
+    void set_world(ptr_world w, sl::index id);
     void reset_world();
 
-    [[nodiscard]] auto index_of(sl::index id) const -> sl::index;
+    [[nodiscard]] auto index_of(sl::index id) -> sl::index;
     [[nodiscard]] auto get_count() const -> sl::whole;
 
-    [[nodiscard]] auto id_of(sl::index index) const -> sl::index;
-    [[nodiscard]] auto scale_of(sl::index index) const -> sl::index;
+    [[nodiscard]] auto id_of(sl::index index) -> sl::index;
+    [[nodiscard]] auto scale_of(sl::index index) -> sl::index;
 
     /*  Get a state value.
      *  Thread-safe.
@@ -142,7 +140,8 @@ namespace laplace::engine {
 
     void vec_read(sl::index n, std::span<intval> dst) noexcept;
 
-    void vec_write(sl::index n, std::span<const intval> values) noexcept;
+    void vec_write(sl::index               n,
+                   std::span<const intval> values) noexcept;
 
     void vec_write_delta(sl::index               n,
                          std::span<const intval> deltas) noexcept;
@@ -183,7 +182,7 @@ namespace laplace::engine {
     /*  Returns the tick period.
      *  Thread-safe.
      */
-    [[nodiscard]] auto get_tick_period() -> uint64_t;
+    [[nodiscard]] auto get_tick_period() -> sl::time;
 
     /*  Returns the Entity id.
      */
@@ -219,11 +218,11 @@ namespace laplace::engine {
       intval delta = {};
     };
 
-    using vsets_row = std::vector<sets_row>;
+    using vsets_row = sl::vector<sets_row>;
 
     /*  Setup state values.
      */
-    void setup_sets(const vsets_row &sets);
+    void setup_sets(vsets_row const &sets);
 
     /*  Init state value.
      */
@@ -233,23 +232,43 @@ namespace laplace::engine {
 
     void vec_init(sl::index n, intval value) noexcept;
 
-    void self_destruct(const access::world &w);
+    void self_destruct(access::world const &w);
     void desync();
 
   private:
     void assign(cref_entity en) noexcept;
     void assign(basic_entity &&en) noexcept;
 
+    void sets_invalidate(sl::index const n) noexcept;
+    void sets_validate_all() noexcept;
+
+    void bytes_invalidate(sl::index const n,
+                          sl::whole const count = 1) noexcept;
+    void bytes_validate_all() noexcept;
+
+    void vec_invalidate(sl::index const n,
+                        sl::whole const count = 1) noexcept;
+    void vec_validate_all() noexcept;
+
+    struct _range {
+      sl::index begin;
+      sl::index end;
+    };
+
+    void invalidate_range(sl::vector<_range> &ranges,
+                          sl::index const     n,
+                          sl::whole const     count) noexcept;
+
     std::shared_timed_mutex m_lock;
     std::weak_ptr<world>    m_world;
     vsets_row               m_sets;
+    sl::vector<_range>      m_sets_changed;
     sl::vector<bytes_row>   m_bytes;
+    sl::vector<_range>      m_bytes_changed;
     sl::vector<vec_row>     m_vec;
-    uint64_t                m_clock            = {};
-    sl::index               m_id               = id_undefined;
-    bool                    m_is_changed       = false;
-    bool                    m_is_bytes_changed = false;
-    bool                    m_is_vec_changed   = false;
+    sl::vector<_range>      m_vec_changed;
+    sl::time                m_clock = {};
+    sl::index               m_id    = id_undefined;
   };
 }
 

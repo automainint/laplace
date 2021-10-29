@@ -18,22 +18,11 @@
 namespace laplace::ui::elem {
   class panel : public widget {
   public:
-    struct state {
-      sl::index level = 0;
-      ui::rect  rect;
-      bool      is_enabled = true;
-    };
-
     ~panel() override = default;
 
-    void set_context(ptr_context cont);
+    void render(context const &con) override;
 
-    void render() override;
-
-    auto get_state() const -> state;
-
-  protected:
-    ptr_context m_context = widget::get_default_context();
+    auto get_state() const -> panel_state;
   };
 
   using ptr_panel = std::shared_ptr<panel>;

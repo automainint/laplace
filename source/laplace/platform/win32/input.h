@@ -15,6 +15,7 @@
 #ifndef laplace_platform_win32_input_h
 #define laplace_platform_win32_input_h
 
+#include "../../core/input_handler.h"
 #include "../events.h"
 #include "win.predef.h"
 #include <array>
@@ -32,8 +33,8 @@ namespace laplace::win32 {
    */
   class input {
   public:
-    static const sl::whole char_predelay_msec;
-    static const sl::whole char_period_msec;
+    static const sl::time  char_predelay_msec;
+    static const sl::time  char_period_msec;
     static const sl::whole default_resolution_x;
     static const sl::whole default_resolution_y;
 
@@ -60,9 +61,6 @@ namespace laplace::win32 {
     input();
     ~input();
 
-    void on_key_down(event_key_down ev);
-    void on_wheel(event_wheel ev);
-
     void use_system_cursor(bool use);
     void set_cursor_enabled(bool is_enabled);
     void set_mouse_resolution(sl::whole x, sl::whole y);
@@ -84,24 +82,24 @@ namespace laplace::win32 {
 
     auto get_mouse_resolution_x() const -> sl::whole;
     auto get_mouse_resolution_y() const -> sl::whole;
-
     auto get_mouse_x() const -> sl::index;
     auto get_mouse_y() const -> sl::index;
     auto get_mouse_delta_x() const -> sl::index;
     auto get_mouse_delta_y() const -> sl::index;
-
     auto get_cursor_x() const -> sl::index;
     auto get_cursor_y() const -> sl::index;
-
     auto get_wheel_delta() const -> sl::index;
-    auto get_text() const -> std::u8string_view;
+    auto get_events() const -> std::span<const core::input_event>;
+
     void refresh();
 
-    void set_window_rect(sl::index x, sl::index y, sl::whole width,
+    void set_window_rect(sl::index x,
+                         sl::index y,
+                         sl::whole width,
                          sl::whole height);
     void attach(HWND handle);
     void process(HRAWINPUT raw_input);
-    void tick(uint64_t delta_msec);
+    void tick(sl::time delta_msec);
     void reset();
 
   private:
@@ -111,12 +109,10 @@ namespace laplace::win32 {
     void process_mouse(const void *raw_data);
     void process_keyboard(const void *raw_data);
 
-    void process_wheel(int delta);
+    void process_wheel(sl::index delta);
     void process_key(uint8_t key, bool is_down);
-    void process_char(uint8_t key, bool is_down);
+    auto process_char(uint8_t key, bool is_down) -> char32_t;
 
-    event_key_down m_on_key_down;
-    event_wheel    m_on_wheel;
     keymap_table   m_keymap;
     keyboard_state m_keyboard_state;
     mouse_state    m_mouse_state;
@@ -133,9 +129,11 @@ namespace laplace::win32 {
     bool           m_is_char_pressed   = false;
     char32_t       m_last_char         = 0;
     uint8_t        m_last_char_key     = 0;
-    sl::whole      m_char_period_msec  = char_predelay_msec;
-    std::u8string  m_text;
-    HWND           m_handle = nullptr;
+    sl::time       m_char_period_msec  = char_predelay_msec;
+
+    sl::vector<core::input_event> m_events;
+
+    HWND m_handle = nullptr;
   };
 }
 

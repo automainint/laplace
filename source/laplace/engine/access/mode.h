@@ -17,8 +17,12 @@
 #include <cstdint>
 
 namespace laplace::engine::access {
+  /*  Execution mode.
+   */
   enum mode : uint8_t { forbidden, read_only, async, sync, data };
 
+  /*  Check if operation is allowed in specified execution status.
+   */
   [[nodiscard]] constexpr auto is_allowed(const mode operation,
                                           const mode status) noexcept
       -> bool {

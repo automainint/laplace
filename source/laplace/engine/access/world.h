@@ -97,6 +97,13 @@ namespace laplace::engine::access {
     [[nodiscard]] auto random(dist_ &dist) const ->
         typename dist_::result_type;
 
+    /*  Generate a random number sequence.
+     *  Sync.
+     */
+    template <typename dist_>
+    [[nodiscard]] auto random(dist_ &dist, sl::whole count) const ->
+        sl::vector<typename dist_::result_type>;
+
   private:
     auto get_random_engine() const -> ref_rand;
 

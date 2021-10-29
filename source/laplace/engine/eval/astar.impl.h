@@ -17,32 +17,32 @@
 
 namespace laplace::engine::eval::astar::impl {
   template <typename _node>
-  constexpr void _add_length(_node &n, const intval delta) noexcept {
+  constexpr void _add_length(_node &n, intval const delta) noexcept {
     n.length += delta;
   }
 
   template <typename _node>
   [[nodiscard]] constexpr auto _get_parent_length(
-      const _node &n) noexcept -> intval {
+      const _node &) noexcept -> intval {
     return {};
   }
 
-  constexpr void _add_length(
-      _node_theta &n, const intval delta) noexcept {
+  constexpr void _add_length(_node_theta &n,
+                             intval const delta) noexcept {
     n.length_parent = delta;
     n.length += delta;
   }
 
   [[nodiscard]] constexpr auto _get_parent_length(
-      const _node_theta &n) noexcept -> intval {
+      _node_theta const &n) noexcept -> intval {
     return n.length_parent;
   }
 }
 
 namespace laplace::engine::eval::astar {
   template <bool _nearest, typename _node>
-  [[nodiscard]] inline auto init(
-      const sl::index source, const sl::index destination) noexcept
+  [[nodiscard]] inline auto init(sl::index const source,
+                                 sl::index const destination) noexcept
       -> _state<_nearest, _node> {
 
     auto s = _state<_nearest, _node> {};
@@ -58,30 +58,27 @@ namespace laplace::engine::eval::astar {
 
   template <bool _nearest, typename _node>
   [[nodiscard]] inline auto loop(
-      const fn_sight           sight,
-      const fn_neighbors       neighbors,
-      const fn_heuristic       heuristic,
+      fn_sight const          &sight,
+      fn_neighbors const      &neighbors,
+      fn_heuristic const      &heuristic,
       _state<_nearest, _node> &state) noexcept -> status {
 
-    if (state.open.empty()) {
+    if (state.open.empty())
       return status::failed;
-    }
 
-    const _node q = state.open.back();
+    _node const q = state.open.back();
     state.open.pop_back();
 
     auto n = _node {};
 
     for (sl::index k = 0;; k++) {
-      const auto l = neighbors(q.index, k);
+      auto const l = neighbors(q.index, k);
 
-      if (l.node == link::skip) {
+      if (l.node == link::skip)
         continue;
-      }
 
-      if (l.node == link::invalid) {
+      if (l.node == link::invalid)
         break;
-      }
 
       n = _node {};
 
@@ -98,20 +95,20 @@ namespace laplace::engine::eval::astar {
           n.parent = q.parent;
         } else {
           state.closed.emplace(
-              std::lower_bound(
-                  state.closed.begin(), state.closed.end(), q.index,
-                  [](const _node &a, const sl::index i) {
-                    return a.index < i;
-                  }),
+              std::lower_bound(state.closed.begin(),
+                               state.closed.end(), q.index,
+                               [](_node const &a, sl::index const i) {
+                                 return a.index < i;
+                               }),
               q);
         }
 
         state.closed.emplace(
-            std::lower_bound(
-                state.closed.begin(), state.closed.end(), n.index,
-                [](const _node &a, const sl::index i) {
-                  return a.index < i;
-                }),
+            std::lower_bound(state.closed.begin(), state.closed.end(),
+                             n.index,
+                             [](_node const &a, sl::index const i) {
+                               return a.index < i;
+                             }),
             n);
 
         if constexpr (_nearest) {
@@ -126,9 +123,9 @@ namespace laplace::engine::eval::astar {
       n.distance  = heuristic(n.index, state.destination);
       n.estimated = n.length + n.distance;
 
-      const auto j = std::lower_bound(
+      auto const j = std::lower_bound(
           state.closed.begin(), state.closed.end(), n.index,
-          [](const _node &a, const sl::index i) {
+          [](_node const &a, sl::index const i) {
             return a.index < i;
           });
 
@@ -137,7 +134,7 @@ namespace laplace::engine::eval::astar {
         continue;
       }
 
-      const auto i = std::find_if(
+      auto const i = std::find_if(
           state.open.begin(), state.open.end(),
           [&](const _node &a) { return a.index == n.index; });
 
@@ -157,11 +154,11 @@ namespace laplace::engine::eval::astar {
       }
 
       state.open.emplace(
-          std::lower_bound(
-              state.open.begin(), state.open.end(), n.estimated,
-              [](const _node &a, const intval f) {
-                return a.estimated > f;
-              }),
+          std::lower_bound(state.open.begin(), state.open.end(),
+                           n.estimated,
+                           [](_node const &a, intval const f) {
+                             return a.estimated > f;
+                           }),
           n);
     }
 
@@ -176,11 +173,11 @@ namespace laplace::engine::eval::astar {
     }
 
     state.closed.emplace(
-        std::lower_bound(
-            state.closed.begin(), state.closed.end(), q.index,
-            [](const _node &a, const sl::index i) {
-              return a.index < i;
-            }),
+        std::lower_bound(state.closed.begin(), state.closed.end(),
+                         q.index,
+                         [](_node const &a, sl::index const i) {
+                           return a.index < i;
+                         }),
         q);
 
     return status::progress;
@@ -188,9 +185,9 @@ namespace laplace::engine::eval::astar {
 
   template <typename _node>
   [[nodiscard]] inline auto finish(
-      std::span<const _node> closed,
-      sl::index              source,
-      sl::index destination) noexcept -> sl::vector<sl::index> {
+      std::span<_node const> const closed,
+      sl::index const              source,
+      sl::index const destination) noexcept -> sl::vector<sl::index> {
 
     auto path    = sl::vector<sl::index> {};
     auto current = destination;
@@ -198,15 +195,14 @@ namespace laplace::engine::eval::astar {
     while (current != source) {
       path.emplace_back(current);
 
-      const auto i = std::lower_bound(
+      auto const i = std::lower_bound(
           closed.begin(), closed.end(), current,
-          [](const _node &n, const sl::index i) {
+          [](_node const &n, sl::index const i) {
             return n.index < i;
           });
 
-      if (i == closed.end() || i->index != current) {
+      if (i == closed.end() || i->index != current)
         return {};
-      }
 
       current = i->parent;
     }
@@ -221,7 +217,22 @@ namespace laplace::engine::eval::astar {
     }
 
     return v;
-  };
+  }
+
+  template <bool _nearest, typename _node>
+  inline auto length(_state<_nearest, _node> const &state) noexcept
+      -> intval {
+    auto const i = std::lower_bound(
+        state.closed.begin(), state.closed.end(), state.destination,
+        [](_node const &n, sl::index const i) {
+          return n.index < i;
+        });
+
+    if (i == state.closed.end() || i->index != state.destination)
+      return -1;
+
+    return i->length;
+  }
 }
 
 #endif

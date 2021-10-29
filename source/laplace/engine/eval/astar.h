@@ -39,7 +39,7 @@ namespace laplace::engine::eval::astar {
     sl::index index  = _invalid_index;
     sl::index parent = _invalid_index;
 
-    /*  Actual length from source to current node.
+    /*  Actual path length from source to current node.
      */
     intval length = {};
 
@@ -47,7 +47,7 @@ namespace laplace::engine::eval::astar {
      */
     intval distance = {};
 
-    /*  Estimated length from source to destination.
+    /*  Estimated path length from source to destination.
      */
     intval estimated = {};
   };
@@ -62,32 +62,35 @@ namespace laplace::engine::eval::astar {
     intval    distance = {};
   };
 
-  using fn_sight =
-      std::function<bool(const sl::index a, const sl::index b)>;
+  using fn_sight = std::function<bool(sl::index a, sl::index b)>;
 
   using fn_neighbors =
-      std::function<link(const sl::index node, const sl::index n)>;
+      std::function<link(sl::index node, sl::index n)>;
 
   using fn_heuristic =
-      std::function<intval(const sl::index a, const sl::index b)>;
+      std::function<intval(sl::index a, sl::index b)>;
 
   template <bool _nearest, typename _node>
-  [[nodiscard]] inline auto init(
-      const sl::index source, const sl::index destination) noexcept
+  [[nodiscard]] inline auto init(sl::index source,
+                                 sl::index destination) noexcept
       -> _state<_nearest, _node>;
 
   template <bool _nearest, typename _node>
   [[nodiscard]] inline auto loop(
-      const fn_sight           sight,
-      const fn_neighbors       neighbors,
-      const fn_heuristic       heuristic,
+      fn_sight const          &sight,
+      fn_neighbors const      &neighbors,
+      fn_heuristic const      &heuristic,
       _state<_nearest, _node> &state) noexcept -> status;
 
   template <typename _node>
-  [[nodiscard]] inline auto finish(
-      std::span<const _node> closed,
-      sl::index              source,
-      sl::index destination) noexcept -> sl::vector<sl::index>;
+  [[nodiscard]] inline auto finish(std::span<_node const> closed,
+                                   sl::index              source,
+                                   sl::index destination) noexcept
+      -> sl::vector<sl::index>;
+
+  template <bool _nearest, typename _node>
+  [[nodiscard]] inline auto length(
+      _state<_nearest, _node> const &state) noexcept -> intval;
 }
 
 #endif

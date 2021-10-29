@@ -26,9 +26,22 @@ namespace laplace::engine {
     return this->m_encoded_size;
   }
 
+  constexpr void prime_impact::set_actor(span_byte seq,
+                                         sl::index id_actor) {
+    if (!is_control_id(get_id(seq))) {
+      serial::wr<sl::index64>(seq, n_actor, id_actor);
+    }
+  }
+
   constexpr void prime_impact::set_index(span_byte seq, sl::index n) {
     if (!is_unindexed_id(get_id(seq)))
-      serial::wr<uint64_t>(seq, n_index, n);
+      serial::wr<sl::index64>(seq, n_index, n);
+  }
+
+  constexpr void prime_impact::set_time(span_byte seq,
+                                        sl::time  time) {
+    if (!is_control_id(get_id(seq)))
+      serial::wr<sl::time64>(seq, n_time, time);
   }
 
   constexpr auto prime_impact::is_unindexed(span_cbyte seq) -> bool {
@@ -42,24 +55,25 @@ namespace laplace::engine {
 
   constexpr auto prime_impact::get_index_unsafe(span_cbyte seq)
       -> sl::index {
-    return as_index(serial::rd<uint64_t>(seq, n_index));
+    return as_index(serial::rd<sl::index64>(seq, n_index));
   }
 
   constexpr auto prime_impact::get_time_unsafe(span_cbyte seq)
-      -> uint64_t {
-    return serial::rd<uint64_t>(seq, n_time);
+      -> sl::time {
+    return static_cast<sl::time>(serial::rd<sl::time64>(seq, n_time));
   }
 
   constexpr auto prime_impact::get_actor_unsafe(span_cbyte seq)
       -> sl::index {
-    return as_index(serial::rd<uint64_t>(seq, n_actor));
+    return as_index(serial::rd<sl::index64>(seq, n_actor));
   }
 
   constexpr auto prime_impact::get_id(span_cbyte seq) -> uint16_t {
     return serial::rd<uint16_t>(seq, n_id, protocol::ids::undefined);
   }
 
-  constexpr auto prime_impact::get_index(span_cbyte seq) -> sl::index {
+  constexpr auto prime_impact::get_index(span_cbyte seq)
+      -> sl::index {
     if (is_unindexed_id(get_id(seq))) {
       return id_undefined;
     }
@@ -67,7 +81,7 @@ namespace laplace::engine {
     return get_index_unsafe(seq);
   }
 
-  constexpr auto prime_impact::get_time(span_cbyte seq) -> uint64_t {
+  constexpr auto prime_impact::get_time(span_cbyte seq) -> sl::time {
     if (is_control_id(get_id(seq))) {
       return time_undefined;
     }
@@ -75,7 +89,8 @@ namespace laplace::engine {
     return get_time_unsafe(seq);
   }
 
-  constexpr auto prime_impact::get_actor(span_cbyte seq) -> sl::index {
+  constexpr auto prime_impact::get_actor(span_cbyte seq)
+      -> sl::index {
     if (is_control_id(get_id(seq))) {
       return id_undefined;
     }
@@ -84,7 +99,8 @@ namespace laplace::engine {
   }
 
   constexpr auto prime_impact::get_intval(span_cbyte seq,
-                                          sl::index offset) -> intval {
+                                          sl::index  offset)
+      -> intval {
 
     const auto value = serial::rd<int64_t>(seq, offset);
     const auto n     = static_cast<intval>(value);
@@ -99,7 +115,8 @@ namespace laplace::engine {
     return n;
   }
 
-  inline auto prime_impact::get_string(span_cbyte seq, sl::index offset)
+  inline auto prime_impact::get_string(span_cbyte seq,
+                                       sl::index  offset)
       -> std::u8string_view {
 
     if (offset >= seq.size())
@@ -110,7 +127,8 @@ namespace laplace::engine {
   }
 
   inline auto prime_impact::get_string(span_cbyte seq,
-                                       sl::index offset, sl::whole size)
+                                       sl::index  offset,
+                                       sl::whole  size)
       -> std::u8string_view {
 
     if (offset + size > seq.size())

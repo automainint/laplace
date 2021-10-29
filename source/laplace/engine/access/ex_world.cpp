@@ -13,6 +13,7 @@
 #include "world.h"
 
 #include "../world.h"
+#include "../basic_impact.h"
 
 namespace laplace::engine::access {
   world::world(world &&w) noexcept :
@@ -78,7 +79,7 @@ namespace laplace::engine::access {
 
   void world::queue(ptr_impact ev) const {
     if (is_allowed(async, m_mode)) {
-      m_world.get().queue(ev);
+      m_world.get().queue(std::move(ev));
     }
   }
 

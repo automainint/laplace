@@ -76,7 +76,7 @@ namespace laplace::engine {
     /*  Set event time. If time is undefined it will be assigned
      *  by Solver due performing.
      */
-    constexpr void set_time(uint64_t time);
+    constexpr void set_time(sl::time time);
 
     /*  Set actor entity id. Can be undefined. Allows to verify
      *  players' permissions.
@@ -87,13 +87,13 @@ namespace laplace::engine {
 
     constexpr auto get_index() const -> sl::index;
     constexpr auto get_order() const -> cref_eventorder;
-    constexpr auto get_time() const -> uint64_t;
+    constexpr auto get_time() const -> sl::time;
     constexpr auto get_actor() const -> sl::index;
 
     constexpr auto is_async() const -> bool;
 
     constexpr auto get_index64() const -> sl::index64;
-    constexpr auto get_time64() const -> uint64_t;
+    constexpr auto get_time64() const -> sl::time64;
     constexpr auto get_actor64() const -> sl::index64;
 
   protected:
@@ -102,7 +102,7 @@ namespace laplace::engine {
 
   private:
     eventorder m_order;
-    uint64_t   m_time     = time_undefined;
+    sl::time   m_time     = time_undefined;
     sl::index  m_id_actor = id_undefined;
     bool       m_is_async = true;
   };

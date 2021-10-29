@@ -60,35 +60,33 @@ namespace laplace::test {
 
     auto heuristic = [&](const sl::index a,
                          const sl::index b) -> intval {
-      const intval x0 = static_cast<intval>(a % width);
-      const intval y0 = static_cast<intval>(a / width);
+      auto const x0 = static_cast<intval>(a % width);
+      auto const y0 = static_cast<intval>(a / width);
 
-      const intval x1 = static_cast<intval>(b % width);
-      const intval y1 = static_cast<intval>(b / width);
+      auto const x1 = static_cast<intval>(b % width);
+      auto const y1 = static_cast<intval>(b / width);
 
       return max(abs(x1 - x0), abs(y1 - y0));
     };
 
-    auto node_index = [&](const sl::index x,
-                          const sl::index y) -> sl::index {
+    auto node_index = [&](sl::index const x,
+                          sl::index const y) -> sl::index {
       return y * width + x;
     };
 
-    auto exists = [&](const sl::index source,
-                      const sl::index destination) {
-      auto state = astar::init<false, astar::_basic_node>(source,
-                                                          destination);
+    auto exists = [&](sl::index const source,
+                      sl::index const destination) {
+      auto state = astar::init<false, astar::_basic_node>(
+          source, destination);
 
       for (;;) {
         auto s = astar::loop(sight, neighbours, heuristic, state);
 
-        if (s == astar::status::success) {
+        if (s == astar::status::success)
           return true;
-        }
 
-        if (s == astar::status::failed) {
+        if (s == astar::status::failed)
           break;
-        }
       }
 
       return false;
@@ -116,12 +114,12 @@ namespace laplace::test {
       1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     };
 
-    auto sight = [](const sl::index, const sl::index) {
+    auto sight = [](sl::index const, sl::index const) {
       return false;
     };
 
-    auto neighbours = [&](const sl::index node,
-                          const sl::index n) -> link {
+    auto neighbours = [&](sl::index const node,
+                          sl::index const n) -> link {
       if (node < 0 || node >= map.size())
         return {};
 
@@ -138,27 +136,27 @@ namespace laplace::test {
       return {};
     };
 
-    auto heuristic = [&](const sl::index a,
-                         const sl::index b) -> intval {
-      const intval x0 = static_cast<intval>(a % width);
-      const intval y0 = static_cast<intval>(a / width);
+    auto heuristic = [&](sl::index const a,
+                         sl::index const b) -> intval {
+      auto const x0 = static_cast<intval>(a % width);
+      auto const y0 = static_cast<intval>(a / width);
 
-      const intval x1 = static_cast<intval>(b % width);
-      const intval y1 = static_cast<intval>(b / width);
+      auto const x1 = static_cast<intval>(b % width);
+      auto const y1 = static_cast<intval>(b / width);
 
       return ((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)) * 10;
     };
 
-    auto node_index = [&](const sl::index x,
-                          const sl::index y) -> sl::index {
+    auto node_index = [&](sl::index const x,
+                          sl::index const y) -> sl::index {
       return y * width + x;
     };
 
     auto search =
-        [&](const sl::index source,
-            const sl::index destination) -> sl::vector<sl::index> {
-      auto state = astar::init<false, astar::_basic_node>(source,
-                                                          destination);
+        [&](sl::index const source,
+            sl::index const destination) -> sl::vector<sl::index> {
+      auto state = astar::init<false, astar::_basic_node>(
+          source, destination);
 
       for (;;) {
         auto s = astar::loop(sight, neighbours, heuristic, state);
@@ -168,9 +166,8 @@ namespace laplace::test {
               state.closed, source, destination);
         }
 
-        if (s == astar::status::failed) {
+        if (s == astar::status::failed)
           break;
-        }
       }
 
       return {};
@@ -190,7 +187,7 @@ namespace laplace::test {
       s.append(1, ' ');
 
       for (sl::index i = 0; i < width; i++) {
-        const auto c = path_map[j * width + i];
+        auto const c = path_map[j * width + i];
 
         s.append(1, ' ');
 
@@ -222,8 +219,8 @@ namespace laplace::test {
                                                 1, 0, 0, 0, 0, 1, //
                                                 1, 1, 1, 1, 1, 1 };
 
-    auto neighbours = [&](const sl::index node,
-                          const sl::index n) -> link {
+    auto neighbours = [&](sl::index const node,
+                          sl::index const n) -> link {
       if (node < 0 || node >= map.size())
         return {};
 
@@ -240,37 +237,37 @@ namespace laplace::test {
       return {};
     };
 
-    auto heuristic = [&](const sl::index a,
-                         const sl::index b) -> intval {
-      const intval x0 = static_cast<intval>(a % width);
-      const intval y0 = static_cast<intval>(a / width);
+    auto heuristic = [&](sl::index const a,
+                         sl::index const b) -> intval {
+      auto const x0 = static_cast<intval>(a % width);
+      auto const y0 = static_cast<intval>(a / width);
 
-      const intval x1 = static_cast<intval>(b % width);
-      const intval y1 = static_cast<intval>(b / width);
+      auto const x1 = static_cast<intval>(b % width);
+      auto const y1 = static_cast<intval>(b / width);
 
       return ((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)) * 10;
     };
 
-    auto sight = [&](const sl::index a, const sl::index b) -> bool {
-      const auto x0 = a % width;
-      const auto y0 = a / width;
+    auto sight = [&](sl::index const a, sl::index const b) -> bool {
+      auto const x0 = a % width;
+      auto const y0 = a / width;
 
-      const auto x1 = b % width;
-      const auto y1 = b / width;
+      auto const x1 = b % width;
+      auto const y1 = b / width;
 
       return x0 == x1 || y0 == y1;
     };
 
-    auto node_index = [&](const sl::index x,
-                          const sl::index y) -> sl::index {
+    auto node_index = [&](sl::index const x,
+                          sl::index const y) -> sl::index {
       return y * width + x;
     };
 
     auto search =
-        [&](const sl::index source,
-            const sl::index destination) -> sl::vector<sl::index> {
-      auto state = astar::init<false, astar::_node_theta>(source,
-                                                          destination);
+        [&](sl::index const source,
+            sl::index const destination) -> sl::vector<sl::index> {
+      auto state = astar::init<false, astar::_node_theta>(
+          source, destination);
 
       for (;;) {
         auto s = astar::loop(sight, neighbours, heuristic, state);
@@ -280,9 +277,8 @@ namespace laplace::test {
               state.closed, source, destination);
         }
 
-        if (s == astar::status::failed) {
+        if (s == astar::status::failed)
           break;
-        }
       }
 
       return {};

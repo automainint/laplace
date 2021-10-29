@@ -28,10 +28,10 @@ namespace quadwar_app::object {
       engine::vec2i, engine::vec2z, engine::id_undefined,
       std::shared_ptr, std::make_shared;
 
-  const engine::intval unit::default_health           = 100;
-  const engine::intval unit::default_radius           = 1200;
-  const engine::intval unit::default_collision_radius = 600;
-  const engine::intval unit::default_movement_speed   = 200;
+  engine::intval const unit::default_health           = 100;
+  engine::intval const unit::default_radius           = 1200;
+  engine::intval const unit::default_collision_radius = 600;
+  engine::intval const unit::default_movement_speed   = 100;
 
   sl::index unit::n_health           = {};
   sl::index unit::n_radius           = {};
@@ -47,7 +47,7 @@ namespace quadwar_app::object {
 
   unit unit::m_proto(unit::proto);
 
-  unit::unit(proto_tag) : basic_entity(1) {
+  unit::unit(proto_tag) : basic_entity(dynamic, 1) {
     setup_sets(
         { { .id = sets::unit_health, .scale = sets::scale_points },
           { .id = sets::unit_radius, .scale = sets::scale_real },
@@ -116,9 +116,9 @@ namespace quadwar_app::object {
 
     ids.reserve(unit_count * player_count);
 
-    auto create_unit =
-        [&](const sl::index id_actor, const sl::index color,
-            const intval x, const intval y) -> shared_ptr<unit> {
+    auto create_unit = [&](const sl::index id_actor,
+                           const sl::index color, const intval x,
+                           const intval y) -> shared_ptr<unit> {
       auto u = unit {};
 
       u.init(n_health, default_health * sets::scale_points);
@@ -141,8 +141,8 @@ namespace quadwar_app::object {
       const auto y = locs[i].y();
 
       for (sl::index j = 0; j < unit_count; j++) {
-        const auto id = w.spawn(
-            create_unit(id_actor, color, x, y), id_undefined);
+        const auto id = w.spawn(create_unit(id_actor, color, x, y),
+                                id_undefined);
         ids.emplace_back(id);
       }
     }
@@ -180,8 +180,8 @@ namespace quadwar_app::object {
     const auto foot_max = make_footprint(r_max);
     const auto foot_min = make_footprint(r_min);
 
-    auto p = pathmap::find_empty(
-        path, { x0, y0 }, foot_max.size, foot_max.bytes);
+    auto p = pathmap::find_empty(path, { x0, y0 }, foot_max.size,
+                                 foot_max.bytes);
     pathmap::add(path, p, foot_min.size, foot_min.bytes);
 
     u.set(n_x, p.x() * scale);
@@ -191,8 +191,10 @@ namespace quadwar_app::object {
     u.adjust();
   }
 
-  void unit::order_move(
-      world w, sl::index id_actor, sl::index id_unit, vec2i target) {
+  void unit::order_move(world     w,
+                        sl::index id_actor,
+                        sl::index id_unit,
+                        vec2i     target) {
 
     auto u = w.get_entity(id_unit);
 
@@ -313,8 +315,8 @@ namespace quadwar_app::object {
       m_destination = grid::nearest(p1, m_size, m_pathmap);
 
       m_search = grid::path_search_init(
-          m_size, 16, m_pathmap,
-          [](const int8_t x) { return x <= 0; }, p0, m_destination);
+          p0, m_destination, [](int8_t const x) { return x <= 0; },
+          16, grid::area_of(m_size, m_pathmap));
 
       m_searching = true;
       m_movement  = true;
@@ -336,22 +338,26 @@ namespace quadwar_app::object {
     m_current   = -1;
     m_waypoints = grid::path_search_finish(m_search);
 
-    for (sl::index i = m_waypoints.size() - 1; i >= 0; i--)
-      if (grid::trace_line(
-              m_size, p0, m_waypoints[i], [&](const vec2z p) {
-                if (p.x() < 0 || p.y() < 0 || p.x() >= m_size.x() ||
-                    p.y() >= m_size.y()) {
-                  return false;
-                }
+    for (sl::index i = m_waypoints.size() - 1; i >= 0; i--) {
+      const auto &p1 = m_waypoints[i];
 
-                return m_pathmap[p.y() * m_size.x() + p.x()] <= 0;
-              })) {
+      if (p0.x() < 0 || p0.y() < 0 || p0.x() >= m_size.x() ||
+          p0.y() >= m_size.y() || p1.x() < 0 || p1.y() < 0 ||
+          p1.x() >= m_size.x() || p1.y() >= m_size.y()) {
+        continue;
+      }
+
+      if (grid::trace_line(p0, p1, [&](const vec2z p) {
+            return m_pathmap[p.y() * m_size.x() + p.x()] <= 0;
+          })) {
         m_current = i;
         break;
       }
+    }
 
     if (m_current < 0) {
-      apply_delta(n_target_order, 1);
+      m_searching = false;
+      m_movement  = false;
     }
   }
 
@@ -420,15 +426,11 @@ namespace quadwar_app::object {
         const auto radius_min = as_index(
             eval::div(get(n_collision_radius), scale, 1));
 
-        const auto radius_max = as_index(
-            eval::div(get(n_radius), scale, 1));
-
-        const auto foot_max = make_footprint(radius_max);
         const auto foot_min = make_footprint(radius_min);
 
-        if (!pathmap::check_move(
-                map, { x0, y0 }, foot_max.size, foot_max.bytes,
-                { x, y }, foot_min.size, foot_min.bytes)) {
+        if (!pathmap::check_move(map, { x0, y0 }, foot_min.size,
+                                 foot_min.bytes, { x, y },
+                                 foot_min.size, foot_min.bytes)) {
           /*  Collision.
            */
           m_searching = false;
@@ -436,8 +438,8 @@ namespace quadwar_app::object {
           return;
         }
 
-        pathmap::subtract(
-            map, { x0, y0 }, foot_min.size, foot_min.bytes);
+        pathmap::subtract(map, { x0, y0 }, foot_min.size,
+                          foot_min.bytes);
         pathmap::add(map, { x, y }, foot_min.size, foot_min.bytes);
       }
 

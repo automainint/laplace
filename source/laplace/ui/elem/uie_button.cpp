@@ -16,25 +16,19 @@
 #include "../context.h"
 
 namespace laplace::ui::elem {
-  using core::cref_input_handler, core::keys::key_lbutton;
+  using core::cref_input_handler, core::keys::key_lbutton,
+      core::is_key_down, core::is_key_up;
 
   void button::on_click(event_button_click ev) {
     m_on_click = ev;
   }
 
-  auto button::tick(uint64_t delta_msec, cref_input_handler in,
-                    bool is_handled) -> bool {
-    return is_handled || button_tick(in);
+  void button::tick(sl::time delta_msec, cref_input_handler in) {
+    button_tick(in);
   }
 
-  void button::render() {
-    if (!m_context) {
-      error_("No context.", __FUNCTION__);
-      return;
-    }
-
-    m_context->render(get_state());
-
+  void button::render(context const &con) {
+    con.render_button(get_state());
     up_to_date();
   }
 
@@ -60,56 +54,57 @@ namespace laplace::ui::elem {
     return m_has_cursor;
   }
 
-  auto button::get_state() const -> button::state {
+  auto button::get_state() const -> button_state {
     return { panel::get_state(), m_is_pressed, m_has_cursor };
   }
 
-  auto button::update(ptr_widget object, button::state button_state,
+  auto button::update(ptr_widget         object,
+                      button_state       button_state,
                       event_button_click on_button_click,
                       cref_input_handler in) -> update_result {
-    auto event_status = false;
-    auto is_pressed   = button_state.is_pressed;
+    auto is_pressed = button_state.is_pressed;
 
-    auto x = in.get_cursor_x();
-    auto y = in.get_cursor_y();
+    for (auto const &ev : in.get_events()) {
+      if (ev.key != key_lbutton)
+        continue;
 
-    auto has_cursor = contains(button_state.rect, x, y) &&
-                      (!object || object->event_allowed(x, y));
+      auto const x = ev.cursor_x;
+      auto const y = ev.cursor_y;
 
-    if (is_pressed) {
-      if (in.is_key_up(key_lbutton)) {
-        if (has_cursor && on_button_click) {
-          on_button_click(object);
+      auto const has_cursor = contains(button_state.bounds, x, y) &&
+                              (!object ||
+                               object->event_allowed(x, y));
+
+      if (is_pressed) {
+        if (is_key_up(ev)) {
+          if (has_cursor && on_button_click) {
+            on_button_click(object);
+          }
+
+          is_pressed = false;
         }
-
-        event_status = true;
-        is_pressed   = false;
-      }
-    } else if (in.is_key_down(key_lbutton)) {
-      if (has_cursor) {
-        if (in.is_key_changed(key_lbutton)) {
-          event_status = true;
-          is_pressed   = true;
-        } else {
-          /*  Ignore cursor if left mouse button was
-           *  pressed outside of the UI element.
-           */
-
-          has_cursor = false;
-        }
+      } else if (is_key_down(ev) && has_cursor) {
+        is_pressed = true;
       }
     }
 
-    return { event_status, is_pressed, has_cursor };
+    auto const x = in.get_cursor_x();
+    auto const y = in.get_cursor_y();
+
+    auto const has_cursor = contains(button_state.bounds, x, y) &&
+                            (!object ||
+                             object->event_allowed(x, y)) &&
+                            (is_pressed ||
+                             !in.is_key_down(key_lbutton));
+
+    return { is_pressed, has_cursor };
   }
 
-  auto button::button_tick(cref_input_handler in) -> bool {
+  void button::button_tick(cref_input_handler in) {
     auto status = update(shared_from_this(), get_state(), m_on_click,
                          in);
 
     set_pressed(status.is_pressed);
     set_cursor(status.has_cursor);
-
-    return status.event_status;
   }
 }

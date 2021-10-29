@@ -12,23 +12,19 @@
 
 #include "textbutton.h"
 
-#include "../context.h"
-
 namespace laplace::ui::elem {
   using std::u8string_view;
 
-  void textbutton::render() {
-    if (!m_context) {
-      error_("No context.", __FUNCTION__);
-      return;
-    }
-
-    m_context->render(get_state(), m_text);
-
+  void textbutton::render(context const &con) {
+    con.render_textbutton(get_state());
     up_to_date();
   }
 
   void textbutton::set_text(u8string_view text) {
     m_text = text;
+  }
+
+  auto textbutton::get_state() const -> textbutton_state {
+    return { button::get_state(), m_text };
   }
 }

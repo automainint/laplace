@@ -11,7 +11,6 @@ MaxEmptyLinesToKeep: 1
 SpacesBeforeTrailingComments: 1
 AccessModifierOffset: -2
 PenaltyBreakAssignment: 100
-PenaltyIndentedWhitespace: 5
 PenaltyReturnTypeOnItsOwnLine: 200
 
 IndentCaseLabels: true
@@ -40,9 +39,9 @@ SpacesInConditionalStatement: false
 SpacesInSquareBrackets: false
 
 AlignAfterOpenBracket: Align
-AlignConsecutiveAssignments: true
-AlignConsecutiveBitFields: true
-AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveDeclarations: Consecutive
 AlignEscapedNewlines: Left
 AllowShortLambdasOnASingleLine: All
 AllowShortFunctionsOnASingleLine: Empty
@@ -62,5 +61,5 @@ EmptyLineBeforeAccessModifier: LogicalBlock
 FixNamespaceComments: false
 PointerAlignment: Right
 ReflowComments: true
-SortIncludes: true
+SortIncludes: CaseInsensitive
 SortUsingDeclarations: true

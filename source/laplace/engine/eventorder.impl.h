@@ -43,7 +43,7 @@ namespace laplace::engine {
   }
 
   constexpr auto eventorder::get_index() const -> sl::index {
-    return this->m_size > 0 ? this->m_indices[0] : -1;
+    return this->m_size > 0 ? this->m_indices[0] : id_undefined;
   }
 
   constexpr eventorder::eventorder(const eventorder &parent,

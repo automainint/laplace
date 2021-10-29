@@ -42,7 +42,7 @@ namespace laplace::engine::protocol {
       m_is_local = true;
     }
 
-    constexpr slot_create(sl::index n, uint64_t time,
+    constexpr slot_create(sl::index n, sl::time time,
                           sl::index id_actor, bool is_local) {
       set_index(n);
       set_time(time);

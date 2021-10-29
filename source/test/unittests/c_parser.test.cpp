@@ -28,7 +28,7 @@ namespace laplace::test {
                         "%~s %~a %~A \"%~p\" %~u "));
   }
 
-  TEST(core, parser) {
+  TEST(core, parser_single) {
     const auto s =
         "-0100 -17 -99 -f7 11 57 79 7ff 2.0e2 a abc:_~\\/&^123 "
         "_1abc Word \":/path/to/file\" https://url.to/some/page.htm";
@@ -72,5 +72,35 @@ namespace laplace::test {
     EXPECT_EQ(word, u8string(u8"Word"));
     EXPECT_EQ(path, u8string(u8":/path/to/file"));
     EXPECT_EQ(url, u8string(u8"https://url.to/some/page.htm"));
+  }
+
+  TEST(core, parser_multiple) {
+    const auto s = "1 2 3 4 5";
+    auto       p = parser::wrap(s);
+
+    EXPECT_TRUE(p.parse(" %~d "));
+    EXPECT_TRUE(p.parse(" %~d "));
+    EXPECT_TRUE(p.parse(" %~d "));
+    EXPECT_TRUE(p.parse(" %~d "));
+    EXPECT_TRUE(p.parse(" %~d "));
+    EXPECT_FALSE(p.parse(" %~d "));
+  }
+
+  TEST(core, parser_push_pop) {
+    const auto s = "10, 20, 30";
+    auto       p = parser::wrap(s);
+
+    auto x = int64_t {};
+    auto y = int64_t {};
+
+    EXPECT_TRUE(p.parse(" %d ", &x));
+    p.push_offset();
+    EXPECT_EQ(x, 10);
+    EXPECT_TRUE(p.parse(" , %d ", &x));
+    EXPECT_EQ(x, 20);
+    p.pop_offset(true);
+    EXPECT_TRUE(p.parse(" , %d  , %d ", &x, &y));
+    EXPECT_EQ(x, 20);
+    EXPECT_EQ(y, 30);
   }
 }

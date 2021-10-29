@@ -16,9 +16,12 @@
 #include "defs.h"
 
 namespace laplace::embedded {
-  [[nodiscard]] auto scan(std::wstring_view file_name) noexcept -> bool;
-  [[nodiscard]] auto exists(std::wstring_view file_name) noexcept -> bool;
-  [[nodiscard]] auto open(std::wstring_view file_name) noexcept -> span_cbyte;
+  [[nodiscard]] auto scan(std::wstring_view file_name) noexcept
+      -> bool;
+  [[nodiscard]] auto exists(std::wstring_view file_name) noexcept
+      -> bool;
+  [[nodiscard]] auto open(std::wstring_view file_name) noexcept
+      -> span_cbyte;
 }
 
 #endif

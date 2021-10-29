@@ -14,12 +14,12 @@
 
 #include "../../core/keys.h"
 #include "../../core/utf8.h"
-#include "../context.h"
 
 namespace laplace::ui::elem {
   using namespace core::keys;
 
-  using std::u8string_view, std::u8string, core::cref_input_handler;
+  using std::u8string_view, std::u8string, core::cref_input_handler,
+      core::is_key_down, core::input_event;
 
   textedit::textedit() {
     set_handler(true);
@@ -29,18 +29,12 @@ namespace laplace::ui::elem {
     m_filter = f;
   }
 
-  auto textedit::tick(uint64_t delta_msec, cref_input_handler in,
-                      bool is_handled) -> bool {
-    return is_handled || textedit_tick(in);
+  void textedit::tick(sl::time delta_msec, cref_input_handler in) {
+    textedit_tick(in);
   }
 
-  void textedit::render() {
-    if (!m_context) {
-      error_("No context.", __FUNCTION__);
-    }
-
-    m_context->render(get_state());
-
+  void textedit::render(context const &con) {
+    con.render_textedit(get_state());
     up_to_date();
   }
 
@@ -86,86 +80,75 @@ namespace laplace::ui::elem {
     return m_selection;
   }
 
-  auto textedit::get_state() const -> textedit::state {
-    return { panel::get_state(), has_focus(),  u8string(get_text()),
+  auto textedit::get_state() const -> textedit_state {
+    return { panel::get_state(), has_focus(),  get_text(),
              m_length_limit,     get_cursor(), get_selection() };
   }
 
-  auto textedit::update(ptr_widget       object,
-                        textedit::state  textedit_state,
-                        textedit::filter f, cref_input_handler in)
-      -> textedit::update_result {
+  auto textedit::update(ptr_widget         object,
+                        textedit_state     state,
+                        textedit::filter   f,
+                        input_event const &ev) -> update_result {
 
-    const auto x = in.get_cursor_x();
-    const auto y = in.get_cursor_y();
+    auto has_focus = state.has_focus;
 
-    const auto has_cursor = contains(textedit_state.rect, x, y) &&
+    auto text      = u8string { state.text };
+    auto cursor    = state.cursor;
+    auto selection = state.selection;
+
+    const auto x = ev.cursor_x;
+    const auto y = ev.cursor_y;
+
+    const auto has_cursor = contains(state.bounds, x, y) &&
                             (!object || object->event_allowed(x, y));
 
-    auto event_status = false;
-    auto has_focus    = textedit_state.has_focus;
-
-    auto text      = u8string(textedit_state.text);
-    auto cursor    = textedit_state.cursor;
-    auto selection = textedit_state.selection;
-
     if (has_focus) {
-      auto s = in.get_text();
+      if (ev.character == ctrl_backspace) {
+        auto n   = sl::index {};
+        auto buf = char32_t {};
 
-      if (!s.empty()) {
-        for (auto c : s) {
-          if (c == ctrl_backspace) {
-            sl::index n = 0;
-            char32_t  buf;
+        for (sl::index i = 0; i < cursor;) {
+          n = i;
 
-            for (sl::index i = 0; i < cursor;) {
-              n = i;
+          if (!utf8::decode(text, i, buf))
+            break;
+        }
 
-              if (!utf8::decode(text, i, buf))
-                break;
-            }
+        text.erase(text.begin() + n, text.begin() + cursor);
+        cursor = n;
 
-            text.erase(text.begin() + static_cast<ptrdiff_t>(n),
-                       text.begin() + static_cast<ptrdiff_t>(cursor));
-
-            cursor = n;
-          } else if (c != ctrl_delete) {
-            if (!f || f(c)) {
-              if (textedit_state.length_limit == 0 ||
-                  text.size() < textedit_state.length_limit)
-                if (!utf8::encode(c, text, cursor))
-                  error_("Unable to encode UTF-8 string.",
-                         __FUNCTION__);
-            }
-          }
+      } else if (ev.character && ev.character != ctrl_delete) {
+        if (!f || f(ev.character)) {
+          if (state.length_limit == 0 ||
+              text.size() < state.length_limit)
+            if (!utf8::encode(ev.character, text, cursor))
+              error_("Unable to encode UTF-8 string.", __FUNCTION__);
         }
       }
-    } else if (has_cursor && in.is_key_pressed(key_lbutton)) {
-      event_status = true;
-      has_focus    = true;
+
+    } else if (has_cursor && ev.key == key_lbutton &&
+               is_key_down(ev)) {
+      has_focus = true;
     }
 
-    return { event_status, has_focus, text, cursor, selection };
+    return { has_focus, text, cursor, selection };
   }
 
-  auto textedit::textedit_tick(cref_input_handler in) -> bool {
-    if (in.is_key_pressed(key_tab)) {
-      if (auto p = get_parent(); p) {
-        p->next_tab();
+  void textedit::textedit_tick(cref_input_handler in) {
+    for (auto const &ev : in.get_events()) {
+      if (ev.key == key_tab && is_key_down(ev)) {
+        if (auto p = get_parent(); p) {
+          p->next_tab();
+        }
+      } else {
+        auto const s = update(shared_from_this(), get_state(),
+                              m_filter, ev);
 
-        return true;
+        set_focus(s.has_focus);
+        set_text(s.text);
+        set_cursor(s.cursor);
+        set_selection(s.selection);
       }
-    } else {
-      auto s = update(shared_from_this(), get_state(), m_filter, in);
-
-      set_focus(s.has_focus);
-      set_text(s.text);
-      set_cursor(s.cursor);
-      set_selection(s.selection);
-
-      return s.event_status;
     }
-
-    return false;
   }
 }

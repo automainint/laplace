@@ -17,7 +17,7 @@
 
 #include "../platform/thread.h"
 #include "basic_entity.h"
-#include "basic_impact.predef.h"
+#include "basic_impact.h"
 #include "scheduler.h"
 #include <functional>
 #include <random>
@@ -50,11 +50,11 @@ namespace laplace::engine {
     /*  World live loop tick.
      *  Shedule & join.
      */
-    void tick(uint64_t delta);
+    void tick(sl::time delta);
 
     /*  Schedule the live loop.
      */
-    void schedule(uint64_t delta);
+    void schedule(sl::time delta);
 
     /*  Join the live loop thread.
      */

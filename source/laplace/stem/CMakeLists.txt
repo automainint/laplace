@@ -5,3 +5,5 @@ target_sources(
     PUBLIC
       application.h app_flat.h config.h
 )
+add_subdirectory(text)
+add_subdirectory(ui)

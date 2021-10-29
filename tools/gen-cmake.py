@@ -59,6 +59,14 @@ def print_subdirs(folder: str):
         buf += 'if(WIN32)\n'
         buf += '  add_subdirectory(' + f + ')\n'
         buf += 'endif()\n'
+      elif f == 'linux':
+        buf += 'if(UNIX AND (NOT APPLE))\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif f == 'macos':
+        buf += 'if(APPLE)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
       else:
         buf += 'add_subdirectory(' + f + ')\n'
   return buf
@@ -83,9 +91,13 @@ def gen_cmake(folder: str, target_name: str):
   clean_subdirs(folder)
   write_subdirs(folder, target_name)
 
-src_dir = os.path.join('..', 'source')
+def main():
+  src_dir = os.path.join('..', 'source')
 
-gen_cmake(os.path.join(src_dir, 'laplace'),         '${LAPLACE_OBJ}')
-gen_cmake(os.path.join(src_dir, 'generated'),       '${LAPLACE_OBJ}')
-gen_cmake(os.path.join(src_dir, 'test'),            '${LAPLACE_OBJ}')
-gen_cmake(os.path.join(src_dir, 'apps', 'quadwar'), '${QUADWAR_OBJ}')
+  gen_cmake(os.path.join(src_dir, 'laplace'),         '${LAPLACE_OBJ}')
+  gen_cmake(os.path.join(src_dir, 'generated'),       '${LAPLACE_OBJ}')
+  gen_cmake(os.path.join(src_dir, 'test'),            '${LAPLACE_OBJ}')
+  gen_cmake(os.path.join(src_dir, 'apps', 'quadwar'), '${QUADWAR_OBJ}')
+
+if __name__ == '__main__':
+  main()

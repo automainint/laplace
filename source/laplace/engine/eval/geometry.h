@@ -99,17 +99,17 @@ namespace laplace::engine::eval {
   auto is_empty(cref_sphere a) -> bool;
   auto is_empty(cref_octree a) -> bool;
 
-  auto vertex_of(cref_box a, size_t index) -> vec3i;
+  auto vertex_of(cref_box a, sl::index index) -> vec3i;
   auto center_of(cref_box a) -> vec3i;
   auto center_of(cref_triangle a) -> vec3i;
   auto point_of(cref_ray a, intval t) -> vec3i;
   auto plane_of(cref_triangle a) -> plane;
   auto plane_of(cref_quad a) -> plane;
   auto plane_of(cref_polygon a) -> plane;
-  auto plane_of(cref_box a, size_t index) -> plane;
+  auto plane_of(cref_box a, sl::index index) -> plane;
 
-  auto flat_center_of(cref_box a, size_t index) -> intval;
-  auto flat_center_of(cref_triangle a, size_t index) -> intval;
+  auto flat_center_of(cref_box a, sl::index index) -> intval;
+  auto flat_center_of(cref_triangle a, sl::index index) -> intval;
 
   auto bounds_of(cref_cylinder a) -> box;
   auto bounds_of(cref_sphere a) -> box;
@@ -121,8 +121,7 @@ namespace laplace::engine::eval {
   auto raw_normal(cref_triangle plane) -> vec3i;
   auto raw_normal(cref_vec3i p0, cref_vec3i p1, cref_vec3i p2)
       -> vec3i;
-  auto orientation(cref_triangle plane, cref_vec3i point)
-      -> intval;
+  auto orientation(cref_triangle plane, cref_vec3i point) -> intval;
   auto square_distance(cref_triangle plane, cref_vec3i point)
       -> intval;
   auto square_distance(cref_ray a, cref_vec3i point) -> intval;

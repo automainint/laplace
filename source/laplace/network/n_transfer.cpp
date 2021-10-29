@@ -13,10 +13,11 @@
 #include "transfer.h"
 
 #include "../core/serial.h"
+#include "../core/utils.h"
 
 namespace laplace::network {
   using std::min, std::unique_ptr, crypto::basic_cipher, std::span,
-      std::vector, serial::rd, serial::wr;
+      serial::rd, serial::wr;
 
   void transfer::set_verbose(bool is_verbose) noexcept {
     m_verbose = is_verbose;
@@ -38,7 +39,7 @@ namespace laplace::network {
     return pack_internal(data, mark_plain);
   }
 
-  auto transfer::unpack(span_cbyte data) -> vector<vbyte> {
+  auto transfer::unpack(span_cbyte data) -> sl::vector<vbyte> {
     m_loss_count = 0;
     return unpack_internal(data, mark_plain);
   }
@@ -51,7 +52,7 @@ namespace laplace::network {
     return pack_internal(data, mark_plain);
   }
 
-  auto transfer::decode(span_cbyte data) -> vector<vbyte> {
+  auto transfer::decode(span_cbyte data) -> sl::vector<vbyte> {
     if (is_encrypted()) {
       const auto plain = m_cipher->decrypt(data);
       m_loss_count     = m_cipher->get_loss_count();
@@ -108,21 +109,21 @@ namespace laplace::network {
 
   auto transfer::pack_internal(span<const span_cbyte> data,
                                const uint16_t         mark) -> vbyte {
-
-    sl::whole size = 0;
-    for (sl::whole i = 0; i < data.size(); i++) {
-      size += n_data + data[i].size();
-    }
-
     auto buf = vbyte {};
-    buf.reserve(size);
+
+    buf.reserve([&]() {
+      auto size = sl::whole {};
+      for (sl::whole i = 0; i < data.size(); i++)
+        size += n_data + data[i].size();
+      return size;
+    }());
 
     for (sl::whole i = 0; i < data.size(); i++) {
       const sl::whole offset = buf.size();
       buf.resize(offset + n_data + data[i].size());
 
-      const uint64_t sum = check_sum(data[i]);
-      const uint64_t n   = data[i].size();
+      auto const sum = check_sum(data[i]);
+      auto const n   = uint64_t { data[i].size() };
 
       wr(buf, offset + n_mark, mark);
       wr(buf, offset + n_sum, sum);
@@ -136,22 +137,20 @@ namespace laplace::network {
   }
 
   auto transfer::unpack_internal(span_cbyte data, const uint16_t mark)
-      -> vector<vbyte> {
+      -> sl::vector<vbyte> {
 
-    vector<vbyte> buf;
-    sl::whole     offset = 0;
+    auto buf    = sl::vector<vbyte> {};
+    auto offset = sl::whole {};
 
     while (offset < data.size()) {
-      const auto size = scan(
-          { data.begin() + static_cast<ptrdiff_t>(offset), data.end() },
-          mark);
+      const auto size = scan({ data.begin() + offset, data.end() },
+                             mark);
 
       if (size > 0) {
         offset += n_data;
 
-        buf.emplace_back(vbyte {
-            data.begin() + static_cast<ptrdiff_t>(offset),
-            data.begin() + static_cast<ptrdiff_t>(offset + size) });
+        buf.emplace_back(vbyte { data.begin() + offset,
+                                 data.begin() + offset + size });
 
         offset += size;
 
@@ -170,15 +169,15 @@ namespace laplace::network {
     if (rd<uint16_t>(data, n_mark) != mark)
       return 0;
 
-    const auto sum = rd<uint64_t>(data, n_sum);
-    const auto size = static_cast<sl::whole>(rd<uint64_t>(data, n_size));
+    const auto sum  = rd<uint64_t>(data, n_sum);
+    const auto size = as_index(rd<uint64_t>(data, n_size));
 
-    if (size + n_data > data.size()) {
+    if (size < 0 || size + n_data > data.size())
       return 0;
-    }
 
-    if (sum != check_sum({ data.data() + n_data,
-                           static_cast<span_cbyte::size_type>(size) })) {
+    if (sum !=
+        check_sum({ data.data() + n_data,
+                    static_cast<span_cbyte::size_type>(size) })) {
       if (m_verbose)
         verb("Transfer: Wrong check sum.");
       return 0;

@@ -14,31 +14,25 @@
 #define laplace_ui_widget_h
 
 #include "../core/input_handler.h"
+#include "context.h"
 #include "layout.h"
 #include <memory>
 #include <vector>
 
 namespace laplace::ui {
-  class context;
-
-  using ptr_context = std::shared_ptr<context>;
-
   /*  UI Widget base class.
    */
   class widget : public std::enable_shared_from_this<widget> {
   public:
     using ptr_widget  = std::shared_ptr<widget>;
-    using vptr_widget = std::vector<ptr_widget>;
+    using vptr_widget = sl::vector<ptr_widget>;
 
     virtual ~widget() = default;
 
-    /*  Widget live loop. Returns true if
-     *  any event was handled.
-     */
-    virtual auto tick(uint64_t delta_msec, core::cref_input_handler in,
-                      bool is_handled) -> bool;
+    virtual void tick(sl::time                 delta_msec,
+                      core::cref_input_handler in);
 
-    virtual void render();
+    virtual void render(context const &con);
 
     /*  Check if the widget allowed to handle
      *  an event in specified location.
@@ -60,25 +54,21 @@ namespace laplace::ui {
     void detach(sl::index child_index);
 
     [[nodiscard]] auto get_level() const -> sl::index;
-    [[nodiscard]] auto get_rect() const -> cref_rect;
-
+    [[nodiscard]] auto get_rect() const -> rect;
     [[nodiscard]] auto get_absolute_x() const -> sl::index;
     [[nodiscard]] auto get_absolute_y() const -> sl::index;
     [[nodiscard]] auto get_absolute_rect() const -> rect;
 
-    /*  Set focus to next enabled
-     *  widget for childs.
+    /*  Set focus to next enabled widget for childs.
      */
     void next_tab();
 
-    /*  Set expiration state for the widget
-     *  and all the childs. It will cause
-     *  full redrawing.
+    /*  Set expiration state for the widget and all the childs. It
+     *  will cause full redrawing.
      */
     void refresh();
 
-    /*  Set the expiration state for
-     *  this widget.
+    /*  Set the expiration state for this widget.
      */
     void set_expired(bool is_expired);
 
@@ -99,22 +89,19 @@ namespace laplace::ui {
      */
     [[nodiscard]] auto get_child(sl::index index) const -> ptr_widget;
 
-    static void prepare();
-
-    [[nodiscard]] static auto get_default_context() -> ptr_context;
-
   protected:
     /*  Set if the widget can handle focus.
      */
     void set_handler(bool is_handler);
 
-    void draw_childs();
+    void prepare(context const &con);
+    void draw_childs(context const &con);
     void up_to_date();
 
-    auto widget_tick(uint64_t delta_msec, core::cref_input_handler in,
-                     bool is_handled) -> bool;
+    void widget_tick(sl::time                 delta_msec,
+                     core::cref_input_handler in);
 
-    void widget_render();
+    void widget_render(context const &con);
 
     [[nodiscard]] auto is_widget_changed() -> bool;
 
@@ -122,6 +109,8 @@ namespace laplace::ui {
     void update_indices(sl::index begin);
     void adjust_layout();
     void refresh_childs();
+
+    static std::weak_ptr<context> m_default_context;
 
     bool m_expired        = true;
     bool m_expired_childs = true;
