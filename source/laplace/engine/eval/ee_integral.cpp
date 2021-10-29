@@ -39,10 +39,14 @@ namespace laplace::engine::eval::impl {
   static_assert(_mul(-0x100000000, 0x100) == -0x10000000000);
   static_assert(_mul(0x100000000, -0x100) == -0x10000000000);
   static_assert(_mul(-0x100000000, -0x100) == 0x10000000000);
-  static_assert(_mul(0x1000000000000000, 0x1000000000000000) == _int_max);
-  static_assert(_mul(-0x1000000000000000, 0x1000000000000000) == _int_min);
-  static_assert(_mul(0x1000000000000000, -0x1000000000000000) == _int_min);
-  static_assert(_mul(-0x1000000000000000, -0x1000000000000000) == _int_max);
+  static_assert(_mul(0x1000000000000000, 0x1000000000000000) ==
+                _int_max);
+  static_assert(_mul(-0x1000000000000000, 0x1000000000000000) ==
+                _int_min);
+  static_assert(_mul(0x1000000000000000, -0x1000000000000000) ==
+                _int_min);
+  static_assert(_mul(-0x1000000000000000, -0x1000000000000000) ==
+                _int_max);
 
   static_assert(div(15, 10, 100) == 150);
   static_assert(div(150, 100, 10) == 15);
@@ -84,6 +88,7 @@ namespace laplace::engine::eval::impl {
   static_assert(exp(100, 100) == e(100));
   static_assert(log(e(100), 100) == 100);
   static_assert(log((e(100) * e(100)) / 100, 100) == 200);
+  static_assert(log10(10000, 100) == 200);
   static_assert(exp(log(200, 100), 100) < 202);
   static_assert(exp(log(200, 100), 100) > 198);
   static_assert(pow(200, 200, 100) < 402);
