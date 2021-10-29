@@ -11,9 +11,9 @@ else()
 endif()
 
 if(MSVC)
-  target_compile_options(${LAPLACE_CONFIG} INTERFACE /constexpr:steps8000000)
+  target_compile_options(${LAPLACE_CONFIG} INTERFACE /constexpr:steps20000000)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  target_compile_options(${LAPLACE_CONFIG} INTERFACE -fconstexpr-steps=8000000)
+  target_compile_options(${LAPLACE_CONFIG} INTERFACE -fconstexpr-steps=20000000)
 endif()
 
 if(LAPLACE_ENABLE_COVERAGE)

@@ -59,6 +59,14 @@ def print_subdirs(folder: str):
         buf += 'if(WIN32)\n'
         buf += '  add_subdirectory(' + f + ')\n'
         buf += 'endif()\n'
+      elif f == 'linux':
+        buf += 'if(UNIX AND (NOT APPLE))\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif f == 'macos':
+        buf += 'if(APPLE)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
       else:
         buf += 'add_subdirectory(' + f + ')\n'
   return buf
