@@ -1,4 +1,7 @@
 #   The Laplace engine
+[![build-and-test][build-badge]][build-link]
+[![codecov][codecov-badge]][codecov-link]
+
 The quality of a real-time strategy game relies on low-latency responsiveness and vertical scalability. Vertical scalability requires parallelism on the local instance and lockstep networking. Lockstep systems require a totally deterministic engine. In addition, extensibility is a useful feature.
 
 Laplace is an interactive multimedia framework that provides the deterministic and extensible engine with concurrency support and lockstep synchronization.
@@ -80,6 +83,11 @@ To contribute, follow these steps:
 6.  Make a pull-request to the `dev` branch or to the corresponding feature branch if there is any.
 
 We have just started organizing the project. If you want to help, [contact me][concact-link].
+
+[build-badge]:    https://github.com/automainint/laplace/actions/workflows/build-and-test.yml/badge.svg?branch=stable
+[build-link]:     https://github.com/automainint/laplace/actions/workflows/build-and-test.yml
+[codecov-badge]:  https://codecov.io/gh/automainint/laplace/branch/stable/graph/badge.svg?token=HJF3BUA46B
+[codecov-link]:   https://codecov.io/gh/automainint/laplace/branch/stable
 
 [laplace-link]:          https://github.com/automainint/laplace
 [msvc-link]:             https://visualstudio.microsoft.com/vs/features/cplusplus
