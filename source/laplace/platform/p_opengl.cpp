@@ -15,6 +15,7 @@
 #include "opengl.h"
 
 #include "../core/defs.h"
+#include "../core/string.h"
 #include "wrap.h"
 #include <algorithm>
 #include <iostream>
@@ -22,18 +23,22 @@
 
 #include "../../generated/gl/funcs.impl.h"
 
-#define LAPLACE_GL_LOAD(a)                                            \
-  if (!a) {                                                           \
-    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a)); !a) { \
-      ok = false;                                                     \
-    }                                                                 \
+#define LAPLACE_GL_LOAD(a)                                          \
+  if (!a) {                                                         \
+    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a));     \
+        !a) {                                                       \
+      error_(fmt("Unable to load %s function.", #a), __FUNCTION__); \
+      ok = false;                                                   \
+    }                                                               \
   }
 
-#define LAPLACE_GL_LOAD_EX(a)                                         \
-  if (!a) {                                                           \
-    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a)); !a) { \
-      status = false;                                                 \
-    }                                                                 \
+#define LAPLACE_GL_LOAD_EX(a)                                       \
+  if (!a) {                                                         \
+    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a));     \
+        !a) {                                                       \
+      error_(fmt("Unable to load %s function.", #a), __FUNCTION__); \
+      status = false;                                               \
+    }                                                               \
   }
 
 #define LAPLACE_GL_HAS(a) has(#a)
@@ -82,9 +87,8 @@ namespace laplace::gl {
 
 #include "../../generated/gl/loads.impl.h"
 
-    if (has_extensions_required && !status) {
+    if (has_extensions_required && !status)
       ok = false;
-    }
 
     return ok;
   }

@@ -32,7 +32,8 @@ extern "C" {
 
   /*  Require high performance for AMD.
    */
-  __declspec(dllexport) uint32_t AmdPowerXpressRequestHighPerformance = 1;
+  __declspec(dllexport) uint32_t
+      AmdPowerXpressRequestHighPerformance = 1;
 }
 
 namespace laplace::win32 {
@@ -41,13 +42,13 @@ namespace laplace::win32 {
   bool glcontext::m_is_forward_compatible = false;
 
   glcontext::glcontext(shared_ptr<window> win) {
-    if (!win) {
-      error_("No window.", __FUNCTION__);
+    if (!gl_load_library()) {
+      error_("Unable to load OpenGL library.", __FUNCTION__);
       return;
     }
 
-    if (!gl_init()) {
-      error_("WGL initialization failed.", __FUNCTION__);
+    if (!win) {
+      error_("No window.", __FUNCTION__);
       return;
     }
 
@@ -62,12 +63,6 @@ namespace laplace::win32 {
                   PFD_DOUBLEBUFFER;
     pfd.iPixelType = PFD_TYPE_RGBA;
     pfd.cColorBits = 32;
-
-    if (m_is_forward_compatible) {
-      /*  OpenGL forward-compatibility.
-       */
-      pfd.iLayerType = PFD_MAIN_PLANE;
-    }
 
     m_hDC = GetDC(win->get_native_handle());
 
@@ -99,7 +94,7 @@ namespace laplace::win32 {
       return;
     }
 
-    if (gl_preload() && gl::has("WGL_ARB_create_context")) {
+    if (gl_preload_context() && gl::has("WGL_ARB_create_context")) {
       /*  Specify the OpenGL version.
        */
 
@@ -149,6 +144,8 @@ namespace laplace::win32 {
 
   glcontext::~glcontext() {
     cleanup();
+
+    gl_free_library();
   }
 
   void glcontext::swap_buffers() {
@@ -170,8 +167,6 @@ namespace laplace::win32 {
         ReleaseDC(m_window->get_native_handle(), m_hDC);
       }
     }
-
-    gl_cleanup();
 
     m_hDC = nullptr;
     m_hRC = nullptr;

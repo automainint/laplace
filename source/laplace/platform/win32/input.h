@@ -39,8 +39,7 @@ namespace laplace::win32 {
     static const sl::whole default_resolution_y;
 
     struct key_state {
-      bool is_down    : 1 = false;
-      bool is_changed : 1 = false;
+      bool is_down = false;
     };
 
     struct mouse_state {
@@ -76,9 +75,6 @@ namespace laplace::win32 {
 
     auto is_key_down(sl::index code) const -> bool;
     auto is_key_up(sl::index code) const -> bool;
-    auto is_key_changed(sl::index code) const -> bool;
-    auto is_key_pressed(sl::index code) const -> bool;
-    auto is_key_unpressed(sl::index code) const -> bool;
 
     auto get_mouse_resolution_x() const -> sl::whole;
     auto get_mouse_resolution_y() const -> sl::whole;

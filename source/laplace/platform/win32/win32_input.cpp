@@ -41,8 +41,7 @@ namespace laplace::win32 {
     for (sl::index i = 0; i < key_count; i++) {
       m_keymap[i] = static_cast<uint8_t>(i);
 
-      m_keyboard_state[i].is_down    = false;
-      m_keyboard_state[i].is_changed = false;
+      m_keyboard_state[i].is_down = false;
     }
   }
 
@@ -116,35 +115,6 @@ namespace laplace::win32 {
     return !m_keyboard_state[code].is_down;
   }
 
-  auto input::is_key_changed(sl::index code) const -> bool {
-    if (code < 0 || code >= key_count) {
-      error_("Invalid key code.", __FUNCTION__);
-      return false;
-    }
-
-    return m_keyboard_state[code].is_changed;
-  }
-
-  auto input::is_key_pressed(sl::index code) const -> bool {
-    if (code < 0 || code >= key_count) {
-      error_("Invalid key code.", __FUNCTION__);
-      return false;
-    }
-
-    return m_keyboard_state[code].is_down &&
-           m_keyboard_state[code].is_changed;
-  }
-
-  auto input::is_key_unpressed(sl::index code) const -> bool {
-    if (code < 0 || code >= key_count) {
-      error_("Invalid key code.", __FUNCTION__);
-      return false;
-    }
-
-    return !m_keyboard_state[code].is_down &&
-           m_keyboard_state[code].is_changed;
-  }
-
   auto input::get_mouse_resolution_x() const -> sl::whole {
     return m_use_system_cursor ? m_window_width : m_res_x;
   }
@@ -191,8 +161,6 @@ namespace laplace::win32 {
     m_mouse_state.delta_x     = 0;
     m_mouse_state.delta_y     = 0;
     m_mouse_state.wheel_delta = 0;
-
-    for (auto &k : m_keyboard_state) { k.is_changed = false; }
   }
 
   void input::set_window_rect(sl::index x,
@@ -304,8 +272,7 @@ namespace laplace::win32 {
     for (sl::whole i = 0; i < key_count; i++) {
       const auto is_changed = m_keyboard_state[i].is_down;
 
-      m_keyboard_state[i].is_down    = false;
-      m_keyboard_state[i].is_changed = is_changed;
+      m_keyboard_state[i].is_down = false;
     }
   }
 
@@ -530,10 +497,9 @@ namespace laplace::win32 {
 
   void input::process_key(uint8_t key, bool is_down) {
     auto const n = m_keymap[key];
-    auto &     k = m_keyboard_state[n];
+    auto      &k = m_keyboard_state[n];
 
-    k.is_changed = k.is_down != is_down;
-    k.is_down    = is_down;
+    k.is_down = is_down;
 
     auto const get_char = [&]() -> char32_t {
       if (k.is_changed)

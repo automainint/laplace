@@ -20,4 +20,6 @@ Checks: >
   -*-return-braced-init-list,
   -*-isolate-declaration,
   -*-unused-parameters,
-  -*-uppercase-literal-suffix
+  -*-uppercase-literal-suffix,
+  -*-deprecated-headers,
+  -*-reinterpret-cast

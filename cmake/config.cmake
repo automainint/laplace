@@ -16,6 +16,12 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   target_compile_options(${LAPLACE_CONFIG} INTERFACE -fconstexpr-steps=20000000)
 endif()
 
+if(UNIX AND NOT APPLE)
+  find_package(X11 REQUIRED)
+  target_include_directories(${LAPLACE_CONFIG} INTERFACE ${X11_INCLUDE_DIR})
+  target_link_libraries(${LAPLACE_CONFIG} INTERFACE ${X11_LIBRARIES} -ldl)
+endif()
+
 if(LAPLACE_ENABLE_COVERAGE)
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(
