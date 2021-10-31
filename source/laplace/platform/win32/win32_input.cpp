@@ -496,15 +496,16 @@ namespace laplace::win32 {
   }
 
   void input::process_key(uint8_t key, bool is_down) {
-    auto const n = m_keymap[key];
-    auto      &k = m_keyboard_state[n];
+    auto const n          = m_keymap[key];
+    auto      &k          = m_keyboard_state[n];
+    bool const is_changed = is_down != k.is_down;
 
     k.is_down = is_down;
 
     auto const get_char = [&]() -> char32_t {
-      if (k.is_changed)
+      if (is_changed)
         return process_char(n, is_down);
-      return {};
+      return U'\0';
     };
 
     m_events.emplace_back<input_event>(
