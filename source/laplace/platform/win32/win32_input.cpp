@@ -278,60 +278,47 @@ namespace laplace::win32 {
                    static_cast<int>(m_center_y));
     }
 
-    if (has(raw.usButtonFlags, RI_MOUSE_WHEEL)) {
-      process_wheel(static_cast<int16_t>(raw.usButtonData));
-    }
+    if (has(raw.usButtonFlags, RI_MOUSE_WHEEL))
+      update_wheel(static_cast<int16_t>(raw.usButtonData));
 
-    if (has(raw.usButtonFlags, RI_MOUSE_LEFT_BUTTON_DOWN)) {
-      process_key(VK_LBUTTON, true);
-    }
+    if (has(raw.usButtonFlags, RI_MOUSE_LEFT_BUTTON_DOWN))
+      update_key(VK_LBUTTON, true);
 
-    if (has(raw.usButtonFlags, RI_MOUSE_LEFT_BUTTON_UP)) {
-      process_key(VK_LBUTTON, false);
-    }
+    if (has(raw.usButtonFlags, RI_MOUSE_LEFT_BUTTON_UP))
+      update_key(VK_LBUTTON, false);
 
-    if (has(raw.usButtonFlags, RI_MOUSE_RIGHT_BUTTON_DOWN)) {
-      process_key(VK_RBUTTON, true);
-    }
+    if (has(raw.usButtonFlags, RI_MOUSE_RIGHT_BUTTON_DOWN))
+      update_key(VK_RBUTTON, true);
 
-    if (has(raw.usButtonFlags, RI_MOUSE_RIGHT_BUTTON_UP)) {
-      process_key(VK_RBUTTON, false);
-    }
+    if (has(raw.usButtonFlags, RI_MOUSE_RIGHT_BUTTON_UP))
+      update_key(VK_RBUTTON, false);
 
-    if (has(raw.usButtonFlags, RI_MOUSE_MIDDLE_BUTTON_DOWN)) {
-      process_key(VK_MBUTTON, true);
-    }
+    if (has(raw.usButtonFlags, RI_MOUSE_MIDDLE_BUTTON_DOWN))
+      update_key(VK_MBUTTON, true);
 
-    if (has(raw.usButtonFlags, RI_MOUSE_MIDDLE_BUTTON_UP)) {
-      process_key(VK_MBUTTON, false);
-    }
+    if (has(raw.usButtonFlags, RI_MOUSE_MIDDLE_BUTTON_UP))
+      update_key(VK_MBUTTON, false);
 
-    if (has(raw.usButtonFlags, RI_MOUSE_BUTTON_4_DOWN)) {
-      process_key(VK_XBUTTON1, true);
-    }
+    if (has(raw.usButtonFlags, RI_MOUSE_BUTTON_4_DOWN))
+      update_key(VK_XBUTTON1, true);
 
-    if (has(raw.usButtonFlags, RI_MOUSE_BUTTON_4_UP)) {
-      process_key(VK_XBUTTON1, false);
-    }
+    if (has(raw.usButtonFlags, RI_MOUSE_BUTTON_4_UP))
+      update_key(VK_XBUTTON1, false);
 
-    if (has(raw.usButtonFlags, RI_MOUSE_BUTTON_5_DOWN)) {
-      process_key(VK_XBUTTON2, true);
-    }
+    if (has(raw.usButtonFlags, RI_MOUSE_BUTTON_5_DOWN))
+      update_key(VK_XBUTTON2, true);
 
-    if (has(raw.usButtonFlags, RI_MOUSE_BUTTON_5_UP)) {
-      process_key(VK_XBUTTON2, false);
-    }
+    if (has(raw.usButtonFlags, RI_MOUSE_BUTTON_5_UP))
+      update_key(VK_XBUTTON2, false);
   }
 
   void input::process_keyboard(void const *raw_data) noexcept {
     auto raw = *reinterpret_cast<const RAWKEYBOARD *>(raw_data);
 
-    if (has(raw.Flags, RI_KEY_MAKE)) {
-      process_key(static_cast<uint8_t>(raw.VKey), true);
-    }
+    if (has(raw.Flags, RI_KEY_MAKE))
+      update_key(static_cast<uint8_t>(raw.VKey), true);
 
-    if (has(raw.Flags, RI_KEY_BREAK)) {
-      process_key(static_cast<uint8_t>(raw.VKey), false);
-    }
+    if (has(raw.Flags, RI_KEY_BREAK))
+      update_key(static_cast<uint8_t>(raw.VKey), false);
   }
 }
