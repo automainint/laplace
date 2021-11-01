@@ -132,7 +132,7 @@ namespace quadwar_app {
   }
 
   void session::set_server_ip(string_view server_ip) {
-    auto const *i = find(server_ip.begin(), server_ip.end(), ':');
+    auto const i = find(server_ip.begin(), server_ip.end(), ':');
 
     if (i == server_ip.end()) {
       m_server_ip = server_ip;
