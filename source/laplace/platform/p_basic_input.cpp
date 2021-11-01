@@ -12,8 +12,6 @@
 
 #include "basic_input.h"
 
-#include "../core/string.h"
-
 namespace laplace::platform {
   using std::span, core::input_event;
   using namespace core::keys;

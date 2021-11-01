@@ -289,6 +289,71 @@ namespace laplace::test {
     EXPECT_EQ(in.to_char(key_space), U' ');
   }
 
+  TEST(platform, basic_input_capslock_and_shift) {
+    auto in = basic_input {};
+
+    in.set_keymap([]() {
+      auto v = basic_input::keymap_table {};
+      for (sl::index i = 0; i < basic_input::key_count; i++) v[i] = i;
+      return v;
+    }());
+
+    in.update_key(key_capslock, true);
+    in.update_key(key_shift, true);
+
+    EXPECT_EQ(in.to_char(key_1), U'!');
+    EXPECT_EQ(in.to_char(key_2), U'@');
+    EXPECT_EQ(in.to_char(key_3), U'#');
+    EXPECT_EQ(in.to_char(key_4), U'$');
+    EXPECT_EQ(in.to_char(key_5), U'%');
+    EXPECT_EQ(in.to_char(key_6), U'^');
+    EXPECT_EQ(in.to_char(key_7), U'&');
+    EXPECT_EQ(in.to_char(key_8), U'*');
+    EXPECT_EQ(in.to_char(key_9), U'(');
+    EXPECT_EQ(in.to_char(key_0), U')');
+
+    EXPECT_EQ(in.to_char(key_a), U'a');
+    EXPECT_EQ(in.to_char(key_b), U'b');
+    EXPECT_EQ(in.to_char(key_c), U'c');
+    EXPECT_EQ(in.to_char(key_d), U'd');
+    EXPECT_EQ(in.to_char(key_e), U'e');
+    EXPECT_EQ(in.to_char(key_f), U'f');
+    EXPECT_EQ(in.to_char(key_g), U'g');
+    EXPECT_EQ(in.to_char(key_h), U'h');
+    EXPECT_EQ(in.to_char(key_i), U'i');
+    EXPECT_EQ(in.to_char(key_j), U'j');
+    EXPECT_EQ(in.to_char(key_k), U'k');
+    EXPECT_EQ(in.to_char(key_l), U'l');
+    EXPECT_EQ(in.to_char(key_m), U'm');
+    EXPECT_EQ(in.to_char(key_n), U'n');
+    EXPECT_EQ(in.to_char(key_o), U'o');
+    EXPECT_EQ(in.to_char(key_p), U'p');
+    EXPECT_EQ(in.to_char(key_q), U'q');
+    EXPECT_EQ(in.to_char(key_r), U'r');
+    EXPECT_EQ(in.to_char(key_s), U's');
+    EXPECT_EQ(in.to_char(key_t), U't');
+    EXPECT_EQ(in.to_char(key_u), U'u');
+    EXPECT_EQ(in.to_char(key_v), U'v');
+    EXPECT_EQ(in.to_char(key_w), U'w');
+    EXPECT_EQ(in.to_char(key_x), U'x');
+    EXPECT_EQ(in.to_char(key_y), U'y');
+    EXPECT_EQ(in.to_char(key_z), U'z');
+    
+    EXPECT_EQ(in.to_char(key_open), U'{');
+    EXPECT_EQ(in.to_char(key_close), U'}');
+    EXPECT_EQ(in.to_char(key_semicolon), U':');
+    EXPECT_EQ(in.to_char(key_quote), U'"');
+    EXPECT_EQ(in.to_char(key_comma), U'<');
+    EXPECT_EQ(in.to_char(key_period), U'>');
+    EXPECT_EQ(in.to_char(key_slash), U'?');
+    EXPECT_EQ(in.to_char(key_backslash), U'|');
+    EXPECT_EQ(in.to_char(key_tilda), U'~');
+
+    EXPECT_EQ(in.to_char(key_minus), U'_');
+    EXPECT_EQ(in.to_char(key_equals), U'+');
+    EXPECT_EQ(in.to_char(key_space), U' ');
+  }
+
   TEST(platform, basic_input_numlock) {
     auto in = basic_input {};
 
