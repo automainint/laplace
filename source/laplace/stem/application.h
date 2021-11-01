@@ -27,7 +27,7 @@ namespace laplace::stem {
   class application {
   public:
     application(int                 argc,
-                char **             argv,
+                char              **argv,
                 core::unival const &def_cfg) noexcept;
 
     virtual ~application() noexcept;
@@ -49,8 +49,8 @@ namespace laplace::stem {
     void lock_fps(sl::whole fps) noexcept;
     void finish_and_swap() noexcept;
 
-    [[nodiscard]] auto get_window() noexcept -> platform::ref_window;
-    [[nodiscard]] auto get_gl() noexcept -> platform::ref_glcontext;
+    [[nodiscard]] auto get_window() noexcept -> platform::window &;
+    [[nodiscard]] auto get_gl() noexcept -> platform::glcontext &;
     [[nodiscard]] auto get_input() noexcept
         -> core::cref_input_handler;
     [[nodiscard]] auto get_ui_context() noexcept -> ui::context &;
@@ -68,9 +68,9 @@ namespace laplace::stem {
     [[nodiscard]] auto open(std::wstring_view file_name) noexcept
         -> std::unique_ptr<std::istream>;
 
-    platform::ptr_window    m_window;
-    platform::ptr_glcontext m_gl;
-    platform::ptr_input     m_input;
+    std::shared_ptr<platform::window>    m_window;
+    std::shared_ptr<platform::glcontext> m_gl;
+    std::shared_ptr<platform::input>     m_input;
 
     render::ptr_context m_render;
     ui::ptr_context     m_ui;

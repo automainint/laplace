@@ -19,21 +19,22 @@
 #include "win.predef.h"
 
 namespace laplace::win32 {
-  auto gl_init() -> bool;
-  auto gl_preload() -> bool;
-  void gl_cleanup();
-  auto gl_get_proc_address(const char *name) -> gl::ptr_function;
+  auto gl_load_library() -> bool;
 
-  enum _hwgl_enum : uint32_t {
+  void gl_free_library();
+  
+  auto gl_get_proc_address(const char *name) -> gl::ptr_function;
+  
+  auto gl_preload_context() -> bool;
+
+  enum wgl_enum : uint32_t {
     WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB = 0x0002,
     WGL_CONTEXT_MAJOR_VERSION_ARB          = 0x2091,
     WGL_CONTEXT_MINOR_VERSION_ARB          = 0x2092,
     WGL_CONTEXT_FLAGS_ARB                  = 0x2094
   };
 
-  static constexpr auto opengl_path = L"opengl32.dll";
-
-  extern HMODULE opengl_dll;
+  //extern HMODULE opengl_dll;
 
   using pfn_wglCopyContext   = BOOL(__stdcall *)(HGLRC    hSrcRC,
                                                HGLRC    hDstRC,

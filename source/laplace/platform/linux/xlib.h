@@ -1,4 +1,4 @@
-/*  laplace/platform/thread.h
+/*  laplace/platform/xlib.h
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -10,21 +10,22 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_platform_thread_h
-#define laplace_platform_thread_h
+#ifndef laplace_platform_linux_xlib_h
+#define laplace_platform_linux_xlib_h
 
-#include <thread>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
-namespace laplace::platform::priority {
-  enum : int {
-    idle = 1,
-    lowest,
-    low,
-    normal,
-    high,
-    highest,
-    critical
-  };
-}
+#ifdef linux
+#  undef linux
+#endif
+
+#ifdef None
+#  undef None
+#endif
+
+#ifdef Bool
+#  undef Bool
+#endif
 
 #endif

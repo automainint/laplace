@@ -29,16 +29,15 @@ namespace laplace::stem {
       config::k_flat_solid, config::k_flat_sprite, config::k_vertex,
       config::k_fragment, config::k_folder, core::unival,
       platform::window, platform::input, platform::glcontext,
-      platform::ref_window, core::cref_input_handler,
-      platform::ref_glcontext, graphics::flat::solid_shader,
-      graphics::flat::sprite_shader, std::wstring, std::wstring_view,
-      std::unique_ptr, std::istream, std::ifstream,
-      std::filesystem::path, std::chrono::steady_clock,
+      platform::window, core::cref_input_handler, platform::glcontext,
+      graphics::flat::solid_shader, graphics::flat::sprite_shader,
+      std::wstring, std::wstring_view, std::unique_ptr, std::istream,
+      std::ifstream, std::filesystem::path, std::chrono::steady_clock,
       std::chrono::time_point, std::chrono::milliseconds,
       std::chrono::duration_cast;
 
   application::application(int           argc,
-                           char **       argv,
+                           char        **argv,
                            unival const &def_cfg) noexcept {
     m_config     = load(argc, argv, def_cfg);
     m_frame_time = steady_clock::now();
@@ -72,16 +71,15 @@ namespace laplace::stem {
     m_window->set_size(frame_width, frame_height);
     m_window->set_fullscreen_mode(frame_width, frame_height,
                                   frame_rate);
-    //m_window->set_fullscreen(true);
+    // m_window->set_fullscreen(true);
 
     m_window->on_init([this]() { init(); });
 
     m_window->on_cleanup([this]() { cleanup(); });
 
     m_window->on_size([this](sl::whole width, sl::whole height) {
-      if (width > 0 && height > 0) {
+      if (width > 0 && height > 0)
         set_frame_size(width, height);
-      }
     });
 
     m_window->on_frame([this](sl::time delta_msec) {
@@ -151,11 +149,11 @@ namespace laplace::stem {
     get_gl().swap_buffers();
   }
 
-  auto application::get_window() noexcept -> ref_window {
+  auto application::get_window() noexcept -> window & {
     return *m_window;
   }
 
-  auto application::get_gl() noexcept -> ref_glcontext {
+  auto application::get_gl() noexcept -> glcontext & {
     return *m_gl;
   }
 
@@ -194,18 +192,6 @@ namespace laplace::stem {
 
     m_input_handler.is_key_up = [&](sl::index key) {
       return m_input->is_key_up(key);
-    };
-
-    m_input_handler.is_key_changed = [&](sl::index key) {
-      return m_input->is_key_changed(key);
-    };
-
-    m_input_handler.is_key_pressed = [&](sl::index key) {
-      return m_input->is_key_pressed(key);
-    };
-
-    m_input_handler.is_key_unpressed = [&](sl::index key) {
-      return m_input->is_key_unpressed(key);
     };
 
     m_input_handler.get_mouse_resolution_x = [&]() {

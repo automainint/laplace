@@ -1,4 +1,4 @@
-/*  laplace/platform/thread.h
+/*  laplace/platform/linux/linux_clipboard.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -10,21 +10,6 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_platform_thread_h
-#define laplace_platform_thread_h
+#include "clipboard.h"
 
-#include <thread>
-
-namespace laplace::platform::priority {
-  enum : int {
-    idle = 1,
-    lowest,
-    low,
-    normal,
-    high,
-    highest,
-    critical
-  };
-}
-
-#endif
+namespace laplace::linux { }

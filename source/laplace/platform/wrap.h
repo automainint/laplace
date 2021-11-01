@@ -17,9 +17,14 @@
 
 #include "../core/defs.h"
 
+#define LAPLACE_USING_PLATFORM(PREFIX_)                             \
+  using PREFIX_::gl_get_proc_address, PREFIX_::set_background_mode, \
+      PREFIX_::set_realtime_mode, PREFIX_::set_thread_priority,     \
+      PREFIX_::input, PREFIX_::window, PREFIX_::glcontext,          \
+      PREFIX_::audio, PREFIX_::clipboard
+
 #if !defined(LAPLACE_PLATFORM_DUMMY) && \
     (defined(_WIN32) || defined(_WINDOWS))
-
 #  include "win32/audio.h"
 #  include "win32/clipboard.h"
 #  include "win32/glcontext.h"
@@ -28,28 +33,25 @@
 #  include "win32/window.h"
 
 namespace laplace::platform {
-  using namespace win32;
+  LAPLACE_USING_PLATFORM(win32);
+}
+#elif !defined(LAPLACE_PLATFORM_DUMMY) && defined(__linux__)
+#  include "linux/audio.h"
+#  include "linux/clipboard.h"
+#  include "linux/glcontext.h"
+#  include "linux/input.h"
+#  include "linux/thread.h"
+#  include "linux/window.h"
+
+namespace laplace::platform {
+  LAPLACE_USING_PLATFORM(linux);
 }
 #else
 #  include "dummy.h"
 
 namespace laplace::platform {
-  using namespace dummy;
+  LAPLACE_USING_PLATFORM(dummy);
 }
 #endif
-
-namespace laplace::platform {
-  using ptr_window    = std::shared_ptr<window>;
-  using ptr_input     = std::shared_ptr<input>;
-  using ptr_glcontext = std::shared_ptr<glcontext>;
-  using ptr_audio     = std::shared_ptr<audio>;
-  using ptr_clipboard = std::shared_ptr<clipboard>;
-
-  using ref_window    = window &;
-  using ref_input     = input &;
-  using ref_glcontext = glcontext &;
-  using ref_audio     = audio &;
-  using ref_clipboard = clipboard &;
-}
 
 #endif
