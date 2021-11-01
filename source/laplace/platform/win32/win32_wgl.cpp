@@ -40,7 +40,7 @@ namespace laplace::gl {
 
 namespace laplace::win32 {
   constexpr auto opengl_path = L"opengl32.dll";
-  
+
   HMODULE   opengl_dll   = nullptr;
   sl::whole gl_ref_count = 0;
 
@@ -169,7 +169,7 @@ namespace laplace::win32 {
       }
     }
 
-    if (gl::has("WGL_ARB_create_context")) {
+    if (gl::has_extension("WGL_ARB_create_context")) {
       wglCreateContextAttribsARB =
           reinterpret_cast<pfn_wglCreateContextAttribsARB>(
               gl_get_proc_address("wglCreateContextAttribsARB"));
