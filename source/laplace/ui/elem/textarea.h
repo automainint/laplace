@@ -13,29 +13,34 @@
 #ifndef laplace_ui_elem_textarea_h
 #define laplace_ui_elem_textarea_h
 
-#include "../widget.h"
+#include "../basic_widget.h"
 
 namespace laplace::ui::elem {
-  class textarea final : public widget {
+  class textarea final : public basic_widget {
   public:
     static const sl::whole default_line_height;
 
-    ~textarea() final = default;
+    textarea(textarea const &) noexcept = default;
+    textarea(textarea &&) noexcept      = default;
+    auto operator=(textarea const &) noexcept -> textarea & = default;
+    auto operator=(textarea &&) noexcept -> textarea & = default;
 
-    void render(context const &con) final;
+    textarea() noexcept        = default;
+    ~textarea() noexcept final = default;
 
-    void set_text(std::u8string_view text);
-    void set_line_height(int line_height);
+    void render(context const &con) noexcept final;
+
+    void set_text(std::u8string_view text) noexcept;
+    void set_line_height(int line_height) noexcept;
 
   private:
-    void textarea_render(context const &con);
+    void textarea_render(context const &con) noexcept;
 
     std::u8string m_text;
     sl::whole     m_line_height = default_line_height;
   };
 
-  using ptr_textarea  = std::shared_ptr<textarea>;
-  using vptr_textarea = sl::vector<ptr_textarea>;
+  using ptr_textarea = std::shared_ptr<textarea>;
 }
 
 #endif

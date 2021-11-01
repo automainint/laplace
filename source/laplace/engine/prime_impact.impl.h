@@ -168,7 +168,7 @@ namespace laplace::engine {
   }
 
   template <typename prime_impact_, typename... args_>
-  constexpr auto encode(args_... args) -> vbyte {
+  inline auto encode(args_... args) -> vbyte {
     const auto ev  = prime_impact_(args...);
     auto       seq = vbyte(ev.get_encoded_size());
     ev.prime_impact_::encode_to(seq);

@@ -65,7 +65,8 @@ namespace laplace::stem {
                                    const char *type) const noexcept
         -> std::wstring;
 
-    [[nodiscard]] auto open(std::wstring_view file_name) noexcept
+    [[nodiscard]] static auto open(
+        std::wstring_view file_name) noexcept
         -> std::unique_ptr<std::istream>;
 
     std::shared_ptr<platform::window>    m_window;

@@ -17,22 +17,22 @@ namespace laplace::ui::elem {
 
   const sl::whole textarea::default_line_height = 30;
 
-  void textarea::render(context const &con) {
+  void textarea::render(context const &con) noexcept {
     textarea_render(con);
     up_to_date();
   }
 
-  void textarea::set_text(u8string_view text) {
+  void textarea::set_text(u8string_view text) noexcept {
     m_text = text;
     set_expired(true);
   }
 
-  void textarea::set_line_height(int line_height) {
+  void textarea::set_line_height(int line_height) noexcept {
     m_line_height = line_height;
     set_expired(true);
   }
 
-  void textarea::textarea_render(context const &con) {
+  void textarea::textarea_render(context const &con) noexcept {
     auto const r  = get_rect();
     auto const y1 = get_absolute_y() + r.height;
     auto       y  = m_line_height > 0 ? get_absolute_y()
@@ -45,10 +45,10 @@ namespace laplace::ui::elem {
         continue;
       if (i0 < i)
         con.render_text({ .x      = get_absolute_x(),
-                           .y      = y,
-                           .width  = r.width,
-                           .height = y1 - y },
-                         { m_text.begin() + i0, m_text.begin() + i });
+                          .y      = y,
+                          .width  = r.width,
+                          .height = y1 - y },
+                        { m_text.begin() + i0, m_text.begin() + i });
       if (y < 0)
         break;
       y += m_line_height;

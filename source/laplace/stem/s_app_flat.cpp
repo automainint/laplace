@@ -20,7 +20,7 @@ namespace laplace::stem {
   using std::make_shared, std::abs, core::unival, ui::frame;
 
   app_flat::app_flat(int           argc,
-                     char **       argv,
+                     char        **argv,
                      unival const &def_cfg) noexcept :
       application(argc, argv, def_cfg) { }
 

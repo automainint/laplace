@@ -15,18 +15,22 @@
 
 #include "../../graphics/flat/framebuffer.h"
 #include "../../render/context.h"
-#include "../../ui/widget.h"
+#include "../../ui/basic_widget.h"
 
 namespace laplace::stem::ui {
-  using namespace laplace::ui;
-
-  class frame final : public widget {
+  class frame final : public laplace::ui::basic_widget {
   public:
-    ~frame() final = default;
+    frame(frame const &) = delete;
+    frame(frame &&)      = delete;
+    auto operator=(frame const &) = delete;
+    auto operator=(frame &&) = delete;
 
-    void set_render_context(render::ptr_context con);
+    frame() noexcept        = default;
+    ~frame() noexcept final = default;
 
-    void render(context const &con) final;
+    void set_render_context(render::ptr_context con) noexcept;
+
+    void render(laplace::ui::context const &con) noexcept final;
 
   private:
     render::ptr_context m_render = render::context::get_default();

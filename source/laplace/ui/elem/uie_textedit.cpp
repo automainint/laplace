@@ -12,8 +12,8 @@
 
 #include "textedit.h"
 
-#include "../../core/keys.h"
 #include "../../core/utf8.h"
+#include <utility>
 
 namespace laplace::ui::elem {
   using namespace core::keys;
@@ -21,31 +21,32 @@ namespace laplace::ui::elem {
   using std::u8string_view, std::u8string, core::cref_input_handler,
       core::is_key_down, core::input_event;
 
-  textedit::textedit() {
+  textedit::textedit() noexcept {
     set_handler(true);
   }
 
-  void textedit::setup_filter(filter f) {
-    m_filter = f;
+  void textedit::setup_filter(filter f) noexcept {
+    m_filter = std::move(f);
   }
 
-  void textedit::tick(sl::time delta_msec, cref_input_handler in) {
+  void textedit::tick(sl::time           delta_msec,
+                      cref_input_handler in) noexcept {
     textedit_tick(in);
   }
 
-  void textedit::render(context const &con) {
-    con.render_textedit(get_state());
+  void textedit::render(context const &con) noexcept {
+    con.render_textedit(get_textedit_state());
     up_to_date();
   }
 
-  void textedit::set_text(u8string_view text) {
+  void textedit::set_text(u8string_view text) noexcept {
     if (m_text != text) {
       m_text = u8string(text);
       set_expired(true);
     }
   }
 
-  void textedit::set_length_limit(sl::whole limit) {
+  void textedit::set_length_limit(sl::whole limit) noexcept {
     m_length_limit = limit;
 
     if (m_text.size() > limit) {
@@ -54,41 +55,45 @@ namespace laplace::ui::elem {
     }
   }
 
-  void textedit::set_cursor(sl::index cursor) {
+  void textedit::set_cursor(sl::index cursor) noexcept {
     if (m_cursor != cursor) {
       m_cursor = cursor;
       set_expired(true);
     }
   }
 
-  void textedit::set_selection(sl::index selection) {
+  void textedit::set_selection(sl::index selection) noexcept {
     if (m_selection != selection) {
       m_selection = selection;
       set_expired(true);
     }
   }
 
-  auto textedit::get_text() const -> u8string_view {
+  auto textedit::get_text() const noexcept -> u8string_view {
     return m_text;
   }
 
-  auto textedit::get_cursor() const -> sl::index {
+  auto textedit::get_cursor() const noexcept -> sl::index {
     return m_cursor;
   }
 
-  auto textedit::get_selection() const -> sl::index {
+  auto textedit::get_selection() const noexcept -> sl::index {
     return m_selection;
   }
 
-  auto textedit::get_state() const -> textedit_state {
-    return { panel::get_state(), has_focus(),  get_text(),
-             m_length_limit,     get_cursor(), get_selection() };
+  auto textedit::get_textedit_state() const noexcept
+      -> textedit_state {
+    return {
+      panel::get_panel_state(), has_focus(),  get_text(),
+      m_length_limit,           get_cursor(), get_selection()
+    };
   }
 
-  auto textedit::update(ptr_widget         object,
+  auto textedit::update(ptr_widget const  &object,
                         textedit_state     state,
-                        textedit::filter   f,
-                        input_event const &ev) -> update_result {
+                        filter const      &f,
+                        input_event const &ev) noexcept
+      -> update_result {
 
     auto has_focus = state.has_focus;
 
@@ -117,7 +122,8 @@ namespace laplace::ui::elem {
         text.erase(text.begin() + n, text.begin() + cursor);
         cursor = n;
 
-      } else if (ev.character && ev.character != ctrl_delete) {
+      } else if (ev.character != U'\0' &&
+                 ev.character != ctrl_delete) {
         if (!f || f(ev.character)) {
           if (state.length_limit == 0 ||
               text.size() < state.length_limit)
@@ -134,15 +140,15 @@ namespace laplace::ui::elem {
     return { has_focus, text, cursor, selection };
   }
 
-  void textedit::textedit_tick(cref_input_handler in) {
+  void textedit::textedit_tick(cref_input_handler in) noexcept {
     for (auto const &ev : in.get_events()) {
       if (ev.key == key_tab && is_key_down(ev)) {
         if (auto p = get_parent(); p) {
           p->next_tab();
         }
       } else {
-        auto const s = update(shared_from_this(), get_state(),
-                              m_filter, ev);
+        auto const s = update(shared_from_this(),
+                              get_textedit_state(), m_filter, ev);
 
         set_focus(s.has_focus);
         set_text(s.text);

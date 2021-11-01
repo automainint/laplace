@@ -23,4 +23,5 @@ Checks: >
   -*-uppercase-literal-suffix,
   -*-deprecated-headers,
   -*-reinterpret-cast,
-  -*-constant-array-index
+  -*-constant-array-index,
+  -*-private-member-variables-in-classes

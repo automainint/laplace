@@ -33,8 +33,7 @@ namespace laplace::stem {
       graphics::flat::solid_shader, graphics::flat::sprite_shader,
       std::wstring, std::wstring_view, std::unique_ptr, std::istream,
       std::ifstream, std::filesystem::path, std::chrono::steady_clock,
-      std::chrono::time_point, std::chrono::milliseconds,
-      std::chrono::duration_cast;
+      std::chrono::milliseconds, std::chrono::duration_cast;
 
   application::application(int           argc,
                            char        **argv,
@@ -161,7 +160,8 @@ namespace laplace::stem {
     return m_input_handler;
   }
 
-  auto application::get_ui_context() noexcept -> ui::context & {
+  auto application::get_ui_context() noexcept
+      -> laplace::ui::context & {
     return *m_ui;
   }
 

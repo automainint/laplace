@@ -123,7 +123,7 @@ namespace quadwar_app {
   }
 
   void session::attach_to(ui::ptr_widget w) {
-    m_lobby.attach_to(w);
+    m_lobby.attach_to(std::move(w));
   }
 
   void session::adjust_layout(sl::whole width, sl::whole height) {
@@ -132,7 +132,7 @@ namespace quadwar_app {
   }
 
   void session::set_server_ip(string_view server_ip) {
-    auto i = find(server_ip.begin(), server_ip.end(), ':');
+    auto const *i = find(server_ip.begin(), server_ip.end(), ':');
 
     if (i == server_ip.end()) {
       m_server_ip = server_ip;

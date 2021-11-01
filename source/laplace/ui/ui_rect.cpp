@@ -15,23 +15,15 @@
 #include <cmath>
 
 namespace laplace::ui {
+  using std::round;
+
   auto compare(cref_rect a, cref_rect b) -> bool {
-    if (a.x != b.x || a.y != b.y)
-      return false;
+    if ((a.width <= 0 || a.height <= 0) &&
+        (b.width <= 0 || b.height <= 0))
+      return true;
 
-    if ((a.width > 0) != (b.width > 0))
-      return false;
-
-    if ((a.height > 0) != (b.height > 0))
-      return false;
-
-    if (a.width >= 0 && a.width != b.width)
-      return false;
-
-    if (a.height >= 0 && a.height != b.height)
-      return false;
-
-    return true;
+    return a.x == b.x && a.y == b.y && a.width == b.width &&
+           a.height == b.height;
   }
 
   auto contains(cref_rect a, sl::index x, sl::index y) -> bool {
@@ -57,10 +49,10 @@ namespace laplace::ui {
   }
 
   auto to_rect(cref_rectf a) -> rect {
-    const auto x0 = static_cast<sl::index>(round(a.x));
-    const auto y0 = static_cast<sl::index>(round(a.y));
-    const auto x1 = static_cast<sl::index>(round(a.x + a.width));
-    const auto y1 = static_cast<sl::index>(round(a.y + a.height));
+    auto const x0 = static_cast<sl::index>(round(a.x));
+    auto const y0 = static_cast<sl::index>(round(a.y));
+    auto const x1 = static_cast<sl::index>(round(a.x + a.width));
+    auto const y1 = static_cast<sl::index>(round(a.y + a.height));
 
     return { .x = x0, .y = y0, .width = x1 - x0, .height = y1 - y0 };
   }

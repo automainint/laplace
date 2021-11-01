@@ -13,7 +13,7 @@
 #include "lobby.h"
 
 namespace quadwar_app::ui {
-  using std::u8string_view;
+  using std::u8string_view, ui::ptr_widget;
 
   sl::whole const lobby::spacing      = 4;
   sl::whole const lobby::side_size    = 16;
@@ -46,15 +46,15 @@ namespace quadwar_app::ui {
     }
   }
 
-  void lobby::on_abort(lobby::event_abort ev) {
-    m_abort->on_click([=](ui::ptr_widget) { ev(); });
+  void lobby::on_abort(lobby::event_abort const &ev) {
+    m_abort->on_click([=](ptr_widget const &) { ev(); });
   }
 
-  void lobby::on_start(lobby::event_start ev) {
-    m_start->on_click([=](ui::ptr_widget) { ev(); });
+  void lobby::on_start(lobby::event_start const &ev) {
+    m_start->on_click([=](ptr_widget const &) { ev(); });
   }
 
-  void lobby::attach_to(ui::ptr_widget w) {
+  void lobby::attach_to(ptr_widget const &w) {
     if (w) {
       w->attach(m_info);
       w->attach(m_slots_area);
@@ -120,7 +120,7 @@ namespace quadwar_app::ui {
     }
   }
 
-  auto lobby::get_slot_count() const -> size_t {
+  auto lobby::get_slot_count() const -> sl::whole {
     return m_slots.size();
   }
 

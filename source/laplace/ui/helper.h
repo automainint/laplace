@@ -24,7 +24,7 @@ namespace laplace::ui {
       return std::make_shared<widget_>();
     }
 
-    using widget     = ui::widget;
+    using widget     = ui::basic_widget;
     using textbutton = elem::textbutton;
     using textarea   = elem::textarea;
     using textedit   = elem::textedit;

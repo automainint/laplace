@@ -13,11 +13,15 @@
 #include "../../graphics/utils.h"
 #include "context.h"
 
+#include <utility>
+
 namespace laplace::stem::ui {
   using std::make_shared, std::span, std::weak_ptr,
       std::u8string_view, graphics::ref_texture, graphics::vec4,
-      text::ptr_renderer, ui::panel_state, ui::button_state,
-      ui::textedit_state;
+      text::ptr_renderer, laplace::ui::panel_state,
+      laplace::ui::button_state, laplace::ui::textedit_state,
+      laplace::ui::text_area, laplace::ui::rect,
+      laplace::ui::textbutton_state, laplace::ui::rectf;
 
   vec4 const context_impl::default_colors[] = {
     { .15f, .1f, .2f, 1.f },   { .25f, .2f, .3f, 1.f },
@@ -26,7 +30,8 @@ namespace laplace::stem::ui {
     { .45f, .45f, .45f, 1.f }, { .85f, .85f, .85f, 1.f },
   };
 
-  context_impl::context_impl(text::ptr_renderer font) {
+  context_impl::context_impl(text::ptr_renderer font) noexcept :
+      m_font(std::move(font)) {
     prepare = []() { graphics::prepare_ui(); };
 
     adjust_text = [this](u8string_view text) -> text_area {
@@ -40,7 +45,7 @@ namespace laplace::stem::ui {
       return m_font->adjust(text);
     };
 
-    render_text = [this](rect r, std::u8string_view text) {
+    render_text = [this](rect r, std::u8string_view text) noexcept {
       if constexpr (!_unsafe) {
         if (!m_font) {
           error_("No text renderer.", __FUNCTION__);
@@ -70,15 +75,13 @@ namespace laplace::stem::ui {
     constexpr auto colors_count = sizeof colors / sizeof *colors;
 
     std::copy(default_colors, default_colors + colors_count, colors);
-
-    m_font = font;
   }
 
-  void context_impl::set_font(text::ptr_renderer font) {
-    m_font = font;
+  void context_impl::set_font(text::ptr_renderer font) noexcept {
+    m_font = std::move(font);
   }
 
-  void context_impl::_render_panel(panel_state state) {
+  void context_impl::_render_panel(panel_state state) noexcept {
     if constexpr (!_unsafe) {
       if (!m_render) {
         error_("No render context.", __FUNCTION__);
@@ -89,7 +92,7 @@ namespace laplace::stem::ui {
     _render_solid(to_rectf(state.bounds), colors[0]);
   }
 
-  void context_impl::_render_button(button_state state) {
+  void context_impl::_render_button(button_state state) noexcept {
     if constexpr (!_unsafe) {
       if (!m_render) {
         error_("No render context.", __FUNCTION__);
@@ -112,7 +115,8 @@ namespace laplace::stem::ui {
     _render_solid(to_rectf(state.bounds), colors[n_color]);
   }
 
-  void context_impl::_render_textbutton(textbutton_state state) {
+  void context_impl::_render_textbutton(
+      textbutton_state state) noexcept {
     if constexpr (!_unsafe) {
       if (!m_font) {
         error_("No text renderer.", __FUNCTION__);
@@ -133,7 +137,7 @@ namespace laplace::stem::ui {
     m_font->render(x, y, state.text);
   }
 
-  void context_impl::_render_textedit(textedit_state state) {
+  void context_impl::_render_textedit(textedit_state state) noexcept {
     if constexpr (!_unsafe) {
       if (!m_font) {
         error_("No text renderer.", __FUNCTION__);
@@ -157,7 +161,8 @@ namespace laplace::stem::ui {
     m_font->render(x, y, state.text);
   }
 
-  void context_impl::_render_solid(rectf r, const vec4 color) {
+  void context_impl::_render_solid(rectf      r,
+                                   vec4 const color) noexcept {
     if constexpr (!_unsafe) {
       if (!m_render) {
         error_("No render context.", __FUNCTION__);

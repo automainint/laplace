@@ -18,13 +18,19 @@
 namespace laplace::ui::elem {
   class textbutton final : public button {
   public:
-    ~textbutton() final = default;
+    textbutton(textbutton const &) = default;
+    textbutton(textbutton &&)      = default;
+    auto operator=(textbutton const &) -> textbutton & = default;
+    auto operator=(textbutton &&) -> textbutton & = default;
 
-    void render(context const &con) final;
+    textbutton() noexcept        = default;
+    ~textbutton() noexcept final = default;
 
-    void set_text(std::u8string_view text);
+    void render(context const &con) noexcept final;
 
-    auto get_state() const -> textbutton_state;
+    void set_text(std::u8string_view text) noexcept;
+
+    auto get_textbutton_state() const noexcept -> textbutton_state;
 
   private:
     std::u8string m_text;

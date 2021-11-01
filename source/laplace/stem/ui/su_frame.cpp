@@ -13,16 +13,19 @@
 #include "frame.h"
 
 #include "../../graphics/utils.h"
+#include <utility>
 
 namespace laplace::stem::ui {
   using sprite_vertex = render::context::sprite_vertex;
-  using graphics::viewport, graphics::clear_color_buffer;
+  using graphics::viewport, graphics::clear_color_buffer,
+      laplace::ui::rect, laplace::ui::basic_widget,
+      laplace::ui::context;
 
-  void frame::set_render_context(render::ptr_context con) {
-    m_render = con;
+  void frame::set_render_context(render::ptr_context con) noexcept {
+    m_render = std::move(con);
   }
 
-  void frame::render(context const &con) {
+  void frame::render(context const &con) noexcept {
     do {
       if constexpr (!_unsafe) {
         if (!m_render) {
@@ -63,7 +66,7 @@ namespace laplace::stem::ui {
       };
 
       m_render->render_strip(v, m_buffer.color_texture);
-    } while (0);
+    } while (false);
 
     up_to_date();
   }

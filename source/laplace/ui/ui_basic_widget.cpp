@@ -1,4 +1,4 @@
-/*  laplace/ui/ui_widget.cpp
+/*  laplace/ui/ui_basic_widget.cpp
  *
  *  Copyright (c) 2021 Mitya Selivanov
  *
@@ -10,27 +10,30 @@
  *  the MIT License for more details.
  */
 
-#include "widget.h"
+#include "basic_widget.h"
 
 #include <algorithm>
+#include <utility>
 
 namespace laplace::ui {
-  using std::sort, std::weak_ptr, std::make_shared, std::lower_bound,
-      std::u8string_view, core::cref_input_handler;
+  using std::weak_ptr, std::lower_bound, std::u8string_view,
+      core::cref_input_handler;
 
-  weak_ptr<context> widget::m_default_context;
+  weak_ptr<context> basic_widget::m_default_context;
 
-  void widget::tick(sl::time delta_msec, cref_input_handler in) {
+  void basic_widget::tick(sl::time           delta_msec,
+                          cref_input_handler in) noexcept {
     widget_tick(delta_msec, in);
   }
 
-  void widget::render(context const &con) {
+  void basic_widget::render(context const &con) noexcept {
     widget_render(con);
 
     up_to_date();
   }
 
-  auto widget::event_allowed(sl::index x, sl::index y) -> bool {
+  auto basic_widget::event_allowed(sl::index x, sl::index y) noexcept
+      -> bool {
     if (!contains(get_absolute_rect(), x, y))
       return false;
 
@@ -42,19 +45,19 @@ namespace laplace::ui {
     return p->event_allowed(x, y);
   }
 
-  void widget::set_layout(layout fn) {
-    m_layout = fn;
+  void basic_widget::set_layout(layout fn) noexcept {
+    m_layout = std::move(fn);
 
     adjust_layout();
     set_expired(true);
   }
 
-  void widget::set_level(sl::index level) {
+  void basic_widget::set_level(sl::index level) noexcept {
     m_level = level;
     set_expired(true);
   }
 
-  void widget::set_rect(cref_rect r) {
+  void basic_widget::set_rect(cref_rect r) noexcept {
     if (m_rect != r) {
       m_rect = r;
 
@@ -63,62 +66,62 @@ namespace laplace::ui {
     }
   }
 
-  void widget::set_visible(bool state) {
+  void basic_widget::set_visible(bool state) noexcept {
     if (m_is_visible != state) {
       m_is_visible = state;
       set_expired(true);
     }
   }
 
-  void widget::set_enabled(bool state) {
+  void basic_widget::set_enabled(bool state) noexcept {
     if (m_is_enabled != state) {
       m_is_enabled = state;
       set_expired(true);
     }
   }
 
-  void widget::set_focus(bool has_focus) {
-    if (m_has_focus != has_focus) {
-      if (has_focus) {
-        if (auto p = m_parent.lock(); p) {
-          if (p->m_focus_index < p->m_childs.size()) {
-            p->m_childs[p->m_focus_index]->set_focus(false);
-            p->m_focus_index = m_attach_index;
-          }
+  void basic_widget::set_focus(bool has_focus) noexcept {
+    if (m_has_focus == has_focus)
+      return;
 
-          p->set_focus(true);
+    if (has_focus) {
+      if (auto p = m_parent.lock(); p) {
+        if (p->m_focus_index >= 0 &&
+            p->m_focus_index < p->m_childs.size()) {
+          p->m_childs[p->m_focus_index]->set_focus(false);
+          p->m_focus_index = m_attach_index;
         }
-      } else if (m_focus_index < m_childs.size()) {
-        m_childs[m_focus_index]->set_focus(false);
-        m_focus_index = m_childs.size();
+
+        p->set_focus(true);
       }
-
-      m_has_focus = has_focus;
-      set_expired(true);
+    } else if (m_focus_index >= 0 &&
+               m_focus_index < m_childs.size()) {
+      m_childs[m_focus_index]->set_focus(false);
+      m_focus_index = -1;
     }
+
+    m_has_focus = has_focus;
+    set_expired(true);
   }
 
-  void widget::move_to(sl::index x, sl::index y) {
-    if (m_rect.x != x || m_rect.y != y) {
-      m_rect.x = x;
-      m_rect.y = y;
-
-      set_expired(true);
-    }
+  void basic_widget::update_root() noexcept {
+    m_absolute_x = m_rect.x;
+    m_absolute_y = m_rect.y;
+    update_child();
   }
 
-  void widget::prepare(context const &con) {
-    con.prepare();
-  }
-
-  void widget::draw_childs(context const &con) {
+  void basic_widget::update_child() noexcept {
     for (auto &c : m_childs) {
-      if (c->is_visible()) {
-        c->m_absolute_x = m_absolute_x + c->m_rect.x;
-        c->m_absolute_y = m_absolute_y + c->m_rect.y;
-      }
-    }
+      if (!c->is_visible())
+        continue;
 
+      c->m_absolute_x = m_absolute_x + c->m_rect.x;
+      c->m_absolute_y = m_absolute_y + c->m_rect.y;
+      c->update_child();
+    }
+  }
+
+  void basic_widget::draw_childs(context const &con) noexcept {
     auto const local_area = rect { 0, 0, m_rect.width,
                                    m_rect.height };
 
@@ -142,20 +145,20 @@ namespace laplace::ui {
     m_expired_childs = false;
   }
 
-  void widget::up_to_date() {
+  void basic_widget::up_to_date() noexcept {
     m_expired    = false;
     m_is_changed = false;
   }
 
-  void widget::widget_tick(sl::time           delta_msec,
-                           cref_input_handler in) {
-    if (!m_is_attached) {
+  void basic_widget::widget_tick(sl::time           delta_msec,
+                                 cref_input_handler in) noexcept {
+    if (!is_attached()) {
       m_absolute_x = m_rect.x;
       m_absolute_y = m_rect.y;
     }
 
-    if (m_is_attached || (m_is_visible && m_is_enabled)) {
-      auto list = sl::vector<widget *> {};
+    if (is_attached() || (is_visible() && is_enabled())) {
+      auto list = sl::vector<basic_widget *> {};
       list.reserve(m_childs.size());
 
       for (auto &c : m_childs)
@@ -166,57 +169,64 @@ namespace laplace::ui {
     }
   }
 
-  void widget::widget_render(context const &con) {
-    if (m_is_attached) {
+  void basic_widget::widget_render(context const &con) noexcept {
+    if (is_attached()) {
       draw_childs(con);
     } else
         /*  Check if visible only for root widget. Visibility
          *  checking for attached widgets in widget::draw_childs.
          */
-        if (m_is_visible) {
-      prepare(con);
+        if (is_visible()) {
+      con.prepare();
+      update_root();
       draw_childs(con);
     }
   }
 
-  auto widget::is_widget_changed() -> bool {
+  auto basic_widget::is_widget_changed() const noexcept -> bool {
     return m_is_changed;
   }
 
-  void widget::clear() {
-    for (sl::index i = 0; i < m_childs.size(); i++) {
-      m_childs[i]->m_is_attached  = false;
-      m_childs[i]->m_attach_index = 0;
-      m_childs[i]->m_parent.reset();
+  void basic_widget::clear() noexcept {
+    for (auto &child : m_childs) {
+      child->m_is_attached  = false;
+      child->m_attach_index = 0;
+      child->m_parent.reset();
     }
 
+    m_childs.clear();
     set_expired(true);
   }
 
-  auto widget::attach(ptr_widget child) -> sl::index {
+  auto basic_widget::attach(ptr_widget const &child) noexcept
+      -> sl::index {
+    if (!child)
+      return -1;
+
     sl::index result = m_childs.size();
 
-    if (auto c = child; c) {
-      if (auto p = c->m_parent.lock(); p) {
-        p->detach(c->m_attach_index);
-      }
+    if (auto p = child->m_parent.lock(); p)
+      p->detach(child->m_attach_index);
 
-      c->m_is_attached  = true;
-      c->m_attach_index = m_childs.size();
-      c->m_parent       = weak_from_this();
+    child->m_is_attached  = true;
+    child->m_attach_index = m_childs.size();
+    child->m_parent       = weak_from_this();
 
-      m_childs.emplace_back(child);
+    m_childs.emplace_back(child);
 
-      set_expired(true);
-    }
+    set_expired(true);
 
     return result;
   }
 
-  void widget::detach(ptr_widget child) {
+  void basic_widget::detach(ptr_widget const &child) noexcept {
+    if (!child)
+      return;
+    
     if (child->m_is_attached &&
         child->m_parent.lock() == shared_from_this()) {
-      if (child->m_attach_index < m_childs.size()) {
+      if (child->m_attach_index >= 0 &&
+          child->m_attach_index < m_childs.size()) {
         m_childs.erase(m_childs.begin() + child->m_attach_index);
         update_indices(child->m_attach_index);
       }
@@ -229,8 +239,8 @@ namespace laplace::ui {
     set_expired(true);
   }
 
-  void widget::detach(sl::index child_index) {
-    if (child_index < m_childs.size()) {
+  void basic_widget::detach(sl::index child_index) noexcept {
+    if (child_index >= 0 && child_index < m_childs.size()) {
       m_childs[child_index]->m_is_attached  = false;
       m_childs[child_index]->m_attach_index = 0;
       m_childs[child_index]->m_parent.reset();
@@ -242,30 +252,30 @@ namespace laplace::ui {
     }
   }
 
-  auto widget::get_level() const -> sl::index {
+  auto basic_widget::get_level() const noexcept -> sl::index {
     return m_level;
   }
 
-  auto widget::get_rect() const -> rect {
+  auto basic_widget::get_rect() const noexcept -> rect {
     return m_rect;
   }
 
-  auto widget::get_absolute_x() const -> sl::index {
+  auto basic_widget::get_absolute_x() const noexcept -> sl::index {
     return m_absolute_x;
   }
 
-  auto widget::get_absolute_y() const -> sl::index {
+  auto basic_widget::get_absolute_y() const noexcept -> sl::index {
     return m_absolute_y;
   }
 
-  auto widget::get_absolute_rect() const -> rect {
+  auto basic_widget::get_absolute_rect() const noexcept -> rect {
     return { .x      = m_absolute_x,
              .y      = m_absolute_y,
              .width  = m_rect.width,
              .height = m_rect.height };
   }
 
-  void widget::next_tab() {
+  void basic_widget::next_tab() noexcept {
     sl::index i = 0, j = 1;
 
     for (; i < m_childs.size(); i++) {
@@ -289,14 +299,14 @@ namespace laplace::ui {
     }
   }
 
-  void widget::refresh() {
+  void basic_widget::refresh() noexcept {
     m_expired        = true;
     m_expired_childs = true;
 
     for (auto &w : m_childs) { w->refresh(); }
   }
 
-  void widget::set_expired(bool is_expired) {
+  void basic_widget::set_expired(bool is_expired) noexcept {
     if (is_expired) {
       if (auto p = m_parent.lock(); p) {
         p->refresh_childs();
@@ -306,69 +316,68 @@ namespace laplace::ui {
 
       m_is_changed = true;
     } else {
-      m_expired        = 0;
-      m_expired_childs = 0;
+      m_expired        = false;
+      m_expired_childs = false;
     }
   }
 
-  auto widget::is_expired() const -> bool {
+  auto basic_widget::is_expired() const noexcept -> bool {
     return m_expired;
   }
 
-  auto widget::has_childs_expired() const -> bool {
-    return m_expired_childs;
+  auto basic_widget::has_childs_expired() const noexcept -> bool {
+    return !m_childs.empty() && m_expired_childs;
   }
 
-  auto widget::is_visible() const -> bool {
+  auto basic_widget::is_visible() const noexcept -> bool {
     return m_is_visible;
   }
 
-  auto widget::is_enabled() const -> bool {
+  auto basic_widget::is_enabled() const noexcept -> bool {
     return m_is_enabled;
   }
 
-  auto widget::is_attached() const -> bool {
+  auto basic_widget::is_attached() const noexcept -> bool {
     return m_is_attached;
   }
 
-  auto widget::has_focus() const -> bool {
+  auto basic_widget::has_focus() const noexcept -> bool {
     return m_has_focus;
   }
 
-  auto widget::get_child_count() const -> sl::index {
+  auto basic_widget::get_child_count() const noexcept -> sl::index {
     return m_childs.size();
   }
 
-  auto widget::get_parent() const -> ptr_widget {
+  auto basic_widget::get_parent() const noexcept -> ptr_widget {
     return m_parent.lock();
   }
 
-  auto widget::get_child(sl::index index) const -> ptr_widget {
+  auto basic_widget::get_child(sl::index index) const noexcept
+      -> ptr_widget {
     ptr_widget result;
 
-    if (index < m_childs.size()) {
+    if (index < m_childs.size())
       result = m_childs[index];
-    }
 
     return result;
   }
 
-  void widget::set_handler(bool is_handler) {
+  void basic_widget::set_handler(bool is_handler) noexcept {
     m_is_handler = is_handler;
   }
 
-  void widget::update_indices(sl::index begin) {
-    for (sl::index i = begin; i < m_childs.size(); i++) {
+  void basic_widget::update_indices(sl::index begin) noexcept {
+    for (sl::index i = begin; i < m_childs.size(); i++)
       m_childs[i]->m_attach_index = i;
-    }
   }
 
-  void widget::adjust_layout() {
+  void basic_widget::adjust_layout() noexcept {
     if (!m_layout)
       return;
 
     auto childs  = sl::vector<sl::index> {};
-    auto context = vlayout_context {};
+    auto context = sl::vector<layout_context> {};
 
     childs.reserve(m_childs.size());
     context.reserve(m_childs.size());
@@ -387,17 +396,15 @@ namespace laplace::ui {
     auto rects = m_layout(m_rect, context);
 
     if (rects.size() == childs.size()) {
-      for (sl::index i = 0; i < childs.size(); i++) {
+      for (sl::index i = 0; i < childs.size(); i++)
         m_childs[childs[i]]->set_rect(rects[i]);
-      }
     } else {
       error_("Invalid layout.", __FUNCTION__);
     }
   }
 
-  void widget::refresh_childs() {
-    for (auto p = shared_from_this(); p; p = p->m_parent.lock()) {
+  void basic_widget::refresh_childs() noexcept {
+    for (auto p = shared_from_this(); p; p = p->m_parent.lock())
       p->m_expired_childs = true;
-    }
   }
 }
