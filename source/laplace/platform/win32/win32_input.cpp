@@ -36,8 +36,8 @@ namespace laplace::win32 {
   sl::whole const input::default_resolution_y = 1500;
 
   input::keymap_table const default_keymap = []() {
-    auto v = keymap_table {};
-    for (sl::index i = 0; i < key_count; i++) v[i] = i;
+    auto v = input::keymap_table {};
+    for (sl::index i = 0; i < input::key_count; i++) v[i] = i;
 
     v[key_capslock_toggle]   = 0;
     v[key_numlock_toggle]    = 0;
