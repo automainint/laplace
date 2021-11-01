@@ -87,10 +87,11 @@ namespace laplace::platform {
     void reset_keyboard() noexcept;
 
     [[nodiscard]] auto map_key(sl::index key) noexcept -> uint8_t;
-    
-  private:
-    [[nodiscard]] auto to_char(uint8_t key) noexcept -> char32_t;
 
+    [[nodiscard]] auto to_char(uint8_t key) const noexcept
+        -> char32_t;
+
+  private:
     [[nodiscard]] auto process_char(uint8_t key,
                                     bool    is_down) noexcept
         -> char32_t;

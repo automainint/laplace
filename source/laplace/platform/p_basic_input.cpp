@@ -85,7 +85,7 @@ namespace laplace::platform {
   void basic_input::update_key(sl::index key, bool is_down) noexcept {
     auto const code = map_key(key);
 
-    if (m_keyboard[code].is_down == is_down)
+    if (code == 0 || m_keyboard[code].is_down == is_down)
       return;
 
     m_events.emplace_back<input_event>(
@@ -139,7 +139,7 @@ namespace laplace::platform {
 
     m_char_time_msec -= delta_msec;
 
-    if (m_char_time_msec <= 0) {
+    if (m_char_time_msec < 0) {
       m_events.emplace_back<input_event>(
           { .cursor_x  = get_cursor_x(),
             .cursor_y  = get_cursor_y(),
@@ -167,7 +167,7 @@ namespace laplace::platform {
     return m_keymap[key];
   }
 
-  auto basic_input::to_char(uint8_t key) noexcept -> char32_t {
+  auto basic_input::to_char(uint8_t key) const noexcept -> char32_t {
     if (key >= key_numpad0 && key <= key_numpad9) {
       if (is_numlock() && !is_shift())
         return U'0' + (key - key_numpad0);
@@ -252,7 +252,7 @@ namespace laplace::platform {
         m_last_char       = c;
         return c;
       }
-      
+
       if (key == m_last_char_key)
         m_is_char_pressed = false;
     }

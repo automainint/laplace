@@ -10,6 +10,7 @@
  *  the MIT License for more details.
  */
 
+#include "../../laplace/core/log.h"
 #include "../../laplace/platform/opengl.h"
 #include <gtest/gtest.h>
 
@@ -27,6 +28,8 @@ namespace laplace::test {
   }
 
   TEST(platform, opengl_load_functions) {
+    setup_log([](std::string_view) {});
     EXPECT_FALSE(gl::load_functions());
+    setup_log({});
   }
 }

@@ -195,13 +195,14 @@ namespace laplace::linux {
     v[code(XK_KP_8)] = key_numpad8;
     v[code(XK_KP_9)] = key_numpad9;
 
-    v[code(XK_KP_Delete)]   = key_delete;
-    v[code(XK_KP_Enter)]    = key_enter;
-    v[code(XK_KP_Divide)]   = key_divide;
-    v[code(XK_KP_Multiply)] = key_multiply;
-    v[code(XK_KP_Add)]      = key_add;
-    v[code(XK_KP_Subtract)] = key_subtract;
-    v[code(XK_KP_Decimal)]  = key_separator;
+    v[code(XK_KP_Delete)]    = key_delete;
+    v[code(XK_KP_Enter)]     = key_enter;
+    v[code(XK_KP_Divide)]    = key_divide;
+    v[code(XK_KP_Multiply)]  = key_multiply;
+    v[code(XK_KP_Add)]       = key_add;
+    v[code(XK_KP_Subtract)]  = key_subtract;
+    v[code(XK_KP_Decimal)]   = key_decimal;
+    v[code(XK_KP_Separator)] = key_separator;
 
     v[code(XK_Caps_Lock)]   = key_capslock_toggle;
     v[code(XK_Num_Lock)]    = key_numlock_toggle;

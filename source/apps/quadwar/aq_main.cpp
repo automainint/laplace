@@ -50,7 +50,7 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR args, int) -> int {
   std::ignore = freopen(quadwar_app::log_file_name, "w", stderr);
 #endif
 
-  int  status = 0;
+  auto status = int {};
   bool run    = true;
 
   laplace::platform::set_realtime_mode(true);
@@ -77,11 +77,6 @@ auto WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR args, int) -> int {
     auto _ = socket_library {};
     status = quadwar(argc, argv).run();
   }
-
-#if defined(_CONSOLE) && defined(LAPLACE_VERBOSE)
-  std::cout << "\n  Press Enter...\n";
-  std::ignore = getchar();
-#endif
 
   return status;
 }
