@@ -15,18 +15,16 @@
 
 #include <thread>
 
-namespace laplace::platform {
-  namespace priority {
-    enum : int {
-      idle = 1,
-      lowest,
-      low,
-      normal,
-      high,
-      highest,
-      critical
-    };
-  }
+namespace laplace::platform::priority {
+  enum : int {
+    idle = 1,
+    lowest,
+    low,
+    normal,
+    high,
+    highest,
+    critical
+  };
 }
 
 #endif

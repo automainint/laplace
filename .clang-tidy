@@ -22,4 +22,5 @@ Checks: >
   -*-unused-parameters,
   -*-uppercase-literal-suffix,
   -*-deprecated-headers,
-  -*-reinterpret-cast
+  -*-reinterpret-cast,
+  -*-constant-array-index

@@ -41,7 +41,7 @@
     }                                                               \
   }
 
-#define LAPLACE_GL_HAS(a) has(#a)
+#define LAPLACE_GL_HAS(a) has_extension(#a)
 
 #define LAPLACE_GL_BEGIN_EX() \
   { status = true; }
@@ -55,25 +55,26 @@
   }
 
 namespace laplace::gl {
-  using std::find, std::lower_bound, std::vector, std::string,
-      std::string_view;
+  using std::find, std::lower_bound, std::string, std::string_view;
 
   auto ok                      = false;
   auto has_extensions_required = false;
 
-  auto extensions          = vector<string> {};
-  auto extensions_required = vector<string> {};
+  auto extensions          = sl::vector<string> {};
+  auto extensions_required = sl::vector<string> {};
 
   auto is_ok() -> bool {
     return ok;
   }
 
-  void require_extensions(vector<string_view> exts) {
-    has_extensions_required = true;
-    extensions_required.assign(exts.begin(), exts.end());
+  void require_extensions(sl::vector<string_view> exts) {
+    extensions_required.insert(extensions_required.end(),
+                               exts.begin(), exts.end());
+
+    has_extensions_required = !extensions_required.empty();
   }
 
-  auto init() -> bool {
+  auto load_functions() -> bool {
     using platform::gl_get_proc_address;
 
     ok = true;
@@ -93,7 +94,7 @@ namespace laplace::gl {
     return ok;
   }
 
-  auto has(string_view extension) -> bool {
+  auto has_extension(string_view extension) -> bool {
     auto i = lower_bound(extensions.begin(), extensions.end(),
                          extension);
 

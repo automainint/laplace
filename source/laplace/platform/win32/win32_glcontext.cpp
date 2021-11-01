@@ -25,7 +25,6 @@
 #include <iostream>
 
 extern "C" {
-
   /*  Require high performance for Nvidia.
    */
   __declspec(dllexport) uint32_t NvOptimusEnablement = 1;
@@ -54,8 +53,7 @@ namespace laplace::win32 {
 
     m_window = win;
 
-    PIXELFORMATDESCRIPTOR pfd;
-    memset(&pfd, 0, sizeof pfd);
+    auto pfd = PIXELFORMATDESCRIPTOR {};
 
     pfd.nSize    = sizeof pfd;
     pfd.nVersion = 1;
@@ -72,7 +70,7 @@ namespace laplace::win32 {
       return;
     }
 
-    int pf = ChoosePixelFormat(m_hDC, &pfd);
+    auto pf = ChoosePixelFormat(m_hDC, &pfd);
 
     if (!SetPixelFormat(m_hDC, pf, &pfd)) {
       error_("SetPixelFormat failed.", __FUNCTION__);
@@ -94,11 +92,13 @@ namespace laplace::win32 {
       return;
     }
 
-    if (gl_preload_context() && gl::has("WGL_ARB_create_context")) {
+    if (gl_preload_context() &&
+        gl::has_extension("WGL_ARB_create_context")) {
       /*  Specify the OpenGL version.
        */
 
-      int32_t major, minor;
+      auto major = int32_t {};
+      auto minor = int32_t {};
 
       gl::glGetIntegerv(gl::GL_MAJOR_VERSION, &major);
       gl::glGetIntegerv(gl::GL_MINOR_VERSION, &minor);
@@ -111,13 +111,12 @@ namespace laplace::win32 {
                           0,
                           0 };
 
-      if (m_is_forward_compatible) {
+      if (m_is_forward_compatible)
         attrs[5] = WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
-      }
 
-      HGLRC hRC = wglCreateContextAttribsARB(m_hDC, nullptr, attrs);
+      auto hRC = wglCreateContextAttribsARB(m_hDC, nullptr, attrs);
 
-      if (!hRC) {
+      if (hRC == nullptr) {
         error_("wglCreateContextAttribsARB failed.", __FUNCTION__);
         cleanup();
         return;
@@ -135,7 +134,7 @@ namespace laplace::win32 {
       }
     }
 
-    if (!gl::init()) {
+    if (!gl::load_functions()) {
       error_("OpenGL initialization failed.", __FUNCTION__);
       cleanup();
       return;
@@ -157,15 +156,14 @@ namespace laplace::win32 {
   }
 
   void glcontext::cleanup() {
-    if (m_hDC) {
-      if (m_hRC) {
+    if (m_hDC != nullptr) {
+      if (m_hRC != nullptr) {
         wglMakeCurrent(m_hDC, nullptr);
         wglDeleteContext(m_hRC);
       }
 
-      if (m_window && m_window->get_native_handle()) {
+      if (m_window && m_window->get_native_handle() != nullptr)
         ReleaseDC(m_window->get_native_handle(), m_hDC);
-      }
     }
 
     m_hDC = nullptr;

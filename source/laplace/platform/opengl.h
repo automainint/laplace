@@ -25,17 +25,11 @@ namespace laplace::gl {
 
   auto is_ok() -> bool;
 
-  /*  Set required extensions.
-   */
   void require_extensions(std::vector<std::string_view> extensions);
 
-  /*  Load all the OpenGL functions.
-   */
-  auto init() -> bool;
+  auto load_functions() -> bool;
 
-  /*  Check if extension enabled.
-   */
-  auto has(std::string_view extension) -> bool;
+  auto has_extension(std::string_view extension) -> bool;
 }
 
 #endif

@@ -13,50 +13,24 @@
 #ifndef laplace_platform_linux_input_h
 #define laplace_platform_linux_input_h
 
-#include "../../core/input_handler.h"
+#include "../basic_input.h"
 #include "xlib.h"
 
 namespace laplace::linux {
-  class input {
+  class input : public platform::basic_input {
   public:
-    input(input const &) = delete;
-    input(input &&)      = delete;
-    auto operator=(input const &) -> input & = delete;
-    auto operator=(input &&) -> input & = delete;
-
-    struct key_state {
-      bool is_down = false;
-    };
-
-    static sl::index const default_button_mapping[];
     static sl::index const default_wheel_scale;
 
     input() noexcept;
-    ~input() noexcept = default;
-
-    void update_key(sl::index key, bool is_down) noexcept;
-    void update_button(sl::index button, bool is_down) noexcept;
-    void update_wheel(sl::index direction) noexcept;
-    void update_cursor(sl::index x, sl::index y) noexcept;
+    ~input() noexcept override = default;
 
     void use_system_cursor(bool) noexcept;
     void set_cursor_enabled(bool) noexcept;
-    void set_mouse_resolution(sl::whole x, sl::whole y) noexcept;
+    void set_mouse_resolution(sl::whole, sl::whole) noexcept;
     void set_clamp(bool, bool) noexcept;
-
-    [[nodiscard]] auto is_capslock() const noexcept -> bool;
-    [[nodiscard]] auto is_numlock() const noexcept -> bool;
-    [[nodiscard]] auto is_scrolllock() const noexcept -> bool;
-    [[nodiscard]] auto is_alt() const noexcept -> bool;
-    [[nodiscard]] auto is_shift() const noexcept -> bool;
-    [[nodiscard]] auto is_control() const noexcept -> bool;
-
-    [[nodiscard]] auto is_key_down(sl::index) const noexcept -> bool;
-    [[nodiscard]] auto is_key_up(sl::index) const noexcept -> bool;
 
     [[nodiscard]] auto get_mouse_resolution_x() const noexcept
         -> sl::whole;
-
     [[nodiscard]] auto get_mouse_resolution_y() const noexcept
         -> sl::whole;
 
@@ -65,30 +39,37 @@ namespace laplace::linux {
 
     [[nodiscard]] auto get_mouse_delta_x() const noexcept
         -> sl::index;
-
     [[nodiscard]] auto get_mouse_delta_y() const noexcept
         -> sl::index;
 
-    [[nodiscard]] auto get_cursor_x() const noexcept -> sl::index;
-    [[nodiscard]] auto get_cursor_y() const noexcept -> sl::index;
-    [[nodiscard]] auto get_wheel_delta() const noexcept -> sl::index;
+    void update_button(sl::index button, bool is_down) noexcept;
+    void update_controls(sl::index key, bool is_down) noexcept;
 
-    [[nodiscard]] auto get_events() const noexcept
-        -> std::span<core::input_event const>;
-
-    void refresh() noexcept;
+    void init_keymap(Display *display) noexcept;
 
   private:
-    sl::vector<sl::index>         m_button_mapping;
-    sl::vector<key_state>         m_keyboard;
-    sl::vector<core::input_event> m_events;
+    [[nodiscard]] static auto load_keymap(Display *display) noexcept
+        -> keymap_table;
 
-    sl::index m_cursor_x      = 0;
-    sl::index m_cursor_y      = 0;
-    sl::index m_mouse_delta_x = 0;
-    sl::index m_mouse_delta_y = 0;
-    sl::index m_wheel_scale   = default_wheel_scale;
-    sl::index m_wheel_delta   = 0;
+    void adjust_and_set_keymap(keymap_table v) noexcept;
+
+    void toggle(sl::index key, bool is_down, bool &state) noexcept;
+
+    bool m_toggle_capslock   = false;
+    bool m_toggle_numlock    = false;
+    bool m_toggle_scrolllock = false;
+
+    uint8_t in_lbutton    = 0;
+    uint8_t in_rbutton    = 0;
+    uint8_t in_mbutton    = 0;
+    uint8_t in_xbutton1   = 0;
+    uint8_t in_xbutton2   = 0;
+    uint8_t in_shift      = 0;
+    uint8_t in_control    = 0;
+    uint8_t in_alt        = 0;
+    uint8_t in_capslock   = 0;
+    uint8_t in_numlock    = 0;
+    uint8_t in_scrolllock = 0;
   };
 }
 

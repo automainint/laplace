@@ -18,8 +18,8 @@ namespace laplace::linux {
 
     if (!gl_is_loaded())
       return;
-    
-    if (!gl::init())
+
+    if (!gl::load_functions())
       error_("OpenGL initialization failed.", __FUNCTION__);
   }
 

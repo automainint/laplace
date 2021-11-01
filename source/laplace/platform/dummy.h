@@ -13,7 +13,7 @@
 #ifndef laplace_platform_dummy_h
 #define laplace_platform_dummy_h
 
-#include "../core/input_handler.h"
+#include "basic_input.h"
 #include "events.h"
 #include "opengl.h"
 #include "thread.h"
@@ -36,52 +36,14 @@ namespace laplace::platform::dummy {
     return nullptr;
   }
 
-  class input {
+  class input : public basic_input {
   public:
-    input(input const &) = delete;
-    input(input &&)      = delete;
-    auto operator=(input const &) -> input & = delete;
-    auto operator=(input &&) -> input & = delete;
-
-    input() noexcept  = default;
-    ~input() noexcept = default;
+    ~input() noexcept override = default;
 
     void use_system_cursor(bool) noexcept { }
     void set_cursor_enabled(bool) noexcept { }
     void set_mouse_resolution(sl::whole, sl::whole) noexcept { }
     void set_clamp(bool, bool) noexcept { }
-
-    [[nodiscard]] auto is_capslock() const noexcept -> bool {
-      return false;
-    }
-
-    [[nodiscard]] auto is_numlock() const noexcept -> bool {
-      return false;
-    }
-
-    [[nodiscard]] auto is_scrolllock() const noexcept -> bool {
-      return false;
-    }
-
-    [[nodiscard]] auto is_alt() const noexcept -> bool {
-      return false;
-    }
-
-    [[nodiscard]] auto is_shift() const noexcept -> bool {
-      return false;
-    }
-
-    [[nodiscard]] auto is_control() const noexcept -> bool {
-      return false;
-    }
-
-    [[nodiscard]] auto is_key_down(sl::index) const noexcept -> bool {
-      return false;
-    }
-
-    [[nodiscard]] auto is_key_up(sl::index) const noexcept -> bool {
-      return true;
-    }
 
     [[nodiscard]] auto get_mouse_resolution_x() const noexcept
         -> sl::whole {
@@ -109,23 +71,6 @@ namespace laplace::platform::dummy {
     [[nodiscard]] auto get_mouse_delta_y() const noexcept
         -> sl::index {
       return 0;
-    }
-
-    [[nodiscard]] auto get_cursor_x() const noexcept -> sl::index {
-      return 0;
-    }
-
-    [[nodiscard]] auto get_cursor_y() const noexcept -> sl::index {
-      return 0;
-    }
-
-    [[nodiscard]] auto get_wheel_delta() const noexcept -> sl::index {
-      return 0;
-    }
-
-    [[nodiscard]] auto get_events() const noexcept
-        -> std::span<const core::input_event> {
-      return {};
     }
   };
 

@@ -119,6 +119,9 @@ namespace laplace::linux {
 
   void window::set_input(std::shared_ptr<input> in) noexcept {
     m_input = std::move(in);
+
+    if (m_display != nullptr)
+      m_input->init_keymap(m_display);
   }
 
   void window::set_parent(native_handle) noexcept { }
@@ -130,6 +133,11 @@ namespace laplace::linux {
 
     if (!m_ok)
       return 0;
+
+    auto wm_delete = XInternAtom(m_display, "WM_DELETE_WINDOW",
+                                 False);
+
+    XSetWMProtocols(m_display, m_handle, &wm_delete, 1);
 
     auto ev                = XEvent {};
     auto window_attributes = XWindowAttributes {};
@@ -185,6 +193,7 @@ namespace laplace::linux {
           case KeyPress:
             if (m_input) {
               m_input->update_cursor(ev.xkey.x, ev.xkey.y);
+              m_input->update_controls(ev.xkey.keycode, true);
               m_input->update_key(ev.xkey.keycode, true);
             }
             break;
@@ -192,6 +201,7 @@ namespace laplace::linux {
           case KeyRelease:
             if (m_input) {
               m_input->update_cursor(ev.xkey.x, ev.xkey.y);
+              m_input->update_controls(ev.xkey.keycode, false);
               m_input->update_key(ev.xkey.keycode, false);
             }
             break;
@@ -209,9 +219,14 @@ namespace laplace::linux {
             m_has_focus = false;
             if (m_on_focus)
               m_on_focus(false);
+            if (m_input)
+              m_input->reset_keyboard();
             break;
 
-          default: verb(fmt("Event %d", (int) ev.type));
+          case ClientMessage:
+            if (ev.xclient.data.l[0] == wm_delete)
+              m_done = true;
+            break;
         }
       }
 
@@ -224,6 +239,9 @@ namespace laplace::linux {
 
       auto delta = duration_cast<milliseconds>(clock::now() - time);
       auto delta_msec = static_cast<sl::whole>(delta.count());
+
+      if (m_input)
+        m_input->tick(delta_msec);
 
       if (m_on_frame)
         m_on_frame(delta_msec);
@@ -383,6 +401,9 @@ namespace laplace::linux {
     }
 
     glXMakeCurrent(m_display, m_handle, m_context);
+
+    if (m_input)
+      m_input->init_keymap(m_display);
 
     m_ok = true;
   }

@@ -72,8 +72,10 @@ namespace laplace::stem::text {
     return { get_char_top(), width, get_char_height() };
   }
 
-  void lcd::print(
-      ref_image img, sl::index x, sl::index y, u8string_view text) {
+  void lcd::print(ref_image     img,
+                  sl::index     x,
+                  sl::index     y,
+                  u8string_view text) {
     auto code = char32_t {};
 
     auto x0 = x;
@@ -87,47 +89,31 @@ namespace laplace::stem::text {
   }
 
   void lcd::adjust_size(sl::index n, char32_t c) {
-    const auto x = get_char_x(c);
-    const auto y = get_char_y(c);
+    auto const x = get_char_x(c);
+    auto const y = get_char_y(c);
 
-    auto i = sl::index {};
-
-    for (; i < m_char_width; i++) {
-      bool is_empty = true;
-
+    auto const is_line_empty = [&](sl::index i) -> bool {
       for (sl::index j = 0; j < m_char_height; j++) {
         const auto k = get_pixel_index(x, y, i, j);
-
-        if (k < m_pixels.size() && m_pixels[k]) {
-          is_empty = false;
-          break;
-        }
+        if (k < m_pixels.size() && m_pixels[k])
+          return false;
       }
 
-      if (!is_empty) {
+      return true;
+    };
+
+    for (sl::index i = 0; i < m_char_width; i++)
+      if (!is_line_empty(i)) {
         m_sizes[n].left = i;
         break;
       }
-    }
 
-    for (++i; i < m_char_width; i++) {
-      bool is_empty = true;
-
-      for (sl::index j = 0; j < m_char_height; j++) {
-        const auto k = get_pixel_index(x, y, i, j);
-
-        if (k < m_pixels.size() && m_pixels[k]) {
-          is_empty = false;
-          break;
-        }
-      }
-
-      if (is_empty) {
-        m_sizes[n].size = i - m_sizes[n].left;
+    for (sl::index i = m_char_width - 1; i > 0; i--)
+      if (!is_line_empty(i)) {
+        m_sizes[n].size = i - m_sizes[n].left + 1;
         break;
       }
-    }
-
+    
     if (m_sizes[n].size == 0) {
       m_sizes[n].size = m_char_width - m_sizes[n].left;
     }
@@ -147,9 +133,10 @@ namespace laplace::stem::text {
     return ((c - char_first) / 16) * m_char_height;
   }
 
-  auto lcd::get_pixel_index(
-      sl::index x, sl::index y, sl::index i, sl::index j) const
-      -> sl::index {
+  auto lcd::get_pixel_index(sl::index x,
+                            sl::index y,
+                            sl::index i,
+                            sl::index j) const -> sl::index {
     return (y + m_char_height - j - 1) * (m_char_width * 16) +
            (x + i);
   }
@@ -180,8 +167,10 @@ namespace laplace::stem::text {
     return get_char_size(c) * m_scale_x + m_spacing_x;
   }
 
-  void lcd::draw_char(
-      ref_image img, sl::index x, sl::index y, char32_t c) {
+  void lcd::draw_char(ref_image img,
+                      sl::index x,
+                      sl::index y,
+                      char32_t  c) {
     const auto i0 = get_char_x(c) + get_char_left(c);
     const auto j0 = get_char_y(c);
 
@@ -202,13 +191,12 @@ namespace laplace::stem::text {
     }
   }
 
-  void lcd::draw_dot(
-      ref_image  img,
-      sl::index  x0,
-      sl::index  y0,
-      sl::index  x1,
-      sl::index  y1,
-      cref_pixel color) {
+  void lcd::draw_dot(ref_image  img,
+                     sl::index  x0,
+                     sl::index  y0,
+                     sl::index  x1,
+                     sl::index  y1,
+                     cref_pixel color) {
     for (sl::index i = x0; i < x1; i++)
       for (sl::index j = y0; j < y1; j++) {
         img.set_pixel(i, j, color);

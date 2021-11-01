@@ -32,141 +32,93 @@ namespace laplace::win32 {
       core::input_event;
   using namespace core::keys;
 
-  const sl::time  input::char_predelay_msec   = 500;
-  const sl::time  input::char_period_msec     = 50;
-  const sl::whole input::default_resolution_x = 2000;
-  const sl::whole input::default_resolution_y = 1500;
+  sl::whole const input::default_resolution_x = 2000;
+  sl::whole const input::default_resolution_y = 1500;
 
-  input::input() {
-    for (sl::index i = 0; i < key_count; i++) {
-      m_keymap[i] = static_cast<uint8_t>(i);
+  input::keymap_table const default_keymap = []() noexcept {
+    auto v = keymap_table {};
+    for (sl::index i = 0; i < key_count; i++) v[i] = i;
 
-      m_keyboard_state[i].is_down = false;
-    }
+    v[key_capslock_toggle]   = 0;
+    v[key_numlock_toggle]    = 0;
+    v[key_scrolllock_toggle] = 0;
+    v[key_lshift]            = 0;
+    v[key_rshift]            = 0;
+    v[key_lcontrol]          = 0;
+    v[key_rcontrol]          = 0;
+    v[key_lalt]              = 0;
+    v[key_ralt]              = 0;
+
+    return v;
+  }();
+
+  input::input() noexcept {
+    set_keymap(default_keymap);
   }
 
-  input::~input() {
+  input::~input() noexcept {
     if (!m_use_system_cursor) {
       ShowCursor(true);
     }
   }
 
-  void input::use_system_cursor(bool use) {
-    if (m_use_system_cursor != use) {
-      m_use_system_cursor = use;
+  void input::use_system_cursor(bool use) noexcept {
+    if (m_use_system_cursor == use)
+      return;
 
-      ShowCursor(use);
-    }
+    m_use_system_cursor = use;
+    ShowCursor(use);
   }
 
-  void input::set_cursor_enabled(bool is_enabled) {
+  void input::set_cursor_enabled(bool is_enabled) noexcept {
     m_is_cursor_enabled = is_enabled;
   }
 
-  void input::set_mouse_resolution(sl::whole x, sl::whole y) {
-    m_res_x = x;
-    m_res_y = y;
+  void input::set_mouse_resolution(sl::whole x,
+                                   sl::whole y) noexcept {
+    m_mouse.res_x = x;
+    m_mouse.res_y = y;
   }
 
-  void input::set_clamp(bool clamp_x_axis, bool clamp_y_axis) {
+  void input::set_clamp(bool clamp_x_axis,
+                        bool clamp_y_axis) noexcept {
     m_clamp_x = clamp_x_axis;
     m_clamp_y = clamp_y_axis;
   }
 
-  auto input::is_capslock() const -> bool {
-    return m_keyboard_state[key_capslock].is_down;
-  }
-
-  auto input::is_numlock() const -> bool {
-    return m_keyboard_state[key_numlock].is_down;
-  }
-
-  auto input::is_scrolllock() const -> bool {
-    return m_keyboard_state[key_scrolllock].is_down;
-  }
-
-  auto input::is_alt() const -> bool {
-    return m_keyboard_state[key_alt].is_down;
-  }
-
-  auto input::is_shift() const -> bool {
-    return m_keyboard_state[key_shift].is_down;
-  }
-
-  auto input::is_control() const -> bool {
-    return m_keyboard_state[key_control].is_down;
-  }
-
-  auto input::is_key_down(sl::index code) const -> bool {
-    if (code < 0 || code >= key_count) {
-      error_("Invalid key code.", __FUNCTION__);
-      return false;
-    }
-
-    return m_keyboard_state[code].is_down;
-  }
-
-  auto input::is_key_up(sl::index code) const -> bool {
-    if (code < 0 || code >= key_count) {
-      error_("Invalid key code.", __FUNCTION__);
-      return false;
-    }
-
-    return !m_keyboard_state[code].is_down;
-  }
-
-  auto input::get_mouse_resolution_x() const -> sl::whole {
+  auto input::get_mouse_resolution_x() const noexcept -> sl::whole {
     return m_use_system_cursor ? m_window_width : m_res_x;
   }
 
-  auto input::get_mouse_resolution_y() const -> sl::whole {
+  auto input::get_mouse_resolution_y() const noexcept -> sl::whole {
     return m_use_system_cursor ? m_window_height : m_res_y;
   }
 
-  auto input::get_mouse_x() const -> sl::index {
-    return m_mouse_state.x;
+  auto input::get_mouse_x() const noexcept -> sl::index {
+    return m_mouse.x;
   }
 
-  auto input::get_mouse_y() const -> sl::index {
-    return m_mouse_state.y;
+  auto input::get_mouse_y() const noexcept -> sl::index {
+    return m_mouse.y;
   }
 
-  auto input::get_mouse_delta_x() const -> sl::index {
-    return m_mouse_state.delta_x;
+  auto input::get_mouse_delta_x() const noexcept -> sl::index {
+    return m_use_system_cursor ? get_cursor_delta_x()
+                               : m_mouse.delta_x;
   }
 
-  auto input::get_mouse_delta_y() const -> sl::index {
-    return m_mouse_state.delta_y;
+  auto input::get_mouse_delta_y() const noexcept -> sl::index {
+    return m_use_system_cursor ? get_cursor_delta_y()
+                               : m_mouse.delta_y;
   }
 
-  auto input::get_cursor_x() const -> sl::index {
-    return m_mouse_state.cursor_x;
-  }
-
-  auto input::get_cursor_y() const -> sl::index {
-    return m_mouse_state.cursor_y;
-  }
-
-  auto input::get_wheel_delta() const -> sl::index {
-    return m_mouse_state.wheel_delta;
-  }
-
-  auto input::get_events() const -> span<const input_event> {
+  auto input::get_events() const noexcept -> span<const input_event> {
     return m_events;
   }
-
-  void input::refresh() {
-    m_events.clear();
-
-    m_mouse_state.delta_x     = 0;
-    m_mouse_state.delta_y     = 0;
-    m_mouse_state.wheel_delta = 0;
-  }
-
   void input::set_window_rect(sl::index x,
                               sl::index y,
                               sl::whole width,
-                              sl::whole height) {
+                              sl::whole height) noexcept {
 
     m_center_x = x + width / 2;
     m_center_y = y + height / 2;
@@ -175,7 +127,7 @@ namespace laplace::win32 {
     m_window_height = height;
   }
 
-  void input::attach(HWND handle) {
+  void input::attach(HWND handle) noexcept {
     if (handle) {
       m_handle = handle;
 
@@ -227,7 +179,7 @@ namespace laplace::win32 {
     }
   }
 
-  void input::process(HRAWINPUT raw_input) {
+  void input::process(HRAWINPUT raw_input) noexcept {
     constexpr auto header_size = sizeof(RAWINPUTHEADER);
     uint32_t       size        = 0;
 
@@ -253,107 +205,16 @@ namespace laplace::win32 {
     }
   }
 
-  void input::tick(sl::time delta_msec) {
-    if (m_is_char_pressed) {
-      m_char_period_msec -= delta_msec;
-
-      if (m_char_period_msec <= 0) {
-        m_events.emplace_back<input_event>(
-            { .cursor_x  = m_mouse_state.cursor_x,
-              .cursor_y  = m_mouse_state.cursor_y,
-              .character = m_last_char });
-
-        m_char_period_msec += char_period_msec;
-      }
-    }
+  void input::refresh_mouse() noexcept {
+    m_mouse_state.delta_x = 0;
+    m_mouse_state.delta_y = 0;
   }
 
-  void input::reset() {
-    for (sl::whole i = 0; i < key_count; i++) {
-      const auto is_changed = m_keyboard_state[i].is_down;
-
-      m_keyboard_state[i].is_down = false;
-    }
-  }
-
-  auto input::has(uint32_t flags, uint32_t flag) -> bool {
+  auto input::has(uint32_t flags, uint32_t flag) noexcept -> bool {
     return (flags & flag) == flag;
   }
 
-  auto input::to_char(uint8_t key) -> char32_t {
-    if (key >= key_numpad0 && key <= key_numpad9) {
-      if (is_numlock() && !is_shift()) {
-        return U'0' + (key - key_numpad0);
-      } else if (key == key_numpad4) {
-        return ctrl_left;
-      } else if (key == key_numpad8) {
-        return ctrl_up;
-      } else if (key == key_numpad6) {
-        return ctrl_right;
-      } else if (key == key_numpad2) {
-        return ctrl_down;
-      }
-    } else if (key >= key_a && key <= key_z) {
-      if (is_shift() == is_capslock()) {
-        return U'a' + (key - key_a);
-      } else {
-        return U'A' + (key - key_a);
-      }
-    } else if (key >= key_0 && key <= key_9) {
-      if (!is_shift()) {
-        return U'0' + (key - key_0);
-      } else {
-        constexpr auto chars = U")!@#$%^&*(";
-        return chars[key - key_0];
-      }
-    } else if (key == key_space) {
-      return U' ';
-    } else if (key == key_multiply) {
-      return U'*';
-    } else if (key == key_add) {
-      return U'+';
-    } else if (key == key_subtract) {
-      return U'-';
-    } else if (key == key_decimal) {
-      return is_numlock() && !is_shift() ? U'.' : ctrl_delete;
-    } else if (key == key_devide) {
-      return U'/';
-    } else if (key >= key_semicolon && key <= key_tilda) {
-      constexpr auto lower = U";=,-./`";
-      constexpr auto upper = U":+<_>?~";
-
-      auto n = key - key_semicolon;
-
-      return is_shift() ? upper[n] : lower[n];
-    } else if (key >= key_open && key <= key_quote) {
-      constexpr auto lower = U"[\\]'";
-      constexpr auto upper = U"{|}\"";
-
-      auto n = key - key_open;
-
-      return is_shift() ? upper[n] : lower[n];
-    } else if (key == key_tab) {
-      return ctrl_tab;
-    } else if (key == key_backspace) {
-      return ctrl_backspace;
-    } else if (key == key_enter) {
-      return ctrl_return;
-    } else if (key == key_delete) {
-      return ctrl_delete;
-    } else if (key == key_left) {
-      return ctrl_left;
-    } else if (key == key_up) {
-      return ctrl_up;
-    } else if (key == key_right) {
-      return ctrl_right;
-    } else if (key == key_down) {
-      return ctrl_down;
-    }
-
-    return 0u;
-  }
-
-  void input::process_mouse(const void *raw_data) {
+  void input::process_mouse(void const *raw_data) noexcept {
     auto raw = *reinterpret_cast<const RAWMOUSE *>(raw_data);
 
     if (m_use_system_cursor) {
@@ -361,11 +222,8 @@ namespace laplace::win32 {
       GetCursorPos(&p);
       ScreenToClient(m_handle, &p);
 
-      m_mouse_state.delta_x += p.x - m_mouse_state.x;
-      m_mouse_state.delta_y += p.y - m_mouse_state.y;
+      update_cursor(p.x, p.y);
 
-      m_mouse_state.x = m_mouse_state.cursor_x = p.x;
-      m_mouse_state.y = m_mouse_state.cursor_y = p.y;
     } else {
       if (has(raw.usFlags, MOUSE_MOVE_ABSOLUTE)) {
         /*  Absolute cursor position.
@@ -418,10 +276,9 @@ namespace laplace::win32 {
         m_mouse_state.x = x;
         m_mouse_state.y = y;
 
-        if (m_is_cursor_enabled) {
-          m_mouse_state.cursor_x = (x * m_window_width) / m_res_x;
-          m_mouse_state.cursor_y = (y * m_window_height) / m_res_y;
-        }
+        if (m_is_cursor_enabled)
+          update_cursor((x * m_window_width) / m_res_x,
+                        (y * m_window_height) / m_res_y);
       }
 
       SetCursorPos(static_cast<int>(m_center_x),
@@ -473,7 +330,7 @@ namespace laplace::win32 {
     }
   }
 
-  void input::process_keyboard(const void *raw_data) {
+  void input::process_keyboard(void const *raw_data) noexcept {
     auto raw = *reinterpret_cast<const RAWKEYBOARD *>(raw_data);
 
     if (has(raw.Flags, RI_KEY_MAKE)) {
@@ -483,57 +340,5 @@ namespace laplace::win32 {
     if (has(raw.Flags, RI_KEY_BREAK)) {
       process_key(static_cast<uint8_t>(raw.VKey), false);
     }
-  }
-
-  void input::process_wheel(sl::index delta) {
-    m_mouse_state.wheel_delta += delta;
-
-    m_events.emplace_back<input_event>(
-        { .cursor_x = m_mouse_state.cursor_x,
-          .cursor_y = m_mouse_state.cursor_y,
-          .key      = key_wheel,
-          .delta    = delta });
-  }
-
-  void input::process_key(uint8_t key, bool is_down) {
-    auto const n          = m_keymap[key];
-    auto      &k          = m_keyboard_state[n];
-    bool const is_changed = is_down != k.is_down;
-
-    k.is_down = is_down;
-
-    auto const get_char = [&]() -> char32_t {
-      if (is_changed)
-        return process_char(n, is_down);
-      return U'\0';
-    };
-
-    m_events.emplace_back<input_event>(
-        { .cursor_x  = m_mouse_state.cursor_x,
-          .cursor_y  = m_mouse_state.cursor_y,
-          .key       = n,
-          .delta     = is_down ? input_event::delta_key_down
-                               : input_event::delta_key_up,
-          .character = get_char() });
-  }
-
-  auto input::process_char(uint8_t key, bool is_down) -> char32_t {
-    auto const c = to_char(key);
-
-    if (c) {
-      m_char_period_msec = char_predelay_msec;
-
-      if (is_down) {
-        m_is_char_pressed = true;
-        m_last_char_key   = key;
-        m_last_char       = c;
-        return c;
-
-      } else if (key == m_last_char_key) {
-        m_is_char_pressed = false;
-      }
-    }
-
-    return {};
   }
 }
