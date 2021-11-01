@@ -35,7 +35,7 @@ namespace laplace::win32 {
   sl::whole const input::default_resolution_x = 2000;
   sl::whole const input::default_resolution_y = 1500;
 
-  input::keymap_table const default_keymap = []() {
+  input::keymap_table const input::default_keymap = []() {
     auto v = input::keymap_table {};
     for (sl::index i = 0; i < input::key_count; i++) v[i] = i;
 
