@@ -26,10 +26,6 @@ namespace laplace::engine {
 
   scheduler::scheduler(world &w) noexcept : m_world(w) { }
 
-  scheduler::~scheduler() noexcept {
-    set_done();
-  }
-
   void scheduler::schedule(sl::whole const delta) noexcept {
     lock(m_lock_ex, m_lock_in);
     auto _ul_ex = unique_lock(m_lock_ex, adopt_lock);
@@ -107,11 +103,6 @@ namespace laplace::engine {
       t = jthread([this] { this->tick_thread(); });
   }
 
-  auto scheduler::get_thread_count() noexcept -> sl::whole {
-    auto _ul = unique_lock(m_lock_ex);
-    return m_threads.size();
-  }
-
   void scheduler::set_done() noexcept {
     lock(m_lock_ex, m_lock_in);
     auto _ul_ex = unique_lock(m_lock_ex, adopt_lock);
@@ -123,7 +114,12 @@ namespace laplace::engine {
     m_sync.notify_all();
   }
 
-  void scheduler::fence(function<void()> fn) noexcept {
+  auto scheduler::get_thread_count() noexcept -> sl::whole {
+    auto _ul = unique_lock(m_lock_ex);
+    return m_threads.size();
+  }
+
+  void scheduler::fence(function<void()> const &fn) noexcept {
     auto _ul = unique_lock(m_lock_in);
 
     m_in++;

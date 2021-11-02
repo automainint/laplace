@@ -24,4 +24,5 @@ Checks: >
   -*-deprecated-headers,
   -*-reinterpret-cast,
   -*-constant-array-index,
-  -*-private-member-variables-in-classes
+  -*-private-member-variables-in-classes,
+  -*-simplify-boolean-expr

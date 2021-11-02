@@ -27,21 +27,24 @@ namespace laplace::engine {
     static sl::whole const overthreading_limit;
     static sl::whole const concurrency_limit;
 
-    scheduler(const scheduler &) = delete;
-    auto operator=(const scheduler &) -> scheduler & = delete;
+    scheduler(scheduler const &) = delete;
+    scheduler(scheduler &&)      = delete;
+    auto operator=(scheduler const &) -> scheduler & = delete;
+    auto operator=(scheduler &&) -> scheduler & = delete;
 
-    scheduler(world &w) noexcept;
-    ~scheduler() noexcept;
+    explicit scheduler(world &w) noexcept;
+    ~scheduler() noexcept = default;
 
-    void schedule(sl::whole const delta) noexcept;
+    void schedule(sl::whole delta) noexcept;
     void join() noexcept;
 
-    void set_thread_count(sl::whole const thread_count) noexcept;
+    void set_thread_count(sl::whole thread_count) noexcept;
+    void set_done() noexcept;
+
     [[nodiscard]] auto get_thread_count() noexcept -> sl::whole;
 
   private:
-    void set_done() noexcept;
-    void fence(std::function<void()> fn) noexcept;
+    void fence(std::function<void()> const &fn) noexcept;
     void tick_thread() noexcept;
 
     void perform_sync_queue() noexcept;

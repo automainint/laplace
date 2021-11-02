@@ -64,10 +64,14 @@ namespace laplace::linux {
     if (--gl_ref_count > 0)
       return;
 
+      /*  Don't close library to allow sanitizers keep track of it.
+       */
+#ifdef NDEBUG
     if (gl_library != nullptr) {
       dlclose(gl_library);
       gl_library = nullptr;
     }
+#endif
   }
 
   auto gl_get_proc_address(char const *name) noexcept
