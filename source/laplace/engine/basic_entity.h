@@ -17,8 +17,8 @@
 
 #include "access/world.predef.h"
 #include "basic_entity.predef.h"
-#include "eval/shape.h"
 #include "object/sets.h"
+#include "tridi/shape.h"
 #include "world.predef.h"
 #include <atomic>
 #include <chrono>
@@ -36,26 +36,26 @@ namespace laplace::engine {
     static constexpr auto proto   = proto_tag {};
     static constexpr auto dynamic = dynamic_tag {};
 
-    static const std::chrono::milliseconds lock_timeout;
-    static const sl::time                  default_tick_period;
+    static std::chrono::milliseconds const lock_timeout;
+    static sl::time const                  default_tick_period;
 
-    basic_entity(cref_entity en) noexcept;
+    basic_entity(basic_entity const &en) noexcept;
     basic_entity(basic_entity &&en) noexcept;
-    auto operator=(cref_entity en) noexcept -> ref_entity;
-    auto operator=(basic_entity &&en) noexcept -> ref_entity;
+    auto operator=(basic_entity const &en) noexcept -> basic_entity &;
+    auto operator=(basic_entity &&en) noexcept -> basic_entity &;
 
     /*  Prototype initialization.
      */
-    basic_entity(proto_tag = proto);
+    explicit basic_entity(proto_tag = proto);
 
     /*  Dummy initialization.
      */
-    basic_entity(dummy_tag);
+    explicit basic_entity(dummy_tag);
 
     /*  Initialize dynamic entity.
      */
-    basic_entity(dynamic_tag,
-                 sl::time tick_period = default_tick_period);
+    explicit basic_entity(dynamic_tag,
+                          sl::time tick_period = default_tick_period);
 
     virtual ~basic_entity() = default;
 
@@ -79,7 +79,7 @@ namespace laplace::engine {
      */
     void reset_clock();
 
-    void set_world(ptr_world w, sl::index id);
+    void set_world(ptr_world const &w, sl::index id);
     void reset_world();
 
     [[nodiscard]] auto index_of(sl::index id) -> sl::index;
@@ -232,22 +232,20 @@ namespace laplace::engine {
 
     void vec_init(sl::index n, intval value) noexcept;
 
-    void self_destruct(access::world const &w);
+    void self_destruct(access::world const &w) const;
     void desync();
 
   private:
-    void assign(cref_entity en) noexcept;
+    void assign(basic_entity const &en) noexcept;
     void assign(basic_entity &&en) noexcept;
 
-    void sets_invalidate(sl::index const n) noexcept;
+    void sets_invalidate(sl::index n) noexcept;
     void sets_validate_all() noexcept;
 
-    void bytes_invalidate(sl::index const n,
-                          sl::whole const count = 1) noexcept;
+    void bytes_invalidate(sl::index n, sl::whole count = 1) noexcept;
     void bytes_validate_all() noexcept;
 
-    void vec_invalidate(sl::index const n,
-                        sl::whole const count = 1) noexcept;
+    void vec_invalidate(sl::index n, sl::whole count = 1) noexcept;
     void vec_validate_all() noexcept;
 
     struct _range {
@@ -256,8 +254,8 @@ namespace laplace::engine {
     };
 
     void invalidate_range(sl::vector<_range> &ranges,
-                          sl::index const     n,
-                          sl::whole const     count) noexcept;
+                          sl::index           n,
+                          sl::whole           count) noexcept;
 
     std::shared_timed_mutex m_lock;
     std::weak_ptr<world>    m_world;

@@ -25,8 +25,8 @@ namespace laplace::engine {
   constexpr intval epsilon    = 1;
   constexpr intval safe_delta = 2;
   constexpr intval intval_max = std::numeric_limits<intval>::max();
-  constexpr intval infinity   = intval_max >> 4;
-  constexpr intval safe_limit = intval_max >> 2;
+  constexpr intval infinity   = intval_max / 16;
+  constexpr intval safe_limit = intval_max / 4;
 
   constexpr sl::time  time_undefined = -1;
   constexpr sl::index id_undefined   = -1;
@@ -38,14 +38,6 @@ namespace laplace::engine {
   using vec2z = math::vector<2, sl::index>;
   using vec3z = math::vector<3, sl::index>;
   using vec4z = math::vector<4, sl::index>;
-
-  using ref_vec2i = vec2i &;
-  using ref_vec3i = vec3i &;
-  using ref_vec4i = vec4i &;
-
-  using cref_vec2i = const vec2i &;
-  using cref_vec3i = const vec3i &;
-  using cref_vec4i = const vec4i &;
 }
 
 #endif

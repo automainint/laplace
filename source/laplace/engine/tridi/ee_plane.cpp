@@ -1,0 +1,20 @@
+/*  Copyright (c) 2021 Mitya Selivanov
+ *
+ *  This file is part of the Laplace project.
+ *
+ *  Laplace is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+ *  the MIT License for more details.
+ */
+
+#include "plane.h"
+
+namespace laplace::engine::tridi {
+  auto raw_normal(vec3i const &p0, vec3i const &p1, vec3i const &p2)
+      -> vec3i {
+    auto a = p1 - p0;
+    auto b = p0 - p2;
+    return math::cross(a, b);
+  }
+}

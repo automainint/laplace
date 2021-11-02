@@ -25,10 +25,10 @@ namespace laplace::engine {
       std::max, std::move, std::make_unique, std::lower_bound,
       std::chrono::milliseconds;
 
-  const milliseconds basic_entity::lock_timeout = milliseconds(300);
-  const sl::time     basic_entity::default_tick_period = 10;
+  milliseconds const basic_entity::lock_timeout = milliseconds(300);
+  sl::time const     basic_entity::default_tick_period = 10;
 
-  basic_entity::basic_entity(cref_entity en) noexcept {
+  basic_entity::basic_entity(basic_entity const &en) noexcept {
     assign(en);
   }
 
@@ -36,15 +36,15 @@ namespace laplace::engine {
     assign(en);
   }
 
-  auto basic_entity::operator=(cref_entity en) noexcept
-      -> ref_entity {
+  auto basic_entity::operator=(basic_entity const &en) noexcept
+      -> basic_entity & {
 
     assign(en);
     return *this;
   }
 
   auto basic_entity::operator=(basic_entity &&en) noexcept
-      -> ref_entity {
+      -> basic_entity & {
 
     assign(en);
     return *this;
@@ -107,7 +107,7 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::set_world(ptr_world w, sl::index id) {
+  void basic_entity::set_world(ptr_world const &w, sl::index id) {
     m_world = w;
     m_id    = id;
   }
@@ -467,14 +467,13 @@ namespace laplace::engine {
         return;
       }
 
-      for (sl::index i = 0; i < dst.size(); i++) {
+      for (sl::index i = 0; i < dst.size(); i++)
         dst[i] = m_vec[n + i].value;
-      }
-    }
 
-    error_("Lock timeout.", __FUNCTION__);
-    desync();
-    return;
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
   }
 
   void basic_entity::vec_write(sl::index          n,
@@ -491,11 +490,11 @@ namespace laplace::engine {
       }
 
       vec_invalidate(n, values.size());
-    }
 
-    error_("Lock timeout.", __FUNCTION__);
-    desync();
-    return;
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
   }
 
   void basic_entity::vec_write_delta(
@@ -512,11 +511,11 @@ namespace laplace::engine {
       }
 
       vec_invalidate(n, deltas.size());
-    }
 
-    error_("Lock timeout.", __FUNCTION__);
-    desync();
-    return;
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
   }
 
   void basic_entity::vec_erase_delta(
@@ -533,11 +532,11 @@ namespace laplace::engine {
       }
 
       vec_invalidate(n, deltas.size());
-    }
 
-    error_("Lock timeout.", __FUNCTION__);
-    desync();
-    return;
+    } else {
+      error_("Lock timeout.", __FUNCTION__);
+      desync();
+    }
   }
 
   void basic_entity::vec_resize(sl::whole size) noexcept {
@@ -691,12 +690,10 @@ namespace laplace::engine {
       }
 
       return is_tick;
-
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
     }
 
+    error_("Lock timeout.", __FUNCTION__);
+    desync();
     return false;
   }
 
@@ -704,24 +701,20 @@ namespace laplace::engine {
 
     if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
       return m_sets[n_is_dynamic].value > 0;
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
     }
 
+    error_("Lock timeout.", __FUNCTION__);
+    desync();
     return false;
   }
 
   auto basic_entity::get_tick_period() -> sl::time {
-
-    if (auto _sl = shared_lock(m_lock, lock_timeout); _sl) {
+    if (auto _sl = shared_lock(m_lock, lock_timeout); _sl)
       return m_sets[n_tick_period].value;
-    } else {
-      error_("Lock timeout.", __FUNCTION__);
-      desync();
-    }
 
-    return false;
+    error_("Lock timeout.", __FUNCTION__);
+    desync();
+    return -1;
   }
 
   auto basic_entity::get_id() const -> sl::index {
@@ -773,7 +766,7 @@ namespace laplace::engine {
     }
   }
 
-  void basic_entity::self_destruct(access::world const &w) {
+  void basic_entity::self_destruct(access::world const &w) const {
     w.queue(make_unique<action::remove>(this->get_id()));
   }
 
@@ -782,7 +775,10 @@ namespace laplace::engine {
       w->desync();
   }
 
-  void basic_entity::assign(cref_entity en) noexcept {
+  void basic_entity::assign(basic_entity const &en) noexcept {
+    if (this == &en)
+      return;
+    
     m_sets_changed  = en.m_sets_changed;
     m_bytes_changed = en.m_bytes_changed;
     m_vec_changed   = en.m_vec_changed;
@@ -799,12 +795,12 @@ namespace laplace::engine {
     m_sets_changed  = move(en.m_sets_changed);
     m_bytes_changed = move(en.m_bytes_changed);
     m_vec_changed   = move(en.m_vec_changed);
-    m_id            = move(en.m_id);
+    m_id            = en.m_id;
 
     m_sets  = move(en.m_sets);
     m_bytes = move(en.m_bytes);
     m_vec   = move(en.m_vec);
-    m_clock = move(en.m_clock);
+    m_clock = en.m_clock;
     m_world = move(en.m_world);
   }
 

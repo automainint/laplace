@@ -14,7 +14,6 @@
 
 #include "../action/pathmap_reset.h"
 #include "../action/unit_place.h"
-#include "../object/game_clock.h"
 #include "../object/landscape.h"
 #include "../object/pathmap.h"
 #include "../object/player.h"
@@ -24,8 +23,8 @@
 namespace quadwar_app::protocol {
   using std::make_shared, std::make_unique, engine::basic_entity,
       object::root, object::pathmap, object::player, object::unit,
-      object::game_clock, object::landscape, action::pathmap_reset,
-      action::unit_place, engine::id_undefined, engine::ptr_impact;
+      object::landscape, action::pathmap_reset, action::unit_place,
+      engine::id_undefined, engine::ptr_impact;
 
   void qw_loading::perform(world w) const {
     verb(" :: event  Quadwar/loading");
@@ -56,7 +55,5 @@ namespace quadwar_app::protocol {
         return ev;
       }());
     }
-
-    w.spawn(make_shared<game_clock>(), id_undefined);
   }
 }

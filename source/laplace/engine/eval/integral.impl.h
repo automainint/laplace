@@ -1,12 +1,4 @@
-/*  laplace/engine/eval/integral.impl.h
- *
- *      Integral deterministic math features. Constexpr
- *      implementation.
- *
- *      Make sure to set compiler constexpr evaluation
- *      options high enough.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -14,6 +6,10 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty
  *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  *  the MIT License for more details.
+ */
+
+/*  Make sure to set compiler constexpr evaluation options high
+ *  enough.
  */
 
 #ifndef laplace_engine_eval_integral_impl_h
@@ -36,9 +32,9 @@ namespace laplace::engine::eval::impl {
   constexpr intval    _log_table_max   = 32;
   constexpr intval    _log_iterations  = 55;
 
-  constexpr sl::whole _sqrt_table_size  = 0x800;
+  constexpr sl::whole _sqrt_table_size  = 0x1600;
   constexpr intval    _sqrt_table_scale = 0x200;
-  constexpr intval    _sqrt_table_max   = 32;
+  constexpr intval    _sqrt_table_max   = 64;
 
   constexpr auto constant_scale() noexcept -> intval {
     return _constant_scale;
