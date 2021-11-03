@@ -25,12 +25,12 @@ namespace laplace::engine::tridi {
   }
 
   auto sphere::contains(vec3i const &point) const noexcept -> bool {
-    if (auto dx = abs(point.x() - center.x()); dx - epsilon <= radius)
+    if (auto dx = abs(point.x() - center.x()); dx - epsilon < radius)
       if (auto dy = abs(point.y() - center.y());
-          dy - epsilon <= radius)
+          dy - epsilon < radius)
         if (auto dz = abs(point.z() - center.z());
-            dz - epsilon <= radius)
-          return dx * dx + dy * dy + dz * dz - epsilon <=
+            dz - epsilon < radius)
+          return dx * dx + dy * dy + dz * dz - epsilon <
                  radius * radius;
     return false;
   }

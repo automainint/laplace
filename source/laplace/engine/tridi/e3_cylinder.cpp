@@ -26,15 +26,15 @@ namespace laplace::engine::tridi {
 
   auto cylinder::contains_flat(vec3i const &point) const noexcept
       -> bool {
-    if (auto dx = abs(point.x() - base.x()); dx - epsilon <= radius)
-      if (auto dy = abs(point.y() - base.y()); dy - epsilon <= radius)
-        return dx * dx + dy * dy - epsilon <= radius * radius;
+    if (auto dx = abs(point.x() - base.x()); dx - epsilon < radius)
+      if (auto dy = abs(point.y() - base.y()); dy - epsilon < radius)
+        return dx * dx + dy * dy - epsilon < radius * radius;
     return false;
   }
 
   auto cylinder::contains(vec3i const &point) const noexcept -> bool {
-    return base.z() - epsilon <= point.z() &&
-           base.z() + height + epsilon >= point.z() &&
+    return base.z() - epsilon < point.z() &&
+           base.z() + height + epsilon > point.z() &&
            contains_flat(point);
   }
 }

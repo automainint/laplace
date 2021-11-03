@@ -11,6 +11,9 @@
 #include "polygon.h"
 
 namespace laplace::engine::tridi {
+  polygon::polygon(std::initializer_list<vec3i> v) noexcept :
+      vertices(v) { }
+
   auto polygon::get_plane() const noexcept -> plane {
     if (vertices.size() < 3)
       return plane { vertices[0], { 0, 0, 0 } };

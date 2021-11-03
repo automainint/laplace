@@ -23,6 +23,12 @@ namespace laplace::engine::tridi {
            min.z() > max.z();
   }
 
+  auto box::is_equals(box const &other) const noexcept -> bool {
+    if (is_empty() && other.is_empty())
+      return true;
+    return min == other.min && max == other.max;
+  }
+
   auto box::get_vertex(sl::index n) const noexcept -> vec3i {
     switch (n) {
       case 0: return min;
@@ -110,5 +116,13 @@ namespace laplace::engine::tridi {
   auto box::contains(triangle const &tri) const noexcept -> bool {
     return contains(tri.vertices[0]) && contains(tri.vertices[1]) &&
            contains(tri.vertices[2]);
+  }
+
+  auto operator==(box const &a, box const &b) noexcept -> bool {
+    return a.is_equals(b);
+  }
+
+  auto operator!=(box const &a, box const &b) noexcept -> bool {
+    return !a.is_equals(b);
   }
 }

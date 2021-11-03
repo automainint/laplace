@@ -18,6 +18,9 @@ namespace laplace::engine::tridi {
   struct polygon {
     sl::vector<vec3i> vertices;
 
+    polygon() noexcept = default;
+    polygon(std::initializer_list<vec3i> v) noexcept;
+
     [[nodiscard]] auto get_plane() const noexcept -> plane;
     [[nodiscard]] auto get_bounds() const noexcept -> box;
     [[nodiscard]] auto contains_flat(

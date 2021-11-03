@@ -23,6 +23,8 @@ namespace laplace::engine::tridi {
     vec3i max = { -safe_delta, -safe_delta, -safe_delta };
 
     [[nodiscard]] auto is_empty() const noexcept -> bool;
+    [[nodiscard]] auto is_equals(box const &other) const noexcept
+        -> bool;
     [[nodiscard]] auto get_vertex(sl::index n) const noexcept
         -> vec3i;
     [[nodiscard]] auto get_plane(sl::index n) const noexcept -> plane;
@@ -41,6 +43,11 @@ namespace laplace::engine::tridi {
     [[nodiscard]] auto contains(triangle const &tri) const noexcept
         -> bool;
   };
+
+  [[nodiscard]] auto operator==(box const &a, box const &b) noexcept
+      -> bool;
+  [[nodiscard]] auto operator!=(box const &a, box const &b) noexcept
+      -> bool;
 }
 
 #endif

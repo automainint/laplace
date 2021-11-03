@@ -38,6 +38,12 @@ namespace laplace::platform::dummy {
 
   class input : public basic_input {
   public:
+    input(input const &) = delete;
+    input(input &&)      = delete;
+    auto operator=(input const &) -> input & = delete;
+    auto operator=(input &&) -> input & = delete;
+
+    input() noexcept           = default;
     ~input() noexcept override = default;
 
     void use_system_cursor(bool) noexcept { }

@@ -1,9 +1,4 @@
-/*  laplace/engine/eventorder.h
- *
- *      Trivial class that contains event order information.
- *      Allows to sort tree-structured events.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -11,6 +6,10 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty
  *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  *  the MIT License for more details.
+ */
+
+/*  Trivial class that contains event order information.
+ *  Allows sorting tree-structured events.
  */
 
 #ifndef laplace_engine_eventorder_h
@@ -35,7 +34,7 @@ namespace laplace::engine {
     constexpr eventorder(const eventorder &) = default;
     constexpr eventorder(eventorder &&)      = default;
     constexpr auto operator                  =(const eventorder &)
-        -> eventorder &                      = default;
+        -> eventorder                      & = default;
     constexpr auto operator=(eventorder &&) -> eventorder & = default;
 
     /*  Spawn a child event.
@@ -43,13 +42,13 @@ namespace laplace::engine {
     [[nodiscard]] constexpr auto spawn(sl::whole &child_count) const
         -> eventorder;
 
-    [[nodiscard]] constexpr auto operator<(const eventorder &order) const
-        -> bool;
+    [[nodiscard]] constexpr auto operator<(
+        eventorder const &order) const -> bool;
 
     [[nodiscard]] constexpr auto get_index() const -> sl::index;
 
   private:
-    constexpr eventorder(const eventorder &parent,
+    constexpr eventorder(eventorder const &parent,
                          sl::index         child_index);
 
     std::array<sl::index, max_depth> m_indices = { 0 };

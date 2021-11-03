@@ -14,7 +14,7 @@
 namespace laplace::test {
   using engine::vec3i, engine::tridi::length;
 
-  TEST(engine, eval_length) {
+  TEST(engine, tridi_length) {
     EXPECT_EQ(length(vec3i { 10, 0, 0 }), 10);
     EXPECT_EQ(length(vec3i { 0, 10, 0 }), 10);
     EXPECT_EQ(length(vec3i { 0, 0, 10 }), 10);
