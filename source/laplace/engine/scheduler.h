@@ -1,8 +1,4 @@
-/*  laplace/engine/scheduler.h
- *
- *      The World multithreading scheduler. Full thread-safe.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *

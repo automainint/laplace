@@ -1,9 +1,4 @@
-/*  laplace/engine/basic_entity.predef.h
- *
- *      Basic class for any gameplay object. Minimal
- *      declarations.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *

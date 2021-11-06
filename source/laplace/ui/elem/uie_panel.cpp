@@ -17,7 +17,7 @@
 namespace laplace::ui::elem {
   void panel::render(context const &con) noexcept {
     con.render_panel(get_panel_state());
-    draw_childs(con);
+    draw_attached_widgets(con);
     up_to_date();
   }
 

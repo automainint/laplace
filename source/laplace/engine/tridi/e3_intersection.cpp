@@ -95,13 +95,13 @@ namespace laplace::engine::tridi {
   auto intersects(box const &a, octree const &b) -> bool {
     if (!intersects(a, b.bounds))
       return false;
-    if (b.childs.index() == 0) {
-      for (auto const &c : get<0>(b.childs)) {
+    if (b.children.index() == 0) {
+      for (auto const &c : get<0>(b.children)) {
         if (intersects(a, c))
           return true;
       }
     } else {
-      for (auto const &tr : get<1>(b.childs)) {
+      for (auto const &tr : get<1>(b.children)) {
         if (intersects(a, tr))
           return true;
       }
@@ -194,14 +194,14 @@ namespace laplace::engine::tridi {
   auto intersects(cylinder const &a, octree const &b) -> bool {
     if (!intersects(b.bounds, a))
       return false;
-    if (b.childs.index() == 0) {
-      for (auto const &c : get<0>(b.childs)) {
+    if (b.children.index() == 0) {
+      for (auto const &c : get<0>(b.children)) {
         if (intersects(a, c)) {
           return true;
         }
       }
     } else {
-      for (auto const &tr : get<1>(b.childs)) {
+      for (auto const &tr : get<1>(b.children)) {
         if (intersects(a, tr)) {
           return true;
         }
@@ -225,13 +225,13 @@ namespace laplace::engine::tridi {
   auto intersects(sphere const &a, octree const &b) -> bool {
     if (!intersects(b.bounds, a))
       return false;
-    if (b.childs.index() == 0) {
-      for (auto const &c : get<0>(b.childs))
+    if (b.children.index() == 0) {
+      for (auto const &c : get<0>(b.children))
         if (intersects(a, c))
           return true;
 
     } else {
-      for (auto const &tr : get<1>(b.childs))
+      for (auto const &tr : get<1>(b.children))
         if (intersects(a, tr))
           return true;
     }
@@ -259,13 +259,13 @@ namespace laplace::engine::tridi {
   auto intersects(triangle const &a, octree const &b) -> bool {
     if (!intersects(b.bounds, a))
       return false;
-    if (b.childs.index() == 0) {
-      for (auto const &c : get<0>(b.childs))
+    if (b.children.index() == 0) {
+      for (auto const &c : get<0>(b.children))
         if (intersects(a, c))
           return true;
 
     } else {
-      for (auto const &tr : get<1>(b.childs))
+      for (auto const &tr : get<1>(b.children))
         if (intersects(a, tr))
           return true;
     }
@@ -275,19 +275,19 @@ namespace laplace::engine::tridi {
   auto intersects(octree const &a, octree const &b) -> bool {
     if (!intersects(a.bounds, b.bounds))
       return false;
-    if (a.childs.index() == 0) {
-      auto const &childs = get<0>(a.childs);
+    if (a.children.index() == 0) {
+      auto const &childs = get<0>(a.children);
       for (auto const &c : childs)
         if (intersects(c, b))
           return true;
-    } else if (b.childs.index() == 0) {
-      auto const &childs = get<0>(b.childs);
+    } else if (b.children.index() == 0) {
+      auto const &childs = get<0>(b.children);
       for (auto const &c : childs)
         if (intersects(a, c))
           return true;
     } else {
-      auto const &v0 = get<1>(a.childs);
-      auto const &v1 = get<1>(b.childs);
+      auto const &v0 = get<1>(a.children);
+      auto const &v1 = get<1>(b.children);
 
       for (auto const &tr0 : v0)
         if (intersects(b.bounds, tr0))
@@ -370,13 +370,13 @@ namespace laplace::engine::tridi {
     if (!intersects(a, b.bounds))
       return false;
 
-    if (b.childs.index() == 0) {
-      for (auto const &c : get<0>(b.childs))
+    if (b.children.index() == 0) {
+      for (auto const &c : get<0>(b.children))
         if (intersects(a, c))
           return true;
 
     } else {
-      for (auto const &tr : get<1>(b.childs))
+      for (auto const &tr : get<1>(b.children))
         if (intersects(a, tr))
           return true;
     }
@@ -638,8 +638,8 @@ namespace laplace::engine::tridi {
     if (!intersects(a, b.bounds))
       return -safe_limit;
 
-    if (b.childs.index() == 0) {
-      for (auto const &c : get<0>(b.childs)) {
+    if (b.children.index() == 0) {
+      for (auto const &c : get<0>(b.children)) {
         auto t = intersection(a, c);
 
         if (t + epsilon >= 0)
@@ -647,7 +647,7 @@ namespace laplace::engine::tridi {
       }
     } else {
       auto result = safe_limit;
-      for (auto const &tr : get<1>(b.childs)) {
+      for (auto const &tr : get<1>(b.children)) {
         auto t = intersection(a, tr);
 
         if (t + epsilon >= 0 && t < result)

@@ -19,14 +19,14 @@ namespace laplace::test {
   TEST(ui, basic_widget_expired_at_construct) {
     auto w = basic_widget {};
     EXPECT_TRUE(w.is_expired());
-    EXPECT_FALSE(w.has_childs_expired());
+    EXPECT_FALSE(w.has_attached_expired());
   }
 
   TEST(ui, basic_widget_expired_childs) {
     auto foo = make_shared<basic_widget>();
     auto bar = make_shared<basic_widget>();
     foo->attach(bar);
-    EXPECT_TRUE(foo->has_childs_expired());
+    EXPECT_TRUE(foo->has_attached_expired());
     EXPECT_TRUE(bar->get_parent());
   }
 
@@ -162,7 +162,7 @@ namespace laplace::test {
     foo->attach(bar);
     foo->detach(bar);
 
-    EXPECT_EQ(foo->get_child_count(), 0);
+    EXPECT_EQ(foo->get_attached_widget_count(), 0);
   }
 
   TEST(ui, basic_widget_detach_first) {
@@ -174,8 +174,8 @@ namespace laplace::test {
     foo->attach(bus);
     foo->detach(bar);
 
-    EXPECT_EQ(foo->get_child_count(), 1);
-    EXPECT_EQ(foo->get_child(0), bus);
+    EXPECT_EQ(foo->get_attached_widget_count(), 1);
+    EXPECT_EQ(foo->get_attached_widget(0), bus);
     EXPECT_FALSE(bar->get_parent());
   }
 
@@ -188,8 +188,8 @@ namespace laplace::test {
     foo->attach(bus);
     foo->detach(bus);
 
-    EXPECT_EQ(foo->get_child_count(), 1);
-    EXPECT_EQ(foo->get_child(0), bar);
+    EXPECT_EQ(foo->get_attached_widget_count(), 1);
+    EXPECT_EQ(foo->get_attached_widget(0), bar);
     EXPECT_FALSE(bus->get_parent());
   }
 
@@ -202,8 +202,8 @@ namespace laplace::test {
     foo->attach(bus);
     foo->detach(0);
 
-    EXPECT_EQ(foo->get_child_count(), 1);
-    EXPECT_EQ(foo->get_child(0), bus);
+    EXPECT_EQ(foo->get_attached_widget_count(), 1);
+    EXPECT_EQ(foo->get_attached_widget(0), bus);
     EXPECT_FALSE(bar->get_parent());
   }
 
@@ -216,8 +216,8 @@ namespace laplace::test {
     foo->attach(bus);
     foo->detach(1);
 
-    EXPECT_EQ(foo->get_child_count(), 1);
-    EXPECT_EQ(foo->get_child(0), bar);
+    EXPECT_EQ(foo->get_attached_widget_count(), 1);
+    EXPECT_EQ(foo->get_attached_widget(0), bar);
     EXPECT_FALSE(bus->get_parent());
   }
 
@@ -230,7 +230,7 @@ namespace laplace::test {
     foo->attach(bus);
     foo->clear();
 
-    EXPECT_EQ(foo->get_child_count(), 0);
+    EXPECT_EQ(foo->get_attached_widget_count(), 0);
     EXPECT_FALSE(bar->get_parent());
     EXPECT_FALSE(bus->get_parent());
   }

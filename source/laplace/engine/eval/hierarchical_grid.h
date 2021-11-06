@@ -46,27 +46,27 @@ namespace laplace::engine::eval::hierarchical_grid {
   [[nodiscard]] auto pivot_order(pivot const &a,
                                  pivot const &b) noexcept -> bool;
 
-  [[nodiscard]] auto block_of(vec2z const &   position,
+  [[nodiscard]] auto block_of(vec2z const    &position,
                               map_info const &map) noexcept -> vec2z;
 
-  [[nodiscard]] auto origin_of(vec2z const &   block,
+  [[nodiscard]] auto origin_of(vec2z const    &block,
                                map_info const &map) noexcept -> vec2z;
 
-  [[nodiscard]] auto pivots_of(vec2z const &   block,
+  [[nodiscard]] auto pivots_of(vec2z const    &block,
                                map_info const &map) noexcept
       -> std::span<sl::index const>;
 
-  [[nodiscard]] auto pivots_of_position(vec2z const &   position,
+  [[nodiscard]] auto pivots_of_position(vec2z const    &position,
                                         map_info const &map) noexcept
       -> std::span<sl::index const>;
 
-  [[nodiscard]] auto generate(
-      vec2z const           block_size,
-      fn_available const    available,
-      intval const          grid_scale,
-      grid::rect_area const grid_area) noexcept -> map_info;
+  [[nodiscard]] auto generate(vec2z           block_size,
+                              fn_available    available,
+                              intval          grid_scale,
+                              grid::rect_area grid_area) noexcept
+      -> map_info;
 
-  [[nodiscard]] auto nearest_pivot(vec2z const &   position,
+  [[nodiscard]] auto nearest_pivot(vec2z const    &position,
                                    map_info const &map) noexcept
       -> sl::index;
 

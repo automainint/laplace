@@ -34,12 +34,12 @@ namespace laplace::engine::tridi {
                    (f[2] ? 2u : 1u);
 
     if (n == 1) {
-      tree.childs = sl::vector<triangle> {};
+      tree.children = sl::vector<triangle> {};
       return;
     }
 
-    tree.childs = sl::vector<octree>(n);
-    auto &v     = get<0>(tree.childs);
+    tree.children = sl::vector<octree>(n);
+    auto &v     = get<0>(tree.children);
 
     sl::index n_child = 0;
 
@@ -77,23 +77,23 @@ namespace laplace::engine::tridi {
   static void put(octree &tree, triangle const &tri) {
     if (!intersects(tree.bounds, tri))
       return;
-    if (tree.childs.index() == 0)
-      for (auto &child : get<0>(tree.childs)) put(child, tri);
+    if (tree.children.index() == 0)
+      for (auto &child : get<0>(tree.children)) put(child, tri);
     else
-      get<1>(tree.childs).emplace_back(tri);
+      get<1>(tree.children).emplace_back(tri);
   }
 
   static void cleanup(octree &tree) {
     auto is_empty = [](octree &tree) -> bool {
-      if (tree.childs.index() == 0)
-        return get<0>(tree.childs).empty();
-      return get<1>(tree.childs).empty();
+      if (tree.children.index() == 0)
+        return get<0>(tree.children).empty();
+      return get<1>(tree.children).empty();
     };
 
-    if (tree.childs.index() != 0)
+    if (tree.children.index() != 0)
       return;
 
-    auto &v = get<0>(tree.childs);
+    auto &v = get<0>(tree.children);
 
     for (sl::index i = 0; i < v.size();) {
       cleanup(v[i]);

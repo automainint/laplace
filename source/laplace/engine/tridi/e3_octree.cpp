@@ -11,17 +11,16 @@
 #include "octree.h"
 
 #include <algorithm>
-#include <ranges>
 
 namespace laplace::engine::tridi {
-  using std::ranges::all_of;
+  using std::ranges::all_of, std::ranges::any_of;
 
   auto octree::is_empty() const noexcept -> bool {
     if (bounds.is_empty())
       return true;
-    if (childs.index() != 0)
-      return false;
-    return all_of(get<0>(childs),
+    if (children.index() != n_octrees)
+      return get<1>(children).empty();
+    return all_of(get<n_octrees>(children),
                   [](auto const &child) { return child.is_empty(); });
   }
 
@@ -29,16 +28,13 @@ namespace laplace::engine::tridi {
     if (!bounds.contains(point))
       return false;
 
-    if (childs.index() == 0) {
-      for (auto const &c : get<0>(childs))
-        if (c.contains(point))
-          return true;
-      return false;
-    }
+    if (children.index() == n_octrees)
+      return any_of(get<n_octrees>(children), [&](auto const &child) {
+        return child.contains(point);
+      });
 
-    for (auto const &tri : get<1>(childs))
-      if (tri.orientation(point) - epsilon >= 0)
-        return false;
-    return true;
+    return any_of(get<n_triangles>(children), [&](auto const &tri) {
+      return tri.orientation(point) - epsilon >= 0;
+    });
   }
 }

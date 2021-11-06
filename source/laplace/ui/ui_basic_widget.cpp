@@ -1,6 +1,4 @@
-/*  laplace/ui/ui_basic_widget.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -107,21 +105,22 @@ namespace laplace::ui {
   void basic_widget::update_root() noexcept {
     m_absolute_x = m_rect.x;
     m_absolute_y = m_rect.y;
-    update_child();
+    update_attached();
   }
 
-  void basic_widget::update_child() noexcept {
+  void basic_widget::update_attached() noexcept {
     for (auto &c : m_childs) {
       if (!c->is_visible())
         continue;
 
       c->m_absolute_x = m_absolute_x + c->m_rect.x;
       c->m_absolute_y = m_absolute_y + c->m_rect.y;
-      c->update_child();
+      c->update_attached();
     }
   }
 
-  void basic_widget::draw_childs(context const &con) noexcept {
+  void basic_widget::draw_attached_widgets(
+      context const &con) noexcept {
     auto const local_area = rect { 0, 0, m_rect.width,
                                    m_rect.height };
 
@@ -171,7 +170,7 @@ namespace laplace::ui {
 
   void basic_widget::widget_render(context const &con) noexcept {
     if (is_attached()) {
-      draw_childs(con);
+      draw_attached_widgets(con);
     } else
         /*  Check if visible only for root widget. Visibility
          *  checking for attached widgets in widget::draw_childs.
@@ -179,7 +178,7 @@ namespace laplace::ui {
         if (is_visible()) {
       con.prepare();
       update_root();
-      draw_childs(con);
+      draw_attached_widgets(con);
     }
   }
 
@@ -222,7 +221,7 @@ namespace laplace::ui {
   void basic_widget::detach(ptr_widget const &child) noexcept {
     if (!child)
       return;
-    
+
     if (child->m_is_attached &&
         child->m_parent.lock() == shared_from_this()) {
       if (child->m_attach_index >= 0 &&
@@ -303,14 +302,13 @@ namespace laplace::ui {
     m_expired        = true;
     m_expired_childs = true;
 
-    for (auto &w : m_childs) { w->refresh(); }
+    for (auto &w : m_childs) w->refresh();
   }
 
   void basic_widget::set_expired(bool is_expired) noexcept {
     if (is_expired) {
-      if (auto p = m_parent.lock(); p) {
-        p->refresh_childs();
-      }
+      if (auto p = m_parent.lock(); p)
+        p->refresh_attached();
 
       refresh();
 
@@ -325,7 +323,7 @@ namespace laplace::ui {
     return m_expired;
   }
 
-  auto basic_widget::has_childs_expired() const noexcept -> bool {
+  auto basic_widget::has_attached_expired() const noexcept -> bool {
     return !m_childs.empty() && m_expired_childs;
   }
 
@@ -345,7 +343,8 @@ namespace laplace::ui {
     return m_has_focus;
   }
 
-  auto basic_widget::get_child_count() const noexcept -> sl::index {
+  auto basic_widget::get_attached_widget_count() const noexcept
+      -> sl::index {
     return m_childs.size();
   }
 
@@ -353,14 +352,11 @@ namespace laplace::ui {
     return m_parent.lock();
   }
 
-  auto basic_widget::get_child(sl::index index) const noexcept
+  auto basic_widget::get_attached_widget(sl::index n) const noexcept
       -> ptr_widget {
-    ptr_widget result;
-
-    if (index < m_childs.size())
-      result = m_childs[index];
-
-    return result;
+    if (n >= 0 && n < m_childs.size())
+      return m_childs[n];
+    return {};
   }
 
   void basic_widget::set_handler(bool is_handler) noexcept {
@@ -403,7 +399,7 @@ namespace laplace::ui {
     }
   }
 
-  void basic_widget::refresh_childs() noexcept {
+  void basic_widget::refresh_attached() noexcept {
     for (auto p = shared_from_this(); p; p = p->m_parent.lock())
       p->m_expired_childs = true;
   }

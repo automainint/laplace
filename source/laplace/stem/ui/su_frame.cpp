@@ -43,7 +43,7 @@ namespace laplace::stem::ui {
         m_buffer.set_size(r.width, r.height);
       }
 
-      if (is_widget_changed() || has_childs_expired()) {
+      if (is_widget_changed() || has_attached_expired()) {
         m_buffer.render([&]() {
           clear_color_buffer({ 0.f, 0.f, 0.f, 0.f });
           widget_render(con);

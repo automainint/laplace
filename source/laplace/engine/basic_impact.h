@@ -1,8 +1,4 @@
-/*  laplace/engine/basic_impact.h
- *
- *      Basic constexpr class for any gameplay event.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *

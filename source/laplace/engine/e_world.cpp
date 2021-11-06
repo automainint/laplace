@@ -19,7 +19,7 @@ namespace laplace::engine {
       std::adopt_lock;
 
   bool const     world::default_allow_relaxed_spawn = false;
-  uint64_t const world::default_seed                = 0xaaf0;
+  uint64_t const world::default_seed                = 0xfeedbeef;
 
   world::world(world &&other) noexcept {
     auto _ul = unique_lock(other.m_lock);

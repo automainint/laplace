@@ -16,9 +16,16 @@
 
 namespace laplace::engine::tridi {
   struct octree {
-    box bounds;
+    using children_type =
+        std::variant<sl::vector<octree>, sl::vector<triangle>>;
 
-    std::variant<sl::vector<octree>, sl::vector<triangle>> childs;
+    enum children_index : sl::index {
+      n_octrees   = 0,
+      n_triangles = 1
+    };
+
+    box           bounds;
+    children_type children;
 
     [[nodiscard]] auto is_empty() const noexcept -> bool;
     [[nodiscard]] auto contains(vec3i const &point) const noexcept
