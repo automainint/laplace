@@ -21,16 +21,16 @@ namespace laplace::math {
   template <sl::whole size_, typename type_>
   class basic_vector {
   public:
-    typedef type_ type;
+    using type = type_;
 
     static constexpr sl::whole size = size_;
 
     type v[size] = {};
 
-    constexpr basic_vector() noexcept;
+    constexpr basic_vector() noexcept = default;
     constexpr basic_vector(std::initializer_list<type> v_) noexcept;
 
-    constexpr explicit basic_vector(const type x) noexcept;
+    constexpr explicit basic_vector(type x) noexcept;
   };
 
   template <sl::whole size_, typename type_>
@@ -40,8 +40,8 @@ namespace laplace::math {
 
     [[nodiscard]] constexpr auto operator[](sl::whole index) noexcept
         -> type_ &;
-    [[nodiscard]] constexpr auto operator[](sl::whole index) const noexcept
-        -> type_;
+    [[nodiscard]] constexpr auto operator[](
+        sl::whole index) const noexcept -> type_;
   };
 
   template <typename type_>
@@ -60,8 +60,8 @@ namespace laplace::math {
     [[nodiscard]] constexpr auto operator[](sl::whole index) noexcept
         -> type_ &;
 
-    [[nodiscard]] constexpr auto operator[](sl::whole index) const noexcept
-        -> type_;
+    [[nodiscard]] constexpr auto operator[](
+        sl::whole index) const noexcept -> type_;
   };
 
   template <typename type_>
@@ -82,8 +82,8 @@ namespace laplace::math {
     [[nodiscard]] constexpr auto operator[](sl::whole index) noexcept
         -> type_ &;
 
-    [[nodiscard]] constexpr auto operator[](sl::whole index) const noexcept
-        -> type_;
+    [[nodiscard]] constexpr auto operator[](
+        sl::whole index) const noexcept -> type_;
   };
 
   template <typename type_>
@@ -106,156 +106,154 @@ namespace laplace::math {
     [[nodiscard]] constexpr auto operator[](sl::whole index) noexcept
         -> type_ &;
 
-    [[nodiscard]] constexpr auto operator[](sl::whole index) const noexcept
-        -> type_;
+    [[nodiscard]] constexpr auto operator[](
+        sl::whole index) const noexcept -> type_;
   };
 
   template <sl::whole size_, typename type_>
-  [[nodiscard]] constexpr auto operator==( //
-      const vector<size_, type_> a,        //
-      const vector<size_, type_> b         //
-      ) noexcept -> bool;
+  [[nodiscard]] constexpr auto operator==(
+      vector<size_, type_> a, vector<size_, type_> b) noexcept
+      -> bool;
 
   template <sl::whole size_, typename type_>
-  [[nodiscard]] constexpr auto operator!=( //
-      const vector<size_, type_> a,        //
-      const vector<size_, type_> b         //
-      ) noexcept -> bool;
+  [[nodiscard]] constexpr auto operator!=(
+      vector<size_, type_> a, vector<size_, type_> b) noexcept
+      -> bool;
 
   template <sl::whole size_, typename type_>
-  [[nodiscard]] constexpr auto operator+( //
-      const vector<size_, type_> a        //
-      ) noexcept -> vector<size_, type_>;
+  [[nodiscard]] constexpr auto operator+(
+      vector<size_, type_> a) noexcept -> vector<size_, type_>;
 
   template <sl::whole size_, typename type_>
-  [[nodiscard]] constexpr auto operator-( //
-      const vector<size_, type_> a        //
-      ) noexcept -> vector<size_, type_>;
+  [[nodiscard]] constexpr auto operator-(
+      vector<size_, type_> a) noexcept -> vector<size_, type_>;
 
   template <sl::whole size_, typename type_>
-  [[nodiscard]] constexpr auto operator+( //
-      const vector<size_, type_> a,       //
-      const vector<size_, type_> b        //
-      ) noexcept -> vector<size_, type_>;
+  [[nodiscard]] constexpr auto operator+(
+      vector<size_, type_> a, vector<size_, type_> b) noexcept
+      -> vector<size_, type_>;
 
   template <sl::whole size_, typename type_>
-  [[nodiscard]] constexpr auto operator-( //
-      const vector<size_, type_> a,       //
-      const vector<size_, type_> b        //
-      ) noexcept -> vector<size_, type_>;
+  [[nodiscard]] constexpr auto operator-(
+      vector<size_, type_> a, vector<size_, type_> b) noexcept
+      -> vector<size_, type_>;
 
   template <sl::whole size_, typename type_>
-  [[nodiscard]] constexpr auto operator*( //
-      const vector<size_, type_> a,       //
-      const type_                b        //
-      ) noexcept -> vector<size_, type_>;
+  [[nodiscard]] constexpr auto operator*(vector<size_, type_> a,
+                                         type_ b) noexcept
+      -> vector<size_, type_>;
 
   template <sl::whole size_, typename type_>
-  [[nodiscard]] constexpr auto operator/( //
-      const vector<size_, type_> a,       //
-      const type_                b        //
-      ) noexcept -> vector<size_, type_>;
+  [[nodiscard]] constexpr auto operator/(vector<size_, type_> a,
+                                         type_ b) noexcept
+      -> vector<size_, type_>;
 
   template <sl::whole size_, typename type_>
-  [[nodiscard]] constexpr auto operator*( //
-      const type_                a,       //
-      const vector<size_, type_> b        //
-      ) noexcept -> vector<size_, type_>;
+  [[nodiscard]] constexpr auto operator*(
+      type_ a, vector<size_, type_> b) noexcept
+      -> vector<size_, type_>;
 
   template <sl::whole size_, typename type_>
-  [[nodiscard]] constexpr auto operator/( //
-      const type_                a,       //
-      const vector<size_, type_> b        //
-      ) noexcept -> vector<size_, type_>;
+  [[nodiscard]] constexpr auto operator/(
+      type_ a, vector<size_, type_> b) noexcept
+      -> vector<size_, type_>;
 
   template <sl::whole size_, typename type_>
-  constexpr auto operator+=(        //
-      vector<size_, type_> &     a, //
-      const vector<size_, type_> b  //
-      ) noexcept -> vector<size_, type_> &;
+  constexpr auto operator+=(vector<size_, type_> &a,
+                            vector<size_, type_>  b) noexcept
+      -> vector<size_, type_> &;
 
   template <sl::whole size_, typename type_>
-  constexpr auto operator-=(        //
-      vector<size_, type_> &     a, //
-      const vector<size_, type_> b  //
-      ) noexcept -> vector<size_, type_> &;
+  constexpr auto operator-=(vector<size_, type_> &a,
+                            vector<size_, type_>  b) noexcept
+      -> vector<size_, type_> &;
 
   template <sl::whole size_, typename type_>
-  constexpr auto operator*=(   //
-      vector<size_, type_> &a, //
-      const type_           b  //
-      ) noexcept -> vector<size_, type_> &;
+  constexpr auto operator*=(vector<size_, type_> &a, type_ b) noexcept
+      -> vector<size_, type_> &;
 
   template <sl::whole size_, typename type_>
-  constexpr auto operator/=(   //
-      vector<size_, type_> &a, //
-      const type_           b  //
-      ) noexcept -> vector<size_, type_> &;
+  constexpr auto operator/=(vector<size_, type_> &a, type_ b) noexcept
+      -> vector<size_, type_> &;
 
   template <vector_type type_>
-  [[nodiscard]] constexpr auto add( //
-      const type_ a,                //
-      const type_ b                 //
-      ) noexcept -> type_;
+  [[nodiscard]] constexpr auto add(type_ a, type_ b) noexcept
+      -> type_;
 
   template <vector_type type_>
-  [[nodiscard]] constexpr auto sub( //
-      const type_ a,                //
-      const type_ b                 //
-      ) noexcept -> type_;
+  [[nodiscard]] constexpr auto sub(type_ a, type_ b) noexcept
+      -> type_;
 
   template <vector_type type_>
-  [[nodiscard]] constexpr auto mul( //
-      const type_            a,     //
-      const elem_type<type_> b      //
-      ) noexcept -> type_;
+  [[nodiscard]] constexpr auto mul(type_            a,
+                                   elem_type<type_> b) noexcept
+      -> type_;
 
   template <vector_type type_>
-  [[nodiscard]] constexpr auto div( //
-      const type_            a,     //
-      const elem_type<type_> b      //
-      ) noexcept -> type_;
+  [[nodiscard]] constexpr auto div(type_            a,
+                                   elem_type<type_> b) noexcept
+      -> type_;
 
   template <vector_type type_>
-  [[nodiscard]] constexpr auto mul( //
-      const elem_type<type_> a,     //
-      const type_            b      //
-      ) noexcept -> type_;
+  [[nodiscard]] constexpr auto mul(elem_type<type_> a,
+                                   type_ b) noexcept -> type_;
 
   template <vector_type type_>
-  [[nodiscard]] constexpr auto div( //
-      const elem_type<type_> a,     //
-      const type_            b      //
-      ) noexcept -> type_;
+  [[nodiscard]] constexpr auto div(elem_type<type_> a,
+                                   type_ b) noexcept -> type_;
 
   template <vector_type type_>
-  [[nodiscard]] constexpr auto mul_by_elem( //
-      const type_ a,                        //
-      const type_ b                         //
-      ) noexcept -> type_;
+  [[nodiscard]] constexpr auto mul_by_elem(type_ a, type_ b) noexcept
+      -> type_;
 
   template <vector_type type_>
-  [[nodiscard]] constexpr auto div_by_elem( //
-      const type_ a,                        //
-      const type_ b                         //
-      ) noexcept -> type_;
+  [[nodiscard]] constexpr auto div_by_elem(type_ a, type_ b) noexcept
+      -> type_;
 
   template <vector_type type_>
-  [[nodiscard]] constexpr auto dot( //
-      const type_ a,                //
-      const type_ b                 //
-      ) noexcept -> elem_type<type_>;
+  [[nodiscard]] constexpr auto dot(type_ a, type_ b) noexcept
+      -> elem_type<type_>;
 
   template <vector_type type_>
-  [[nodiscard]] constexpr auto cross( //
-      const type_ a,                  //
-      const type_ b                   //
-      ) noexcept -> type_;
+  [[nodiscard]] constexpr auto cross(type_ a, type_ b) noexcept
+      -> type_;
 
   template <vector_type type_>
-  [[nodiscard]] constexpr auto square_length( //
-      const type_ a                           //
-      ) noexcept -> elem_type<type_>;
+  [[nodiscard]] constexpr auto square_length(type_ a) noexcept
+      -> elem_type<type_>;
+
+  template <vector_type type_, typename op_>
+  [[nodiscard]] constexpr auto op(type_ a, type_ b, op_ fn) noexcept
+      -> type_;
+
+  template <vector_type type_, typename op_>
+  [[nodiscard]] constexpr auto op(type_            a,
+                                  elem_type<type_> b,
+                                  op_ fn) noexcept -> type_;
+
+  template <vector_type type_, typename op_>
+  [[nodiscard]] constexpr auto op(elem_type<type_> a,
+                                  type_            b,
+                                  op_ fn) noexcept -> type_;
+
+  template <vector_type type_, typename add_, typename mul_>
+  [[nodiscard]] constexpr auto dot(type_ a,
+                                   type_ b,
+                                   add_  fn_add,
+                                   mul_  fn_mul) noexcept
+      -> elem_type<type_>;
+
+  template <vector_type type_, typename sub_, typename mul_>
+  [[nodiscard]] constexpr auto cross(type_ a,
+                                     type_ b,
+                                     sub_  fn_sub,
+                                     mul_  fn_mul) noexcept -> type_;
+
+  template <vector_type type_, typename add_, typename mul_>
+  [[nodiscard]] constexpr auto square_length(type_ a,
+                                             add_  fn_add,
+                                             mul_  fn_mul) noexcept
+      -> elem_type<type_>;
 }
 
 #include "vector.impl.h"

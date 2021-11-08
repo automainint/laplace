@@ -17,8 +17,6 @@
 namespace laplace::engine {
   using intval = int64_t;
 
-  constexpr intval epsilon    = 1;
-  constexpr intval safe_delta = 2;
   constexpr intval intval_max = std::numeric_limits<intval>::max();
   constexpr intval infinity   = intval_max / 16;
   constexpr intval safe_limit = intval_max / 4;

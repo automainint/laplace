@@ -20,9 +20,50 @@
 namespace laplace::engine::eval {
   auto constant_scale() noexcept -> intval;
 
+  /*  x + y
+   */
+  auto add(intval x, intval y) noexcept -> intval;
+  auto op_add(intval x, intval y) noexcept -> intval;
+
+  /*  x - y
+   */
+  auto sub(intval x, intval y) noexcept -> intval;
+  auto op_sub(intval x, intval y) noexcept -> intval;
+
+  /*  x / y
+   */
+  auto div(intval x, intval y) noexcept -> intval;
+  auto op_div(intval x, intval y) noexcept -> intval;
+
+  /*  (x / scale) / (y / scale) * scale
+   */
   auto div(intval x, intval y, intval scale) noexcept -> intval;
 
+  /*  x * y
+   */
+  auto mul(intval x, intval y) noexcept -> intval;
+  auto op_mul(intval x, intval y) noexcept -> intval;
+
+  /*  (x / scale) * (y / scale) * scale
+   */
   auto mul(intval x, intval y, intval scale) noexcept -> intval;
+
+  /*  x * x
+   */
+  auto sqr(intval x) noexcept -> intval;
+
+  /*  (x / scale) * (x / scale) * scale
+   */
+  auto sqr(intval x, intval scale) noexcept -> intval;
+
+  /*  (x + y) / divisor
+   */
+  auto div_sum(intval x, intval y, intval divisor) noexcept -> intval;
+
+  /*  (x + y + z) / divisor
+   */
+  auto div_sum(intval x, intval y, intval z, intval divisor) noexcept
+      -> intval;
 
   /*  2.718281828459045
    */

@@ -19,8 +19,8 @@ namespace laplace::engine::tridi {
   struct polygon;
 
   struct box {
-    vec3i min = { safe_delta, safe_delta, safe_delta };
-    vec3i max = { -safe_delta, -safe_delta, -safe_delta };
+    vec3i min = { 1, 1, 1 };
+    vec3i max = { -1, -1, -1 };
 
     [[nodiscard]] auto is_empty() const noexcept -> bool;
     [[nodiscard]] auto is_equals(box const &other) const noexcept

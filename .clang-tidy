@@ -21,6 +21,7 @@ Checks: >
   -*-isolate-declaration,
   -*-unused-parameters,
   -*-uppercase-literal-suffix,
+  -cert-dcl16-c,
   -*-deprecated-headers,
   -*-reinterpret-cast,
   -*-constant-array-index,

@@ -19,8 +19,15 @@ namespace laplace::engine::tridi {
     vec3i normal;
   };
 
-  auto raw_normal(vec3i const &p0, vec3i const &p1, vec3i const &p2)
-      -> vec3i;
+  auto raw_normal(vec3i const &p0,
+                  vec3i const &p1,
+                  vec3i const &p2) noexcept -> vec3i;
+
+  [[nodiscard]] auto operator==(plane const &a,
+                                plane const &b) noexcept -> bool;
+
+  [[nodiscard]] auto operator!=(plane const &a,
+                                plane const &b) noexcept -> bool;
 }
 
 #endif

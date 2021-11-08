@@ -96,21 +96,15 @@ namespace laplace::engine::tridi {
   }
 
   auto box::contains(vec3i const &point) const noexcept -> bool {
-    return min.x() - epsilon < point.x() &&
-           min.y() - epsilon < point.y() &&
-           min.z() - epsilon < point.z() &&
-           max.x() + epsilon > point.x() &&
-           max.y() + epsilon > point.y() &&
-           max.z() + epsilon > point.z();
+    return min.x() <= point.x() && min.y() <= point.y() &&
+           min.z() <= point.z() && max.x() >= point.x() &&
+           max.y() >= point.y() && max.z() >= point.z();
   }
 
   auto box::contains(box const &b) const noexcept -> bool {
-    return min.x() - epsilon < b.min.x() &&
-           min.y() - epsilon < b.min.y() &&
-           min.z() - epsilon < b.min.z() &&
-           max.x() + epsilon > b.max.x() &&
-           max.y() + epsilon > b.max.y() &&
-           max.z() + epsilon > b.max.z();
+    return min.x() <= b.min.x() && min.y() <= b.min.y() &&
+           min.z() <= b.min.z() && max.x() >= b.max.x() &&
+           max.y() >= b.max.y() && max.z() >= b.max.z();
   }
 
   auto box::contains(triangle const &tri) const noexcept -> bool {

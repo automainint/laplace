@@ -21,25 +21,18 @@ namespace laplace::engine::tridi {
   struct polygon;
   struct cylinder;
   struct sphere;
-  struct octree;
   struct ray;
-  class shape;
 
   auto intersects(box const &a, box const &b) -> bool;
   auto intersects(box const &a, cylinder const &b) -> bool;
   auto intersects(box const &a, sphere const &b) -> bool;
   auto intersects(box const &a, triangle const &b) -> bool;
-  auto intersects(box const &a, octree const &b) -> bool;
   auto intersects(cylinder const &a, cylinder const &b) -> bool;
   auto intersects(cylinder const &a, sphere const &b) -> bool;
   auto intersects(cylinder const &a, triangle const &b) -> bool;
-  auto intersects(cylinder const &a, octree const &b) -> bool;
   auto intersects(sphere const &a, sphere const &b) -> bool;
   auto intersects(sphere const &a, triangle const &b) -> bool;
-  auto intersects(sphere const &a, octree const &b) -> bool;
   auto intersects(triangle const &a, triangle const &b) -> bool;
-  auto intersects(triangle const &a, octree const &b) -> bool;
-  auto intersects(octree const &a, octree const &b) -> bool;
 
   auto intersects(ray const &a, plane const &b) -> bool;
   auto intersects(ray const &a, triangle const &b) -> bool;
@@ -49,7 +42,6 @@ namespace laplace::engine::tridi {
   auto intersects(ray const &a, box const &b) -> bool;
   auto intersects(ray const &a, cylinder const &b) -> bool;
   auto intersects(ray const &a, sphere const &b) -> bool;
-  auto intersects(ray const &a, octree const &b) -> bool;
 
   auto intersection(ray const &a, plane const &b) -> intval;
   auto intersection(ray const &a, triangle const &b) -> intval;
@@ -59,12 +51,6 @@ namespace laplace::engine::tridi {
   auto intersection(ray const &a, box const &b) -> intval;
   auto intersection(ray const &a, cylinder const &b) -> intval;
   auto intersection(ray const &a, sphere const &b) -> intval;
-  auto intersection(ray const &a, octree const &b) -> intval;
-
-  auto intersects(shape const &a, shape const &b) -> bool;
-  auto intersects(ray const &a, shape const &b) -> bool;
-
-  auto intersection(ray const &a, shape const &b) -> intval;
 }
 
 #endif

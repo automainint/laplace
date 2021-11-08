@@ -21,6 +21,7 @@ namespace laplace::engine::tridi {
     std::array<vec3i, 3> vertices;
 
     [[nodiscard]] auto get_center() const noexcept -> vec3i;
+    [[nodiscard]] auto get_mass_center() const noexcept -> vec3i;
     [[nodiscard]] auto get_plane() const noexcept -> plane;
     [[nodiscard]] auto get_flat_center(sl::index axis) const noexcept
         -> intval;

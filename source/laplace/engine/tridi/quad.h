@@ -19,7 +19,7 @@ namespace laplace::engine::tridi {
     std::array<vec3i, 4> vertices;
 
     [[nodiscard]] auto get_plane() const noexcept -> plane;
-    [[nodiscard]] auto bounds_of() const noexcept -> box;
+    [[nodiscard]] auto get_bounds() const noexcept -> box;
     [[nodiscard]] auto contains_flat(
         vec3i const &point) const noexcept -> bool;
   };

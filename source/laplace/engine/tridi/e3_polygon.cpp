@@ -10,13 +10,15 @@
 
 #include "polygon.h"
 
+#include "vector.h"
+
 namespace laplace::engine::tridi {
   polygon::polygon(std::initializer_list<vec3i> v) noexcept :
       vertices(v) { }
 
   auto polygon::get_plane() const noexcept -> plane {
     if (vertices.size() < 3)
-      return plane { vertices[0], { 0, 0, 0 } };
+      return plane {};
     return plane { vertices[0], raw_normal(vertices[0], vertices[1],
                                            vertices[2]) };
   }
@@ -28,17 +30,17 @@ namespace laplace::engine::tridi {
   auto polygon::contains_flat(vec3i const &point) const noexcept
       -> bool {
     for (sl::index i = 0; i < vertices.size(); i++) {
-      const auto i1 = (i == 2 ? 0 : i + 1);
-      const auto i2 = (i == 0 ? 2 : i - 1);
+      const auto i1 = (i == vertices.size() - 1 ? 0 : i + 1);
+      const auto i2 = (i == 0 ? vertices.size() - 1 : i - 1);
 
-      const auto v0 = vertices[i1] - vertices[i];
-      const auto v1 = vertices[i2] - vertices[i];
-      const auto p  = point - vertices[i];
+      const auto v0 = sub(vertices[i1], vertices[i]);
+      const auto v1 = sub(vertices[i2], vertices[i]);
+      const auto p  = sub(point, vertices[i]);
 
-      const auto r0 = math::cross(v0, v1);
-      const auto r1 = math::cross(v0, p);
+      const auto r0 = cross(v0, v1);
+      const auto r1 = cross(v0, p);
 
-      if (math::dot(r0, r1) + epsilon <= 0)
+      if (dot(r0, r1) < 0)
         return false;
     }
 

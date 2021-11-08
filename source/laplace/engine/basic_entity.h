@@ -14,7 +14,6 @@
 #include "access/world.predef.h"
 #include "basic_entity.predef.h"
 #include "object/sets.h"
-#include "tridi/shape.h"
 #include "world.predef.h"
 #include <atomic>
 #include <chrono>

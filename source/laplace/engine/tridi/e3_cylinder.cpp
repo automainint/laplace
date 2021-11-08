@@ -10,31 +10,32 @@
 
 #include "cylinder.h"
 
+#include "../eval/integral.h"
+
 namespace laplace::engine::tridi {
-  using std::abs;
+  using std::abs, eval::add, eval::sub, eval::sqr;
 
   auto cylinder::is_empty() const noexcept -> bool {
     return radius < 0 || height < 0;
   }
 
   auto cylinder::get_bounds() const noexcept -> box {
-    return { .min = { base.x() - radius, base.y() - radius,
+    return { .min = { sub(base.x(), radius), sub(base.y(), radius),
                       base.z() },
-             .max = { base.x() + radius, base.y() + radius,
-                      base.z() + height } };
+             .max = { add(base.x(), radius), add(base.y(), radius),
+                      add(base.z(), height) } };
   }
 
   auto cylinder::contains_flat(vec3i const &point) const noexcept
       -> bool {
-    if (auto dx = abs(point.x() - base.x()); dx - epsilon < radius)
-      if (auto dy = abs(point.y() - base.y()); dy - epsilon < radius)
-        return dx * dx + dy * dy - epsilon < radius * radius;
+    if (auto dx = abs(sub(point.x(), base.x())); dx <= radius)
+      if (auto dy = abs(sub(point.y(), base.y())); dy <= radius)
+        return add(sqr(dx), sqr(dy)) <= sqr(radius);
     return false;
   }
 
   auto cylinder::contains(vec3i const &point) const noexcept -> bool {
-    return base.z() - epsilon < point.z() &&
-           base.z() + height + epsilon > point.z() &&
-           contains_flat(point);
+    return base.z() <= point.z() &&
+           add(base.z(), height) >= point.z() && contains_flat(point);
   }
 }

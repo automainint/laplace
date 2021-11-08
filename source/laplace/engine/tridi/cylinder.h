@@ -16,8 +16,8 @@
 namespace laplace::engine::tridi {
   struct cylinder {
     vec3i  base   = { 0, 0, 0 };
-    intval radius = -safe_delta;
-    intval height = 0;
+    intval radius = -1;
+    intval height = -1;
 
     [[nodiscard]] auto is_empty() const noexcept -> bool;
     [[nodiscard]] auto get_bounds() const noexcept -> box;

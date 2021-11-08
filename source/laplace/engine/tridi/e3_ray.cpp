@@ -11,37 +11,28 @@
 #include "ray.h"
 
 #include "../eval/integral.h"
-
-namespace laplace::engine::tridi::impl {
-  constexpr auto div3(auto const a, auto const s) {
-    return decltype(a) { eval::div(a.x(), s, 1),
-                         eval::div(a.y(), s, 1),
-                         eval::div(a.z(), s, 1) };
-  }
-}
+#include "vector.h"
 
 namespace laplace::engine::tridi {
-  using impl::div3, std::abs;
+  using eval::mul;
 
-  auto ray::point(intval t) const noexcept -> vec3i {
+  auto ray::point(intval const t) const noexcept -> vec3i {
+    auto const len = length(direction);
 
-    const auto len = length(direction);
-
-    if (len == 0) {
+    if (len == 0)
       return base;
-    }
 
-    return base + div3(direction * t, len);
+    return add(base, div(mul(direction, t), len));
   }
 
   auto ray::square_distance(vec3i const &a) const noexcept -> intval {
-    auto r = a - base;
+    auto const r = sub(a, base);
 
-    if (abs(r.x()) + abs(r.y()) + abs(r.z()) <= epsilon)
+    if (r.x() == 0 && r.y() == 0 && r.z() == 0)
       return 0;
 
-    auto u = math::cross(direction, r);
-    auto b = ray { a, u };
+    auto const u = cross(direction, r);
+    auto const b = ray { a, u };
 
     return square_distance(b);
   }
@@ -53,11 +44,11 @@ namespace laplace::engine::tridi {
     if (l0 == 0 || l1 == 0)
       return -safe_limit;
 
-    auto const c = math::cross(direction, a.direction);
-    auto const n = div3(c, l0 * l1);
-    auto const r = a.base - base;
-    auto const l = n * math::dot(r, n);
+    auto const c = cross(direction, a.direction);
+    auto const n = div(c, mul(l0, l1));
+    auto const r = sub(a.base, base);
+    auto const l = mul(n, dot(r, n));
 
-    return math::square_length(l);
+    return square_length(l);
   }
 }

@@ -16,7 +16,7 @@
 namespace laplace::engine::tridi {
   struct sphere {
     vec3i  center = { 0, 0, 0 };
-    intval radius = -safe_delta;
+    intval radius = -1;
 
     [[nodiscard]] auto is_empty() const noexcept -> bool;
     [[nodiscard]] auto get_bounds() const noexcept -> box;
