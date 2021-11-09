@@ -1,8 +1,4 @@
-/*  laplace/engine/eventorder.impl.h
- *
- *      Event order implementation.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -16,9 +12,8 @@
 #define laplace_engine_eventorder_impl_h
 
 namespace laplace::engine {
-  constexpr eventorder::eventorder(sl::index index) {
-    this->m_indices[0] = index;
-    this->m_size       = 1;
+  constexpr eventorder::eventorder(sl::index n) : m_size(1) {
+    this->m_indices[0] = n;
   }
 
   constexpr auto eventorder::spawn(sl::whole &child_count) const
@@ -26,7 +21,7 @@ namespace laplace::engine {
     return eventorder(*this, child_count++);
   }
 
-  constexpr auto eventorder::operator<(const eventorder &order) const
+  constexpr auto eventorder::operator<(eventorder const &order) const
       -> bool {
     if (this->m_size < order.m_size)
       return true;
@@ -34,10 +29,9 @@ namespace laplace::engine {
     if (order.m_size == 0)
       return this->m_size > 0;
 
-    for (sl::index i = 0; i < this->m_size && i < order.m_size; i++) {
+    for (sl::index i = 0; i < this->m_size && i < order.m_size; i++)
       if (this->m_indices[i] < order.m_indices[i])
         return true;
-    }
 
     return false;
   }
@@ -46,7 +40,7 @@ namespace laplace::engine {
     return this->m_size > 0 ? this->m_indices[0] : id_undefined;
   }
 
-  constexpr eventorder::eventorder(const eventorder &parent,
+  constexpr eventorder::eventorder(eventorder const &parent,
                                    sl::index         child_index) {
     if (parent.m_size == eventorder::max_depth) {
       this->m_size = 0;

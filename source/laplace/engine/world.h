@@ -1,8 +1,4 @@
-/*  laplace/engine/world.h
- *
- *      World compute kernel and Entity pool. Full thread-safe.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -26,70 +22,79 @@
 namespace laplace::engine {
   class world : public std::enable_shared_from_this<world> {
   public:
-    static const bool default_allow_relaxed_spawn;
+    static bool const     default_allow_relaxed_spawn;
+    static uint64_t const default_seed;
 
-    world(const world &) = delete;
-    auto operator=(const world &) -> world & = delete;
+    world(world const &) = delete;
+    auto operator=(world const &) -> world & = delete;
 
-    world();
-    ~world() = default;
+    world(world &&other) noexcept;
+    auto operator=(world &&other) noexcept -> world &;
 
-    auto reserve(sl::index id) -> sl::index;
-    void emplace(ptr_entity ent, sl::index id);
-    auto spawn(ptr_entity ent, sl::index id) -> sl::index;
-    void remove(sl::index id);
-    void respawn(sl::index id);
-    void clear();
+    world() noexcept;
+    ~world() noexcept;
 
-    void desync();
+    auto reserve(sl::index id) noexcept -> sl::index;
+    void emplace(ptr_entity const &ent, sl::index id) noexcept;
+    auto spawn(ptr_entity const &ent, sl::index id) noexcept
+        -> sl::index;
+    void remove(sl::index id) noexcept;
+    void respawn(sl::index id) noexcept;
+    void clear() noexcept;
+
+    void desync() noexcept;
 
     /*  Impact will be performed due live loop.
      */
-    void queue(ptr_impact ev);
+    void queue(ptr_impact ev) noexcept;
 
     /*  World live loop tick.
-     *  Shedule & join.
+     *  Schedule & join.
      */
-    void tick(sl::time delta);
+    void tick(sl::time delta) noexcept;
 
     /*  Schedule the live loop.
      */
-    void schedule(sl::time delta);
+    void schedule(sl::time delta) noexcept;
 
     /*  Join the live loop thread.
      */
-    void join();
+    void join() noexcept;
 
-    void set_thread_count(const sl::whole thread_count);
+    void set_thread_count(sl::whole thread_count) noexcept;
 
-    [[nodiscard]] auto get_thread_count() -> sl::whole;
+    [[nodiscard]] auto get_thread_count() noexcept -> sl::whole;
 
-    void set_root(sl::index id_root);
-    auto get_root() -> sl::index;
+    void               set_root(sl::index id_root) noexcept;
+    [[nodiscard]] auto get_root() noexcept -> sl::index;
 
-    void allow_relaxed_spawn(bool is_allowed);
-    auto is_relaxed_spawn_allowed() -> bool;
+    void               allow_relaxed_spawn(bool is_allowed) noexcept;
+    [[nodiscard]] auto is_relaxed_spawn_allowed() noexcept -> bool;
 
-    auto get_random() -> ref_rand;
-    auto get_entity(sl::index id) -> ptr_entity;
+    [[nodiscard]] auto get_random() noexcept -> ref_rand;
+    [[nodiscard]] auto get_entity(sl::index id) noexcept
+        -> ptr_entity;
 
-    auto is_desync() -> bool;
+    [[nodiscard]] auto is_desync() noexcept -> bool;
 
-    void clean_sync_queue();
-    void clean_async_queue();
-    void reset_index();
-    auto no_queue() -> bool;
-    auto next_sync_impact() -> ptr_impact;
-    auto next_async_impact() -> ptr_impact;
-    auto next_dynamic_entity() -> ptr_entity;
-    auto next_entity() -> ptr_entity;
+    void clean_sync_queue() noexcept;
+    void clean_async_queue() noexcept;
+    void reset_index() noexcept;
+
+    [[nodiscard]] auto no_queue() noexcept -> bool;
+    [[nodiscard]] auto next_sync_impact() noexcept -> ptr_impact;
+    [[nodiscard]] auto next_async_impact() noexcept -> ptr_impact;
+    [[nodiscard]] auto next_dynamic_entity() noexcept -> ptr_entity;
+    [[nodiscard]] auto next_entity() noexcept -> ptr_entity;
 
   private:
-    [[nodiscard]] auto check_scheduler() -> bool;
+    [[nodiscard]] auto check_scheduler() noexcept -> bool;
 
-    void locked_desync();
-    void locked_add_dynamic(sl::index id);
-    void locked_erase_dynamic(sl::index id);
+    void locked_desync() noexcept;
+    void locked_add_dynamic(sl::index id) noexcept;
+    void locked_erase_dynamic(sl::index id) noexcept;
+
+    void locked_assign(world &&other) noexcept;
 
     std::shared_mutex          m_lock;
     std::unique_ptr<scheduler> m_scheduler;
@@ -100,7 +105,8 @@ namespace laplace::engine {
     sl::index m_next_id             = 0;
     sl::index m_index               = 0;
 
-    eval::random          m_rand;
+    eval::random m_rand = eval::random { default_seed };
+
     sl::vector<sl::index> m_dynamic_ids;
     vptr_entity           m_entities;
     vptr_impact           m_queue;

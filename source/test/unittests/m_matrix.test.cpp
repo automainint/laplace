@@ -1,6 +1,4 @@
-/*  test/unittests/m_matrix.test.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -19,26 +17,23 @@
 
 namespace laplace::test {
   using math::add, math::sub, math::equals, math::shortnames::mat4,
-      std::default_random_engine, std::uniform_real_distribution;
+      std::random_device, std::uniform_real_distribution;
 
   TEST(math, matrix_add_constexpr) {
-    constexpr auto a = mat4 //
-        { 1,  2,  3,  4,    //
-          5,  6,  7,  8,    //
-          -1, -2, -3, -4,   //
-          -5, -6, -7, -8 };
+    constexpr auto a = mat4 { 1,  2,  3,  4,  //
+                              5,  6,  7,  8,  //
+                              -1, -2, -3, -4, //
+                              -5, -6, -7, -8 };
 
-    constexpr auto b = mat4 //
-        { -1, -2, -3, -4,   //
-          -5, -6, -7, -8,   //
-          1,  2,  3,  4,    //
-          5,  6,  7,  8 };
+    constexpr auto b = mat4 { -1, -2, -3, -4, //
+                              -5, -6, -7, -8, //
+                              1,  2,  3,  4,  //
+                              5,  6,  7,  8 };
 
-    constexpr auto c = mat4 //
-        { 0, 0, 0, 0,       //
-          0, 0, 0, 0,       //
-          0, 0, 0, 0,       //
-          0, 0, 0, 0 };
+    constexpr auto c = mat4 { 0, 0, 0, 0, //
+                              0, 0, 0, 0, //
+                              0, 0, 0, 0, //
+                              0, 0, 0, 0 };
 
     constexpr auto d = add(a, b);
 
@@ -46,23 +41,20 @@ namespace laplace::test {
   }
 
   TEST(math, matrix_add) {
-    auto a = mat4         //
-        { 1,  2,  3,  4,  //
-          5,  6,  7,  8,  //
-          -1, -2, -3, -4, //
-          -5, -6, -7, -8 };
+    auto a = mat4 { 1,  2,  3,  4,  //
+                    5,  6,  7,  8,  //
+                    -1, -2, -3, -4, //
+                    -5, -6, -7, -8 };
 
-    auto b = mat4         //
-        { -1, -2, -3, -4, //
-          -5, -6, -7, -8, //
-          1,  2,  3,  4,  //
-          5,  6,  7,  8 };
+    auto b = mat4 { -1, -2, -3, -4, //
+                    -5, -6, -7, -8, //
+                    1,  2,  3,  4,  //
+                    5,  6,  7,  8 };
 
-    auto c = mat4     //
-        { 0, 0, 0, 0, //
-          0, 0, 0, 0, //
-          0, 0, 0, 0, //
-          0, 0, 0, 0 };
+    auto c = mat4 { 0, 0, 0, 0, //
+                    0, 0, 0, 0, //
+                    0, 0, 0, 0, //
+                    0, 0, 0, 0 };
 
     auto d = add(a, b);
 
@@ -70,17 +62,15 @@ namespace laplace::test {
   }
 
   TEST(math, matrix_sub_constexpr) {
-    constexpr auto a = mat4 //
-        { 1,  2,  3,  4,    //
-          5,  6,  7,  8,    //
-          -1, -2, -3, -4,   //
-          -5, -6, -7, -8 };
+    constexpr auto a = mat4 { 1,  2,  3,  4,  //
+                              5,  6,  7,  8,  //
+                              -1, -2, -3, -4, //
+                              -5, -6, -7, -8 };
 
-    constexpr auto b = mat4 //
-        { 0, 0, 0, 0,       //
-          0, 0, 0, 0,       //
-          0, 0, 0, 0,       //
-          0, 0, 0, 0 };
+    constexpr auto b = mat4 { 0, 0, 0, 0, //
+                              0, 0, 0, 0, //
+                              0, 0, 0, 0, //
+                              0, 0, 0, 0 };
 
     constexpr auto c = sub(a, a);
 
@@ -88,17 +78,15 @@ namespace laplace::test {
   }
 
   TEST(math, matrix_sub) {
-    auto a = mat4         //
-        { 1,  2,  3,  4,  //
-          5,  6,  7,  8,  //
-          -1, -2, -3, -4, //
-          -5, -6, -7, -8 };
+    auto a = mat4 { 1,  2,  3,  4,  //
+                    5,  6,  7,  8,  //
+                    -1, -2, -3, -4, //
+                    -5, -6, -7, -8 };
 
-    auto b = mat4     //
-        { 0, 0, 0, 0, //
-          0, 0, 0, 0, //
-          0, 0, 0, 0, //
-          0, 0, 0, 0 };
+    auto b = mat4 { 0, 0, 0, 0, //
+                    0, 0, 0, 0, //
+                    0, 0, 0, 0, //
+                    0, 0, 0, 0 };
 
     auto c = sub(a, a);
 
@@ -108,8 +96,8 @@ namespace laplace::test {
   TEST(math, matrix_add_sub) {
     constexpr sl::index test_count = 10;
 
-    default_random_engine            rnd;
-    uniform_real_distribution<float> dst(-100, 100);
+    auto rnd = random_device {};
+    auto dst = uniform_real_distribution<float>(-100, 100);
 
     for (sl::index i = 0; i < test_count; i++) {
       auto a = mat4 {};

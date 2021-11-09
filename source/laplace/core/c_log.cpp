@@ -1,6 +1,4 @@
-/*  laplace/core/c_log.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -13,16 +11,15 @@
 #include "log.h"
 
 #include "string.h"
-#include <cstdarg>
 #include <iostream>
 #include <mutex>
 #include <shared_mutex>
 #include <sstream>
 
 namespace laplace {
-  using std::unique_lock, std::shared_lock, std::mutex,
-      std::shared_mutex, std::string_view, std::u8string_view,
-      std::cerr, std::ostringstream;
+  using std::unique_lock, std::shared_lock, std::shared_mutex,
+      std::string_view, std::u8string_view, std::cerr,
+      std::ostringstream;
 
   static auto g_log_default = [](string_view s) {
     cerr << s << '\n';
@@ -84,7 +81,7 @@ namespace laplace {
 
   void error_(string_view message, string_view loc) noexcept {
     if constexpr (_log_enabled) {
-      auto ss  = ostringstream {};
+      auto ss = ostringstream {};
       ss << "[ error";
       if (!loc.empty())
         ss << " in " << loc;

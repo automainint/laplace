@@ -1,6 +1,4 @@
-/*  laplace/ui/basic_widget.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -43,9 +41,6 @@ namespace laplace::ui {
 
     virtual void render(context const &con) noexcept;
 
-    /*  Check if the widget allowed to handle
-     *  an event in specified location.
-     */
     [[nodiscard]] virtual auto event_allowed(sl::index x,
                                              sl::index y) noexcept
         -> bool;
@@ -68,7 +63,7 @@ namespace laplace::ui {
     [[nodiscard]] auto get_absolute_y() const noexcept -> sl::index;
     [[nodiscard]] auto get_absolute_rect() const noexcept -> rect;
 
-    /*  Set focus to next enabled widget for childs.
+    /*  Set focus to next enabled attached widget.
      */
     void next_tab() noexcept;
 
@@ -82,21 +77,18 @@ namespace laplace::ui {
     void set_expired(bool is_expired) noexcept;
 
     [[nodiscard]] auto is_expired() const noexcept -> bool;
-    [[nodiscard]] auto has_childs_expired() const noexcept -> bool;
+    [[nodiscard]] auto has_attached_expired() const noexcept -> bool;
 
     [[nodiscard]] auto is_visible() const noexcept -> bool;
     [[nodiscard]] auto is_enabled() const noexcept -> bool;
     [[nodiscard]] auto is_attached() const noexcept -> bool;
     [[nodiscard]] auto has_focus() const noexcept -> bool;
-    [[nodiscard]] auto get_child_count() const noexcept -> sl::whole;
+    [[nodiscard]] auto get_attached_widget_count() const noexcept
+        -> sl::whole;
 
-    /*  Get parent widget.
-     */
     [[nodiscard]] auto get_parent() const noexcept -> ptr_widget;
 
-    /*  Get child widget by index.
-     */
-    [[nodiscard]] auto get_child(sl::index index) const noexcept
+    [[nodiscard]] auto get_attached_widget(sl::index n) const noexcept
         -> ptr_widget;
 
   protected:
@@ -105,8 +97,8 @@ namespace laplace::ui {
     void set_handler(bool is_handler) noexcept;
 
     void update_root() noexcept;
-    void update_child() noexcept;
-    void draw_childs(context const &con) noexcept;
+    void update_attached() noexcept;
+    void draw_attached_widgets(context const &con) noexcept;
     void up_to_date() noexcept;
 
     void widget_tick(sl::time                 delta_msec,
@@ -119,7 +111,7 @@ namespace laplace::ui {
   private:
     void update_indices(sl::index begin) noexcept;
     void adjust_layout() noexcept;
-    void refresh_childs() noexcept;
+    void refresh_attached() noexcept;
 
     static std::weak_ptr<context> m_default_context;
 

@@ -1,6 +1,4 @@
-/*  laplace/math/matrix.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -24,10 +22,19 @@ namespace laplace::math {
 
     constexpr matrix(std::initializer_list<type_> values) noexcept;
 
-    constexpr explicit matrix(const type_ value) noexcept;
+    constexpr explicit matrix(type_ value) noexcept;
 
     using basic_vector<rows_ * cols_, type_>::basic_vector;
   };
+
+  template <matrix_type type_>
+  [[nodiscard]] constexpr auto get(type_ const &mat, sl::index row,
+                                   sl::index col) noexcept
+      -> elem_type<type_>;
+
+  template <matrix_type type_>
+  constexpr void set(type_ &mat, sl::index row, sl::index col,
+                     elem_type<type_> val) noexcept;
 }
 
 #include "matrix.impl.h"

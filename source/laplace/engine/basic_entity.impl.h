@@ -1,8 +1,4 @@
-/*  laplace/engine/basic_entity.impl.h
- *
- *      Basic class for any gameplay object. Inline methods.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
