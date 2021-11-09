@@ -117,6 +117,8 @@ namespace laplace::engine::eval {
    */
   auto phi(intval scale) noexcept -> intval;
 
+  auto sqrt(intval x) noexcept -> intval;
+
   auto sqrt(intval x, intval scale) noexcept -> intval;
 
   auto pow(intval x, intval y, intval scale) noexcept -> intval;

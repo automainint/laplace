@@ -15,6 +15,7 @@
 
 #include "box.h"
 #include "plane.h"
+#include "ray.h"
 
 namespace laplace::engine::tridi {
   struct triangle {
@@ -36,8 +37,6 @@ namespace laplace::engine::tridi {
     [[nodiscard]] auto contains_flat(
         vec3i const &point) const noexcept -> bool;
   };
-
-  [[nodiscard]] auto bounds_of(std::span<triangle const> v) -> box;
 }
 
 #endif

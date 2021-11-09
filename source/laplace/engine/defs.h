@@ -12,6 +12,7 @@
 #define laplace_engine_defs_h
 
 #include "../core/defs.h"
+#include "../math/matrix.h"
 #include "../math/vector.h"
 
 namespace laplace::engine {
@@ -24,13 +25,10 @@ namespace laplace::engine {
   constexpr sl::time  time_undefined = -1;
   constexpr sl::index id_undefined   = -1;
 
+  using vec2z = math::vector<2, sl::index>;
   using vec2i = math::vector<2, intval>;
   using vec3i = math::vector<3, intval>;
-  using vec4i = math::vector<4, intval>;
-
-  using vec2z = math::vector<2, sl::index>;
-  using vec3z = math::vector<3, sl::index>;
-  using vec4z = math::vector<4, sl::index>;
+  using mat3i = math::matrix<3, 3, intval>;
 }
 
 #endif

@@ -12,6 +12,7 @@
 #define laplace_engine_tridi_box_h
 
 #include "plane.h"
+#include "ray.h"
 
 namespace laplace::engine::tridi {
   struct triangle;
@@ -28,6 +29,8 @@ namespace laplace::engine::tridi {
     [[nodiscard]] auto get_vertex(sl::index n) const noexcept
         -> vec3i;
     [[nodiscard]] auto get_plane(sl::index n) const noexcept -> plane;
+    [[nodiscard]] auto get_edge(sl::index n) const noexcept
+        -> segment;
     [[nodiscard]] auto get_flat_center(sl::index axis) const noexcept
         -> intval;
     [[nodiscard]] auto get_center() const noexcept -> vec3i;

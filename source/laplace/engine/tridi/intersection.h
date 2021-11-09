@@ -22,35 +22,31 @@ namespace laplace::engine::tridi {
   struct cylinder;
   struct sphere;
   struct ray;
+  struct segment;
 
-  auto intersects(box const &a, box const &b) -> bool;
-  auto intersects(box const &a, cylinder const &b) -> bool;
-  auto intersects(box const &a, sphere const &b) -> bool;
-  auto intersects(box const &a, triangle const &b) -> bool;
-  auto intersects(cylinder const &a, cylinder const &b) -> bool;
-  auto intersects(cylinder const &a, sphere const &b) -> bool;
-  auto intersects(cylinder const &a, triangle const &b) -> bool;
-  auto intersects(sphere const &a, sphere const &b) -> bool;
-  auto intersects(sphere const &a, triangle const &b) -> bool;
-  auto intersects(triangle const &a, triangle const &b) -> bool;
-
-  auto intersects(ray const &a, plane const &b) -> bool;
-  auto intersects(ray const &a, triangle const &b) -> bool;
-  auto intersects(ray const &a, quad const &b) -> bool;
-  auto intersects(ray const &a, polygon const &b) -> bool;
-
-  auto intersects(ray const &a, box const &b) -> bool;
-  auto intersects(ray const &a, cylinder const &b) -> bool;
-  auto intersects(ray const &a, sphere const &b) -> bool;
-
-  auto intersection(ray const &a, plane const &b) -> intval;
-  auto intersection(ray const &a, triangle const &b) -> intval;
-  auto intersection(ray const &a, quad const &b) -> intval;
-  auto intersection(ray const &a, polygon const &b) -> intval;
-
-  auto intersection(ray const &a, box const &b) -> intval;
-  auto intersection(ray const &a, cylinder const &b) -> intval;
-  auto intersection(ray const &a, sphere const &b) -> intval;
+  [[nodiscard]] auto intersects(box const &a, box const &b) noexcept
+      -> bool;
+  [[nodiscard]] auto intersects(box const      &bo,
+                                cylinder const &cyl) noexcept -> bool;
+  [[nodiscard]] auto intersects(box const    &bo,
+                                sphere const &sph) noexcept -> bool;
+  [[nodiscard]] auto intersects(box const      &bo,
+                                triangle const &tri) noexcept -> bool;
+  [[nodiscard]] auto intersects(cylinder const &a,
+                                cylinder const &b) noexcept -> bool;
+  [[nodiscard]] auto intersects(cylinder const &cyl,
+                                sphere const   &sph) noexcept -> bool;
+  [[nodiscard]] auto intersects(sphere const &a,
+                                sphere const &b) noexcept -> bool;
+  [[nodiscard]] auto intersects(triangle const &tri,
+                                segment const  &seg) noexcept -> bool;
+  [[nodiscard]] auto intersects(ray const      &ra,
+                                triangle const &tri) noexcept -> bool;
+  [[nodiscard]] auto intersects(ray const &ra, box const &bo) noexcept
+      -> bool;
+  [[nodiscard]] auto intersection(ray const   &ra,
+                                  plane const &pla) noexcept
+      -> intval;
 }
 
 #endif

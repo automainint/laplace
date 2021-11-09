@@ -1,6 +1,4 @@
-/*  laplace/math/vector.impl.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -451,9 +449,8 @@ namespace laplace::math {
   }
 
   template <vector_type type_, typename op_>
-  constexpr auto op(type_ const            a,
-                    elem_type<type_> const b,
-                    op_                    fn) noexcept -> type_ {
+  constexpr auto op(type_ const a, elem_type<type_> const b,
+                    op_ fn) noexcept -> type_ {
 
     auto v = type_ {};
 
@@ -464,9 +461,8 @@ namespace laplace::math {
   }
 
   template <vector_type type_, typename op_>
-  constexpr auto op(elem_type<type_> const a,
-                    type_ const            b,
-                    op_                    fn) noexcept -> type_ {
+  constexpr auto op(elem_type<type_> const a, type_ const b,
+                    op_ fn) noexcept -> type_ {
 
     auto v = type_ {};
 
@@ -477,50 +473,42 @@ namespace laplace::math {
   }
 
   template <vector_type type_, typename add_, typename mul_>
-  constexpr auto dot(type_ a,
-                     type_ b,
-                     add_  fn_add,
-                     mul_  fn_mul) noexcept -> elem_type<type_> {
+  constexpr auto dot(type_ a, type_ b, add_ _add, mul_ _mul) noexcept
+      -> elem_type<type_> {
 
     auto x = elem_type<type_> {};
 
     for (sl::whole i = 0; i < get_size<type_>(); i++)
-      x = fn_add(x, fn_mul(get(a, i), get(b, i)));
+      x = _add(x, _mul(get(a, i), get(b, i)));
 
     return x;
   }
 
   template <vector_type type_, typename sub_, typename mul_>
-  constexpr auto cross(type_ a,
-                       type_ b,
-                       sub_  fn_sub,
-                       mul_  fn_mul) noexcept -> type_ {
+  constexpr auto cross(type_ a, type_ b, sub_ _sub,
+                       mul_ _mul) noexcept -> type_ {
 
     static_assert(get_size<type_>() == 3);
 
     auto c = type_ {};
 
     set(c, 0,
-        fn_sub(fn_mul(get(a, 1), get(b, 2)),
-               fn_mul(get(a, 2), get(b, 1))));
+        _sub(_mul(get(a, 1), get(b, 2)), _mul(get(a, 2), get(b, 1))));
 
     set(c, 1,
-        fn_sub(fn_mul(get(a, 2), get(b, 0)),
-               fn_mul(get(a, 0), get(b, 2))));
+        _sub(_mul(get(a, 2), get(b, 0)), _mul(get(a, 0), get(b, 2))));
 
     set(c, 2,
-        fn_sub(fn_mul(get(a, 0), get(b, 1)),
-               fn_mul(get(a, 1), get(b, 0))));
+        _sub(_mul(get(a, 0), get(b, 1)), _mul(get(a, 1), get(b, 0))));
 
     return c;
   }
 
   template <vector_type type_, typename add_, typename mul_>
-  constexpr auto square_length(type_ const a,
-                               add_        fn_add,
-                               mul_        fn_mul) noexcept
+  constexpr auto square_length(type_ const a, add_ _add,
+                               mul_ _mul) noexcept
       -> elem_type<type_> {
-    return dot(a, a, fn_add, fn_mul);
+    return dot(a, a, _add, _mul);
   }
 }
 

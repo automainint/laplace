@@ -1,6 +1,4 @@
-/*  laplace/math/quaternion.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -26,7 +24,7 @@ namespace laplace::math {
   public:
     using vector<4, type_>::vector;
 
-    constexpr explicit quaternion(const type_ x) noexcept {
+    constexpr explicit quaternion(type_ const x) noexcept {
       this->v[this->n_w] = x;
     }
   };

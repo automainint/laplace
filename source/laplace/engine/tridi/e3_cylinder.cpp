@@ -26,6 +26,14 @@ namespace laplace::engine::tridi {
                       add(base.z(), height) } };
   }
 
+  auto cylinder::get_floor_z() const noexcept -> intval {
+    return base.z();
+  }
+
+  auto cylinder::get_roof_z() const noexcept -> intval {
+    return add(base.z(), height);
+  }
+
   auto cylinder::contains_flat(vec3i const &point) const noexcept
       -> bool {
     if (auto dx = abs(sub(point.x(), base.x())); dx <= radius)

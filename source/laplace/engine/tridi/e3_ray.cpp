@@ -38,6 +38,10 @@ namespace laplace::engine::tridi {
   }
 
   auto ray::square_distance(ray const &a) const noexcept -> intval {
+    /*  TODO
+     *  Improve precision if possible.
+     */
+
     auto const l0 = length(direction);
     auto const l1 = length(a.direction);
 
@@ -50,5 +54,11 @@ namespace laplace::engine::tridi {
     auto const l = mul(n, dot(r, n));
 
     return square_length(l);
+  }
+
+  auto segment::get_ray(sl::index n) const noexcept -> ray {
+    if (n == 0)
+      return ray { .base = begin, .direction = sub(end, begin) };
+    return ray { .base = end, .direction = sub(begin, end) };
   }
 }

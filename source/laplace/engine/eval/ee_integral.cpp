@@ -253,6 +253,10 @@ namespace laplace::engine::eval {
     return impl::phi(scale);
   }
 
+  auto sqrt(intval const x) noexcept -> intval {
+    return impl::sqrt(x, 1);
+  }
+
   auto sqrt(intval const x, intval const scale) noexcept -> intval {
     return impl::sqrt(x, scale);
   }

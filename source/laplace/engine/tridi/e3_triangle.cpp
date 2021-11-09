@@ -111,10 +111,4 @@ namespace laplace::engine::tridi {
 
     return true;
   }
-
-  auto bounds_of(std::span<triangle const> v) -> box {
-    auto bounds = box {};
-    for (auto const &tri : v) bounds = bounds.append(tri);
-    return bounds;
-  }
 }

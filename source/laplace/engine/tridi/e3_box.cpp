@@ -53,6 +53,23 @@ namespace laplace::engine::tridi {
     return { max, { 1, 0, 0 } };
   }
 
+  auto box::get_edge(sl::index n) const noexcept -> segment {
+    switch (n) {
+      case 0: return segment { get_vertex(0), get_vertex(1) };
+      case 1: return segment { get_vertex(2), get_vertex(3) };
+      case 2: return segment { get_vertex(4), get_vertex(5) };
+      case 3: return segment { get_vertex(6), get_vertex(7) };
+      case 4: return segment { get_vertex(0), get_vertex(2) };
+      case 5: return segment { get_vertex(1), get_vertex(3) };
+      case 6: return segment { get_vertex(4), get_vertex(6) };
+      case 7: return segment { get_vertex(5), get_vertex(7) };
+      case 8: return segment { get_vertex(0), get_vertex(4) };
+      case 9: return segment { get_vertex(1), get_vertex(5) };
+      case 10: return segment { get_vertex(2), get_vertex(6) };
+    }
+    return segment { get_vertex(3), get_vertex(7) };
+  }
+
   auto box::get_flat_center(sl::index axis) const noexcept -> intval {
     if (axis >= 0 && axis < 3)
       return midpoint(min[axis], max[axis]);

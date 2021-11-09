@@ -24,6 +24,13 @@ namespace laplace::engine::tridi {
     [[nodiscard]] auto square_distance(ray const &a) const noexcept
         -> intval;
   };
+
+  struct segment {
+    vec3i begin;
+    vec3i end;
+
+    [[nodiscard]] auto get_ray(sl::index n) const noexcept -> ray;
+  };
 }
 
 #endif

@@ -22,9 +22,6 @@ namespace laplace::engine::tridi {
     polygon(std::initializer_list<vec3i> v) noexcept;
 
     [[nodiscard]] auto get_plane() const noexcept -> plane;
-    [[nodiscard]] auto get_bounds() const noexcept -> box;
-    [[nodiscard]] auto contains_flat(
-        vec3i const &point) const noexcept -> bool;
   };
 }
 

@@ -12,6 +12,8 @@
 #define laplace_engine_tridi_cylinder_h
 
 #include "box.h"
+#include "plane.h"
+#include "ray.h"
 
 namespace laplace::engine::tridi {
   struct cylinder {
@@ -21,6 +23,8 @@ namespace laplace::engine::tridi {
 
     [[nodiscard]] auto is_empty() const noexcept -> bool;
     [[nodiscard]] auto get_bounds() const noexcept -> box;
+    [[nodiscard]] auto get_floor_z() const noexcept -> intval;
+    [[nodiscard]] auto get_roof_z() const noexcept -> intval;
     [[nodiscard]] auto contains_flat(
         vec3i const &point) const noexcept -> bool;
     [[nodiscard]] auto contains(vec3i const &point) const noexcept
