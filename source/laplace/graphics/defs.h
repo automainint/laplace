@@ -1,6 +1,4 @@
-/*  laplace/graphics/defs.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -33,11 +31,11 @@ namespace laplace::graphics {
   using ref_mat3 = mat3 &;
   using ref_mat4 = mat4 &;
 
-  using cref_vec2 = const vec2 &;
-  using cref_vec3 = const vec3 &;
-  using cref_vec4 = const vec4 &;
-  using cref_mat3 = const mat3 &;
-  using cref_mat4 = const mat4 &;
+  using cref_vec2 = vec2 const &;
+  using cref_vec3 = vec3 const &;
+  using cref_vec4 = vec4 const &;
+  using cref_mat3 = mat3 const &;
+  using cref_mat4 = mat4 const &;
 }
 
 #endif

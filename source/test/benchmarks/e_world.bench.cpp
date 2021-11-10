@@ -23,20 +23,22 @@ namespace laplace::bench {
 
   class my_entity : public basic_entity {
   public:
-    my_entity() : basic_entity(dynamic) {
+    my_entity() noexcept : basic_entity(dynamic) {
       setup_sets({ { sets::debug_value, 0, 0 } });
       n_value = index_of(sets::debug_value);
     }
 
-    ~my_entity() override = default;
+    ~my_entity() noexcept override = default;
 
-    void tick(access::world) override {
+    void tick(access::world) noexcept override {
       apply_delta(n_value, 1);
     }
 
   private:
-    sl::index n_value = 0;
+    static sl::index n_value;
   };
+
+  sl::index my_entity::n_value = {};
 
   static void engine_world_startup(benchmark::State &state) {
     for (auto _ : state) {

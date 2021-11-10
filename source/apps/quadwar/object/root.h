@@ -1,6 +1,4 @@
-/*  apps/quadwar/object/root.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -19,8 +17,8 @@
 namespace quadwar_app::object {
   class root : public engine::basic_entity, helper {
   public:
-    root();
-    ~root() override = default;
+    root() noexcept;
+    ~root() noexcept override = default;
 
     static void create(world w);
     static void loading(entity en);
@@ -38,7 +36,7 @@ namespace quadwar_app::object {
     [[nodiscard]] static auto get_units(entity en) -> sl::index;
 
   protected:
-    root(proto_tag);
+    explicit root(proto_tag) noexcept;
 
   private:
     static sl::index n_version;

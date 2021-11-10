@@ -1,6 +1,4 @@
-/*  apps/quadwar/object/player.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -19,8 +17,8 @@
 namespace quadwar_app::object {
   class player : public actor, helper {
   public:
-    player(bool is_local = false);
-    ~player() override = default;
+    explicit player(bool is_local = false) noexcept;
+    ~player() noexcept override = default;
 
     static void init_indices(world w);
     static void set_name(entity en, std::u8string_view name);
@@ -29,7 +27,7 @@ namespace quadwar_app::object {
     static auto get_index(entity en) -> sl::index;
 
   private:
-    player(proto_tag);
+    explicit player(proto_tag) noexcept;
 
     static sl::index n_player_index;
 

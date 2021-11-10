@@ -1,6 +1,4 @@
-/*  apps/quadwar/object/aqo_root.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -12,9 +10,7 @@
 
 #include "root.h"
 
-#include "../../../laplace/core/serial.h"
 #include "../../../laplace/core/utils.h"
-#include <algorithm>
 
 namespace quadwar_app::object {
   using std::make_shared, engine::id_undefined;
@@ -27,9 +23,9 @@ namespace quadwar_app::object {
   sl::index root::n_slots       = {};
   sl::index root::n_units       = {};
 
-  root root::m_proto(root::proto);
+  root root::m_proto { root::proto };
 
-  root::root(root::proto_tag) {
+  root::root(root::proto_tag) noexcept {
     setup_sets({ { .id = sets::state_version, .scale = 1 },
                  { .id = sets::root_is_loading, .scale = 1 },
                  { .id = sets::root_is_launched, .scale = 1 },
@@ -47,7 +43,7 @@ namespace quadwar_app::object {
     n_units       = index_of(sets::root_units);
   }
 
-  root::root() : basic_entity(dummy) {
+  root::root() noexcept : basic_entity(dummy) {
     *this = m_proto;
   }
 

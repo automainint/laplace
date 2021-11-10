@@ -1,6 +1,4 @@
-/*  test/unittests/ui_basic_widget.test.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *

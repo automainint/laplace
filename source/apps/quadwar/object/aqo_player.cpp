@@ -1,6 +1,4 @@
-/*  apps/quadwar/object/aqo_player.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -12,24 +10,23 @@
 
 #include "player.h"
 
-#include "../../../laplace/core/serial.h"
 #include "../../../laplace/core/utils.h"
 #include "root.h"
 
 namespace quadwar_app::object {
-  using std::u8string_view, std::u8string;
+  using std::u8string_view, std::u8string, engine::intval;
 
   sl::index player::n_player_index = {};
 
-  player player::m_proto(proto);
+  player player::m_proto { proto };
 
-  player::player(proto_tag) : actor(proto) {
+  player::player(proto_tag) noexcept : actor(proto) {
     setup_sets({ { .id = sets::player_index, .scale = 1 } });
 
     n_player_index = index_of(sets::player_index);
   }
 
-  player::player(bool is_local) : actor(dummy) {
+  player::player(bool is_local) noexcept : actor(dummy) {
     *this = m_proto;
 
     init(n_is_local, is_local);

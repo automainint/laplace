@@ -1,6 +1,4 @@
-/*  apps/quadwar/object/aqo_unit.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -24,7 +22,7 @@ namespace quadwar_app::object {
   namespace eval   = engine::eval;
   namespace grid   = eval::grid;
 
-  using std::min, std::max, std::span, std::vector, engine::intval,
+  using std::min, std::max, std::vector, engine::intval,
       engine::vec2i, engine::vec2z, engine::id_undefined,
       std::shared_ptr, std::make_shared;
 
@@ -45,9 +43,9 @@ namespace quadwar_app::object {
   sl::index unit::n_target_x         = {};
   sl::index unit::n_target_y         = {};
 
-  unit unit::m_proto(unit::proto);
+  unit unit::m_proto { unit::proto };
 
-  unit::unit(proto_tag) : basic_entity(dynamic, 1) {
+  unit::unit(proto_tag) noexcept : basic_entity(dynamic, 1) {
     setup_sets(
         { { .id = sets::unit_health, .scale = sets::scale_points },
           { .id = sets::unit_radius, .scale = sets::scale_real },
@@ -76,11 +74,11 @@ namespace quadwar_app::object {
     n_target_y         = index_of(sets::unit_target_y);
   }
 
-  unit::unit() : basic_entity(dummy) {
+  unit::unit() noexcept : basic_entity(dummy) {
     *this = m_proto;
   }
 
-  void unit::tick(access::world w) {
+  void unit::tick(access::world w) noexcept {
     auto r   = w.get_entity(w.get_root());
     auto map = w.get_entity(root::get_pathmap(r));
 
@@ -147,9 +145,7 @@ namespace quadwar_app::object {
       }
     }
 
-    for (sl::index i = 0; i < ids.size(); i++) {
-      units.vec_add_sorted(ids[i]);
-    }
+    for (auto id : ids) units.vec_add_sorted(id);
 
     return ids;
   }
@@ -191,10 +187,8 @@ namespace quadwar_app::object {
     u.adjust();
   }
 
-  void unit::order_move(world     w,
-                        sl::index id_actor,
-                        sl::index id_unit,
-                        vec2i     target) {
+  void unit::order_move(world w, sl::index id_actor,
+                        sl::index id_unit, vec2i target) {
 
     auto u = w.get_entity(id_unit);
 

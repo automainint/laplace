@@ -1,6 +1,4 @@
-/*  laplace/engine/access/world.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -40,7 +38,7 @@ namespace laplace::engine::access {
      */
     auto reserve(sl::index id) const -> sl::index;
 
-    /*  Spawn a new entity. Allow to use already taken id.
+    /*  Spawn a new entity. Allows using already taken id.
      *  Sync.
      */
     void emplace(ptr_entity ent, sl::index id) const;

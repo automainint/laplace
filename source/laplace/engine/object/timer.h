@@ -1,6 +1,4 @@
-/*  laplace/engine/object/timer.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -21,13 +19,20 @@ namespace laplace::engine::object {
    */
   class timer final : public basic_entity {
   public:
-    timer(impact_gen gen, intval period, sl::whole count = 1);
-    ~timer() final = default;
+    timer(timer const &) noexcept = default;
+    timer(timer &&) noexcept      = default;
+    auto operator=(timer const &) noexcept -> timer & = default;
+    auto operator=(timer &&) noexcept -> timer & = default;
 
-    void tick(access::world w) final;
+    timer(impact_gen gen, intval period,
+          sl::whole count = 1) noexcept;
+
+    ~timer() noexcept final = default;
+
+    void tick(access::world w) noexcept final;
 
   private:
-    timer(proto_tag);
+    explicit timer(proto_tag) noexcept;
 
     static timer m_proto;
 

@@ -1,6 +1,4 @@
-/*  laplace/graphics/color.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -16,17 +14,19 @@
 #include <cstdint>
 
 namespace laplace::graphics {
-  void rgb_to_hsl(const float *rgb, float *hsl);
-  void hsl_to_rgb(const float *hsl, float *rgb);
+  void rgb_to_hsl(float const *rgb, float *hsl) noexcept;
+  void hsl_to_rgb(float const *hsl, float *rgb) noexcept;
 
-  auto convert_color_channel(float x) -> uint8_t;
-  auto convert_color_channel(uint8_t x) -> float;
+  [[nodiscard]] auto convert_color_channel(float x) noexcept
+      -> uint8_t;
+  [[nodiscard]] auto convert_color_channel(uint8_t x) noexcept
+      -> float;
 
-  void convert_rgb(const float *f_rgb, uint8_t *u8_rgb);
-  void convert_rgb(const uint8_t *u8_rgb, float *f_rgb);
+  void convert_rgb(float const *f_rgb, uint8_t *u8_rgb) noexcept;
+  void convert_rgb(uint8_t const *u8_rgb, float *f_rgb) noexcept;
 
-  void convert_rgba(const float *f_rgba, uint8_t *u8_rgba);
-  void convert_rgba(const uint8_t *u8_rgba, float *f_rgba);
+  void convert_rgba(float const *f_rgba, uint8_t *u8_rgba) noexcept;
+  void convert_rgba(uint8_t const *u8_rgba, float *f_rgba) noexcept;
 }
 
 #endif
