@@ -16,7 +16,6 @@
 #include "object/sets.h"
 #include "world.predef.h"
 #include <atomic>
-#include <chrono>
 #include <memory>
 #include <shared_mutex>
 
@@ -31,8 +30,8 @@ namespace laplace::engine {
     static constexpr auto proto   = proto_tag {};
     static constexpr auto dynamic = dynamic_tag {};
 
-    static std::chrono::milliseconds const lock_timeout;
-    static sl::time const                  default_tick_period;
+    static sl::time const lock_timeout_msec;
+    static sl::time const default_tick_period;
 
     basic_entity(basic_entity const &en) noexcept;
     basic_entity(basic_entity &&en) noexcept;
@@ -148,12 +147,14 @@ namespace laplace::engine {
 
     void vec_resize(sl::whole size) noexcept;
 
-    void vec_add(intval value) noexcept;
-    void vec_add_sorted(intval value) noexcept;
-    void vec_insert(sl::index n, intval value) noexcept;
-    void vec_erase(sl::index n) noexcept;
-    void vec_erase_by_value(intval value) noexcept;
-    void vec_erase_by_value_sorted(intval value) noexcept;
+    void vec_add(std::span<intval const> bunch) noexcept;
+    void vec_add_sorted(std::span<intval const> bunch) noexcept;
+    void vec_insert(sl::index               n,
+                    std::span<intval const> bunch) noexcept;
+    void vec_erase(sl::index n, sl::whole stride) noexcept;
+    void vec_erase_by_value(intval value, sl::whole stride) noexcept;
+    void vec_erase_by_value_sorted(intval    value,
+                                   sl::whole stride) noexcept;
 
     /*  Adjust Entity new state.
      *  Thread-safe.
@@ -244,8 +245,13 @@ namespace laplace::engine {
     void bytes_invalidate(sl::index n, sl::whole count = 1) noexcept;
     void bytes_validate_all() noexcept;
 
+    void vec_do_insert(sl::index               n,
+                       std::span<intval const> bunch) noexcept;
     void vec_invalidate(sl::index n, sl::whole count = 1) noexcept;
     void vec_validate_all() noexcept;
+
+    [[nodiscard]] auto vec_lower_bound(
+        intval value, sl::whole stride) const noexcept -> sl::index;
 
     struct _range {
       sl::index begin;
@@ -254,6 +260,25 @@ namespace laplace::engine {
 
     void invalidate_range(sl::vector<_range> &ranges, sl::index n,
                           sl::whole count) noexcept;
+
+    [[nodiscard, maybe_unused]] static auto _add(int8_t x,
+                                                 int8_t y) noexcept
+        -> int8_t;
+    [[nodiscard, maybe_unused]] static auto _add(int32_t x,
+                                                 int32_t y) noexcept
+        -> int32_t;
+    [[nodiscard, maybe_unused]] static auto _add(int64_t x,
+                                                 int64_t y) noexcept
+        -> int64_t;
+    [[nodiscard, maybe_unused]] static auto _sub(int8_t x,
+                                                 int8_t y) noexcept
+        -> int8_t;
+    [[nodiscard, maybe_unused]] static auto _sub(int32_t x,
+                                                 int32_t y) noexcept
+        -> int32_t;
+    [[nodiscard, maybe_unused]] static auto _sub(int64_t x,
+                                                 int64_t y) noexcept
+        -> int64_t;
 
     std::shared_timed_mutex m_lock;
     std::weak_ptr<world>    m_world;

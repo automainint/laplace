@@ -15,6 +15,8 @@
 #ifndef laplace_engine_eval_integral_impl_h
 #define laplace_engine_eval_integral_impl_h
 
+#include "arithmetic.impl.h"
+
 namespace laplace::engine::eval::impl {
   constexpr intval _constant_scale = 0x10000000;
 
@@ -40,14 +42,7 @@ namespace laplace::engine::eval::impl {
     return _constant_scale;
   }
 
-  constexpr auto _int_min    = std::numeric_limits<intval>::min();
-  constexpr auto _int_max    = std::numeric_limits<intval>::max();
-  constexpr auto _mul_safety = sizeof(intval) >= 8
-                                   ? intval { 0xb504f333ll }
-                                   : intval { 0xb504 };
-
-  consteval auto _find_pow(intval const x,
-                           intval const y,
+  consteval auto _find_pow(intval const x, intval const y,
                            intval const x_scale) noexcept {
     auto z = x;
     for (auto k = 1; k < y; k++) z = (z * x + x_scale / 2) / x_scale;
@@ -86,138 +81,6 @@ namespace laplace::engine::eval::impl {
     }
 
     return y;
-  }
-
-  /*  Safe integer division.
-   */
-  constexpr auto _div(intval const x, intval const y) noexcept
-      -> intval {
-    if (y != 0)
-      return x / y;
-    if (x < 0)
-      return _int_min;
-    if (x > 0)
-      return _int_max;
-    return 1;
-  }
-
-  /*  Safe integer multiplication.
-   */
-  constexpr auto _mul(intval const x, intval const y) noexcept
-      -> intval {
-    if (x >= _mul_safety) {
-      if (y > _int_max / x)
-        return _int_max;
-      if (y < _int_min / x)
-        return _int_min;
-    }
-    if (x <= -_mul_safety) {
-      if (y > _int_min / x)
-        return _int_min;
-      if (y < _int_max / x)
-        return _int_max;
-    }
-    if (y >= _mul_safety) {
-      if (x > _int_max / y)
-        return _int_max;
-      if (x < _int_min / y)
-        return _int_min;
-    }
-    if (y <= -_mul_safety) {
-      if (x > _int_min / y)
-        return _int_min;
-      if (x < _int_max / y)
-        return _int_max;
-    }
-    return x * y;
-  }
-
-  /*  Safe integer addition.
-   */
-  constexpr auto _add(intval const x, intval const y) noexcept
-      -> intval {
-    if (x > 0 && y < 0)
-      return x + y;
-    if (x < 0 && y > 0)
-      return x + y;
-    if (y < 0 && x <= _int_min - y)
-      return _int_min;
-    if (y > 0 && x >= _int_max - y)
-      return _int_max;
-    return x + y;
-  }
-
-  /*  Safe integer subtraction.
-   */
-  constexpr auto _sub(intval const x, intval const y) noexcept
-      -> intval {
-    if (y == _int_min) {
-      if (x < 0)
-        return _int_max + x;
-      return _int_max;
-    }
-    return _add(x, -y);
-  }
-
-  /*  Rounding fixed-point number division.
-   */
-  constexpr auto div(intval const x,
-                     intval const y,
-                     intval const scale) noexcept -> intval {
-
-    if (y == 0) {
-      if (x > 0)
-        return _int_max;
-      if (x < 0)
-        return _int_min;
-      return scale;
-    }
-
-    if (y < 0)
-      return -div(x, -y, scale);
-    if (scale < 0)
-      return -div(x, y, -scale);
-
-    auto const half_y = y / 2;
-
-    if (x < 0) {
-      if (x < _int_min / scale)
-        return _mul(_div(_sub(x, half_y), y), scale);
-      return _div(_sub(_mul(x, scale), half_y), y);
-    }
-
-    if (x > _int_max / scale)
-      return _mul(_div(_add(x, half_y), y), scale);
-    return _div(_add(_mul(x, scale), half_y), y);
-  }
-
-  /*  Fixed-point number multiplication.
-   */
-  constexpr auto mul(intval const x,
-                     intval const y,
-                     intval const scale) noexcept -> intval {
-
-    return div(_mul(x, y), _mul(scale, scale), scale);
-  }
-
-  constexpr auto div_sum(intval const x,
-                         intval const y,
-                         intval const divisor) noexcept -> intval {
-    if ((y < 0 && x <= _int_min - y) || (y > 0 && x >= _int_max - y))
-      return _add(_div(x, divisor), _div(y, divisor));
-    return _div(x + y, divisor);
-  }
-
-  constexpr auto div_sum(intval const x,
-                         intval const y,
-                         intval const z,
-                         intval const divisor) noexcept -> intval {
-    auto const sum_x_y = _add(x, y);
-    if ((z < 0 && sum_x_y <= _int_min - z) ||
-        (z > 0 && sum_x_y >= _int_max - z))
-      return _add(_add(_div(x, divisor), _div(y, divisor)),
-                  _div(z, divisor));
-    return _div(_add(sum_x_y, z), divisor);
   }
 
   constexpr auto e(intval const scale) noexcept -> intval {
@@ -422,8 +285,7 @@ namespace laplace::engine::eval::impl {
   static constexpr auto _sqrt = _generate_sqrt();
 
   template <typename func_>
-  constexpr auto _interpolate(const func_  f,
-                              intval const f_scale,
+  constexpr auto _interpolate(const func_ f, intval const f_scale,
                               intval const x,
                               intval const x_scale) noexcept
       -> intval {
@@ -431,21 +293,21 @@ namespace laplace::engine::eval::impl {
     if (x_scale <= f_scale)
       return f(div(x, x_scale, f_scale));
 
-    auto const halfstep = (x_scale + f_scale) / (2 * f_scale);
+    auto const halfstep = div_sum(x_scale, f_scale, _mul(f_scale, 2));
 
-    auto const f0 = div(x - halfstep, x_scale, f_scale);
+    auto const f0 = div(_sub(x, halfstep), x_scale, f_scale);
     auto const f1 = f0 + 1;
 
     auto const x0 = div(f0, f_scale, x_scale);
     auto const x1 = div(f1, f_scale, x_scale);
 
-    auto const k     = x - x0;
-    auto const delta = x1 - x0;
+    auto const k     = _sub(x, x0);
+    auto const delta = _sub(x1, x0);
 
     auto const y0 = f(f0);
     auto const y1 = f(f0 + 1);
 
-    return y0 + div((y1 - y0) * k, delta, 1);
+    return _add(y0, div(_mul(_sub(y1, y0), k), delta, 1));
   }
 
   constexpr auto sin_table(intval const index) noexcept -> intval {
@@ -495,9 +357,9 @@ namespace laplace::engine::eval::impl {
       return 0;
 
     if (x < 0)
-      return div(scale, exp(-x, scale), scale);
+      return div(scale, exp(_sub(x), scale), scale);
 
-    auto const delta = _exp_table_max * scale;
+    auto const delta = _mul(_exp_table_max, scale);
 
     auto value = _interpolate(exp_table, _exp_table_size, x % delta,
                               delta);
@@ -517,7 +379,7 @@ namespace laplace::engine::eval::impl {
     if (scale == 0)
       return 0;
 
-    auto const delta = _log_table_max * scale;
+    auto const delta = _mul(_log_table_max, scale);
     auto const inc   = _log.back();
 
     auto value = intval {};
@@ -573,8 +435,7 @@ namespace laplace::engine::eval::impl {
     return div(f(x * precision, scale * precision), precision, 1);
   }
 
-  constexpr auto pow(intval const x,
-                     intval const y,
+  constexpr auto pow(intval const x, intval const y,
                      intval const scale) noexcept -> intval {
 
     auto const f = [](intval const x, intval const y,
@@ -584,14 +445,15 @@ namespace laplace::engine::eval::impl {
 
     constexpr intval precision = 8;
 
-    return div(f(x * precision, y * precision, scale * precision),
+    return div(f(_mul(x, precision), _mul(y, precision),
+                 _mul(scale, precision)),
                precision, 1);
   }
 
   constexpr auto exp2(intval const x, intval const scale) noexcept
       -> intval {
 
-    return pow(scale * 2, x, scale);
+    return pow(_mul(scale, 2), x, scale);
   }
 
   constexpr auto log2(intval const x, intval const scale) noexcept
@@ -603,7 +465,8 @@ namespace laplace::engine::eval::impl {
       return div(log(x, scale), ln2(scale), scale);
     };
 
-    return div(f(x * precision, scale * precision), precision, 1);
+    return div(f(_mul(x, precision), _mul(scale, precision)),
+               precision, 1);
   }
 
   constexpr auto log10(intval const x, intval const scale) noexcept
@@ -615,7 +478,8 @@ namespace laplace::engine::eval::impl {
 
     constexpr intval precision = 8;
 
-    return div(f(x * precision, scale * precision), precision, 1);
+    return div(f(_mul(x, precision), _mul(scale, precision)),
+               precision, 1);
   }
 
   constexpr auto sin_2pi(intval const x, intval const scale) noexcept
@@ -625,7 +489,7 @@ namespace laplace::engine::eval::impl {
       return 0;
 
     if (x < 0)
-      return -sin_2pi(x, scale);
+      return _sub(sin_2pi(x, scale));
 
     if (x > scale)
       return sin_2pi(x % scale, scale);
@@ -640,25 +504,28 @@ namespace laplace::engine::eval::impl {
       -> intval {
 
     auto const f = [](intval const x, intval const scale) {
-      return div(sin_2pi(x, 2 * pi(scale)), 2 * pi(scale), scale);
+      return div(sin_2pi(x, _mul(pi(scale), 2)), _mul(pi(scale), 2),
+                 scale);
     };
 
     constexpr intval precision = 8;
 
-    return div(f(x * precision, scale * precision), precision, 1);
+    return div(f(_mul(x, precision), _mul(scale, precision)),
+               precision, 1);
   }
 
   constexpr auto cos(intval const x, intval const scale) noexcept
       -> intval {
 
     auto const f = [](intval const x, intval const scale) {
-      return div(sin_2pi(x + pi(scale) / 2, 2 * pi(scale)),
-                 2 * pi(scale), scale);
+      return div(sin_2pi(_add(x, pi(scale) / 2), _mul(pi(scale), 2)),
+                 _mul(pi(scale), 2), scale);
     };
 
     constexpr intval precision = 8;
 
-    return div(f(x * precision, scale * precision), precision, 1);
+    return div(f(_mul(x, precision), _mul(scale, precision)),
+               precision, 1);
   }
 
   constexpr auto tan(intval const x, intval const scale) noexcept
@@ -670,7 +537,8 @@ namespace laplace::engine::eval::impl {
 
     constexpr intval precision = 8;
 
-    return div(f(x * precision, scale * precision), precision, 1);
+    return div(f(_mul(x, precision), _mul(scale, precision)),
+               precision, 1);
   }
 
   constexpr auto asin(intval const x, intval const scale) noexcept
@@ -683,7 +551,7 @@ namespace laplace::engine::eval::impl {
   constexpr auto acos(intval const x, intval const scale) noexcept
       -> intval {
 
-    return pi(scale) / 2 - asin(x, scale);
+    return _sub(pi(scale) / 2, asin(x, scale));
   }
 
   constexpr auto atan(intval const x, intval const scale) noexcept
@@ -693,8 +561,7 @@ namespace laplace::engine::eval::impl {
     return 0;
   }
 
-  constexpr auto atan2(intval const y,
-                       intval const x,
+  constexpr auto atan2(intval const y, intval const x,
                        intval const scale) noexcept -> intval {
 
     auto const f = [](intval const y, intval const x,
@@ -704,21 +571,22 @@ namespace laplace::engine::eval::impl {
 
       if (x < 0) {
         if (y >= 0)
-          return atan(div(y, x, scale), scale) + pi(scale);
-        return atan(div(y, x, scale), scale) - pi(scale);
+          return _add(atan(div(y, x, scale), scale), pi(scale));
+        return _sub(atan(div(y, x, scale), scale), pi(scale));
       }
 
       if (y > 0)
         return pi(scale) / 2;
       if (y < 0)
-        return -pi(scale) / 2;
+        return _sub(pi(scale) / 2);
 
       return 0;
     };
 
     constexpr intval precision = 8;
 
-    return div(f(y * precision, x * precision, scale * precision),
+    return div(f(_mul(y, precision), _mul(x, precision),
+                 _mul(scale, precision)),
                precision, 1);
   }
 }

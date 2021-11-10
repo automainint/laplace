@@ -86,7 +86,8 @@ namespace laplace::engine::access {
     /*  Get an entity.
      *  Read.
      */
-    [[nodiscard]] auto get_entity(sl::index id) const -> access::entity;
+    [[nodiscard]] auto get_entity(sl::index id) const
+        -> access::entity;
 
     /*  Generate a random number.
      *  Sync.
@@ -99,15 +100,14 @@ namespace laplace::engine::access {
      *  Sync.
      */
     template <typename dist_>
-    [[nodiscard]] auto random(dist_ &dist, sl::whole count) const ->
-        sl::vector<typename dist_::result_type>;
+    [[nodiscard]] auto random(dist_ &dist, sl::whole count) const
+        -> sl::vector<typename dist_::result_type>;
 
   private:
-    auto get_random_engine() const -> ref_rand;
+    [[nodiscard]] auto get_random_engine() const -> ref_rand;
 
-    std::reference_wrapper<engine::world> m_world;
-
-    mode m_mode = forbidden;
+    engine::world *m_world = nullptr;
+    mode           m_mode  = forbidden;
   };
 }
 

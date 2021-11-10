@@ -1,6 +1,4 @@
-/*  apps/quadwar/aq_main.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -15,7 +13,6 @@
 #include "../../laplace/stem/config.h"
 #include "quadwar.h"
 #include <benchmark/benchmark.h>
-#include <cstdio>
 #include <gtest/gtest.h>
 
 namespace cfg = laplace::stem::config;

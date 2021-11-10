@@ -1,0 +1,3 @@
+# Suppress leaks in NVidia drivers
+leak:libnvidia-glcore.so
+leak:libX11.so

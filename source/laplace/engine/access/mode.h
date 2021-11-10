@@ -1,6 +1,4 @@
-/*  laplace/engine/access/mode.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -23,8 +21,8 @@ namespace laplace::engine::access {
 
   /*  Check if operation is allowed in specified execution status.
    */
-  [[nodiscard]] constexpr auto is_allowed(const mode operation,
-                                          const mode status) noexcept
+  [[nodiscard]] constexpr auto is_allowed(mode const operation,
+                                          mode const status) noexcept
       -> bool {
     return operation <= status;
   }

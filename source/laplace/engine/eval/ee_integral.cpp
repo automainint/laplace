@@ -1,6 +1,4 @@
-/*  laplace/engine/eval/ee_integral.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -66,9 +64,19 @@ namespace laplace::engine::eval::impl {
   static_assert(div(0, 0, 100) == 100);
   static_assert(div(0x10000000000000, 1, 0x10000000000000) ==
                 _int_max);
-  static_assert(div(0x10000000000000,
-                    0x10000000000000,
+  static_assert(div(0x10000000000000, 0x10000000000000,
                     0x10000000000000) == 0x10000000000000);
+
+  static_assert(div_sum(0x7000000000000000, 0x7000000000000000,
+                        0x100000000000000) == 0xe0);
+  static_assert(div_sum(0x7000000000000000, 0x7000000000000000,
+                        0x7000000000000000,
+                        0x100000000000000) == 0x150);
+  static_assert(div_sum(-0x7000000000000000, -0x7000000000000000,
+                        0x100000000000000) == -0xe0);
+  static_assert(div_sum(-0x7000000000000000, -0x7000000000000000,
+                        -0x7000000000000000,
+                        0x100000000000000) == -0x150);
 
   static_assert(e(1000000) == 2718282);
   static_assert(log2e(1000000) == 1442695);
@@ -163,8 +171,7 @@ namespace laplace::engine::eval {
     return impl::div(x, y, 1);
   }
 
-  auto div(intval const x,
-           intval const y,
+  auto div(intval const x, intval const y,
            intval const scale) noexcept -> intval {
     return impl::div(x, y, scale);
   }
@@ -177,8 +184,7 @@ namespace laplace::engine::eval {
     return impl::_mul(x, y);
   }
 
-  auto mul(intval const x,
-           intval const y,
+  auto mul(intval const x, intval const y,
            intval const scale) noexcept -> intval {
     return impl::mul(x, y, scale);
   }
@@ -261,8 +267,7 @@ namespace laplace::engine::eval {
     return impl::sqrt(x, scale);
   }
 
-  auto pow(intval const x,
-           intval const y,
+  auto pow(intval const x, intval const y,
            intval const scale) noexcept -> intval {
     return impl::pow(x, y, scale);
   }
@@ -316,8 +321,7 @@ namespace laplace::engine::eval {
     return impl::atan(x, scale);
   }
 
-  auto atan2(intval const y,
-             intval const x,
+  auto atan2(intval const y, intval const x,
              intval const scale) noexcept -> intval {
     return impl::atan2(y, x, scale);
   }

@@ -15,7 +15,7 @@
 
 namespace laplace::test {
   using std::make_shared, std::thread, engine::basic_entity,
-      engine::id_undefined, engine::world;
+      engine::id_undefined, engine::world, engine::intval;
 
   namespace sets = engine::object::sets;
 
@@ -31,6 +31,21 @@ namespace laplace::test {
     }
 
     ~my_entity() noexcept override = default;
+
+    void do_init() noexcept {
+      init(index_of(sets::debug_value), 123);
+      bytes_resize(1);
+      bytes_init(0, 23);
+      vec_resize(1);
+      vec_init(0, 345);
+
+      init(-1, 0);
+      init(100, 0);
+      bytes_init(-1, 0);
+      bytes_init(100, 0);
+      vec_init(-1, 0);
+      vec_init(100, 0);
+    }
 
     void do_desync() noexcept {
       desync();
@@ -49,6 +64,15 @@ namespace laplace::test {
     }
   };
 
+  TEST(engine, basic_entity_default) {
+    auto e = basic_entity {};
+
+    EXPECT_EQ(e.get_count(), 2);
+    EXPECT_NE(e.index_of(sets::is_dynamic), id_undefined);
+    EXPECT_NE(e.index_of(sets::tick_period), id_undefined);
+    EXPECT_EQ(e.get_by_id(sets::is_dynamic), 0);
+  }
+
   TEST(engine, basic_entity_proto) {
     auto e = basic_entity { basic_entity::proto };
 
@@ -60,13 +84,13 @@ namespace laplace::test {
 
   TEST(engine, basic_entity_dummy) {
     setup_log([](std::string_view) {});
-    
+
     auto e = basic_entity { basic_entity::dummy };
 
     EXPECT_EQ(e.get_count(), 0);
     EXPECT_EQ(e.index_of(sets::is_dynamic), id_undefined);
     EXPECT_EQ(e.index_of(sets::tick_period), id_undefined);
-    
+
     setup_log({});
   }
 
@@ -97,6 +121,19 @@ namespace laplace::test {
     EXPECT_EQ(e.get_by_id(sets::tick_period), 123);
   }
 
+  TEST(engine, basic_entity_init) {
+    setup_log([](std::string_view) {});
+
+    auto e = my_entity {};
+    e.do_init();
+
+    EXPECT_EQ(e.get(e.index_of(sets::debug_value)), 123);
+    EXPECT_EQ(e.bytes_get(0), 23);
+    EXPECT_EQ(e.vec_get(0), 345);
+
+    setup_log({});
+  }
+
   TEST(engine, basic_entity_set_dynamic) {
     auto e = basic_entity { basic_entity::proto };
 
@@ -111,6 +148,13 @@ namespace laplace::test {
     EXPECT_EQ(e.get_by_id(sets::is_dynamic), 0);
   }
 
+  TEST(engine, basic_entity_tick) {
+    auto e = make_shared<basic_entity>();
+    auto w = make_shared<world>();
+    w->spawn(e, id_undefined);
+    e->tick({ *w, engine::access::async });
+  }
+
   TEST(engine, basic_entity_set_tick_period) {
     auto e = basic_entity { basic_entity::proto };
 
@@ -123,6 +167,35 @@ namespace laplace::test {
     e.adjust();
     EXPECT_EQ(e.get_tick_period(), 345);
     EXPECT_EQ(e.get_by_id(sets::tick_period), 345);
+  }
+
+  TEST(engine, basic_entity_set) {
+    setup_log([](std::string_view) {});
+
+    auto e = basic_entity { basic_entity::proto };
+
+    e.set(-1, 123);
+    e.set(100, 123);
+    e.set(e.index_of(sets::tick_period), 123);
+    e.adjust();
+    EXPECT_EQ(e.get_tick_period(), 123);
+
+    setup_log({});
+  }
+
+  TEST(engine, basic_entity_apply_delta) {
+    setup_log([](std::string_view) {});
+
+    auto e = basic_entity { basic_entity::proto };
+
+    e.apply_delta(-1, 123);
+    e.apply_delta(100, 123);
+    e.apply_delta(e.index_of(sets::tick_period), 50);
+    auto x = e.get_tick_period();
+    e.adjust();
+    EXPECT_EQ(e.get_tick_period(), x + 50);
+
+    setup_log({});
   }
 
   TEST(engine, basic_entity_clock) {
@@ -197,10 +270,16 @@ namespace laplace::test {
     EXPECT_EQ(e->get_id(), id_undefined);
   }
 
-  TEST(engine, basic_entity_bytes) {
+  TEST(engine, basic_entity_bytes_1) {
+    setup_log([](std::string_view) {});
+
     auto e = basic_entity {};
 
+    EXPECT_EQ(e.bytes_get_size(), 0);
+
     e.bytes_resize(10);
+    EXPECT_EQ(e.bytes_get_size(), 10);
+
     e.bytes_set(2, 1);
     e.bytes_set(4, 2);
     e.bytes_set(6, 3);
@@ -214,6 +293,11 @@ namespace laplace::test {
     EXPECT_EQ(e.bytes_get(2), 1);
     EXPECT_EQ(e.bytes_get(4), 2);
     EXPECT_EQ(e.bytes_get(6), 3);
+
+    EXPECT_EQ(e.bytes_get(-1), 0);
+    EXPECT_EQ(e.bytes_get(10), 0);
+
+    setup_log({});
   }
 
   TEST(engine, basic_entity_bytes_2) {
@@ -239,19 +323,22 @@ namespace laplace::test {
     auto e = basic_entity {};
 
     e.bytes_resize(10);
+    e.bytes_set(8, 4);
     e.bytes_set(7, 3);
     e.bytes_set(6, 2);
-    e.bytes_set(5, 1);
+    e.bytes_set(1, 1);
 
-    EXPECT_EQ(e.bytes_get(5), 0);
-    EXPECT_EQ(e.bytes_get(6), 0);
+    EXPECT_EQ(e.bytes_get(8), 0);
     EXPECT_EQ(e.bytes_get(7), 0);
+    EXPECT_EQ(e.bytes_get(6), 0);
+    EXPECT_EQ(e.bytes_get(1), 0);
 
     e.adjust();
 
-    EXPECT_EQ(e.bytes_get(5), 1);
+    EXPECT_EQ(e.bytes_get(1), 1);
     EXPECT_EQ(e.bytes_get(6), 2);
     EXPECT_EQ(e.bytes_get(7), 3);
+    EXPECT_EQ(e.bytes_get(8), 4);
   }
 
   TEST(engine, basic_entity_bytes_4) {
@@ -290,6 +377,254 @@ namespace laplace::test {
     EXPECT_EQ(e.bytes_get(5), 1);
     EXPECT_EQ(e.bytes_get(7), 2);
     EXPECT_EQ(e.bytes_get(6), 3);
+  }
+
+  TEST(engine, basic_entity_bytes_6) {
+    auto e = basic_entity {};
+
+    e.bytes_resize(3);
+    e.bytes_set(0, 5);
+    e.bytes_set(1, 6);
+    e.bytes_set(2, 7);
+
+    auto bytes = e.bytes_get_all();
+
+    EXPECT_EQ(bytes.size(), 3);
+    if (bytes.size() > 0)
+      EXPECT_EQ(bytes[0], 0);
+    if (bytes.size() > 1)
+      EXPECT_EQ(bytes[1], 0);
+    if (bytes.size() > 2)
+      EXPECT_EQ(bytes[2], 0);
+
+    e.adjust();
+    bytes = e.bytes_get_all();
+
+    EXPECT_EQ(bytes.size(), 3);
+    if (bytes.size() > 0)
+      EXPECT_EQ(bytes[0], 5);
+    if (bytes.size() > 1)
+      EXPECT_EQ(bytes[1], 6);
+    if (bytes.size() > 2)
+      EXPECT_EQ(bytes[2], 7);
+  }
+
+  TEST(engine, basic_entity_bytes_7) {
+    auto e = basic_entity {};
+    e.bytes_resize(5);
+    e.bytes_set(0, 0);
+    e.bytes_set(1, 1);
+    e.bytes_set(2, 2);
+    e.bytes_set(3, 3);
+    e.bytes_set(4, 0);
+    e.adjust();
+
+    int8_t buf[3] = {};
+    e.bytes_read(1, buf);
+
+    EXPECT_EQ(buf[0], 1);
+    EXPECT_EQ(buf[1], 2);
+    EXPECT_EQ(buf[2], 3);
+  }
+
+  TEST(engine, basic_entity_bytes_8) {
+    auto e = basic_entity {};
+    e.bytes_resize(5);
+    int8_t buf[3] = { 1, 2, 3 };
+    e.bytes_write(1, buf);
+    e.adjust();
+
+    EXPECT_EQ(e.bytes_get(1), 1);
+    EXPECT_EQ(e.bytes_get(2), 2);
+    EXPECT_EQ(e.bytes_get(3), 3);
+  }
+
+  TEST(engine, basic_entity_bytes_9) {
+    auto e = basic_entity {};
+    e.bytes_resize(1);
+    e.bytes_apply_delta(0, 2);
+    e.adjust();
+    e.bytes_apply_delta(0, 3);
+    e.adjust();
+
+    EXPECT_EQ(e.bytes_get(0), 5);
+  }
+
+  TEST(engine, basic_entity_bytes_10) {
+    auto e = basic_entity {};
+    e.bytes_resize(5);
+    int8_t buf[3] = { 2, 2, 2 };
+    int8_t app[3] = { 1, 2, 3 };
+    e.bytes_write(1, buf);
+    e.adjust();
+    e.bytes_write_delta(1, app);
+    e.adjust();
+
+    EXPECT_EQ(e.bytes_get(1), 3);
+    EXPECT_EQ(e.bytes_get(2), 4);
+    EXPECT_EQ(e.bytes_get(3), 5);
+  }
+
+  TEST(engine, basic_entity_bytes_11) {
+    auto e = basic_entity {};
+    e.bytes_resize(5);
+    int8_t buf[3] = { 2, 2, 2 };
+    int8_t app[3] = { 1, 2, 3 };
+    e.bytes_write(1, buf);
+    e.adjust();
+    e.bytes_erase_delta(1, app);
+    e.adjust();
+
+    EXPECT_EQ(e.bytes_get(1), 1);
+    EXPECT_EQ(e.bytes_get(2), 0);
+    EXPECT_EQ(e.bytes_get(3), -1);
+  }
+
+  TEST(engine, basic_entity_bytes_12) {
+    setup_log([](std::string_view) {});
+
+    auto e = basic_entity {};
+
+    e.bytes_set(-1, 0);
+    e.bytes_set(100, 0);
+    e.bytes_apply_delta(-1, 0);
+    e.bytes_apply_delta(100, 0);
+    e.bytes_read(-1, {});
+    e.bytes_read(100, {});
+    e.bytes_write(-1, {});
+    e.bytes_write(100, {});
+    e.bytes_write_delta(-1, {});
+    e.bytes_write_delta(100, {});
+    e.bytes_erase_delta(-1, {});
+    e.bytes_erase_delta(100, {});
+
+    EXPECT_EQ(e.bytes_get(-1), 0);
+    EXPECT_EQ(e.bytes_get(100), 0);
+
+    setup_log({});
+  }
+
+  TEST(engine, basic_entity_bytes_13) {
+    setup_log([](std::string_view) {});
+
+    auto e = basic_entity {};
+    e.bytes_resize(-1);
+
+    setup_log({});
+  }
+
+  TEST(engine, basic_entity_vec_1) {
+    auto e = basic_entity {};
+    e.vec_resize(5);
+    EXPECT_EQ(e.vec_get_size(), 5);
+  }
+
+  TEST(engine, basic_entity_vec_2) {
+    auto e = basic_entity {};
+    e.vec_resize(1);
+    e.vec_set(0, 5);
+    e.adjust();
+
+    EXPECT_EQ(e.vec_get(0), 5);
+  }
+
+  TEST(engine, basic_entity_vec_3) {
+    auto e = basic_entity {};
+    e.vec_resize(3);
+    e.vec_set(0, 1);
+    e.vec_set(1, 2);
+    e.vec_set(2, 3);
+    e.adjust();
+
+    auto v = e.vec_get_all();
+    EXPECT_EQ(v.size(), 3);
+    if (v.size() > 0)
+      EXPECT_EQ(v[0], 1);
+    if (v.size() > 1)
+      EXPECT_EQ(v[1], 2);
+    if (v.size() > 2)
+      EXPECT_EQ(v[2], 3);
+  }
+
+  TEST(engine, basic_entity_vec_4) {
+    auto e = basic_entity {};
+    e.vec_resize(1);
+    e.vec_apply_delta(0, 1);
+    e.adjust();
+    e.vec_apply_delta(0, 2);
+    e.adjust();
+
+    EXPECT_EQ(e.vec_get(0), 3);
+  }
+
+  TEST(engine, basic_entity_vec_5) {
+    auto e = basic_entity {};
+    e.vec_resize(5);
+    e.vec_set(1, 1);
+    e.vec_set(2, 2);
+    e.vec_set(3, 3);
+    e.adjust();
+
+    intval buf[3] = {};
+    e.vec_read(1, buf);
+
+    EXPECT_EQ(buf[0], 1);
+    EXPECT_EQ(buf[1], 2);
+    EXPECT_EQ(buf[2], 3);
+  }
+
+  TEST(engine, basic_entity_vec_6) {
+    auto e = basic_entity {};
+    e.vec_resize(5);
+    intval buf[3] = { 1, 2, 3 };
+    e.vec_write(1, buf);
+    e.adjust();
+
+    EXPECT_EQ(e.vec_get(1), 1);
+    EXPECT_EQ(e.vec_get(2), 2);
+    EXPECT_EQ(e.vec_get(3), 3);
+  }
+
+  TEST(engine, basic_entity_vec_7) {
+    auto e = basic_entity {};
+    e.vec_resize(5);
+    intval buf[3] = { 1, 2, 3 };
+    e.vec_write(1, buf);
+    e.adjust();
+
+    EXPECT_EQ(e.vec_get(1), 1);
+    EXPECT_EQ(e.vec_get(2), 2);
+    EXPECT_EQ(e.vec_get(3), 3);
+  }
+
+  TEST(engine, basic_entity_vec_8) {
+    auto e = basic_entity {};
+    e.vec_resize(5);
+    intval buf[3] = { 1, 2, 3 };
+    e.vec_write(1, buf);
+    e.adjust();
+    intval app[3] = { 2, 3, 4 };
+    e.vec_write_delta(1, app);
+    e.adjust();
+
+    EXPECT_EQ(e.vec_get(1), 3);
+    EXPECT_EQ(e.vec_get(2), 5);
+    EXPECT_EQ(e.vec_get(3), 7);
+  }
+
+  TEST(engine, basic_entity_vec_9) {
+    auto e = basic_entity {};
+    e.vec_resize(5);
+    intval buf[3] = { 3, 2, 3 };
+    e.vec_write(1, buf);
+    e.adjust();
+    intval app[3] = { 2, 3, 4 };
+    e.vec_erase_delta(1, app);
+    e.adjust();
+    
+    EXPECT_EQ(e.vec_get(1), 1);
+    EXPECT_EQ(e.vec_get(2), -1);
+    EXPECT_EQ(e.vec_get(3), -1);
   }
 
   TEST(engine, basic_entity_multithreading) {
@@ -377,15 +712,16 @@ namespace laplace::test {
     e.vec_erase_delta(0, {});
     e.vec_resize(0);
 
-    e.vec_add(0);
-    e.vec_add_sorted(0);
-    e.vec_insert(0, 0);
-    e.vec_erase(0);
-    e.vec_erase_by_value(0);
-    e.vec_erase_by_value_sorted(0);
+    e.vec_add({});
+    e.vec_add_sorted({});
+    e.vec_insert(0, {});
+    e.vec_erase(0, 0);
+    e.vec_erase_by_value(0, 0);
+    e.vec_erase_by_value_sorted(0, 0);
 
     e.adjust();
 
+    EXPECT_FALSE(e.clock());
     EXPECT_EQ(e.get(0), 0);
     EXPECT_EQ(e.bytes_get_size(), 0);
     EXPECT_EQ(e.bytes_get(0), 0);

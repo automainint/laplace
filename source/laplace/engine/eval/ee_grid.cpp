@@ -1,6 +1,4 @@
-/*  laplace/engine/eval/ee_grid.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -18,8 +16,7 @@
 namespace laplace::engine::eval::grid {
   using std::span, std::min, std::max, std::function, astar::link;
 
-  void merge(vec2z const              size,
-             span<int8_t> const       dst,
+  void merge(vec2z const size, span<int8_t> const dst,
              span<int8_t const> const src,
              op const                 merge_op) noexcept {
 
@@ -40,10 +37,8 @@ namespace laplace::engine::eval::grid {
     }
   }
 
-  void merge(vec2z const              dst_size,
-             span<int8_t> const       dst,
-             vec2z const              src_size,
-             vec2i const              src_offset,
+  void merge(vec2z const dst_size, span<int8_t> const dst,
+             vec2z const src_size, vec2i const src_offset,
              span<int8_t const> const src,
              op const                 merge_op) noexcept {
 
@@ -68,9 +63,8 @@ namespace laplace::engine::eval::grid {
     }
   }
 
-  auto trace_line(vec2z const    a,
-                  vec2z const    b,
-                  fn_point const point) noexcept -> bool {
+  auto trace_line(vec2z const a, vec2z const b,
+                  fn_point const &point) noexcept -> bool {
 
     auto const abs_delta = [](sl::index const x0,
                               sl::index const x1) {
@@ -81,9 +75,8 @@ namespace laplace::engine::eval::grid {
     auto const dy = abs_delta(a.y(), b.y());
 
     if (dx > dy) {
-      if (b.x() < a.x()) {
+      if (b.x() < a.x())
         return trace_line(b, a, point);
-      }
 
       auto y = a.y();
       auto d = dx / 2;
@@ -91,9 +84,8 @@ namespace laplace::engine::eval::grid {
       if (a.y() < b.y()) {
         for (auto x = a.x(); x <= b.x(); x++) {
 
-          if (!point({ x, y })) {
+          if (!point({ x, y }))
             return false;
-          }
 
           d += dy;
 
@@ -105,9 +97,8 @@ namespace laplace::engine::eval::grid {
       } else {
         for (auto x = a.x(); x <= b.x(); x++) {
 
-          if (!point({ x, y })) {
+          if (!point({ x, y }))
             return false;
-          }
 
           d += dy;
 
@@ -118,9 +109,8 @@ namespace laplace::engine::eval::grid {
         }
       }
     } else {
-      if (b.y() < a.y()) {
+      if (b.y() < a.y())
         return trace_line(b, a, point);
-      }
 
       auto x = a.x();
       auto d = dy / 2;
@@ -128,9 +118,8 @@ namespace laplace::engine::eval::grid {
       if (a.x() < b.x()) {
         for (auto y = a.y(); y <= b.y(); y++) {
 
-          if (!point({ x, y })) {
+          if (!point({ x, y }))
             return false;
-          }
 
           d += dx;
 
@@ -142,9 +131,8 @@ namespace laplace::engine::eval::grid {
       } else {
         for (auto y = a.y(); y <= b.y(); y++) {
 
-          if (!point({ x, y })) {
+          if (!point({ x, y }))
             return false;
-          }
 
           d += dx;
 
@@ -174,8 +162,7 @@ namespace laplace::engine::eval::grid {
                        .width  = size.x() };
   }
 
-  auto submap(vec2z const     min,
-              vec2z const     max,
+  auto submap(vec2z const min, vec2z const max,
               rect_area const area) noexcept -> rect_area {
     if (max.x() <= min.x() || max.y() <= min.y())
       return {};
@@ -201,8 +188,7 @@ namespace laplace::engine::eval::grid {
                        .origin = min };
   }
 
-  auto index_of(rect_area const area,
-                vec2z const     position,
+  auto index_of(rect_area const area, vec2z const position,
                 sl::index const invalid) noexcept -> sl::index {
     auto const p = position - area.origin;
 
@@ -238,28 +224,24 @@ namespace laplace::engine::eval::grid {
     return index_of(area, position) >= 0;
   }
 
-  auto value(rect_area const area,
-             sl::index const n,
-             int8_t const    invalid) noexcept -> int8_t {
+  auto value(rect_area const area, sl::index const n,
+             int8_t const invalid) noexcept -> int8_t {
     if (n < 0 || n >= area.map.size())
       return invalid;
     return area.map[n];
   }
 
-  auto value(rect_area const area,
-             vec2z const     position,
-             int8_t const    invalid) noexcept -> int8_t {
+  auto value(rect_area const area, vec2z const position,
+             int8_t const invalid) noexcept -> int8_t {
     auto const n = index_of(area, position);
     if (n < 0)
       return invalid;
     return area.map[n];
   }
 
-  auto neighbors4(vec2z const        position,
-                  sl::index const    n,
-                  fn_available const available,
-                  intval const       scale,
-                  rect_area const    area) noexcept -> link {
+  auto neighbors4(vec2z const position, sl::index const n,
+                  fn_available const available, intval const scale,
+                  rect_area const area) noexcept -> link {
 
     if (!contains(area, position))
       return {};
@@ -286,8 +268,7 @@ namespace laplace::engine::eval::grid {
     return {};
   }
 
-  auto neighbors8(vec2z const        position,
-                  sl::index const    n,
+  auto neighbors8(vec2z const position, sl::index const n,
                   fn_available const available,
                   intval const       scale_ortho,
                   intval const       scale_diagonal,
@@ -338,38 +319,40 @@ namespace laplace::engine::eval::grid {
     return {};
   }
 
-  auto manhattan(vec2z const  a,
-                 vec2z const  b,
+  auto manhattan(vec2z const a, vec2z const b,
                  intval const scale) noexcept -> intval {
-    auto const dx = a.x() < b.x() ? b.x() - a.x() : a.x() - b.x();
-    auto const dy = a.y() < b.y() ? b.y() - a.y() : a.y() - b.y();
+    auto const dx = a.x() < b.x() ? sub(b.x(), a.x())
+                                  : sub(a.x(), b.x());
+    auto const dy = a.y() < b.y() ? sub(b.y(), a.y())
+                                  : sub(a.y(), b.y());
 
-    return (dx + dy) * scale;
+    return mul(add(dx, dy), scale);
   }
 
-  auto diagonal(vec2z const  a,
-                vec2z const  b,
+  auto diagonal(vec2z const a, vec2z const b,
                 intval const scale) noexcept -> intval {
-    auto const dx = a.x() < b.x() ? b.x() - a.x() : a.x() - b.x();
-    auto const dy = a.y() < b.y() ? b.y() - a.y() : a.y() - b.y();
+    auto const dx = a.x() < b.x() ? sub(b.x(), a.x())
+                                  : sub(a.x(), b.x());
+    auto const dy = a.y() < b.y() ? sub(b.y(), a.y())
+                                  : sub(a.y(), b.y());
 
     if (dx < dy)
-      return eval::sqrt2(scale) * dx + (dy - dx) * scale;
+      return add(mul(sqrt2(scale), dx), mul(sub(dy, dx), scale));
 
-    return eval::sqrt2(scale) * dy + (dx - dy) * scale;
+    return add(mul(sqrt2(scale), dy), mul(sub(dx, dy), scale));
   }
 
-  auto euclidean(vec2z const  a,
-                 vec2z const  b,
+  auto euclidean(vec2z const a, vec2z const b,
                  intval const scale) noexcept -> intval {
-    auto const dx = a.x() < b.x() ? b.x() - a.x() : a.x() - b.x();
-    auto const dy = a.y() < b.y() ? b.y() - a.y() : a.y() - b.y();
+    auto const dx = a.x() < b.x() ? sub(b.x(), a.x())
+                                  : sub(a.x(), b.x());
+    auto const dy = a.y() < b.y() ? sub(b.y(), a.y())
+                                  : sub(a.y(), b.y());
 
-    return eval::sqrt((dx * dx + dy * dy) * scale, scale);
+    return eval::sqrt(mul(add(sqr(dx), sqr(dy)), scale), scale);
   }
 
-  auto path_exists(vec2z const        source,
-                   vec2z const        destination,
+  auto path_exists(vec2z const source, vec2z const destination,
                    fn_available const available,
                    rect_area const    area) noexcept -> bool {
 
@@ -422,8 +405,7 @@ namespace laplace::engine::eval::grid {
     return false;
   }
 
-  auto path_search_init(vec2z const        source,
-                        vec2z const        destination,
+  auto path_search_init(vec2z const source, vec2z const destination,
                         fn_available const available,
                         intval const       scale,
                         rect_area const    area) noexcept -> _state {
@@ -447,7 +429,7 @@ namespace laplace::engine::eval::grid {
     };
 
     s.neighbors = [area, available, scale,
-                   scale_diagonal = eval::sqrt2(scale)](
+                   scale_diagonal = sqrt2(scale)](
                       sl::index const p, sl::index const n) -> link {
       return neighbors8(point_of(area, p), n, available, scale,
                         scale_diagonal, area);
@@ -490,10 +472,8 @@ namespace laplace::engine::eval::grid {
     return path;
   }
 
-  void convolve(vec2z const              size,
-                span<int8_t> const       dst,
-                span<int8_t const> const src,
-                vec2z const              fp_size,
+  void convolve(vec2z const size, span<int8_t> const dst,
+                span<int8_t const> const src, vec2z const fp_size,
                 vec2z const              center,
                 span<int8_t const> const footprint) noexcept {
 
@@ -547,8 +527,7 @@ namespace laplace::engine::eval::grid {
       }
   }
 
-  auto nearest(vec2z const                  position,
-               vec2z const                  size,
+  auto nearest(vec2z const position, vec2z const size,
                span<int8_t const> const     map,
                function<bool(int8_t)> const condition) noexcept
       -> vec2z {
@@ -611,7 +590,7 @@ namespace laplace::engine::eval::grid {
       if (y0 + radius < size.y())
         for (sl::index i = i0; i <= i1; i++) { do_point(i, j1); }
 
-      if (0 < distance && distance <= radius * radius)
+      if (0 < distance && distance <= sqr(radius))
         break;
     }
 

@@ -2,9 +2,6 @@
 [![build-and-test][build-badge]][build-link]
 [![codecov][codecov-badge]][codecov-link]
 
-- [Contributing](/doc/Contributing.md) 
-- [Code of Conduct](/doc/Code%20of%20Conduct.md)
-
 The quality of a real-time strategy game relies on low-latency responsiveness and vertical scalability. Vertical scalability requires parallelism on the local instance and lockstep networking. Lockstep systems require a totally deterministic engine. In addition, extensibility is a useful feature.
 
 Laplace is an interactive multimedia framework that provides the deterministic and extensible engine with concurrency support and lockstep synchronization.

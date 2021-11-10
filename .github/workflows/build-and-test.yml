@@ -80,20 +80,9 @@ jobs:
           OpenCppCoverage.exe --sources source\\* --excluded_sources source\\test\\* --export_type cobertura:coverage.xml --cover_children -- ctest -V -C $BUILD_TYPE
 
       - name: Upload coverage to Codecov
-        #id: upload_coverage
-        #continue-on-error: true
         uses: codecov/codecov-action@v2
         with:
           files: ./build/coverage.xml
           flags: ${{ runner.os }}
           name: ${{ runner.os }} build
           fail_ci_if_error: false
-
-      #- name: Try upload coverage to Codecov again
-      #  if: steps.upload_coverage.outcome == 'failure'
-      #  uses: codecov/codecov-action@v2
-      #  with:
-      #    files: ./build/coverage.xml
-      #    flags: ${{ runner.os }}
-      #    name: ${{ runner.os }} build
-      #    fail_ci_if_error: false
