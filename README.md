@@ -53,7 +53,7 @@ To build only dependencies set `LAPLACE_ENABLE_EXE` to `OFF`.
 
 ##  Hacking
 If you want to build the source code by hand, follow the instructions below:
-- On Windows, use `tools/build-deps.py` to build dependencies. Required headers will be in `include` folder, libraries will be in `lib` folder.
+- Use `tools/build-deps.py` to build dependencies. Required headers will be in `include` folder, libraries will be in `lib` folder.
 - Use `tools/gen-gl.py` to generate OpenGL interface files.
 - Use `tools/embed.py` to generate embedded data source files.
 

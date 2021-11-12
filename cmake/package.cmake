@@ -1,11 +1,12 @@
 include(GNUInstallDirs)
 include(cmake/hotfix-ft2.cmake)
 
-install(
-  TARGETS ${QUADWAR_EXE}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  COMPONENT Quadwar_Runtime
-)
+if(LAPLACE_ENABLE_EXE)
+  install(
+    TARGETS ${QUADWAR_EXE}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    COMPONENT Quadwar_Runtime)
+endif()
 
 set(
   CPACK_INSTALL_CMAKE_PROJECTS
