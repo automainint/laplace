@@ -27,7 +27,7 @@ namespace laplace::network {
       engine::loader, engine::time_undefined, engine::id_undefined,
       engine::encode, crypto::ecc_rabbit;
 
-  const sl::whole udp_server::default_chunk_size        = 2096;
+  const sl::whole udp_server::default_chunk_size        = 4192;
   const sl::whole udp_server::chunk_size_increment      = 512;
   const sl::whole udp_server::default_loss_compensation = 4;
   const uint16_t  udp_server::default_max_command_id    = 400;
@@ -559,15 +559,10 @@ namespace laplace::network {
       auto const n = m_node->receive_to(m_buffer.data(),
                                         m_buffer.size(), async);
 
-      if (n == m_buffer.size() || m_node->is_msgsize()) {
+      if (n == m_buffer.size() || m_node->is_msgsize())
         if (has_slot(m_node->get_remote_address(),
-                     m_node->get_remote_port())) {
-          if (is_verbose())
-            verb("Network: Increase buffer size.");
-
+                     m_node->get_remote_port()))
           inc_buffer_size();
-        }
-      }
 
       if (n == 0) {
         if (m_node->is_connreset()) {
@@ -631,18 +626,12 @@ namespace laplace::network {
                                       s.node->get_remote_address() ||
                                   s.port != s.node->get_remote_port();
 
+      if (n == m_buffer.size() || m_node->is_msgsize())
+        if (!sender_changed)
+          inc_buffer_size();
+
       if (n == 0) {
-        if (s.node->is_msgsize()) {
-
-          if (!sender_changed) {
-            if (is_verbose()) {
-              verb("Network: Wrong buffer size.");
-            }
-
-            inc_buffer_size();
-          }
-
-        } else if (m_node->is_connreset()) {
+        if (m_node->is_connreset()) {
 
           if (sender_changed)
             continue;
@@ -718,8 +707,13 @@ namespace laplace::network {
   }
 
   void udp_server::inc_buffer_size() {
-    if (m_buffer.size() < max_chunk_size)
-      m_buffer.resize(m_buffer.size() + chunk_size_increment);
+    if (m_buffer.size() >= max_chunk_size)
+      return;
+
+    if (is_verbose())
+      verb("Network: Increase buffer size.");
+
+    m_buffer.resize(m_buffer.size() + chunk_size_increment);
   }
 
   void udp_server::add_event(sl::index slot, span_cbyte seq) {
@@ -727,22 +721,19 @@ namespace laplace::network {
     auto &qu    = m_slots[slot].queue;
 
     if (index == -1) {
-      if (!perform_control(slot, seq)) {
-        if (is_verbose()) {
+      if (!perform_control(slot, seq))
+        if (is_verbose())
           verb(fmt("Network: Ignore unindexed command on slot %zu.",
                    slot));
-        }
-      }
 
     } else if (index >= qu.index) {
       const auto n = index - qu.index;
 
       if (n >= qu.events.size()) {
         if (n - qu.events.size() >= max_index_delta) {
-          if (is_verbose()) {
+          if (is_verbose())
             verb(fmt("Network: Invalid command index on slot %d.",
                      (int) slot));
-          }
           return;
         }
 
