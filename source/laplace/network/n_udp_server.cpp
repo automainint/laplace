@@ -27,7 +27,7 @@ namespace laplace::network {
       engine::loader, engine::time_undefined, engine::id_undefined,
       engine::encode, crypto::ecc_rabbit;
 
-  const sl::whole udp_server::default_chunk_size        = 2096;
+  const sl::whole udp_server::default_chunk_size        = 4192;
   const sl::whole udp_server::chunk_size_increment      = 512;
   const sl::whole udp_server::default_loss_compensation = 4;
   const uint16_t  udp_server::default_max_command_id    = 400;
