@@ -213,7 +213,7 @@ namespace laplace::test {
 
       client->connect(localhost, my_host->get_port());
 
-      for (sl::index k = 0; k < 10; k++) {
+      for (sl::index k = 0; k < 20; k++) {
         yield();
         verb(" * Host    *");
         my_host->tick(10);
