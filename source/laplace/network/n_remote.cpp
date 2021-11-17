@@ -1,6 +1,4 @@
-/*  laplace/network/n_remote.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -16,7 +14,6 @@
 #include "crypto/ecc_rabbit.h"
 
 namespace laplace::network {
-  namespace access = engine::access;
   using namespace engine::protocol;
 
   using std::min, std::make_unique, std::string, std::string_view,
@@ -62,9 +59,8 @@ namespace laplace::network {
     emit<client_enter>();
   }
 
-  void remote::connect(string_view host_address,
-                       uint16_t    host_port,
-                       uint16_t    client_port) {
+  void remote::connect(string_view host_address, uint16_t host_port,
+                       uint16_t client_port) {
 
     m_host_address = host_address;
     m_host_port    = host_port;
@@ -94,11 +90,10 @@ namespace laplace::network {
       m_slots[slot].port         = session_response::get_port(seq);
       m_slots[slot].is_exclusive = true;
 
-      if (m_token.empty()) {
+      if (m_token.empty())
         send_event_to(slot, encode<request_token>());
-      } else {
+      else
         send_event_to(slot, encode<session_token>(m_token));
-      }
 
       return true;
     }
@@ -122,11 +117,11 @@ namespace laplace::network {
         return true;
       }
 
-      const auto index = server_idle::get_idle_index(seq);
+      auto const index = server_idle::get_idle_index(seq);
 
       if (index >= 0) {
-        const auto &qu          = m_slots[slot].queue;
-        const auto  event_count = qu.index + qu.events.size();
+        auto const &qu          = m_slots[slot].queue;
+        auto const  event_count = qu.index + qu.events.size();
 
         if (index > event_count) {
           auto events = sl::vector<sl::index> {};
@@ -134,9 +129,9 @@ namespace laplace::network {
           for (sl::index n = event_count; n < index; n++) {
             events.emplace_back(n);
 
-            if (events.size() >= request_events::max_event_count) {
+            if (events.size() >= request_events::get_max_event_count(
+                                     get_max_event_size()))
               break;
-            }
           }
 
           send_event_to(slot, encode<request_events>(events));

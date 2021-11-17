@@ -34,11 +34,6 @@ namespace laplace::engine {
     using basic_impact::set_index;
     using basic_impact::set_time;
 
-    /*  Max encoded impact size.
-     */
-    static constexpr sl::whole max_size =
-        std::numeric_limits<uint16_t>::max();
-
     ~prime_impact() override = default;
 
     /*  Encode into byte sequence. The sequence can be decoded

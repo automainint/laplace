@@ -26,4 +26,5 @@ Checks: >
   -*-reinterpret-cast,
   -*-constant-array-index,
   -*-private-member-variables-in-classes,
-  -*-simplify-boolean-expr
+  -*-simplify-boolean-expr,
+  -*-qualified-auto

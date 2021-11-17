@@ -8,18 +8,10 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_defs_h
-#define laplace_network_defs_h
-
-#include "../core/defs.h"
-#include "../core/socket.h"
+#include "defs.h"
 
 namespace laplace::network {
-  extern sl::whole const max_chunk_size;
-  extern char const      localhost[];
-  extern uint16_t const  any_port;
-
-  enum io_mode { async, sync };
+  sl::whole const max_chunk_size = 0x1000;
+  char const      localhost[]    = "127.0.0.1";
+  uint16_t const  any_port       = 0;
 }
-
-#endif

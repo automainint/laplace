@@ -41,7 +41,7 @@ namespace laplace::engine {
   auto solver::apply(span_cbyte ev) -> sl::time {
     if (ev.empty()) {
       error_("No event.", __FUNCTION__);
-      return -1;
+      return time_undefined;
     }
 
     auto event_time = prime_impact::get_time(ev);
@@ -53,7 +53,7 @@ namespace laplace::engine {
     if (event_time < m_time) {
       if (!m_is_rewind_allowed) {
         error_("Rewind is not allowed. Event ignored.", __FUNCTION__);
-        return -1;
+        return time_undefined;
       }
 
       auto const current_time = m_time;

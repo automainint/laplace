@@ -21,31 +21,36 @@ namespace laplace::engine::protocol {
     static constexpr uint16_t  id         = ids::request_events;
     static constexpr sl::whole event_size = sizeof(sl::index64);
 
-    static constexpr sl::whole max_event_count = (max_size - n_events) /
-                                                 event_size;
+    [[nodiscard]] static constexpr auto get_max_event_count(
+        sl::whole size_limit) noexcept -> sl::whole {
+      return (size_limit - n_events) / event_size;
+    }
 
     ~request_events() final = default;
 
-    inline request_events() {
+    inline request_events() noexcept {
       set_encoded_size(n_events);
     }
 
-    inline request_events(std::span<const sl::index> events) {
+    inline request_events(
+        std::span<const sl::index> events) noexcept {
       set_encoded_size(n_events + events.size() * event_size);
 
       m_events.assign(events.begin(), events.end());
     }
 
-    static constexpr auto get_event_count(span_cbyte seq) {
+    static constexpr auto get_event_count(span_cbyte seq) noexcept {
       return (seq.size() - n_events) / event_size;
     }
 
-    static constexpr auto get_event(span_cbyte seq, size_t index) {
-      return as_index(
-          serial::rd<sl::index64>(seq, n_events + index * event_size));
+    static constexpr auto get_event(span_cbyte seq,
+                                    size_t     index) noexcept {
+      return as_index(serial::rd<sl::index64>(
+          seq, n_events + index * event_size));
     }
 
-    inline void encode_to(std::span<uint8_t> bytes) const final {
+    inline void encode_to(
+        std::span<uint8_t> bytes) const noexcept final {
       auto events = sl::vector<sl::index64>(m_events.size());
       for (sl::index i = 0; i < events.size(); i++) {
         events[i] = m_events[i];
@@ -55,11 +60,11 @@ namespace laplace::engine::protocol {
                           std::span<const sl::index64>(events));
     }
 
-    static constexpr auto scan(span_cbyte seq) {
+    static constexpr auto scan(span_cbyte seq) noexcept {
       return seq.size() >= n_events && get_id(seq) == id;
     }
 
-    static inline auto decode(span_cbyte seq) {
+    static inline auto decode(span_cbyte seq) noexcept {
       auto events = sl::vector<sl::index>(get_event_count(seq));
 
       for (sl::index i = 0; i < events.size(); i++) {

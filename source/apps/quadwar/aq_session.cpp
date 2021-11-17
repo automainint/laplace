@@ -1,6 +1,4 @@
-/*  apps/quadwar/aq_session.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -12,8 +10,6 @@
 
 #include "session.h"
 
-#include "../../laplace/core/keys.h"
-#include "../../laplace/core/utils.h"
 #include "../../laplace/engine/protocol/basic_event.h"
 #include "../../laplace/engine/protocol/slot_create.h"
 #include "../../laplace/network/host.h"
@@ -27,21 +23,21 @@
 #include <filesystem>
 #include <fstream>
 #include <limits>
-#include <thread>
+#include <utility>
 
 namespace quadwar_app {
-  namespace access      = engine::access;
-  namespace this_thread = std::this_thread;
-  namespace ids         = protocol::ids;
-
-  using namespace core::keys;
+  namespace access = engine::access;
+  namespace ids    = protocol::ids;
 
   using std::find, std::make_shared, std::string, std::string_view,
       std::u8string_view, std::ofstream, std::ifstream, network::host,
       network::remote, protocol::qw_player_name, object::root,
       object::landscape, object::player, engine::id_undefined,
       core::cref_input_handler, view::vec2, view::real,
-      core::is_key_down, core::get_wheel_delta;
+      core::is_key_down, core::get_wheel_delta, core::keys::key_wheel,
+      core::keys::key_left, core::keys::key_right, core::keys::key_up,
+      core::keys::key_down, core::keys::key_lbutton,
+      core::keys::key_rbutton, core::keys::key_mbutton;
 
   const uint16_t session::allowed_commands[] = {
     ids::session_request, ids::session_token, ids::request_token,
@@ -65,16 +61,16 @@ namespace quadwar_app {
     });
 
     m_lobby.on_start([this] {
-      if (m_server) {
+      if (!m_server)
+        return;
 
-        m_server->emit<protocol::qw_loading>(
-            m_map_size, m_player_count, m_unit_count);
+      m_server->emit<protocol::qw_loading>(m_map_size, m_player_count,
+                                           m_unit_count);
 
-        m_server->emit<protocol::server_launch>();
-        m_server->emit<protocol::server_action>();
+      m_server->emit<protocol::server_launch>();
+      m_server->emit<protocol::server_action>();
 
-        m_lobby.on_start([] {});
-      }
+      m_lobby.on_start([] {});
     });
   }
 
@@ -84,12 +80,12 @@ namespace quadwar_app {
     }
   }
 
-  void session::on_done(session::event_done ev) {
-    m_on_done = ev;
+  void session::on_done(event_done ev) {
+    m_on_done = std::move(ev);
   }
 
-  void session::on_quit(session::event_quit ev) {
-    m_on_quit = ev;
+  void session::on_quit(event_quit ev) {
+    m_on_quit = std::move(ev);
   }
 
   void session::tick(sl::time delta_msec, cref_input_handler in) {
@@ -102,9 +98,8 @@ namespace quadwar_app {
         update_lobby();
 
       } else if (m_server->is_quit()) {
-        if (m_on_done) {
+        if (m_on_done)
           m_on_done();
-        }
 
       } else {
         verb("Session: Trying to reconnect...");
@@ -122,8 +117,8 @@ namespace quadwar_app {
     }
   }
 
-  void session::attach_to(ui::ptr_widget w) {
-    m_lobby.attach_to(std::move(w));
+  void session::attach_to(ui::ptr_widget const &w) {
+    m_lobby.attach_to(w);
   }
 
   void session::adjust_layout(sl::whole width, sl::whole height) {
@@ -224,19 +219,17 @@ namespace quadwar_app {
       -> string {
 
     auto f = ifstream(session::host_info_file);
+    if (!f)
+      return string { default_address };
 
-    if (f) {
-      auto port = network::any_port;
-      f >> port;
+    auto port = network::any_port;
+    f >> port;
 
-      if (f) {
-        verb(fmt("Host address found: %s:%hu", network::localhost,
-                 port));
-        return fmt("%s:%hu", network::localhost, port);
-      }
-    }
+    if (!f)
+      return string { default_address };
 
-    return string(default_address);
+    verb(fmt("Host address found: %s:%hu", network::localhost, port));
+    return fmt("%s:%hu", network::localhost, port);
   }
 
   void session::update_control(sl::time           delta_msec,
@@ -244,7 +237,7 @@ namespace quadwar_app {
     bool is_moved = false;
     auto delta    = vec2 {};
 
-    const auto fdelta = static_cast<real>(delta_msec);
+    auto const fdelta = static_cast<real>(delta_msec);
 
     for (auto const &ev : in.get_events()) {
       if (ev.key == key_wheel) {
