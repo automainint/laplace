@@ -34,10 +34,10 @@ namespace quadwar_app::ui {
     lobby();
     ~lobby();
 
-    void on_abort(event_abort ev);
-    void on_start(event_start ev);
+    void on_abort(event_abort const &ev);
+    void on_start(event_start const &ev);
 
-    void attach_to(ui::ptr_widget w);
+    void attach_to(ui::ptr_widget const &w);
     void adjust_layout(sl::whole width, sl::whole height);
 
     void show_info(std::u8string_view text);
@@ -49,12 +49,12 @@ namespace quadwar_app::ui {
 
     void remove_slot(size_t index);
 
-    auto get_slot_count() const -> size_t;
+    [[nodiscard]] auto get_slot_count() const -> sl::whole;
 
     void set_visible(bool is_visible);
     void set_start_enabled(bool is_enabled);
 
-    auto is_visible() const -> bool;
+    [[nodiscard]] auto is_visible() const -> bool;
 
   private:
     struct slot {

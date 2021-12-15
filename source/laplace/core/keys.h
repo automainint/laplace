@@ -48,6 +48,7 @@ namespace laplace::core::keys {
     key_alt       = 0x12,
     key_pause     = 0x13,
     key_capslock  = 0x14,
+    key_escape    = 0x1b,
     key_space     = 0x20,
     key_pageup    = 0x21,
     key_pagedown  = 0x22,
@@ -117,7 +118,7 @@ namespace laplace::core::keys {
     key_separator,
     key_subtract,
     key_decimal,
-    key_devide,
+    key_divide,
 
     key_f1 = 0x70,
     key_f2,
@@ -146,6 +147,16 @@ namespace laplace::core::keys {
 
     key_numlock = 0x90,
     key_scrolllock,
+
+    key_capslock_toggle = 0xa0,
+    key_numlock_toggle,
+    key_scrolllock_toggle,
+    key_lshift,
+    key_rshift,
+    key_lcontrol,
+    key_rcontrol,
+    key_lalt,
+    key_ralt,
 
     key_semicolon = 0xba, /* ;: */
     key_equals,           /* =+ */

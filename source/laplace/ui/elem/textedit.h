@@ -29,33 +29,40 @@ namespace laplace::ui::elem {
 
     static constexpr size_t default_length_limit = 24;
 
-    textedit();
-    ~textedit() final = default;
+    textedit(textedit const &) noexcept = default;
+    textedit(textedit &&) noexcept      = default;
+    auto operator=(textedit const &) noexcept -> textedit & = default;
+    auto operator=(textedit &&) noexcept -> textedit & = default;
 
-    void setup_filter(filter f);
+    textedit() noexcept;
+    ~textedit() noexcept final = default;
 
-    void tick(sl::time delta_msec, core::cref_input_handler in) final;
+    void setup_filter(filter f) noexcept;
 
-    void render(context const &con) final;
+    void tick(sl::time                 delta_msec,
+              core::cref_input_handler in) noexcept final;
 
-    void set_text(std::u8string_view text);
-    void set_length_limit(sl::whole limit);
-    void set_cursor(sl::index cursor);
-    void set_selection(sl::index selection);
+    void render(context const &con) noexcept final;
 
-    auto get_text() const -> std::u8string_view;
-    auto get_cursor() const -> sl::index;
-    auto get_selection() const -> sl::index;
+    void set_text(std::u8string_view text) noexcept;
+    void set_length_limit(sl::whole limit) noexcept;
+    void set_cursor(sl::index cursor) noexcept;
+    void set_selection(sl::index selection) noexcept;
 
-    auto get_state() const -> textedit_state;
+    auto get_text() const noexcept -> std::u8string_view;
+    auto get_cursor() const noexcept -> sl::index;
+    auto get_selection() const noexcept -> sl::index;
 
-    static auto update(ptr_widget               object,
+    auto get_textedit_state() const noexcept -> textedit_state;
+
+    static auto update(ptr_widget const        &object,
                        textedit_state           state,
-                       filter                   f,
-                       core::input_event const &ev) -> update_result;
+                       filter const            &f,
+                       core::input_event const &ev) noexcept
+        -> update_result;
 
   private:
-    void textedit_tick(core::cref_input_handler in);
+    void textedit_tick(core::cref_input_handler in) noexcept;
 
     filter        m_filter;
     sl::whole     m_length_limit = default_length_limit;

@@ -113,5 +113,4 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
 
 endif()
 
-include(GNUInstallDirs)
-include(cmake/hotfix-ft2.cmake)
+include(cmake/package.cmake)

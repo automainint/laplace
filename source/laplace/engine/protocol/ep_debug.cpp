@@ -1,6 +1,4 @@
-/*  laplace/engine/protocol/ep_debug.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -11,9 +9,6 @@
  */
 
 #include "debug.h"
-
-#include "../../core/utils.h"
-#include "../object/sets.h"
 
 namespace laplace::engine::protocol {
   using std::make_shared, object::sets::debug_value;

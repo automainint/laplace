@@ -1,6 +1,4 @@
-/*  apps/quadwar/protocol/qw_slot_remove.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -34,7 +32,7 @@ namespace quadwar_app::protocol {
       auto r     = w.get_entity(w.get_root());
       auto slots = w.get_entity(object::root::get_slots(r));
 
-      slots.vec_erase_by_value(get_actor());
+      slots.vec_erase_by_value(get_actor(), 1);
       object::root::status_changed(r);
 
       w.remove(get_actor());

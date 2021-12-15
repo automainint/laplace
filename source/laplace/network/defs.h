@@ -1,6 +1,4 @@
-/*  laplace/network/defs.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -15,12 +13,11 @@
 
 #include "../core/defs.h"
 #include "../core/socket.h"
-#include <cstdint>
 
 namespace laplace::network {
-  static constexpr sl::whole max_chunk_size = 0x7fffffff;
-  static constexpr auto      localhost      = "127.0.0.1";
-  static constexpr uint16_t  any_port       = 0;
+  extern sl::whole const max_chunk_size;
+  extern char const      localhost[];
+  extern uint16_t const  any_port;
 
   enum io_mode { async, sync };
 }

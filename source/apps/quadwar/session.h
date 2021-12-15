@@ -1,6 +1,4 @@
-/*  apps/quadwar/session.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -43,7 +41,7 @@ namespace quadwar_app {
     void tick(sl::time delta_msec, core::cref_input_handler in);
     void render();
 
-    void attach_to(ui::ptr_widget w);
+    void attach_to(ui::ptr_widget const &w);
     void adjust_layout(sl::whole width, sl::whole height);
 
     void set_server_ip(std::string_view server_ip);

@@ -13,16 +13,22 @@
 #ifndef laplace_ui_elem_panel_h
 #define laplace_ui_elem_panel_h
 
-#include "../widget.h"
+#include "../basic_widget.h"
 
 namespace laplace::ui::elem {
-  class panel : public widget {
+  class panel : public basic_widget {
   public:
-    ~panel() override = default;
+    panel(panel const &) noexcept = default;
+    panel(panel &&) noexcept      = default;
+    auto operator=(panel const &) noexcept -> panel & = default;
+    auto operator=(panel &&) noexcept -> panel & = default;
 
-    void render(context const &con) override;
+    panel() noexcept           = default;
+    ~panel() noexcept override = default;
 
-    auto get_state() const -> panel_state;
+    void render(context const &con) noexcept override;
+
+    auto get_panel_state() const noexcept -> panel_state;
   };
 
   using ptr_panel = std::shared_ptr<panel>;

@@ -1,6 +1,4 @@
-/*  laplace/stem/s_config.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -24,7 +22,7 @@ namespace laplace::stem::config {
   namespace fs   = std::filesystem;
 
   using std::string_view, std::string, std::pair, std::ifstream,
-      std::ofstream, core::unival, platform::window, format::wrap;
+      std::ofstream, core::unival, format::wrap;
 
   auto scan_flag(int argc, char **argv, char c) -> bool {
     for (auto i = 0; i < argc; i++)
@@ -105,9 +103,9 @@ namespace laplace::stem::config {
   auto get_default() -> unival {
     auto cfg = unival {};
 
-    cfg[k_frame][0] = window::default_frame_width;
-    cfg[k_frame][1] = window::default_frame_height;
-    cfg[k_frame][2] = window::default_frame_rate;
+    cfg[k_frame][0] = 960;
+    cfg[k_frame][1] = 720;
+    cfg[k_frame][2] = 24;
 
     cfg[k_font]    = default_font;
     cfg[k_caption] = default_caption;

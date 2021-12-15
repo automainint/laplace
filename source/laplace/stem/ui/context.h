@@ -19,28 +19,31 @@
 #include "../text/renderer.h"
 
 namespace laplace::stem::ui {
-  using namespace laplace::ui;
-
   /*  UI context implementation.
    */
-  class context_impl : public context {
+  class context_impl : public laplace::ui::context {
   public:
     static const graphics::vec4 default_colors[];
 
     graphics::vec4 colors[8];
 
-    context_impl(
-        text::ptr_renderer font = text::renderer::get_default());
+    explicit context_impl(text::ptr_renderer font =
+                              text::renderer::get_default()) noexcept;
 
-    void set_font(text::ptr_renderer font);
+    void set_font(text::ptr_renderer font) noexcept;
 
   private:
-    void _render_panel(panel_state state);
-    void _render_button(button_state state);
-    void _render_textbutton(textbutton_state state);
-    void _render_textedit(textedit_state state);
+    void _render_panel(laplace::ui::panel_state state) noexcept;
 
-    void _render_solid(rectf r, const graphics::vec4 color);
+    void _render_button(laplace::ui::button_state state) noexcept;
+
+    void _render_textbutton(
+        laplace::ui::textbutton_state state) noexcept;
+
+    void _render_textedit(laplace::ui::textedit_state state) noexcept;
+
+    void _render_solid(laplace::ui::rectf r,
+                       graphics::vec4     color) noexcept;
 
     using solid_vertex = render::context::solid_vertex;
 

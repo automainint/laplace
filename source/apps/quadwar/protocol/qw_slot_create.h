@@ -1,6 +1,4 @@
-/*  apps/quadwar/protocol/qw_slot_create.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -23,10 +21,8 @@ namespace quadwar_app::protocol {
   public:
     ~qw_slot_create() override = default;
 
-    constexpr qw_slot_create(sl::index index,
-                             sl::time  time,
-                             sl::index id_actor,
-                             bool      is_local) :
+    constexpr qw_slot_create(sl::index index, sl::time time,
+                             sl::index id_actor, bool is_local) :
         slot_create(index, time, id_actor, is_local) { }
 
     inline void perform(world w) const override {

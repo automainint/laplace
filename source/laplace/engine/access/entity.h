@@ -1,6 +1,4 @@
-/*  laplace/engine/access/entity.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -24,27 +22,30 @@ namespace laplace::engine::access {
 
     [[nodiscard]] entity(entity &&ent) noexcept;
     [[nodiscard]] entity(ptr_entity ent,
-                         mode       access_mode = read_only);
+                         mode       access_mode = read_only) noexcept;
 
     auto operator=(entity &&ent) noexcept -> entity &;
 
-    ~entity() = default;
+    ~entity() noexcept = default;
 
-    [[nodiscard]] auto exist() const -> bool;
+    [[nodiscard]] auto exist() const noexcept -> bool;
 
-    void set_dynamic(bool is_dynamic) const;
-    void set_tick_period(sl::index tick_period) const;
+    void set_dynamic(bool is_dynamic) const noexcept;
+    void set_tick_period(sl::index tick_period) const noexcept;
 
-    [[nodiscard]] auto index_of(sl::index id) const -> sl::index;
-    [[nodiscard]] auto get_count() const -> sl::whole;
+    [[nodiscard]] auto index_of(sl::index id) const noexcept
+        -> sl::index;
+    [[nodiscard]] auto get_count() const noexcept -> sl::whole;
 
-    [[nodiscard]] auto id_of(sl::index n) const -> sl::index;
-    [[nodiscard]] auto scale_of(sl::index n) const -> sl::index;
-    [[nodiscard]] auto get(sl::index n, intval defval = {}) const
+    [[nodiscard]] auto id_of(sl::index n) const noexcept -> sl::index;
+    [[nodiscard]] auto scale_of(sl::index n) const noexcept
+        -> sl::index;
+    [[nodiscard]] auto get(sl::index n,
+                           intval    defval = {}) const noexcept
         -> intval;
 
-    void set(sl::index n, intval value) const;
-    void apply_delta(sl::index n, intval delta) const;
+    void set(sl::index n, intval value) const noexcept;
+    void apply_delta(sl::index n, intval delta) const noexcept;
 
     [[nodiscard]] auto bytes_get_size() const noexcept -> sl::whole;
 
@@ -63,13 +64,13 @@ namespace laplace::engine::access {
                     std::span<int8_t> dst) const noexcept;
 
     void bytes_write(sl::index               n,
-                     std::span<const int8_t> values) const noexcept;
+                     std::span<int8_t const> values) const noexcept;
 
     void bytes_write_delta(
-        sl::index n, std::span<const int8_t> deltas) const noexcept;
+        sl::index n, std::span<int8_t const> deltas) const noexcept;
 
     void bytes_erase_delta(
-        sl::index n, std::span<const int8_t> deltas) const noexcept;
+        sl::index n, std::span<int8_t const> deltas) const noexcept;
 
     void bytes_resize(sl::whole size) const noexcept;
 
@@ -89,22 +90,29 @@ namespace laplace::engine::access {
     void vec_read(sl::index n, std::span<intval> dst) const noexcept;
 
     void vec_write(sl::index               n,
-                   std::span<const intval> values) const noexcept;
+                   std::span<intval const> values) const noexcept;
 
     void vec_write_delta(
-        sl::index n, std::span<const intval> deltas) const noexcept;
+        sl::index n, std::span<intval const> deltas) const noexcept;
 
     void vec_erase_delta(
-        sl::index n, std::span<const intval> deltas) const noexcept;
+        sl::index n, std::span<intval const> deltas) const noexcept;
 
     void vec_resize(sl::whole size) const noexcept;
 
     void vec_add(intval value) const noexcept;
     void vec_add_sorted(intval value) const noexcept;
     void vec_insert(sl::index n, intval value) const noexcept;
-    void vec_erase(sl::index n) const noexcept;
-    void vec_erase_by_value(intval value) const noexcept;
-    void vec_erase_by_value_sorted(intval value) const noexcept;
+
+    void vec_add(std::span<intval const> bunch) const noexcept;
+    void vec_add_sorted(std::span<intval const> bunch) const noexcept;
+    void vec_insert(sl::index               n,
+                    std::span<intval const> bunch) const noexcept;
+    void vec_erase(sl::index n, sl::whole stride) const noexcept;
+    void vec_erase_by_value(intval    value,
+                            sl::whole stride) const noexcept;
+    void vec_erase_by_value_sorted(intval    value,
+                                   sl::whole stride) const noexcept;
 
     void adjust() const noexcept;
 

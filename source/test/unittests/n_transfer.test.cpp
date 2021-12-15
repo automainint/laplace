@@ -15,7 +15,7 @@
 #include <random>
 
 namespace laplace::test {
-  using network::transfer, std::span;
+  using network::transfer;
 
   TEST(network, transfer_pack) {
     constexpr auto test_count = 4;
@@ -26,9 +26,7 @@ namespace laplace::test {
     for (sl::index n = 0; n < test_count; n++) {
       auto msg = vbyte(dist(rdev));
 
-      for (sl::index i = 0; i < msg.size(); i++) {
-        msg[i] = static_cast<uint8_t>(rdev());
-      }
+      for (auto &x : msg) x = static_cast<uint8_t>(rdev());
 
       auto msgs = sl::vector<span_cbyte> {};
       msgs.emplace_back(span_cbyte { msg });

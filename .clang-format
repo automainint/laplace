@@ -53,7 +53,7 @@ AllowAllConstructorInitializersOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: true
-BinPackParameters: false
+BinPackParameters: true
 BreakBeforeConceptDeclarations: true
 BreakConstructorInitializers: AfterColon
 Cpp11BracedListStyle: false

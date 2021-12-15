@@ -16,7 +16,7 @@
 #include "panel.h"
 
 namespace laplace::ui::elem {
-  using event_button_click = std::function<void(ptr_widget)>;
+  using event_button_click = std::function<void(ptr_widget const &)>;
 
   class button : public panel {
   public:
@@ -25,29 +25,37 @@ namespace laplace::ui::elem {
       bool has_cursor = false;
     };
 
-    ~button() override = default;
+    button(button const &) noexcept = default;
+    button(button &&) noexcept      = default;
+    auto operator=(button const &) noexcept -> button & = default;
+    auto operator=(button &&) noexcept -> button & = default;
 
-    void on_click(event_button_click ev);
+    button() noexcept           = default;
+    ~button() noexcept override = default;
 
-    void tick(sl::time delta_msec, core::cref_input_handler in) final;
+    void on_click(event_button_click ev) noexcept;
 
-    void render(context const &con) override;
+    void tick(sl::time                 delta_msec,
+              core::cref_input_handler in) noexcept final;
 
-    void set_pressed(bool is_pressed);
-    void set_cursor(bool has_cursor);
+    void render(context const &con) noexcept override;
 
-    auto is_pressed() const -> bool;
-    auto has_cursor() const -> bool;
+    void set_pressed(bool is_pressed) noexcept;
+    void set_cursor(bool has_cursor) noexcept;
 
-    auto get_state() const -> button_state;
+    auto is_pressed() const noexcept -> bool;
+    auto has_cursor() const noexcept -> bool;
 
-    static auto update(ptr_widget               object,
-                       button_state             button_state,
-                       event_button_click       on_button_click,
-                       core::cref_input_handler in) -> update_result;
+    auto get_button_state() const noexcept -> button_state;
+
+    static auto update(ptr_widget const         &object,
+                       button_state              button_state,
+                       event_button_click const &on_button_click,
+                       core::cref_input_handler  in) noexcept
+        -> update_result;
 
   private:
-    void button_tick(core::cref_input_handler in);
+    void button_tick(core::cref_input_handler in) noexcept;
 
     event_button_click m_on_click;
 

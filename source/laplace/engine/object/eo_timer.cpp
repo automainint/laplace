@@ -12,25 +12,23 @@
 
 #include "timer.h"
 
-#include "../action/remove.h"
+#include <utility>
 
 namespace laplace::engine::object {
   timer timer::m_proto(timer::proto);
 
-  timer::timer(proto_tag) : basic_entity(dynamic) { }
+  timer::timer(proto_tag) noexcept : basic_entity(dynamic) { }
 
-  timer::timer(impact_gen gen, intval period, sl::whole count) {
+  timer::timer(impact_gen gen, intval period,
+               sl::whole count) noexcept :
+      m_count(count),
+      m_gen(std::move(gen)) {
     *this = m_proto;
-
     init(n_tick_period, period);
-
     reset_clock();
-
-    m_count = count;
-    m_gen   = gen;
   }
 
-  void timer::tick(access::world w) {
+  void timer::tick(access::world w) noexcept {
     if (m_gen)
       w.queue(m_gen());
 

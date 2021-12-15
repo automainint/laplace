@@ -15,16 +15,17 @@
 namespace laplace::ui::elem {
   using std::u8string_view;
 
-  void textbutton::render(context const &con) {
-    con.render_textbutton(get_state());
+  void textbutton::render(context const &con) noexcept {
+    con.render_textbutton(get_textbutton_state());
     up_to_date();
   }
 
-  void textbutton::set_text(u8string_view text) {
+  void textbutton::set_text(u8string_view text) noexcept {
     m_text = text;
   }
 
-  auto textbutton::get_state() const -> textbutton_state {
-    return { button::get_state(), m_text };
+  auto textbutton::get_textbutton_state() const noexcept
+      -> textbutton_state {
+    return { button::get_button_state(), m_text };
   }
 }

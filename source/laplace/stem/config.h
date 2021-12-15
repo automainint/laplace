@@ -14,7 +14,6 @@
 #define laplace_stem_config_h
 
 #include "../core/unival.h"
-#include "../platform/wrap.h"
 
 namespace laplace::stem::config {
   /*  Command-line arguments.

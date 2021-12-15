@@ -1,8 +1,4 @@
-/*  laplace/engine/basic_entity.h
- *
- *      Basic class for any gameplay object.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -17,11 +13,9 @@
 
 #include "access/world.predef.h"
 #include "basic_entity.predef.h"
-#include "eval/shape.h"
 #include "object/sets.h"
 #include "world.predef.h"
 #include <atomic>
-#include <chrono>
 #include <memory>
 #include <shared_mutex>
 
@@ -36,74 +30,76 @@ namespace laplace::engine {
     static constexpr auto proto   = proto_tag {};
     static constexpr auto dynamic = dynamic_tag {};
 
-    static const std::chrono::milliseconds lock_timeout;
-    static const sl::time                  default_tick_period;
+    static sl::time const lock_timeout_msec;
+    static sl::time const default_tick_period;
 
-    basic_entity(cref_entity en) noexcept;
+    basic_entity(basic_entity const &en) noexcept;
     basic_entity(basic_entity &&en) noexcept;
-    auto operator=(cref_entity en) noexcept -> ref_entity;
-    auto operator=(basic_entity &&en) noexcept -> ref_entity;
+    auto operator=(basic_entity const &en) noexcept -> basic_entity &;
+    auto operator=(basic_entity &&en) noexcept -> basic_entity &;
 
     /*  Prototype initialization.
      */
-    basic_entity(proto_tag = proto);
+    explicit basic_entity(proto_tag = proto) noexcept;
 
     /*  Dummy initialization.
      */
-    basic_entity(dummy_tag);
+    explicit basic_entity(dummy_tag) noexcept;
 
     /*  Initialize dynamic entity.
      */
-    basic_entity(dynamic_tag,
-                 sl::time tick_period = default_tick_period);
+    explicit basic_entity(
+        dynamic_tag,
+        sl::time tick_period = default_tick_period) noexcept;
 
-    virtual ~basic_entity() = default;
+    virtual ~basic_entity() noexcept = default;
 
     /*  Set the Entity dynamic status.
      *  Thread-safe.
      */
-    void set_dynamic(bool is_dynamic);
+    void set_dynamic(bool is_dynamic) noexcept;
 
     /*  Set the Entity tick period.
      *  Thread-safe.
      */
-    void set_tick_period(sl::time tick_period);
+    void set_tick_period(sl::time tick_period) noexcept;
 
     /*  Set the Entity clock current time.
      *  Thread-safe.
      */
-    void set_clock(sl::time clock_msec);
+    void set_clock(sl::time clock_msec) noexcept;
 
     /*  Set the Entity clock.
      *  Thread-safe.
      */
-    void reset_clock();
+    void reset_clock() noexcept;
 
-    void set_world(ptr_world w, sl::index id);
-    void reset_world();
+    void set_world(ptr_world const &w, sl::index id) noexcept;
+    void reset_world() noexcept;
 
-    [[nodiscard]] auto index_of(sl::index id) -> sl::index;
-    [[nodiscard]] auto get_count() const -> sl::whole;
+    [[nodiscard]] auto index_of(sl::index id) noexcept -> sl::index;
+    [[nodiscard]] auto get_count() const noexcept -> sl::whole;
 
-    [[nodiscard]] auto id_of(sl::index index) -> sl::index;
-    [[nodiscard]] auto scale_of(sl::index index) -> sl::index;
+    [[nodiscard]] auto id_of(sl::index index) noexcept -> sl::index;
+    [[nodiscard]] auto scale_of(sl::index index) noexcept
+        -> sl::index;
 
     /*  Get a state value.
      *  Thread-safe.
      */
-    [[nodiscard]] auto get(sl::index n) -> intval;
+    [[nodiscard]] auto get(sl::index n) noexcept -> intval;
 
     /*  Change a state value. It will apply
      *  calculated delta for the value. The actual
      *  value will change due adjusting.
      *  Thread-safe.
      */
-    void set(sl::index n, intval value);
+    void set(sl::index n, intval value) noexcept;
 
     /*  Apply a state value delta.
      *  Thread-safe.
      */
-    void apply_delta(sl::index n, intval delta);
+    void apply_delta(sl::index n, intval delta) noexcept;
 
     [[nodiscard]] auto bytes_get_size() noexcept -> sl::whole;
 
@@ -118,13 +114,13 @@ namespace laplace::engine {
     void bytes_read(sl::index n, std::span<int8_t> dst) noexcept;
 
     void bytes_write(sl::index               n,
-                     std::span<const int8_t> values) noexcept;
+                     std::span<int8_t const> values) noexcept;
 
     void bytes_write_delta(sl::index               n,
-                           std::span<const int8_t> deltas) noexcept;
+                           std::span<int8_t const> deltas) noexcept;
 
     void bytes_erase_delta(sl::index               n,
-                           std::span<const int8_t> deltas) noexcept;
+                           std::span<int8_t const> deltas) noexcept;
 
     void bytes_resize(sl::whole size) noexcept;
 
@@ -141,57 +137,59 @@ namespace laplace::engine {
     void vec_read(sl::index n, std::span<intval> dst) noexcept;
 
     void vec_write(sl::index               n,
-                   std::span<const intval> values) noexcept;
+                   std::span<intval const> values) noexcept;
 
     void vec_write_delta(sl::index               n,
-                         std::span<const intval> deltas) noexcept;
+                         std::span<intval const> deltas) noexcept;
 
     void vec_erase_delta(sl::index               n,
-                         std::span<const intval> deltas) noexcept;
+                         std::span<intval const> deltas) noexcept;
 
     void vec_resize(sl::whole size) noexcept;
 
-    void vec_add(intval value) noexcept;
-    void vec_add_sorted(intval value) noexcept;
-    void vec_insert(sl::index n, intval value) noexcept;
-    void vec_erase(sl::index n) noexcept;
-    void vec_erase_by_value(intval value) noexcept;
-    void vec_erase_by_value_sorted(intval value) noexcept;
+    void vec_add(std::span<intval const> bunch) noexcept;
+    void vec_add_sorted(std::span<intval const> bunch) noexcept;
+    void vec_insert(sl::index               n,
+                    std::span<intval const> bunch) noexcept;
+    void vec_erase(sl::index n, sl::whole stride) noexcept;
+    void vec_erase_by_value(intval value, sl::whole stride) noexcept;
+    void vec_erase_by_value_sorted(intval    value,
+                                   sl::whole stride) noexcept;
 
     /*  Adjust Entity new state.
      *  Thread-safe.
      */
-    void adjust();
+    void adjust() noexcept;
 
     /*  Dynamic Entity live loop.
      */
-    virtual void tick(access::world w);
+    virtual void tick(access::world w) noexcept;
 
     /*  Decrement the clock timer. Returns true
      *  if the tick period has expired.
      *
      *  Thread-safe.
      */
-    auto clock() -> bool;
+    auto clock() noexcept -> bool;
 
     /*  Returns true if the Entity is dynamic.
      *  Thread-safe.
      */
-    [[nodiscard]] auto is_dynamic() -> bool;
+    [[nodiscard]] auto is_dynamic() noexcept -> bool;
 
     /*  Returns the tick period.
      *  Thread-safe.
      */
-    [[nodiscard]] auto get_tick_period() -> sl::time;
+    [[nodiscard]] auto get_tick_period() noexcept -> sl::time;
 
     /*  Returns the Entity id.
      */
-    [[nodiscard]] auto get_id() const -> sl::index;
+    [[nodiscard]] auto get_id() const noexcept -> sl::index;
 
     /*  Get a state value by id.
      *  Thread-safe.
      */
-    [[nodiscard]] auto get_by_id(sl::index id) -> intval;
+    [[nodiscard]] auto get_by_id(sl::index id) noexcept -> intval;
 
   protected:
     /*  State values' indices in PRECISE order.
@@ -222,42 +220,65 @@ namespace laplace::engine {
 
     /*  Setup state values.
      */
-    void setup_sets(vsets_row const &sets);
+    void setup_sets(vsets_row const &sets) noexcept;
 
     /*  Init state value.
      */
-    void init(sl::index n, intval value);
+    void init(sl::index n, intval value) noexcept;
 
     void bytes_init(sl::index n, int8_t value) noexcept;
 
     void vec_init(sl::index n, intval value) noexcept;
 
-    void self_destruct(access::world const &w);
-    void desync();
+    void self_destruct(access::world const &w) const noexcept;
+    void desync() noexcept;
+
+    [[nodiscard]] auto _mutex() noexcept -> std::shared_timed_mutex &;
 
   private:
-    void assign(cref_entity en) noexcept;
+    void assign(basic_entity const &en) noexcept;
     void assign(basic_entity &&en) noexcept;
 
-    void sets_invalidate(sl::index const n) noexcept;
+    void sets_invalidate(sl::index n) noexcept;
     void sets_validate_all() noexcept;
 
-    void bytes_invalidate(sl::index const n,
-                          sl::whole const count = 1) noexcept;
+    void bytes_invalidate(sl::index n, sl::whole count = 1) noexcept;
     void bytes_validate_all() noexcept;
 
-    void vec_invalidate(sl::index const n,
-                        sl::whole const count = 1) noexcept;
+    void vec_do_insert(sl::index               n,
+                       std::span<intval const> bunch) noexcept;
+    void vec_invalidate(sl::index n, sl::whole count = 1) noexcept;
     void vec_validate_all() noexcept;
+
+    [[nodiscard]] auto vec_lower_bound(
+        intval value, sl::whole stride) const noexcept -> sl::index;
 
     struct _range {
       sl::index begin;
       sl::index end;
     };
 
-    void invalidate_range(sl::vector<_range> &ranges,
-                          sl::index const     n,
-                          sl::whole const     count) noexcept;
+    void invalidate_range(sl::vector<_range> &ranges, sl::index n,
+                          sl::whole count) noexcept;
+
+    [[nodiscard, maybe_unused]] static auto _add(int8_t x,
+                                                 int8_t y) noexcept
+        -> int8_t;
+    [[nodiscard, maybe_unused]] static auto _add(int32_t x,
+                                                 int32_t y) noexcept
+        -> int32_t;
+    [[nodiscard, maybe_unused]] static auto _add(int64_t x,
+                                                 int64_t y) noexcept
+        -> int64_t;
+    [[nodiscard, maybe_unused]] static auto _sub(int8_t x,
+                                                 int8_t y) noexcept
+        -> int8_t;
+    [[nodiscard, maybe_unused]] static auto _sub(int32_t x,
+                                                 int32_t y) noexcept
+        -> int32_t;
+    [[nodiscard, maybe_unused]] static auto _sub(int64_t x,
+                                                 int64_t y) noexcept
+        -> int64_t;
 
     std::shared_timed_mutex m_lock;
     std::weak_ptr<world>    m_world;

@@ -13,7 +13,7 @@
 #ifndef laplace_platform_dummy_h
 #define laplace_platform_dummy_h
 
-#include "../core/input_handler.h"
+#include "basic_input.h"
 #include "events.h"
 #include "opengl.h"
 #include "thread.h"
@@ -21,116 +21,63 @@
 #include <string>
 
 namespace laplace::platform::dummy {
-  inline void set_background_mode(bool is_background_mode) { }
-  inline void set_realtime_mode(bool is_realtime_mode) { }
-  inline void set_thread_priority(int priority) { }
-  inline void set_thread_priority(std::thread &th, int priority) { }
-
-  inline auto gl_init() -> bool {
-    return false;
+  inline void set_background_mode(bool is_background_mode) noexcept {
   }
 
-  inline void gl_cleanup() { }
+  inline void set_realtime_mode(bool is_realtime_mode) noexcept { }
 
-  inline auto gl_get_proc_address(const char *s) -> gl::ptr_function {
+  inline void set_thread_priority(int priority) noexcept { }
+
+  inline void set_thread_priority(std::thread &th,
+                                  int          priority) noexcept { }
+
+  [[nodiscard]] inline auto gl_get_proc_address(
+      char const *s) noexcept -> gl::ptr_function {
     return nullptr;
   }
 
-  class input {
+  class input : public basic_input {
   public:
-    input() { }
-    ~input() { }
+    input(input const &) = delete;
+    input(input &&)      = delete;
+    auto operator=(input const &) -> input & = delete;
+    auto operator=(input &&) -> input & = delete;
 
-    void use_system_cursor(bool) { }
-    void set_cursor_enabled(bool) { }
-    void set_mouse_resolution(sl::whole, sl::whole) { }
-    void set_clamp(bool, bool) { }
+    input() noexcept           = default;
+    ~input() noexcept override = default;
 
-    auto is_capslock() const -> bool {
-      return false;
-    }
+    void use_system_cursor(bool) noexcept { }
+    void set_cursor_enabled(bool) noexcept { }
+    void set_mouse_resolution(sl::whole, sl::whole) noexcept { }
+    void set_clamp(bool, bool) noexcept { }
 
-    auto is_numlock() const -> bool {
-      return false;
-    }
-
-    auto is_scrolllock() const -> bool {
-      return false;
-    }
-
-    auto is_alt() const -> bool {
-      return false;
-    }
-
-    auto is_shift() const -> bool {
-      return false;
-    }
-
-    auto is_control() const -> bool {
-      return false;
-    }
-
-    auto is_key_down(sl::index) const -> bool {
-      return false;
-    }
-
-    auto is_key_up(sl::index) const -> bool {
-      return true;
-    }
-
-    auto is_key_changed(sl::index) const -> bool {
-      return false;
-    }
-
-    auto is_key_pressed(sl::index) const -> bool {
-      return false;
-    }
-
-    auto is_key_unpressed(sl::index) const -> bool {
-      return false;
-    }
-
-    auto get_mouse_resolution_x() const -> sl::whole {
+    [[nodiscard]] auto get_mouse_resolution_x() const noexcept
+        -> sl::whole {
       return 0u;
     }
 
-    auto get_mouse_resolution_y() const -> sl::whole {
+    [[nodiscard]] auto get_mouse_resolution_y() const noexcept
+        -> sl::whole {
       return 0u;
     }
 
-    auto get_mouse_x() const -> sl::index {
+    [[nodiscard]] auto get_mouse_x() const noexcept -> sl::index {
       return 0;
     }
 
-    auto get_mouse_y() const -> sl::index {
+    [[nodiscard]] auto get_mouse_y() const noexcept -> sl::index {
       return 0;
     }
 
-    auto get_mouse_delta_x() const -> sl::index {
+    [[nodiscard]] auto get_mouse_delta_x() const noexcept
+        -> sl::index {
       return 0;
     }
 
-    auto get_mouse_delta_y() const -> sl::index {
+    [[nodiscard]] auto get_mouse_delta_y() const noexcept
+        -> sl::index {
       return 0;
     }
-
-    auto get_cursor_x() const -> sl::index {
-      return 0;
-    }
-
-    auto get_cursor_y() const -> sl::index {
-      return 0;
-    }
-
-    auto get_wheel_delta() const -> sl::index {
-      return 0;
-    }
-
-    auto get_events() const -> std::span<const core::input_event> {
-      return {};
-    }
-
-    void refresh() { }
   };
 
   class window {
@@ -141,110 +88,132 @@ namespace laplace::platform::dummy {
     static constexpr sl::whole default_frame_height = 0;
     static constexpr sl::whole default_frame_rate   = 0;
 
-    window() { }
-    window(native_handle) { }
+    window(window const &) = delete;
+    window(window &&)      = delete;
+    auto operator=(window const &) -> window & = delete;
+    auto operator=(window &&) -> window & = delete;
 
-    void on_init(event_init) { }
-    void on_cleanup(event_cleanup) { }
-    void on_frame(event_frame) { }
-    void on_size(event_size) { }
-    void on_focus(event_focus) { }
-    void on_drop_file(event_drop_file) { }
+    window() noexcept = default;
+    explicit window(native_handle) noexcept { }
+    ~window() noexcept = default;
 
-    void set_name(std::string_view) { }
-    void set_name(std::wstring_view) { }
+    void on_init(event_init) noexcept { }
+    void on_cleanup(event_cleanup) noexcept { }
+    void on_frame(event_frame) noexcept { }
+    void on_size(event_size) noexcept { }
+    void on_focus(event_focus) noexcept { }
+    void on_drop_file(event_drop_file) noexcept { }
 
-    void set_visible(bool) { }
-    void set_fullscreen(bool) { }
+    void set_name(std::string_view) noexcept { }
+    void set_name(std::wstring_view) noexcept { }
 
-    void set_centered() { }
-    void set_position(sl::index, sl::index) { }
-    void set_size(sl::whole, sl::whole) { }
+    void set_visible(bool) noexcept { }
+    void set_fullscreen(bool) noexcept { }
 
-    void set_fullscreen_windowed() { }
-    void set_fullscreen_mode(sl::whole, sl::whole, sl::whole) { }
+    void set_centered() noexcept { }
+    void set_position(sl::index, sl::index) noexcept { }
+    void set_size(sl::whole, sl::whole) noexcept { }
 
-    void set_input(std::shared_ptr<input>) { }
+    void set_fullscreen_windowed() noexcept { }
+    void set_fullscreen_mode(sl::whole,
+                             sl::whole,
+                             sl::whole) noexcept { }
 
-    void set_parent(native_handle) { }
-    void reset_parent() { }
+    void set_input(std::shared_ptr<input>) noexcept { }
 
-    auto message_loop() -> int {
+    void set_parent(native_handle) noexcept { }
+    void reset_parent() noexcept { }
+
+    auto message_loop() noexcept -> int {
       return 0;
     }
 
-    void quit(int = 0) { }
+    void quit(int = 0) noexcept { }
 
-    auto get_screen_width() const -> sl::whole {
+    [[nodiscard]] auto get_screen_width() const noexcept
+        -> sl::whole {
       return 0u;
     }
 
-    auto get_screen_height() const -> sl::whole {
+    [[nodiscard]] auto get_screen_height() const noexcept
+        -> sl::whole {
       return 0u;
     }
 
-    auto get_fullscreen_width() const -> sl::whole {
+    [[nodiscard]] auto get_fullscreen_width() const noexcept
+        -> sl::whole {
       return 0u;
     }
 
-    auto get_fullscreen_height() const -> sl::whole {
+    [[nodiscard]] auto get_fullscreen_height() const noexcept
+        -> sl::whole {
       return 0u;
     }
 
-    auto get_x() const -> sl::index {
+    [[nodiscard]] auto get_x() const noexcept -> sl::index {
       return 0u;
     }
 
-    auto get_y() const -> sl::index {
+    [[nodiscard]] auto get_y() const noexcept -> sl::index {
       return 0u;
     }
 
-    auto get_width() const -> sl::whole {
+    [[nodiscard]] auto get_width() const noexcept -> sl::whole {
       return 0u;
     }
 
-    auto get_height() const -> sl::whole {
+    [[nodiscard]] auto get_height() const noexcept -> sl::whole {
       return 0u;
     }
 
-    auto get_frame_width() const -> sl::whole {
+    [[nodiscard]] auto get_frame_width() const noexcept -> sl::whole {
       return 0u;
     }
 
-    auto get_frame_height() const -> sl::whole {
+    [[nodiscard]] auto get_frame_height() const noexcept
+        -> sl::whole {
       return 0u;
     }
 
-    auto is_visible() const -> bool {
+    [[nodiscard]] auto is_visible() const noexcept -> bool {
       return false;
     }
 
-    auto is_fullscreen() const -> bool {
+    [[nodiscard]] auto is_fullscreen() const noexcept -> bool {
       return false;
     }
 
-    auto is_fullscreen_windowed() const -> bool {
+    [[nodiscard]] auto is_fullscreen_windowed() const noexcept
+        -> bool {
       return false;
     }
 
-    auto has_focus() const -> bool {
+    [[nodiscard]] auto has_focus() const noexcept -> bool {
       return false;
     }
 
-    auto has_cursor() const -> bool {
+    [[nodiscard]] auto has_cursor() const noexcept -> bool {
       return false;
     }
 
-    auto get_native_handle() const -> native_handle {
+    [[nodiscard]] auto get_native_handle() const noexcept
+        -> native_handle {
       return nullptr;
     }
   };
 
   class glcontext {
   public:
-    glcontext(std::shared_ptr<window>) { }
-    void        swap_buffers() { }
-    static void set_forward_compatible(bool) { }
+    glcontext(glcontext const &) = delete;
+    glcontext(glcontext &&)      = delete;
+    auto operator=(glcontext const &) -> glcontext & = delete;
+    auto operator=(glcontext &&) -> glcontext & = delete;
+
+    explicit glcontext(std::shared_ptr<window>) noexcept { }
+    ~glcontext() noexcept = default;
+
+    void        swap_buffers() noexcept { }
+    static void set_forward_compatible(bool) noexcept { }
   };
 
   class audio { };

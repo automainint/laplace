@@ -60,9 +60,9 @@ namespace quadwar_app::ui {
     mainmenu();
     ~mainmenu();
 
-    void on_create(event_create ev);
-    void on_join(event_join ev);
-    void on_quit(event_quit ev);
+    void on_create(event_create const &ev);
+    void on_join(event_join const &ev);
+    void on_quit(event_quit const &ev);
 
     void refresh();
 
@@ -75,7 +75,7 @@ namespace quadwar_app::ui {
     void set_player_count(size_t player_count);
     void set_unit_count(size_t unit_count);
 
-    void attach_to(ui::ptr_widget w);
+    void attach_to(ui::ptr_widget const &w);
     void adjust_layout(sl::whole width, sl::whole height);
 
   private:

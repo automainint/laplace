@@ -1,4 +1,7 @@
 #   The Laplace engine
+[![build-and-test][build-badge]][build-link]
+[![codecov][codecov-badge]][codecov-link]
+
 The quality of a real-time strategy game relies on low-latency responsiveness and vertical scalability. Vertical scalability requires parallelism on the local instance and lockstep networking. Lockstep systems require a totally deterministic engine. In addition, extensibility is a useful feature.
 
 Laplace is an interactive multimedia framework that provides the deterministic and extensible engine with concurrency support and lockstep synchronization.
@@ -50,7 +53,7 @@ To build only dependencies set `LAPLACE_ENABLE_EXE` to `OFF`.
 
 ##  Hacking
 If you want to build the source code by hand, follow the instructions below:
-- Use `tools/build-deps.py` to build dependencies.
+- Use `tools/build-deps.py` to build dependencies. Required headers will be in `include` folder, libraries will be in `lib` folder.
 - Use `tools/gen-gl.py` to generate OpenGL interface files.
 - Use `tools/embed.py` to generate embedded data source files.
 
@@ -62,24 +65,16 @@ python3 embed.py
 cd ..
 ```
 
-Add `source` to the project and build manually. Required headers will be in `include` folder, libraries will be in `lib` folder.
+Add `source` to the project and build manually.
 
 If you want to generate Visual Studio project files, use `tools/gen-vs.py`.
 
 If you change the source code files structure, use `tools/gen-cmake.py` to generate `CMakeLists.txt` files.
 
-##  Contribution
-To contribute, follow these steps:
-1.  Find an applicable issue or create a new one with feature proposal or bug spotting.
-2.  Fork the repository.
-3.  Write tests for the issue.
-4.  Implement your solution for the issue.
-    - Follow [C++ Core Guidelines][guidelines-link].
-    - Use [ClangFormat][clang-format-link] and `snake_case`.
-5.  Make sure all tests pass and cover your code.
-6.  Make a pull-request to the `dev` branch or to the corresponding feature branch if there is any.
-
-We have just started organizing the project. If you want to help, [contact me][concact-link].
+[build-badge]:    https://github.com/automainint/laplace/actions/workflows/build-and-test.yml/badge.svg?branch=stable
+[build-link]:     https://github.com/automainint/laplace/actions/workflows/build-and-test.yml
+[codecov-badge]:  https://codecov.io/gh/automainint/laplace/branch/stable/graph/badge.svg?token=HJF3BUA46B
+[codecov-link]:   https://codecov.io/gh/automainint/laplace/branch/stable
 
 [laplace-link]:          https://github.com/automainint/laplace
 [msvc-link]:             https://visualstudio.microsoft.com/vs/features/cplusplus
@@ -94,7 +89,3 @@ We have just started organizing the project. If you want to help, [contact me][c
 [googletest-link]:       https://github.com/google/googletest
 [benchmark-link]:        https://github.com/google/benchmark
 [compiler-support-link]: https://en.cppreference.com/w/cpp/compiler_support
-[clang-format-link]:     https://clang.llvm.org/docs/ClangFormat.html
-[guidelines-link]:       https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines
-
-[concact-link]: https://guattari.ru/contact

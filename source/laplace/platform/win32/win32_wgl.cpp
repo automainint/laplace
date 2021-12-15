@@ -39,7 +39,10 @@ namespace laplace::gl {
 }
 
 namespace laplace::win32 {
-  HMODULE opengl_dll = nullptr;
+  constexpr auto opengl_path = L"opengl32.dll";
+
+  HMODULE   opengl_dll   = nullptr;
+  sl::whole gl_ref_count = 0;
 
   pfn_wglCopyContext             wglCopyContext             = nullptr;
   pfn_wglCreateContext           wglCreateContext           = nullptr;
@@ -61,7 +64,9 @@ namespace laplace::win32 {
   pfn_wglSwapLayerBuffers        wglSwapLayerBuffers        = nullptr;
   pfn_wglCreateContextAttribsARB wglCreateContextAttribsARB = nullptr;
 
-  auto gl_init() -> bool {
+  auto gl_load_library() -> bool {
+    gl_ref_count++;
+
     if (opengl_dll) {
       /*  Already done.
        */
@@ -100,7 +105,27 @@ namespace laplace::win32 {
     return status;
   }
 
-  auto gl_preload() -> bool {
+  void gl_free_library() {
+    if (--gl_ref_count > 0)
+      return;
+
+    if (opengl_dll) {
+      FreeLibrary(opengl_dll);
+      opengl_dll = nullptr;
+    }
+  }
+
+  auto gl_get_proc_address(const char *name) -> gl::ptr_function {
+    if (wglGetProcAddress) {
+      if (auto p = wglGetProcAddress(name); p)
+        return p;
+    }
+
+    return reinterpret_cast<gl::ptr_function>(
+        GetProcAddress(opengl_dll, name));
+  }
+
+  auto gl_preload_context() -> bool {
     bool status = true;
 
     if (!gl::glGetIntegerv) {
@@ -137,13 +162,14 @@ namespace laplace::win32 {
           auto name = std::string(p);
 
           gl::extensions.emplace(lower_bound(gl::extensions.begin(),
-                                             gl::extensions.end(), name),
+                                             gl::extensions.end(),
+                                             name),
                                  name);
         }
       }
     }
 
-    if (gl::has("WGL_ARB_create_context")) {
+    if (gl::has_extension("WGL_ARB_create_context")) {
       wglCreateContextAttribsARB =
           reinterpret_cast<pfn_wglCreateContextAttribsARB>(
               gl_get_proc_address("wglCreateContextAttribsARB"));
@@ -156,22 +182,5 @@ namespace laplace::win32 {
     }
 
     return status;
-  }
-
-  void gl_cleanup() {
-    if (opengl_dll) {
-      FreeLibrary(opengl_dll);
-      opengl_dll = nullptr;
-    }
-  }
-
-  auto gl_get_proc_address(const char *name) -> gl::ptr_function {
-    if (wglGetProcAddress) {
-      if (auto p = wglGetProcAddress(name); p)
-        return p;
-    }
-
-    return reinterpret_cast<gl::ptr_function>(
-        GetProcAddress(opengl_dll, name));
   }
 }

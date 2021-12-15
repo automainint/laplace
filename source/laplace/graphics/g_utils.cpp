@@ -1,6 +1,4 @@
-/*  laplace/graphics/g_utils.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -67,10 +65,9 @@ namespace laplace::graphics {
   }
 
   void set_blend_enabled(bool is_enabled) {
-    if (is_enabled) {
+    if (is_enabled)
       glEnable(GL_BLEND);
-    } else {
+    else
       glDisable(GL_BLEND);
-    }
   }
 }

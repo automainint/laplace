@@ -10,27 +10,35 @@
  *  the MIT License for more details.
  */
 
-#include "../../laplace/core/string.h"
 #include "../../laplace/engine/eval/integral.h"
 #include <gtest/gtest.h>
 
 namespace laplace::test {
   using engine::intval, engine::eval::constant_scale,
-      engine::eval::div, engine::eval::mul, engine::eval::e,
-      engine::eval::log2e, engine::eval::log10e, engine::eval::pi,
-      engine::eval::inv_pi, engine::eval::invsqrt_pi,
-      engine::eval::ln2, engine::eval::ln10, engine::eval::sqrt2,
-      engine::eval::sqrt3, engine::eval::inv_sqrt3,
-      engine::eval::egamma, engine::eval::phi, engine::eval::exp,
-      engine::eval::log, engine::eval::log2, engine::eval::log10,
-      engine::eval::pow, engine::eval::sqrt, engine::eval::sin,
-      engine::eval::cos;
+      engine::eval::add, engine::eval::sub, engine::eval::div,
+      engine::eval::mul, engine::eval::sqr, engine::eval::div_sum,
+      engine::eval::e, engine::eval::log2e, engine::eval::log10e,
+      engine::eval::pi, engine::eval::inv_pi,
+      engine::eval::invsqrt_pi, engine::eval::ln2, engine::eval::ln10,
+      engine::eval::sqrt2, engine::eval::sqrt3,
+      engine::eval::inv_sqrt3, engine::eval::egamma,
+      engine::eval::phi, engine::eval::exp, engine::eval::log,
+      engine::eval::log2, engine::eval::log10, engine::eval::pow,
+      engine::eval::sqrt, engine::eval::sin, engine::eval::cos;
 
   static constexpr auto _int_max = std::numeric_limits<intval>::max();
   static constexpr auto _int_min = std::numeric_limits<intval>::min();
 
   TEST(engine, eval_integral_constant_scale) {
     EXPECT_GT(constant_scale(), 0);
+  }
+
+  TEST(engine, eval_integral_add) {
+    EXPECT_EQ(add(2, 3), 5);
+  }
+
+  TEST(engine, eval_integral_sub) {
+    EXPECT_EQ(sub(5, 2), 3);
   }
 
   TEST(engine, eval_integral_mul) {
@@ -73,6 +81,35 @@ namespace laplace::test {
     EXPECT_EQ(
         div(0x10000000000000, 0x10000000000000, 0x10000000000000),
         0x10000000000000);
+  }
+
+  TEST(engine, eval_integral_sqr) {
+    EXPECT_EQ(sqr(-1), 1);
+    EXPECT_EQ(sqr(2), 4);
+    EXPECT_EQ(sqr(100), 10000);
+    EXPECT_EQ(sqr(-10, 10), 10);
+    EXPECT_EQ(sqr(20, 10), 40);
+    EXPECT_EQ(sqr(1000, 10), 100000);
+  }
+
+  TEST(engine, eval_integral_div_sum) {
+    EXPECT_EQ(div_sum(100, 200, 3), 100);
+    EXPECT_EQ(div_sum(100, 200, 300, 6), 100);
+    EXPECT_EQ(div_sum(-100, -200, 3), -100);
+    EXPECT_EQ(div_sum(-100, -200, -300, 6), -100);
+
+    EXPECT_EQ(div_sum(0x7000000000000000, 0x7000000000000000,
+                      0x100000000000000),
+              0xe0);
+    EXPECT_EQ(div_sum(0x7000000000000000, 0x7000000000000000,
+                      0x7000000000000000, 0x100000000000000),
+              0x150);
+    EXPECT_EQ(div_sum(-0x7000000000000000, -0x7000000000000000,
+                      0x100000000000000),
+              -0xe0);
+    EXPECT_EQ(div_sum(-0x7000000000000000, -0x7000000000000000,
+                      -0x7000000000000000, 0x100000000000000),
+              -0x150);
   }
 
   TEST(engine, eval_integral_constants) {

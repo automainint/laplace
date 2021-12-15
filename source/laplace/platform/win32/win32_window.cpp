@@ -291,8 +291,10 @@ namespace laplace::win32 {
       if (m_on_frame)
         m_on_frame(delta_msec);
 
-      if (m_input)
+      if (m_input) {
         m_input->refresh();
+        m_input->refresh_mouse();
+      }
 
       time += delta;
     }
@@ -524,7 +526,7 @@ namespace laplace::win32 {
 
           case WA_INACTIVE:
             if (m_input)
-              m_input->reset();
+              m_input->reset_keyboard();
 
             m_has_focus = false;
             break;

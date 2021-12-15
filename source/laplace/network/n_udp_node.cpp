@@ -1,6 +1,4 @@
-/*  laplace/network/n_udp_node.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -55,9 +53,11 @@ namespace laplace::network {
     if (port == any_port) {
       ::socklen_t len = sizeof name;
 
-      if (::getsockname(m_socket, reinterpret_cast<::sockaddr *>(&name),
+      if (::getsockname(m_socket,
+                        reinterpret_cast<::sockaddr *>(&name),
                         &len) == -1) {
-        verb(fmt("UDP: getsockname failed (code %d).", socket_error()));
+        verb(fmt("UDP: getsockname failed (code %d).",
+                 socket_error()));
         socket_close(m_socket);
         m_socket = -1;
         return;
@@ -87,7 +87,8 @@ namespace laplace::network {
       for (; size < count;) {
         auto part = clamp_chunk(count - size);
 
-        auto n = ::recvfrom(m_socket, buf + size, part, 0, addr, &len);
+        auto n = ::recvfrom(m_socket, buf + size, part, 0, addr,
+                            &len);
 
         if (n != -1) {
           size += n;
@@ -98,7 +99,8 @@ namespace laplace::network {
           m_is_connreset = true;
           break;
         } else if (socket_error() != socket_wouldblock()) {
-          verb(fmt("UDP: recvfrom failed (code %d).", socket_error()));
+          verb(
+              fmt("UDP: recvfrom failed (code %d).", socket_error()));
           break;
         } else if (mode == sync) {
           is_sync = set_mode(m_socket, sync);
@@ -138,7 +140,7 @@ namespace laplace::network {
                          span_cbyte seq) -> sl::whole {
     sl::whole result = 0;
 
-    sockaddr_in name;
+    auto name = sockaddr_in {};
     memset(&name, 0, sizeof name);
 
     name.sin_family = AF_INET;
@@ -191,13 +193,16 @@ namespace laplace::network {
     }
   }
 
-  auto udp_node::send_internal(const sockaddr_in &name, span_cbyte seq)
-      -> sl::whole {
+  auto udp_node::send_internal(const sockaddr_in &name,
+                               span_cbyte         seq) -> sl::whole {
     sl::whole count = 0;
 
+    m_is_msgsize   = false;
+    m_is_connreset = false;
+
     if (m_socket != -1) {
-      auto buf     = reinterpret_cast<const char *>(seq.data());
-      auto addr    = reinterpret_cast<const ::sockaddr *>(&name);
+      auto buf     = reinterpret_cast<char const *>(seq.data());
+      auto addr    = reinterpret_cast<::sockaddr const *>(&name);
       bool is_sync = false;
 
       for (; count < seq.size();) {
@@ -213,6 +218,12 @@ namespace laplace::network {
           }
 
           count += n;
+        } else if (socket_error() == socket_msgsize()) {
+          m_is_msgsize = true;
+          break;
+        } else if (socket_error() == socket_connreset()) {
+          m_is_connreset = true;
+          break;
         } else if (socket_error() != socket_wouldblock()) {
           verb(fmt("UDP: sendto failed (code %d).", socket_error()));
           break;
@@ -229,12 +240,9 @@ namespace laplace::network {
         }
       }
 
-      if (is_sync) {
-        if (!set_mode(m_socket, async)) {
-          verb(fmt("UDP: ioctlsocket failed (code %d).",
-                   socket_error()));
-        }
-      }
+      if (is_sync && !set_mode(m_socket, async))
+        verb(fmt("UDP: ioctlsocket failed (code %d).",
+                 socket_error()));
     }
 
     return count;

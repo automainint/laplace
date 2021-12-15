@@ -1,6 +1,4 @@
-/*  laplace/network/udp_server.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -142,6 +140,11 @@ namespace laplace::network {
 
     [[nodiscard]] auto convert_delta(sl::time delta_msec) -> sl::time;
     [[nodiscard]] auto adjust_overtake(sl::time time) -> sl::time;
+
+    [[nodiscard]] auto get_max_chunk_size() const noexcept
+        -> sl::whole;
+    [[nodiscard]] auto get_max_event_size() const noexcept
+        -> sl::whole;
 
     std::vector<slot_info>    m_slots;
     std::unique_ptr<udp_node> m_node;

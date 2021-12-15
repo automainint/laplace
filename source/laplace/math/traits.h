@@ -33,12 +33,11 @@ namespace laplace::math {
   [[nodiscard]] constexpr auto get_column_count() -> sl::whole;
 
   template <typename type_>
-  [[nodiscard]] constexpr auto get(const type_ v, const sl::index i)
+  [[nodiscard]] constexpr auto get(type_ v, sl::index i)
       -> elem_type<type_>;
 
   template <typename type_>
-  constexpr void set(type_ &v, const sl::index i,
-                     const elem_type<type_> x);
+  constexpr void set(type_ &v, sl::index i, elem_type<type_> x);
 
   template <typename type_>
   concept vector_type = requires {

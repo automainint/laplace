@@ -1,6 +1,4 @@
-/*  laplace/engine/eval/astar.impl.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -14,6 +12,8 @@
 #define laplace_engine_eval_astar_impl_h
 
 #include "astar.h"
+
+#include "arithmetic.impl.h"
 
 namespace laplace::engine::eval::astar::impl {
   template <typename _node>
@@ -30,7 +30,7 @@ namespace laplace::engine::eval::astar::impl {
   constexpr void _add_length(_node_theta &n,
                              intval const delta) noexcept {
     n.length_parent = delta;
-    n.length += delta;
+    n.length        = eval::impl::_add(n.length, delta);
   }
 
   [[nodiscard]] constexpr auto _get_parent_length(
@@ -58,8 +58,7 @@ namespace laplace::engine::eval::astar {
 
   template <bool _nearest, typename _node>
   [[nodiscard]] inline auto loop(
-      fn_sight const          &sight,
-      fn_neighbors const      &neighbors,
+      fn_sight const &sight, fn_neighbors const &neighbors,
       fn_heuristic const      &heuristic,
       _state<_nearest, _node> &state) noexcept -> status {
 
@@ -121,7 +120,7 @@ namespace laplace::engine::eval::astar {
 
       impl::_add_length(n, q.length);
       n.distance  = heuristic(n.index, state.destination);
-      n.estimated = n.length + n.distance;
+      n.estimated = eval::impl::_add(n.length, n.distance);
 
       auto const j = std::lower_bound(
           state.closed.begin(), state.closed.end(), n.index,
@@ -149,7 +148,7 @@ namespace laplace::engine::eval::astar {
       if (is_sight()) {
         n.length = heuristic(q.parent, n.index);
         impl::_add_length(n, impl::_get_parent_length(q));
-        n.estimated = n.length + n.distance;
+        n.estimated = eval::impl::_add(n.length, n.distance);
         n.parent    = q.parent;
       }
 
@@ -185,8 +184,7 @@ namespace laplace::engine::eval::astar {
 
   template <typename _node>
   [[nodiscard]] inline auto finish(
-      std::span<_node const> const closed,
-      sl::index const              source,
+      std::span<_node const> const closed, sl::index const source,
       sl::index const destination) noexcept -> sl::vector<sl::index> {
 
     auto path    = sl::vector<sl::index> {};

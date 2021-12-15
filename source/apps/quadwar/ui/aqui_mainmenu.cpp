@@ -16,8 +16,8 @@
 #include "../session.h"
 
 namespace quadwar_app::ui {
-  using ui::column_layout, ui::rect, std::u8string,
-      std::u8string_view;
+  using ui::column_layout, ui::ptr_widget, ui::rect, std::u8string,
+      std::u8string_view, std::tuple;
 
   sl::whole const mainmenu::spacing     = 4;
   sl::whole const mainmenu::line_count  = 7;
@@ -49,26 +49,34 @@ namespace quadwar_app::ui {
         column_layout(menu_width, line_height, spacing));
 
     m_page_create->attach(m_c_game_name_label);
-    m_page_create->attach(m_c_player_name_label);
-    m_page_create->attach(m_c_map_size_label);
-    m_page_create->attach(m_c_player_count_label);
-    m_page_create->attach(m_c_unit_count_label);
     m_page_create->attach(m_c_game_name);
+    m_page_create->attach(m_c_player_name_label);
     m_page_create->attach(m_c_player_name);
+    m_page_create->attach(m_c_map_size_label);
     m_page_create->attach(m_c_map_size);
+    m_page_create->attach(m_c_player_count_label);
     m_page_create->attach(m_c_player_count);
+    m_page_create->attach(m_c_unit_count_label);
     m_page_create->attach(m_c_unit_count);
     m_page_create->attach(m_c_cancel);
     m_page_create->attach(m_c_continue);
 
+    m_page_create->set_layout(
+        column_layout(tuple { menu_width / 2, menu_width / 2 },
+                      line_height, spacing));
+
     m_page_join->attach(m_j_server_ip_label);
-    m_page_join->attach(m_j_game_name_label);
-    m_page_join->attach(m_j_player_name_label);
     m_page_join->attach(m_j_server_ip);
+    m_page_join->attach(m_j_game_name_label);
     m_page_join->attach(m_j_game_name);
+    m_page_join->attach(m_j_player_name_label);
     m_page_join->attach(m_j_player_name);
     m_page_join->attach(m_j_cancel);
     m_page_join->attach(m_j_continue);
+
+    m_page_join->set_layout(
+        column_layout(tuple { menu_width / 2, menu_width / 2 },
+                      line_height, spacing));
 
     m_info->set_text(c_welcome);
     m_create->set_text(c_create);
@@ -107,7 +115,7 @@ namespace quadwar_app::ui {
     m_page_create->set_visible(false);
     m_page_join->set_visible(false);
 
-    m_create->on_click([this](ui::ptr_widget) {
+    m_create->on_click([this](ptr_widget const &) {
       m_current_page = page::create;
 
       m_page_root->set_visible(false);
@@ -116,7 +124,7 @@ namespace quadwar_app::ui {
       m_info->set_text(c_create_game);
     });
 
-    m_join->on_click([this](ui::ptr_widget) {
+    m_join->on_click([this](ptr_widget const &) {
       m_current_page = page::join;
 
       m_page_root->set_visible(false);
@@ -130,7 +138,7 @@ namespace quadwar_app::ui {
       m_j_server_ip->set_text(as_u8string(host));
     });
 
-    m_c_cancel->on_click([this](ui::ptr_widget) {
+    m_c_cancel->on_click([this](ptr_widget const &) {
       m_current_page = page::root;
 
       m_page_root->set_visible(true);
@@ -139,7 +147,7 @@ namespace quadwar_app::ui {
       m_info->set_text(c_welcome);
     });
 
-    m_j_cancel->on_click([this](ui::ptr_widget) {
+    m_j_cancel->on_click([this](ptr_widget const &) {
       m_current_page = page::root;
 
       m_page_root->set_visible(true);
@@ -158,8 +166,8 @@ namespace quadwar_app::ui {
     }
   }
 
-  void mainmenu::on_create(mainmenu::event_create ev) {
-    m_c_continue->on_click([this, ev](ui::ptr_widget) {
+  void mainmenu::on_create(mainmenu::event_create const &ev) {
+    m_c_continue->on_click([this, ev](ptr_widget const &) {
       create_info info;
 
       info.game_name    = m_c_game_name->get_text();
@@ -172,8 +180,8 @@ namespace quadwar_app::ui {
     });
   }
 
-  void mainmenu::on_join(mainmenu::event_join ev) {
-    m_j_continue->on_click([this, ev](ui::ptr_widget) {
+  void mainmenu::on_join(mainmenu::event_join const &ev) {
+    m_j_continue->on_click([this, ev](ptr_widget const &) {
       join_info info;
 
       info.server_ip   = to_string(m_j_server_ip->get_text());
@@ -184,8 +192,8 @@ namespace quadwar_app::ui {
     });
   }
 
-  void mainmenu::on_quit(mainmenu::event_quit ev) {
-    m_quit->on_click([ev](ui::ptr_widget) { ev(); });
+  void mainmenu::on_quit(mainmenu::event_quit const &ev) {
+    m_quit->on_click([ev](ptr_widget const &) { ev(); });
   }
 
   void mainmenu::refresh() {
@@ -259,7 +267,7 @@ namespace quadwar_app::ui {
     m_c_unit_count->set_cursor(s.size());
   }
 
-  void mainmenu::attach_to(ui::ptr_widget w) {
+  void mainmenu::attach_to(ptr_widget const &w) {
     if (w) {
       w->attach(m_info);
 
@@ -270,9 +278,8 @@ namespace quadwar_app::ui {
   }
 
   void mainmenu::adjust_layout(sl::whole width, sl::whole height) {
-    auto const lines_height    = line_height * line_count;
-    auto const full_height     = lines_height + info_height;
-    auto const half_menu_width = menu_width / 2;
+    auto const lines_height = line_height * line_count;
+    auto const full_height  = lines_height + info_height;
 
     auto const x0 = (width - menu_width) / 2;
     auto const y0 = (height - full_height) / 2;
@@ -287,88 +294,5 @@ namespace quadwar_app::ui {
     m_page_root->set_rect(lines_rect);
     m_page_create->set_rect(lines_rect);
     m_page_join->set_rect(lines_rect);
-
-    m_c_game_name_label->set_rect(
-        rect { spacing, spacing, half_menu_width - spacing * 2,
-               line_height - spacing * 2 });
-
-    m_c_game_name->set_rect(rect { spacing + half_menu_width, spacing,
-                                   half_menu_width - spacing * 2,
-                                   line_height - spacing * 2 });
-
-    m_c_player_name_label->set_rect(rect {
-        spacing, spacing + line_height, half_menu_width - spacing * 2,
-        line_height - spacing * 2 });
-
-    m_c_player_name->set_rect(rect {
-        spacing + half_menu_width, spacing + line_height,
-        half_menu_width - spacing * 2, line_height - spacing * 2 });
-
-    m_c_map_size_label->set_rect(rect {
-        spacing, spacing + line_height * 2,
-        half_menu_width - spacing * 2, line_height - spacing * 2 });
-
-    m_c_map_size->set_rect(rect {
-        spacing + half_menu_width, spacing + line_height * 2,
-        half_menu_width - spacing * 2, line_height - spacing * 2 });
-
-    m_c_player_count_label->set_rect(rect {
-        spacing, spacing + line_height * 3,
-        half_menu_width - spacing * 2, line_height - spacing * 2 });
-
-    m_c_player_count->set_rect(rect {
-        spacing + half_menu_width, spacing + line_height * 3,
-        half_menu_width - spacing * 2, line_height - spacing * 2 });
-
-    m_c_unit_count_label->set_rect(rect {
-        spacing, spacing + line_height * 4,
-        half_menu_width - spacing * 2, line_height - spacing * 2 });
-
-    m_c_unit_count->set_rect(rect {
-        spacing + half_menu_width, spacing + line_height * 4,
-        half_menu_width - spacing * 2, line_height - spacing * 2 });
-
-    m_c_cancel->set_rect(rect { spacing, spacing + line_height * 5,
-                                half_menu_width - spacing * 2,
-                                line_height - spacing * 2 });
-
-    m_c_continue->set_rect(rect {
-        spacing + half_menu_width, spacing + line_height * 5,
-        half_menu_width - spacing * 2, line_height - spacing * 2 });
-
-    /*  Page: Join
-     */
-
-    m_j_server_ip_label->set_rect(
-        rect { spacing, spacing, half_menu_width - spacing * 2,
-               line_height - spacing * 2 });
-
-    m_j_server_ip->set_rect(rect { spacing + half_menu_width, spacing,
-                                   half_menu_width - spacing * 2,
-                                   line_height - spacing * 2 });
-
-    m_j_game_name_label->set_rect(rect {
-        spacing, spacing + line_height, half_menu_width - spacing * 2,
-        line_height - spacing * 2 });
-
-    m_j_game_name->set_rect(rect {
-        spacing + half_menu_width, spacing + line_height,
-        half_menu_width - spacing * 2, line_height - spacing * 2 });
-
-    m_j_player_name_label->set_rect(rect {
-        spacing, spacing + line_height * 2,
-        half_menu_width - spacing * 2, line_height - spacing * 2 });
-
-    m_j_player_name->set_rect(rect {
-        spacing + half_menu_width, spacing + line_height * 2,
-        half_menu_width - spacing * 2, line_height - spacing * 2 });
-
-    m_j_cancel->set_rect(rect { spacing, spacing + line_height * 3,
-                                half_menu_width - spacing * 2,
-                                line_height - spacing * 2 });
-
-    m_j_continue->set_rect(rect {
-        spacing + half_menu_width, spacing + line_height * 3,
-        half_menu_width - spacing * 2, line_height - spacing * 2 });
   }
 }

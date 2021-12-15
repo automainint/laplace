@@ -1,6 +1,4 @@
-/*  apps/quadwar/object/unit.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -28,21 +26,18 @@ namespace quadwar_app::object {
     static engine::intval const default_collision_radius;
     static engine::intval const default_movement_speed;
 
-    unit();
-    ~unit() override = default;
+    unit() noexcept;
+    ~unit() noexcept override = default;
 
-    void tick(engine::access::world w) override;
+    void tick(engine::access::world w) noexcept override;
 
     static auto spawn_start_units(world w, sl::whole unit_count)
         -> std::vector<sl::index>;
 
     static void place_footprint(world w, sl::index id_unit);
 
-    static void order_move(
-        world         w,
-        sl::index     id_actor,
-        sl::index     id_unit,
-        engine::vec2i target);
+    static void order_move(world w, sl::index id_actor,
+                           sl::index id_unit, engine::vec2i target);
 
     [[nodiscard]] static auto get_actor(entity en) -> sl::index;
     [[nodiscard]] static auto get_color(entity en) -> sl::index;
@@ -60,7 +55,7 @@ namespace quadwar_app::object {
         -> view::real;
 
   protected:
-    unit(proto_tag);
+    unit(proto_tag) noexcept;
 
   private:
     struct footprint_data {

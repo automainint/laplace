@@ -18,18 +18,20 @@
 
 namespace laplace::ui {
   struct layout_context {
-    sl::index level;
+    sl::index level = 0;
     rect      box;
   };
 
-  using vrect           = sl::vector<rect>;
-  using vlayout_context = sl::vector<layout_context>;
+  using layout = std::function<sl::vector<rect>(
+      rect bounds, std::span<layout_context const> context)>;
 
-  using layout =
-      std::function<vrect(rect bounds, vlayout_context context)>;
+  auto column_layout(sl::whole width,
+                     sl::whole line_height,
+                     sl::whole spacing) noexcept -> layout;
 
-  auto column_layout(sl::whole width, sl::whole line_height,
-                     sl::whole spacing) -> layout;
+  auto column_layout(std::tuple<sl::whole, sl::whole> widths,
+                     sl::whole                        line_height,
+                     sl::whole spacing) noexcept -> layout;
 }
 
 #endif

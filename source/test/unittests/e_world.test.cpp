@@ -17,28 +17,28 @@
 #include <thread>
 
 namespace laplace::test {
-  using std::make_shared, std::make_unique, std::thread, engine::basic_entity,
-      engine::basic_impact, engine::world, engine::scheduler,
-      engine::id_undefined;
+  using std::make_shared, std::make_unique, std::thread,
+      engine::basic_entity, engine::basic_impact, engine::world,
+      engine::scheduler, engine::id_undefined;
 
   namespace access = engine::access;
   namespace sets   = engine::object::sets;
 
   class my_counter : public basic_entity {
   public:
-    my_counter() : basic_entity(proto) {
+    my_counter() noexcept : basic_entity(proto) {
       setup_sets({ { sets::debug_value, 0, 0 } });
       n_value = index_of(sets::debug_value);
     }
 
-    my_counter(dynamic_tag) : basic_entity(dynamic) {
+    my_counter(dynamic_tag) noexcept : basic_entity(dynamic) {
       setup_sets({ { sets::debug_value, 0, 0 } });
       n_value = index_of(sets::debug_value);
     }
 
-    ~my_counter() override = default;
+    ~my_counter() noexcept override = default;
 
-    void tick(access::world) override {
+    void tick(access::world) noexcept override {
       apply_delta(n_value, 1);
     }
 
@@ -48,14 +48,12 @@ namespace laplace::test {
 
   class my_additioner : public basic_impact {
   public:
-    my_additioner(sl::index id_entity, int64_t delta) {
-      m_id    = id_entity;
-      m_delta = delta;
-    }
+    my_additioner(sl::index id_entity, int64_t delta) noexcept :
+        m_id(id_entity), m_delta(delta) { }
 
-    ~my_additioner() override = default;
+    ~my_additioner() noexcept override = default;
 
-    void perform(access::world w) const override {
+    void perform(access::world w) const noexcept override {
       auto e = w.get_entity(m_id);
       e.apply_delta(e.index_of(sets::debug_value), m_delta);
     }

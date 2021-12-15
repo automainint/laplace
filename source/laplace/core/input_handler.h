@@ -51,9 +51,6 @@ namespace laplace::core {
 
     fn_get_key_state is_key_down;
     fn_get_key_state is_key_up;
-    fn_get_key_state is_key_changed;
-    fn_get_key_state is_key_pressed;
-    fn_get_key_state is_key_unpressed;
 
     fn_get_int_state get_mouse_resolution_x;
     fn_get_int_state get_mouse_resolution_y;

@@ -15,6 +15,7 @@
 #include "opengl.h"
 
 #include "../core/defs.h"
+#include "../core/string.h"
 #include "wrap.h"
 #include <algorithm>
 #include <iostream>
@@ -22,21 +23,25 @@
 
 #include "../../generated/gl/funcs.impl.h"
 
-#define LAPLACE_GL_LOAD(a)                                            \
-  if (!a) {                                                           \
-    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a)); !a) { \
-      ok = false;                                                     \
-    }                                                                 \
+#define LAPLACE_GL_LOAD(a)                                          \
+  if (!a) {                                                         \
+    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a));     \
+        !a) {                                                       \
+      error_(fmt("Unable to load %s function.", #a), __FUNCTION__); \
+      ok = false;                                                   \
+    }                                                               \
   }
 
-#define LAPLACE_GL_LOAD_EX(a)                                         \
-  if (!a) {                                                           \
-    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a)); !a) { \
-      status = false;                                                 \
-    }                                                                 \
+#define LAPLACE_GL_LOAD_EX(a)                                       \
+  if (!a) {                                                         \
+    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a));     \
+        !a) {                                                       \
+      error_(fmt("Unable to load %s function.", #a), __FUNCTION__); \
+      status = false;                                               \
+    }                                                               \
   }
 
-#define LAPLACE_GL_HAS(a) has(#a)
+#define LAPLACE_GL_HAS(a) has_extension(#a)
 
 #define LAPLACE_GL_BEGIN_EX() \
   { status = true; }
@@ -50,25 +55,26 @@
   }
 
 namespace laplace::gl {
-  using std::find, std::lower_bound, std::vector, std::string,
-      std::string_view;
+  using std::find, std::lower_bound, std::string, std::string_view;
 
   auto ok                      = false;
   auto has_extensions_required = false;
 
-  auto extensions          = vector<string> {};
-  auto extensions_required = vector<string> {};
+  auto extensions          = sl::vector<string> {};
+  auto extensions_required = sl::vector<string> {};
 
   auto is_ok() -> bool {
     return ok;
   }
 
-  void require_extensions(vector<string_view> exts) {
-    has_extensions_required = true;
-    extensions_required.assign(exts.begin(), exts.end());
+  void require_extensions(sl::vector<string_view> exts) {
+    extensions_required.insert(extensions_required.end(),
+                               exts.begin(), exts.end());
+
+    has_extensions_required = !extensions_required.empty();
   }
 
-  auto init() -> bool {
+  auto load_functions() -> bool {
     using platform::gl_get_proc_address;
 
     ok = true;
@@ -82,14 +88,13 @@ namespace laplace::gl {
 
 #include "../../generated/gl/loads.impl.h"
 
-    if (has_extensions_required && !status) {
+    if (has_extensions_required && !status)
       ok = false;
-    }
 
     return ok;
   }
 
-  auto has(string_view extension) -> bool {
+  auto has_extension(string_view extension) -> bool {
     auto i = lower_bound(extensions.begin(), extensions.end(),
                          extension);
 

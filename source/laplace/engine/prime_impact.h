@@ -1,6 +1,4 @@
-/*  laplace/engine/prime_impact.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -36,11 +34,6 @@ namespace laplace::engine {
     using basic_impact::set_index;
     using basic_impact::set_time;
 
-    /*  Max encoded impact size.
-     */
-    static constexpr sl::whole max_size =
-        std::numeric_limits<uint16_t>::max();
-
     ~prime_impact() override = default;
 
     /*  Encode into byte sequence. The sequence can be decoded
@@ -55,9 +48,11 @@ namespace laplace::engine {
      */
     virtual void encode_to(span_byte bytes) const;
 
-    [[nodiscard]] constexpr auto get_encoded_size() const -> sl::whole;
+    [[nodiscard]] constexpr auto get_encoded_size() const
+        -> sl::whole;
 
-    static constexpr void set_actor(span_byte seq, sl::index id_actor);
+    static constexpr void set_actor(span_byte seq,
+                                    sl::index id_actor);
 
     static constexpr void set_index(span_byte seq, sl::index n);
 
@@ -68,12 +63,12 @@ namespace laplace::engine {
     [[nodiscard]] static constexpr auto is_control(span_cbyte seq)
         -> bool;
 
-    [[nodiscard]] static constexpr auto get_index_unsafe(span_cbyte seq)
-        -> sl::index;
-    [[nodiscard]] static constexpr auto get_time_unsafe(span_cbyte seq)
-        -> sl::time;
-    [[nodiscard]] static constexpr auto get_actor_unsafe(span_cbyte seq)
-        -> sl::index;
+    [[nodiscard]] static constexpr auto get_index_unsafe(
+        span_cbyte seq) -> sl::index;
+    [[nodiscard]] static constexpr auto get_time_unsafe(
+        span_cbyte seq) -> sl::time;
+    [[nodiscard]] static constexpr auto get_actor_unsafe(
+        span_cbyte seq) -> sl::index;
 
     [[nodiscard]] static constexpr auto get_id(span_cbyte seq)
         -> uint16_t;
@@ -118,7 +113,7 @@ namespace laplace::engine {
   };
 
   template <typename prime_impact_, typename... args_>
-  [[nodiscard]] constexpr auto encode(args_... args) -> vbyte;
+  [[nodiscard]] inline auto encode(args_... args) -> vbyte;
 
   using ptr_prime_impact = std::unique_ptr<prime_impact>;
 }

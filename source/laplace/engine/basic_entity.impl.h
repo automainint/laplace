@@ -1,8 +1,4 @@
-/*  laplace/engine/basic_entity.impl.h
- *
- *      Basic class for any gameplay object. Inline methods.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -16,7 +12,8 @@
 #define laplace_engine_basic_entity_impl_h
 
 namespace laplace::engine {
-  inline auto basic_entity::get_by_id(sl::index id) -> intval {
+  inline auto basic_entity::get_by_id(sl::index id) noexcept
+      -> intval {
     return this->get(this->index_of(id));
   }
 }
