@@ -1,6 +1,4 @@
-/*  laplace/network/n_transfer.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -39,11 +37,6 @@ namespace laplace::network {
     return pack_internal(data, mark_plain);
   }
 
-  auto transfer::unpack(span_cbyte data) -> sl::vector<vbyte> {
-    m_loss_count = 0;
-    return unpack_internal(data, mark_plain);
-  }
-
   auto transfer::encode(span<const span_cbyte> data) -> vbyte {
     if (is_encrypted()) {
       return m_cipher->encrypt(pack_internal(data, mark_encrypted));
@@ -72,15 +65,6 @@ namespace laplace::network {
     return {};
   }
 
-  auto transfer::get_mutual_key() const noexcept -> span_cbyte {
-    if (m_cipher) {
-      return m_cipher->get_mutual_key();
-    }
-
-    error_("No cipher.", __FUNCTION__);
-    return {};
-  }
-
   auto transfer::is_encrypted() const noexcept -> bool {
     return m_cipher && m_cipher->is_ready();
   }
@@ -94,49 +78,49 @@ namespace laplace::network {
   }
 
   auto transfer::check_sum(span_cbyte data) -> uint64_t {
-    uint64_t sum = 0;
+    auto sum = uint64_t {};
 
     for (sl::whole i = 0; i < data.size(); i += sizeof sum) {
-      uint64_t z = 0;
+      auto part = uint64_t {};
 
-      memcpy(&z, data.data() + i, min(sizeof z, data.size() - i));
+      memcpy(&part, data.data() + i,
+             min(sizeof part, data.size() - i));
 
-      sum ^= z;
+      sum ^= part;
     }
 
     return sum;
   }
 
   auto transfer::pack_internal(span<const span_cbyte> data,
-                               const uint16_t         mark) -> vbyte {
+                               uint16_t const         mark) -> vbyte {
     auto buf = vbyte {};
 
     buf.reserve([&]() {
       auto size = sl::whole {};
-      for (sl::whole i = 0; i < data.size(); i++)
-        size += n_data + data[i].size();
+      for (auto message : data) size += n_data + message.size();
       return size;
     }());
 
-    for (sl::whole i = 0; i < data.size(); i++) {
+    for (auto message : data) {
       const sl::whole offset = buf.size();
-      buf.resize(offset + n_data + data[i].size());
+      buf.resize(offset + n_data + message.size());
 
-      auto const sum = check_sum(data[i]);
-      auto const n   = uint64_t { data[i].size() };
+      auto const sum  = check_sum(message);
+      auto const size = uint64_t { message.size() };
 
       wr(buf, offset + n_mark, mark);
       wr(buf, offset + n_sum, sum);
-      wr(buf, offset + n_size, n);
+      wr(buf, offset + n_size, size);
 
-      memcpy(buf.data() + offset + n_data, data[i].data(),
-             data[i].size());
+      memcpy(buf.data() + offset + n_data, message.data(),
+             message.size());
     }
 
     return buf;
   }
 
-  auto transfer::unpack_internal(span_cbyte data, const uint16_t mark)
+  auto transfer::unpack_internal(span_cbyte data, uint16_t const mark)
       -> sl::vector<vbyte> {
 
     auto buf    = sl::vector<vbyte> {};
@@ -169,8 +153,8 @@ namespace laplace::network {
     if (rd<uint16_t>(data, n_mark) != mark)
       return 0;
 
-    const auto sum  = rd<uint64_t>(data, n_sum);
-    const auto size = as_index(rd<uint64_t>(data, n_size));
+    auto const sum  = rd<uint64_t>(data, n_sum);
+    auto const size = as_index(rd<uint64_t>(data, n_size));
 
     if (size < 0 || size + n_data > data.size())
       return 0;

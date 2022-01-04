@@ -1,6 +1,4 @@
-/*  laplace/network/transfer.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -24,14 +22,12 @@ namespace laplace::network {
 
     [[nodiscard]] auto pack(std::span<const span_cbyte> data)
         -> vbyte;
-    [[nodiscard]] auto unpack(span_cbyte data) -> sl::vector<vbyte>;
 
     [[nodiscard]] auto encode(std::span<const span_cbyte> data)
         -> vbyte;
     [[nodiscard]] auto decode(span_cbyte data) -> sl::vector<vbyte>;
 
     [[nodiscard]] auto get_public_key() const noexcept -> span_cbyte;
-    [[nodiscard]] auto get_mutual_key() const noexcept -> span_cbyte;
 
     [[nodiscard]] auto is_encrypted() const noexcept -> bool;
 
@@ -47,11 +43,10 @@ namespace laplace::network {
     }
 
   private:
-    [[nodiscard]] auto pack_internal(std::span<const span_cbyte> data,
-                                     const uint16_t mark) -> vbyte;
+    [[nodiscard]] static auto pack_internal(
+        std::span<const span_cbyte> data, uint16_t mark) -> vbyte;
 
-    [[nodiscard]] auto unpack_internal(span_cbyte     data,
-                                       const uint16_t mark)
+    [[nodiscard]] auto unpack_internal(span_cbyte data, uint16_t mark)
         -> std::vector<vbyte>;
 
     [[nodiscard]] auto scan(span_cbyte data,
