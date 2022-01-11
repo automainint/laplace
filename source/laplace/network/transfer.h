@@ -16,15 +16,19 @@
 namespace laplace::network {
   class transfer {
   public:
+    enum encryption_tag { plain, encrypted };
+
     void set_verbose(bool is_verbose) noexcept;
     void set_cipher(std::unique_ptr<crypto::basic_cipher> cipher);
     void set_remote_key(span_cbyte key);
 
-    [[nodiscard]] auto pack(std::span<const span_cbyte> data)
+    [[nodiscard]] static auto pack(std::span<span_cbyte const> data)
         -> vbyte;
 
-    [[nodiscard]] auto encode(std::span<const span_cbyte> data)
+    [[nodiscard]] auto encode(std::span<span_cbyte const> data,
+                              encryption_tag _enc = encrypted)
         -> vbyte;
+
     [[nodiscard]] auto decode(span_cbyte data) -> sl::vector<vbyte>;
 
     [[nodiscard]] auto get_public_key() const noexcept -> span_cbyte;
@@ -35,6 +39,7 @@ namespace laplace::network {
 
     [[nodiscard]] static auto get_data_overhead() noexcept
         -> sl::whole;
+
     [[nodiscard]] static auto check_sum(span_cbyte data) -> uint64_t;
 
     template <typename cipher_>

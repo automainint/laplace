@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -783,45 +783,63 @@ namespace laplace::network {
     }
   }
 
+  auto udp_server::encode_chunk(sl::index slot) noexcept -> vbyte {
+    auto &s = m_slots[slot];
+
+    auto plain = sl::vector<span_cbyte> {};
+    auto size  = sl::whole {};
+
+    for (sl::index i = 0; i < s.out.size(); i++) {
+      size += s.tran.get_data_overhead();
+      size += s.out[i].size();
+
+      if (size >= get_max_chunk_size()) {
+        if (is_verbose())
+          verb(fmt("Network: Some events discarded on slot %d.",
+                   (int) slot));
+        break;
+      }
+
+      plain.emplace_back<span_cbyte>(
+          { s.out[i].begin(), s.out[i].end() });
+    }
+
+    auto const chunk = s.tran.encode(plain, s.encryption);
+
+    if (chunk.empty() && is_verbose())
+      verb(fmt("Network: Unable to encode chunk on slot %d.",
+               (int) slot));
+
+    s.out.clear();
+
+    return chunk;
+  }
+
+  void udp_server::send_chunk(sl::index  slot,
+                              span_cbyte chunk) noexcept {
+    if (chunk.empty())
+      return;
+
+    auto &s = m_slots[slot];
+
+    s.encryption = s.tran.is_encrypted() ? transfer::encrypted
+                                         : transfer::plain;
+
+    if (s.is_exclusive && s.node)
+      add_bytes_sent(s.node->send_to(s.address, s.port, chunk));
+    else
+      add_bytes_sent(m_node->send_to(s.address, s.port, chunk));
+  }
+
   void udp_server::send_chunks() {
     if (!m_node)
       return;
 
-    for (auto &s : m_slots) {
-      if (s.out.empty())
+    for (sl::index slot = 0; slot < m_slots.size(); slot++) {
+      if (m_slots[slot].out.empty())
         continue;
 
-      auto plain      = sl::vector<span_cbyte> {};
-      auto plain_size = sl::index {};
-
-      for (auto &x : s.out) {
-        if (plain_size + x.size() >= get_max_chunk_size()) {
-          if (is_verbose())
-            verb(fmt("Network: Some events discarded."));
-          break;
-        }
-
-        plain_size += x.size();
-        plain.emplace_back(x.begin(), x.end());
-      }
-
-      auto const chunk = s.is_encrypted ? s.tran.encode(plain)
-                                        : s.tran.pack(plain);
-
-      s.out.clear();
-
-      if (chunk.empty()) {
-        if (is_verbose())
-          verb("Network: Unable to encode chunk.");
-        continue;
-      }
-
-      s.is_encrypted = s.tran.is_encrypted();
-
-      if (s.is_exclusive && s.node)
-        add_bytes_sent(s.node->send_to(s.address, s.port, chunk));
-      else
-        add_bytes_sent(m_node->send_to(s.address, s.port, chunk));
+      send_chunk(slot, encode_chunk(slot));
     }
   }
 

@@ -37,8 +37,9 @@ namespace laplace::network {
     return pack_internal(data, mark_plain);
   }
 
-  auto transfer::encode(span<const span_cbyte> data) -> vbyte {
-    if (is_encrypted()) {
+  auto transfer::encode(span<const span_cbyte> data,
+                        encryption_tag         _enc) -> vbyte {
+    if (_enc == encrypted && is_encrypted()) {
       return m_cipher->encrypt(pack_internal(data, mark_encrypted));
     }
 

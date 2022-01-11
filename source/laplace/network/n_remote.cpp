@@ -82,8 +82,10 @@ namespace laplace::network {
 
       if (!key.empty()) {
         m_slots[slot].tran.set_remote_key(key);
-        m_slots[slot].is_encrypted =
-            m_slots[slot].tran.is_encrypted();
+
+        m_slots[slot].encryption = m_slots[slot].tran.is_encrypted()
+                                       ? transfer::encrypted
+                                       : transfer::plain;
       }
 
       m_slots[slot].node         = make_unique<udp_node>(any_port);

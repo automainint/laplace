@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -55,13 +55,13 @@ namespace laplace::network {
       uint16_t    port    = any_port;
       vbyte       token;
 
-      sl::index id_actor     = engine::id_undefined;
-      bool      is_connected = true;
-      bool      is_encrypted = false;
-      bool      is_exclusive = false;
-      bool      request_flag = true;
-      sl::time  outdate      = 0;
-      sl::time  wait         = 0;
+      sl::index                id_actor     = engine::id_undefined;
+      bool                     is_connected = true;
+      transfer::encryption_tag encryption   = transfer::plain;
+      bool                     is_exclusive = false;
+      bool                     request_flag = true;
+      sl::time                 outdate      = 0;
+      sl::time                 wait         = 0;
 
       sl::vector<vbyte> in;
       sl::vector<vbyte> out;
@@ -131,6 +131,8 @@ namespace laplace::network {
     void inc_buffer_size();
 
     void add_event(sl::index slot, span_cbyte seq);
+    auto encode_chunk(sl::index slot) noexcept -> vbyte;
+    void send_chunk(sl::index slot, span_cbyte chunk) noexcept;
     void send_chunks();
     void disconnect(sl::index slot);
 
