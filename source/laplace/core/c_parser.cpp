@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -646,8 +646,7 @@ namespace laplace::core {
               if (f_frac_value != -1) {
                 f_value += static_cast<decltype(f_value)>(
                                f_frac_value) *
-                           pow(10,
-                               static_cast<double>(-f_frac_power));
+                           powl(10, -f_frac_power);
               }
 
               if (f_exp_value != -1) {
@@ -655,7 +654,7 @@ namespace laplace::core {
                   f_exp_value = -f_exp_value;
                 }
 
-                f_value *= pow(10, static_cast<double>(f_exp_value));
+                f_value *= powl(10, f_exp_value);
               }
 
               if (f_negative) {

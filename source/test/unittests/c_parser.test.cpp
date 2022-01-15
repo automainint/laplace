@@ -1,6 +1,4 @@
-/*  test/unittests/c_parser.test.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -17,7 +15,7 @@ namespace laplace::test {
   using core::parser, std::u8string;
 
   TEST(core, parser_silent) {
-    const auto s =
+    auto const s =
         "-0110 12 -989 f7ad0 11000 527 169 fffffbca10 -1.01e-2 x "
         "123xxx:ppp_~\\/&^123 __10x0x0x droW \":/path to/file\" "
         "https://url.to/some/page.htm";
@@ -29,7 +27,7 @@ namespace laplace::test {
   }
 
   TEST(core, parser_single) {
-    const auto s =
+    auto const s =
         "-0100 -17 -99 -f7 11 57 79 7ff 2.0e2 a abc:_~\\/&^123 "
         "_1abc Word \":/path/to/file\" https://url.to/some/page.htm";
 
@@ -75,7 +73,7 @@ namespace laplace::test {
   }
 
   TEST(core, parser_multiple) {
-    const auto s = "1 2 3 4 5";
+    auto const s = "1 2 3 4 5";
     auto       p = parser::wrap(s);
 
     EXPECT_TRUE(p.parse(" %~d "));
@@ -87,7 +85,7 @@ namespace laplace::test {
   }
 
   TEST(core, parser_push_pop) {
-    const auto s = "10, 20, 30";
+    auto const s = "10, 20, 30";
     auto       p = parser::wrap(s);
 
     auto x = int64_t {};
@@ -102,5 +100,19 @@ namespace laplace::test {
     EXPECT_TRUE(p.parse(" , %d  , %d ", &x, &y));
     EXPECT_EQ(x, 20);
     EXPECT_EQ(y, 30);
+  }
+
+  TEST(code, parser_float) {
+    auto const s = "3.1415 0.00031415 31415.001";
+    auto       p = parser::wrap(s);
+
+    auto a = double {};
+    auto b = double {};
+    auto c = double {};
+
+    EXPECT_TRUE(p.parse(" %f %f %f ", &a, &b, &c));
+    EXPECT_DOUBLE_EQ(a, 3.1415);
+    EXPECT_DOUBLE_EQ(b, 0.00031415);
+    EXPECT_DOUBLE_EQ(c, 31415.001);
   }
 }
