@@ -1,8 +1,4 @@
-/*  laplace/platform/win32/win32_thread.cpp
- *
- *      Win32 concurrency system utilities.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -40,7 +36,7 @@ namespace laplace::win32 {
     SetThreadPriority(th, ids[n]);
   }
 
-  void win32::set_background_mode(bool is_background_mode) {
+  void set_background_mode(bool is_background_mode) {
     static bool in_background = false;
 
     if (in_background != is_background_mode) {
@@ -64,7 +60,7 @@ namespace laplace::win32 {
     }
   }
 
-  void win32::set_realtime_mode(bool is_realtime_mode) {
+  void set_realtime_mode(bool is_realtime_mode) {
     SetPriorityClass(
         GetCurrentProcess(),
         static_cast<DWORD>(is_realtime_mode
@@ -72,11 +68,11 @@ namespace laplace::win32 {
                                : ABOVE_NORMAL_PRIORITY_CLASS));
   }
 
-  void win32::set_thread_priority(int priority) {
+  void set_thread_priority(int priority) {
     set_thread_priority(GetCurrentThread(), priority);
   }
 
-  void win32::set_thread_priority(thread &th, int priority) {
-    set_thread_priority(th.native_handle(), priority);
+  void set_thread_priority(thread &th, int priority) {
+    set_thread_priority((HANDLE) th.native_handle(), priority);
   }
 }
