@@ -14,11 +14,23 @@
 namespace laplace::test {
   using core::parser, std::u8string;
 
-  TEST(core, parser_silent) {
+  TEST(core, parser_silent_ascii) {
     auto const s =
         "-0110 12 -989 f7ad0 11000 527 169 fffffbca10 -1.01e-2 x "
         "123xxx:ppp_~\\/&^123 __10x0x0x droW \":/path to/file\" "
         "https://url.to/some/page.htm";
+
+    auto p = parser::wrap(s);
+
+    EXPECT_TRUE(p.parse(" %~b %~o %~d %~x %~B %~O %~D %~X %~f %~c "
+                        "%~s %~a %~A \"%~p\" %~u "));
+  }
+
+  TEST(core, parser_silent_utf8) {
+    auto const s =
+        u8"-0110 12 -989 f7ad0 11000 527 169 fffffbca10 -1.01e-2 x "
+        u8"123xxx:ppp_~\\/&^123 __10x0x0x droW \":/path to/file\" "
+        u8"https://url.to/some/page.htm";
 
     auto p = parser::wrap(s);
 
@@ -84,7 +96,7 @@ namespace laplace::test {
     EXPECT_FALSE(p.parse(" %~d "));
   }
 
-  TEST(core, parser_push_pop) {
+  TEST(core, parser_push_pop_1) {
     auto const s = "10, 20, 30";
     auto       p = parser::wrap(s);
 
@@ -99,6 +111,23 @@ namespace laplace::test {
     p.pop_offset(true);
     EXPECT_TRUE(p.parse(" , %d  , %d ", &x, &y));
     EXPECT_EQ(x, 20);
+    EXPECT_EQ(y, 30);
+  }
+
+  TEST(core, parser_push_pop_2) {
+    auto const s = "10, 20, 30";
+    auto       p = parser::wrap(s);
+
+    auto x = int64_t {};
+    auto y = int64_t {};
+
+    EXPECT_TRUE(p.parse(" %d ", &x));
+    p.push_offset();
+    EXPECT_EQ(x, 10);
+    EXPECT_TRUE(p.parse(" , %d ", &x));
+    EXPECT_EQ(x, 20);
+    p.pop_offset(false);
+    EXPECT_TRUE(p.parse(" , %d ", &y));
     EXPECT_EQ(y, 30);
   }
 

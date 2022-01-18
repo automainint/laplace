@@ -1,6 +1,4 @@
-/*  laplace/core/log.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -21,15 +19,15 @@
 namespace laplace {
   using fn_log = std::function<void(std::string_view)>;
 
-  void setup_log(fn_log fn) noexcept;
+  void setup_log(fn_log const &write) noexcept;
   void set_verbose(bool is_verbose) noexcept;
   auto is_verbose() noexcept -> bool;
 
-  void log(std::string_view s) noexcept;
-  void log(std::u8string_view s) noexcept;
+  void log(std::string_view message) noexcept;
+  void log(std::u8string_view message) noexcept;
 
-  void verb(std::string_view s) noexcept;
-  void verb(std::u8string_view s) noexcept;
+  void verb(std::string_view message) noexcept;
+  void verb(std::u8string_view message) noexcept;
 
   /*  TODO
    *  Use source_location.

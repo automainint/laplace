@@ -1,6 +1,4 @@
-/*  test/unittests/c_log.test.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -15,6 +13,16 @@
 #include <gtest/gtest.h>
 
 namespace laplace::test {
+  TEST(core, log_default) {
+    log("ASCII log test.");
+    log(u8"UTF-8 log test.");
+  }
+
+  TEST(core, log_error) {
+    error_("ASCII error log test", "test");
+    error_(u8"UTF-8 error log test", "test");
+  }
+
   TEST(core, log_is_verbose) {
     if constexpr (_log_enabled) {
       auto const f = is_verbose();
