@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -558,7 +558,7 @@ namespace laplace::engine {
     if (auto _ul = unique_lock(m_lock, ms(lock_timeout_msec)); _ul) {
 
       m_vec.reserve(m_vec.size() + bunch.size());
-      for (auto x : bunch) m_vec.emplace_back<vec_row>({ x, 0 });
+      for (auto row : bunch) m_vec.emplace_back<vec_row>({ row, 0 });
 
     } else {
       error_("Lock timeout.", __FUNCTION__);
