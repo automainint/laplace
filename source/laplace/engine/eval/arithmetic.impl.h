@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -20,9 +20,46 @@ namespace laplace::engine::eval::impl {
                                    ? intval { 0xb504f333ll }
                                    : intval { 0xb504 };
 
+  [[nodiscard]] constexpr auto wrap_add(int8_t x, int8_t y) noexcept
+      -> int8_t {
+    return static_cast<int8_t>(static_cast<uint8_t>(x) +
+                               static_cast<uint8_t>(y));
+  }
+
+  [[nodiscard]] constexpr auto wrap_add(int32_t x, int32_t y) noexcept
+      -> int32_t {
+    return static_cast<int32_t>(static_cast<uint32_t>(x) +
+                                static_cast<uint32_t>(y));
+  }
+
+  [[nodiscard]] constexpr auto wrap_add(int64_t x, int64_t y) noexcept
+      -> int64_t {
+    return static_cast<int64_t>(static_cast<uint64_t>(x) +
+                                static_cast<uint64_t>(y));
+  }
+
+  [[nodiscard]] constexpr auto wrap_sub(int8_t x, int8_t y) noexcept
+      -> int8_t {
+    return static_cast<int8_t>(static_cast<uint8_t>(x) -
+                               static_cast<uint8_t>(y));
+  }
+
+  [[nodiscard]] constexpr auto wrap_sub(int32_t x, int32_t y) noexcept
+      -> int32_t {
+    return static_cast<int32_t>(static_cast<uint32_t>(x) -
+                                static_cast<uint32_t>(y));
+  }
+
+  [[nodiscard]] constexpr auto wrap_sub(int64_t x, int64_t y) noexcept
+      -> int64_t {
+    return static_cast<int64_t>(static_cast<uint64_t>(x) -
+                                static_cast<uint64_t>(y));
+  }
+
   /*  Safe integer division.
    */
-  constexpr auto _div(intval const x, intval const y) noexcept
+  [[nodiscard]] constexpr auto _div(intval const x,
+                                    intval const y) noexcept
       -> intval {
     if (y != 0)
       return x / y;
@@ -35,7 +72,8 @@ namespace laplace::engine::eval::impl {
 
   /*  Safe integer multiplication.
    */
-  constexpr auto _mul(intval const x, intval const y) noexcept
+  [[nodiscard]] constexpr auto _mul(intval const x,
+                                    intval const y) noexcept
       -> intval {
     if (x >= _mul_safety) {
       if (y > _int_max / x)
@@ -66,7 +104,8 @@ namespace laplace::engine::eval::impl {
 
   /*  Safe integer addition.
    */
-  constexpr auto _add(intval const x, intval const y) noexcept
+  [[nodiscard]] constexpr auto _add(intval const x,
+                                    intval const y) noexcept
       -> intval {
     if (x > 0 && y < 0)
       return x + y;
@@ -81,17 +120,19 @@ namespace laplace::engine::eval::impl {
 
   /*  Safe integer subtraction.
    */
-  constexpr auto _sub(intval const x, intval const y) noexcept
+  [[nodiscard]] constexpr auto _sub(intval const x,
+                                    intval const y) noexcept
       -> intval {
     if (y == _int_min) {
       if (x < 0)
-        return _int_max + x;
+        return _int_max + (x + 1);
       return _int_max;
     }
     return _add(x, -y);
   }
 
-  constexpr auto _sub(intval const x) noexcept -> intval {
+  [[nodiscard]] constexpr auto _sub(intval const x) noexcept
+      -> intval {
     if (x == _int_min)
       return _int_max;
     return -x;
@@ -99,8 +140,9 @@ namespace laplace::engine::eval::impl {
 
   /*  Rounding fixed-point number division.
    */
-  constexpr auto div(intval const x, intval const y,
-                     intval const scale) noexcept -> intval {
+  [[nodiscard]] constexpr auto div(intval const x, intval const y,
+                                   intval const scale) noexcept
+      -> intval {
 
     if (y == 0) {
       if (x > 0)
@@ -130,22 +172,25 @@ namespace laplace::engine::eval::impl {
 
   /*  Fixed-point number multiplication.
    */
-  constexpr auto mul(intval const x, intval const y,
-                     intval const scale) noexcept -> intval {
+  [[nodiscard]] constexpr auto mul(intval const x, intval const y,
+                                   intval const scale) noexcept
+      -> intval {
 
     return div(_mul(x, y), _mul(scale, scale), scale);
   }
 
-  constexpr auto div_sum(intval const x, intval const y,
-                         intval const divisor) noexcept -> intval {
+  [[nodiscard]] constexpr auto div_sum(intval const x, intval const y,
+                                       intval const divisor) noexcept
+      -> intval {
     if ((y < 0 && x <= _int_min - y) || (y > 0 && x >= _int_max - y))
       return _add(_div(x, divisor), _div(y, divisor));
     return _div(x + y, divisor);
   }
 
-  constexpr auto div_sum(intval const x, intval const y,
-                         intval const z,
-                         intval const divisor) noexcept -> intval {
+  [[nodiscard]] constexpr auto div_sum(intval const x, intval const y,
+                                       intval const z,
+                                       intval const divisor) noexcept
+      -> intval {
     auto const sum_x_y = _add(x, y);
     if ((z < 0 && sum_x_y <= _int_min - z) ||
         (z > 0 && sum_x_y >= _int_max - z))

@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -28,7 +28,8 @@ namespace laplace::engine {
     return print_native(name_by_id_native, seq);
   }
 
-  auto basic_factory::decode(span_cbyte seq) const -> ptr_prime_impact {
+  auto basic_factory::decode(span_cbyte seq) const
+      -> ptr_prime_impact {
     return decode_native(seq);
   }
 
@@ -68,7 +69,8 @@ namespace laplace::engine {
     return cmds;
   }
 
-  auto basic_factory::id_by_name_native(string_view name) -> uint16_t {
+  auto basic_factory::id_by_name_native(string_view name)
+      -> uint16_t {
     if (name == "request-events")
       return ids::request_events;
     if (name == "request-token")
@@ -174,8 +176,8 @@ namespace laplace::engine {
     return {};
   }
 
-  auto basic_factory::parse_native(fn_id_by_name id_by_name,
-                                   string_view   command) -> vbyte {
+  auto basic_factory::parse_native(fn_id_by_name const &id_by_name,
+                                   string_view command) -> vbyte {
 
     if (!id_by_name) {
       error_("No id-by-name function.", __FUNCTION__);

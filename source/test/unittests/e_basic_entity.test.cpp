@@ -14,8 +14,9 @@
 #include <thread>
 
 namespace laplace::test {
-  using std::make_shared, std::thread, engine::basic_entity,
-      engine::id_undefined, engine::world, engine::intval;
+  using std::make_shared, std::string_view, std::thread,
+      engine::basic_entity, engine::id_undefined, engine::world,
+      engine::intval;
 
   namespace sets = engine::object::sets;
 
@@ -83,7 +84,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_dummy) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity { basic_entity::dummy };
 
@@ -122,7 +123,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_init) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = my_entity {};
     e.do_init();
@@ -170,7 +171,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_get) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity { basic_entity::proto };
 
@@ -185,7 +186,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_set) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity { basic_entity::proto };
 
@@ -199,7 +200,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_apply_delta) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity { basic_entity::proto };
 
@@ -230,7 +231,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_endity_id_of) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity { basic_entity::proto };
 
@@ -248,7 +249,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_scale_of) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity { basic_entity::proto };
 
@@ -264,7 +265,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_desync) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = make_shared<my_entity>();
     auto w = make_shared<world>();
@@ -288,7 +289,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_bytes_1) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity {};
 
@@ -498,7 +499,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_bytes_12) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity {};
 
@@ -522,7 +523,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_bytes_13) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity {};
     e.bytes_resize(-1);
@@ -537,7 +538,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_2) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity {};
     e.vec_resize(1);
@@ -570,7 +571,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_4) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity {};
     e.vec_resize(3);
@@ -594,7 +595,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_5) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity {};
     e.vec_resize(1);
@@ -628,7 +629,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_7) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity {};
     e.vec_resize(5);
@@ -654,7 +655,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_9) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity {};
     e.vec_resize(5);
@@ -694,7 +695,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_12) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity {};
     e.vec_resize(5);
@@ -721,7 +722,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_14) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity {};
     e.vec_resize(5);
@@ -733,7 +734,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_15) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = basic_entity {};
     e.vec_resize(-1);
@@ -749,6 +750,119 @@ namespace laplace::test {
     EXPECT_EQ(e.vec_get(0), 1);
     EXPECT_EQ(e.vec_get(1), 2);
     EXPECT_EQ(e.vec_get(2), 3);
+  }
+
+  TEST(engine, basic_entity_vec_add_sorted_1) {
+    auto         e      = basic_entity {};
+    intval const buf[3] = { 1, 2, 3 };
+    e.vec_add_sorted({ buf, buf });
+    EXPECT_EQ(e.vec_get_size(), 0);
+  }
+
+  TEST(engine, basic_entity_vec_add_sorted_2) {
+    auto         e      = basic_entity {};
+    intval const buf[3] = { 1, 2, 3 };
+    e.vec_add_sorted(buf);
+    EXPECT_EQ(e.vec_get_size(), 3);
+    EXPECT_EQ(e.vec_get(0), 1);
+    EXPECT_EQ(e.vec_get(1), 2);
+    EXPECT_EQ(e.vec_get(2), 3);
+  }
+
+  TEST(engine, basic_entity_vec_add_sorted_3) {
+    auto         e      = basic_entity {};
+    intval const buf[6] = { 1, 6, 7, 3, 8, 9 };
+    intval const app[3] = { 2, 4, 5 };
+    e.vec_add(buf);
+    e.vec_add_sorted(app);
+    EXPECT_EQ(e.vec_get_size(), 9);
+    EXPECT_EQ(e.vec_get(0), 1);
+    EXPECT_EQ(e.vec_get(1), 6);
+    EXPECT_EQ(e.vec_get(2), 7);
+    EXPECT_EQ(e.vec_get(3), 2);
+    EXPECT_EQ(e.vec_get(4), 4);
+    EXPECT_EQ(e.vec_get(5), 5);
+    EXPECT_EQ(e.vec_get(6), 3);
+    EXPECT_EQ(e.vec_get(7), 8);
+    EXPECT_EQ(e.vec_get(8), 9);
+  }
+
+  TEST(engine, basic_entity_vec_insert_1) {
+    setup_log([](string_view) {});
+
+    auto         e      = basic_entity {};
+    intval const buf[3] = { 1, 2, 3 };
+    e.vec_insert(-1, buf);
+    EXPECT_EQ(e.vec_get_size(), 0);
+
+    setup_log({});
+  }
+
+  TEST(engine, basic_entity_vec_insert_2) {
+    setup_log([](string_view) {});
+
+    auto         e      = basic_entity {};
+    intval const buf[3] = { 1, 2, 3 };
+    e.vec_insert(999, buf);
+    EXPECT_EQ(e.vec_get_size(), 0);
+
+    setup_log({});
+  }
+
+  TEST(engine, basic_entity_vec_insert_3) {
+    auto         e      = basic_entity {};
+    intval const buf[6] = { 1, 2, 3, 4, 5, 6 };
+    intval const app[3] = { 7, 8, 9 };
+    e.vec_insert(0, buf);
+    EXPECT_EQ(e.vec_get_size(), 6);
+    EXPECT_EQ(e.vec_get(0), 1);
+    EXPECT_EQ(e.vec_get(1), 2);
+    EXPECT_EQ(e.vec_get(2), 3);
+    EXPECT_EQ(e.vec_get(3), 4);
+    EXPECT_EQ(e.vec_get(4), 5);
+    EXPECT_EQ(e.vec_get(5), 6);
+    e.vec_insert(2, app);
+    EXPECT_EQ(e.vec_get_size(), 9);
+    EXPECT_EQ(e.vec_get(0), 1);
+    EXPECT_EQ(e.vec_get(1), 2);
+    EXPECT_EQ(e.vec_get(2), 7);
+    EXPECT_EQ(e.vec_get(3), 8);
+    EXPECT_EQ(e.vec_get(4), 9);
+    EXPECT_EQ(e.vec_get(5), 3);
+    EXPECT_EQ(e.vec_get(6), 4);
+    EXPECT_EQ(e.vec_get(7), 5);
+    EXPECT_EQ(e.vec_get(8), 6);
+  }
+
+  TEST(engine, basic_entity_vec_erase_1) {
+    setup_log([](string_view) {});
+
+    auto         e      = basic_entity {};
+    intval const buf[6] = { 1, 2, 3, 4, 5, 6 };
+    e.vec_add(buf);
+    e.vec_erase(3, -1);
+    e.vec_erase(-1, 0);
+    e.vec_erase(0, 7);
+    e.vec_erase(1, 6);
+    EXPECT_EQ(e.vec_get_size(), 6);
+    EXPECT_EQ(e.vec_get(0), 1);
+    EXPECT_EQ(e.vec_get(1), 2);
+    EXPECT_EQ(e.vec_get(2), 3);
+    EXPECT_EQ(e.vec_get(3), 4);
+    EXPECT_EQ(e.vec_get(4), 5);
+    EXPECT_EQ(e.vec_get(5), 6);
+
+    setup_log({});
+  }
+
+  TEST(engine, basic_entity_vec_erase_2) {
+    auto         e      = basic_entity {};
+    intval const buf[6] = { 1, 2, 3, 4, 5, 6 };
+    e.vec_add(buf);
+    e.vec_erase(1, 4);
+    EXPECT_EQ(e.vec_get_size(), 2);
+    EXPECT_EQ(e.vec_get(0), 1);
+    EXPECT_EQ(e.vec_get(1), 6);
   }
 
   TEST(engine, basic_entity_multithreading) {
@@ -808,7 +922,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_deadlocks) {
-    setup_log([](std::string_view) {});
+    setup_log([](string_view) {});
 
     auto e = my_entity {};
     e.lock();
