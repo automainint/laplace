@@ -14,6 +14,16 @@
 namespace laplace::test {
   using core::parser, std::u8string;
 
+  TEST(core, parser_string) {
+    auto const s = "test";
+
+    auto p = parser::wrap(s);
+    auto x = u8string {};
+
+    EXPECT_TRUE(p.parse(" %s ", &x));
+    EXPECT_EQ(x, u8"test");
+  }
+
   TEST(core, parser_silent_ascii) {
     auto const s =
         "-0110 12 -989 f7ad0 11000 527 169 fffffbca10 -1.01e-2 x "

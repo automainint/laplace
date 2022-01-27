@@ -40,8 +40,8 @@ namespace laplace::engine {
     static auto parse_native(fn_id_by_name const &id_by_name,
                              std::string_view     command) -> vbyte;
 
-    static auto print_native(fn_name_by_id name_by_id, span_cbyte seq)
-        -> std::string;
+    static auto print_native(fn_name_by_id const &name_by_id,
+                             span_cbyte           seq) -> std::string;
 
     static auto decode_native(span_cbyte seq) -> ptr_prime_impact;
 

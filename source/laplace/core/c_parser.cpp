@@ -130,6 +130,10 @@ namespace laplace::core {
     }
   }
 
+  auto parser::is_whitespace(char32_t c) noexcept -> bool {
+    return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+  }
+
   auto parser::is_path(char32_t c) noexcept -> bool {
     if (c < 32) {
       return false;
@@ -184,6 +188,9 @@ namespace laplace::core {
 
   auto parser::string_end(char32_t c, const char *p) noexcept
       -> bool {
+    if (c == '\0')
+      return true;
+
     if (p[1] == '%') {
       switch (p[2]) {
         case c_line_end: return c == '\r' || c == '\n';
@@ -208,6 +215,9 @@ namespace laplace::core {
 
       return c == static_cast<char32_t>(p[2]);
     }
+
+    if (p[1] == ' ')
+      return is_whitespace(c);
 
     return c == static_cast<char32_t>(p[1]);
   }
@@ -838,18 +848,16 @@ namespace laplace::core {
 
         char32_t c = get_char();
 
-        while (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
-          c = get_char();
-        }
+        while (is_whitespace(c)) c = get_char();
 
         unget_char();
       } else if (*p == '\n') {
         /*  Whitespaces until next line.
          */
 
-        char32_t c = get_char();
+        auto c = get_char();
 
-        while (c == ' ' || c == '\t' || c == '\r') { c = get_char(); }
+        while (c == ' ' || c == '\t' || c == '\r') c = get_char();
 
         if (c != '\n') {
           result  = false;

@@ -11,7 +11,6 @@
 #include "basic_factory.h"
 
 #include "../core/parser.h"
-#include "../core/utils.h"
 #include "protocol/all.h"
 
 namespace laplace::engine {
@@ -191,14 +190,14 @@ namespace laplace::engine {
     auto lin = in.get_line();
     auto col = in.get_column();
 
-    if (!in.parse(" %a ", &u8_id)) {
+    if (!in.parse(" %s ", &u8_id)) {
       error_(fmt("Invalid syntax. Id expected (%line %dz, col %dz).",
                  lin, col),
              __FUNCTION__);
       return {};
     }
 
-    const auto id = id_by_name(to_string(u8_id));
+    auto const id = id_by_name(to_string(u8_id));
 
     if (id == ids::undefined) {
       error_(fmt("Unknown command (line %dz, col %dz).", lin, col),
@@ -236,8 +235,8 @@ namespace laplace::engine {
     return seq;
   }
 
-  auto basic_factory::print_native(fn_name_by_id name_by_id,
-                                   span_cbyte    seq) -> string {
+  auto basic_factory::print_native(fn_name_by_id const &name_by_id,
+                                   span_cbyte seq) -> string {
 
     if (!name_by_id) {
       error_("No name-by-id function.", __FUNCTION__);
@@ -250,6 +249,8 @@ namespace laplace::engine {
     s.reserve(max_id_size + seq.size() * 3);
 
     if (seq.size() < 2) {
+      if (!seq.empty())
+        error_("Invalid data.", __FUNCTION__);
       return {};
     }
 
@@ -262,9 +263,8 @@ namespace laplace::engine {
       return {};
     }
 
-    for (sl::index i = 2; i < seq.size(); i++) {
+    for (sl::index i = 2; i < seq.size(); i++)
       s.append(fmt(" %02x", seq[i]));
-    }
 
     return s;
   }

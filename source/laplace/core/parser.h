@@ -93,6 +93,7 @@ namespace laplace::core {
     auto get_char() noexcept -> char32_t;
     void unget_char() noexcept;
 
+    static auto is_whitespace(char32_t c) noexcept -> bool;
     static auto is_path(char32_t c) noexcept -> bool;
     static auto is_url(char32_t c) noexcept -> bool;
     static auto is_hex(char32_t c) noexcept -> bool;
