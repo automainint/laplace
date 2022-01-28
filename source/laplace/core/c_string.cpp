@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -17,9 +17,9 @@
 namespace laplace {
   using std::string, std::u8string, std::wstring, std::string_view,
       std::u8string_view, std::wstring_view, std::istringstream,
-      utf8::decode, utf8::encode;
+      utf8::decode;
 
-  auto fmt(const char *c_format, ...) -> string {
+  auto fmt(const char *c_format, ...) noexcept -> string {
     va_list ap;
     va_start(ap, c_format);
     auto result = fmt(c_format, ap);
@@ -27,7 +27,7 @@ namespace laplace {
     return result;
   }
 
-  auto fmt(const char *c_format, va_list ap) -> string {
+  auto fmt(const char *c_format, va_list ap) noexcept -> string {
     if (c_format && ap) {
       auto buf = std::array<char, 0x1000> {};
 
@@ -40,7 +40,7 @@ namespace laplace {
     return {};
   }
 
-  auto fmt(const char8_t *c_format, ...) -> u8string {
+  auto fmt(const char8_t *c_format, ...) noexcept -> u8string {
     va_list ap;
     va_start(ap, c_format);
     auto result = fmt(c_format, ap);
@@ -48,7 +48,7 @@ namespace laplace {
     return result;
   }
 
-  auto fmt(const char8_t *c_format, va_list ap) -> u8string {
+  auto fmt(const char8_t *c_format, va_list ap) noexcept -> u8string {
     return u8string(as_u8string(
         fmt(reinterpret_cast<const char *>(c_format), ap)));
   }
@@ -61,7 +61,7 @@ namespace laplace {
     return { reinterpret_cast<const char8_t *>(s.data()), s.size() };
   }
 
-  auto to_string(wstring_view s) -> std::string {
+  auto to_string(wstring_view s) noexcept -> std::string {
     auto result = string {};
     result.reserve(s.size());
 
@@ -76,7 +76,7 @@ namespace laplace {
     return result;
   }
 
-  auto to_string(u8string_view s) -> string {
+  auto to_string(u8string_view s) noexcept -> string {
     auto result = string {};
     auto c      = char32_t {};
 
@@ -91,7 +91,7 @@ namespace laplace {
     return result;
   }
 
-  auto to_wstring(u8string_view s) -> wstring {
+  auto to_wstring(u8string_view s) noexcept -> wstring {
     auto result = wstring {};
     auto c      = char32_t {};
 
@@ -106,7 +106,7 @@ namespace laplace {
     return result;
   }
 
-  auto to_integer(std::string_view s) -> int64_t {
+  auto to_integer(std::string_view s) noexcept -> int64_t {
     auto buf = string(s);
     auto ss  = istringstream(buf);
 
@@ -116,7 +116,7 @@ namespace laplace {
     return n;
   }
 
-  auto to_integer(u8string_view s) -> int64_t {
+  auto to_integer(u8string_view s) noexcept -> int64_t {
     auto buf = string(as_ascii_string(s));
     auto ss  = istringstream(buf);
 
@@ -126,7 +126,7 @@ namespace laplace {
     return n;
   }
 
-  auto to_uint(std::string_view s) -> uint64_t {
+  auto to_uint(std::string_view s) noexcept -> uint64_t {
     auto buf = string(s);
     auto ss  = istringstream(buf);
 
@@ -136,7 +136,7 @@ namespace laplace {
     return n;
   }
 
-  auto to_uint(u8string_view s) -> uint64_t {
+  auto to_uint(u8string_view s) noexcept -> uint64_t {
     auto buf = string(as_ascii_string(s));
     auto ss  = istringstream(buf);
 
@@ -146,7 +146,7 @@ namespace laplace {
     return n;
   }
 
-  auto to_real(string_view s) -> double {
+  auto to_real(string_view s) noexcept -> double {
     auto buf = string(s);
     auto ss  = istringstream(buf);
 
@@ -156,7 +156,7 @@ namespace laplace {
     return f;
   }
 
-  auto to_real(std::u8string_view s) -> double {
+  auto to_real(std::u8string_view s) noexcept -> double {
     auto buf = string(as_ascii_string(s));
     auto ss  = istringstream(buf);
 

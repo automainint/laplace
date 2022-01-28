@@ -1,6 +1,4 @@
-/*  laplace/core/string.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -26,15 +24,16 @@ namespace laplace {
   /*  TODO
    *  Use C++20 format library.
    */
-  [[nodiscard]] auto fmt(const char *c_format, ...) -> std::string;
-
-  [[nodiscard]] auto fmt(const char *c_format, va_list ap)
+  [[nodiscard]] auto fmt(const char *c_format, ...) noexcept
       -> std::string;
 
-  [[nodiscard]] auto fmt(const char8_t *c_format, ...)
+  [[nodiscard]] auto fmt(const char *c_format, va_list ap) noexcept
+      -> std::string;
+
+  [[nodiscard]] auto fmt(const char8_t *c_format, ...) noexcept
       -> std::u8string;
 
-  [[nodiscard]] auto fmt(const char8_t *c_format, va_list ap)
+  [[nodiscard]] auto fmt(const char8_t *c_format, va_list ap) noexcept
       -> std::u8string;
 
   [[nodiscard]] auto as_ascii_string(std::u8string_view s) noexcept
@@ -43,26 +42,33 @@ namespace laplace {
   [[nodiscard]] auto as_u8string(std::string_view s) noexcept
       -> std::u8string_view;
 
-  [[nodiscard]] auto to_string(std::wstring_view s) -> std::string;
+  [[nodiscard]] auto to_string(std::wstring_view s) noexcept
+      -> std::string;
 
-  [[nodiscard]] auto to_string(std::u8string_view s) -> std::string;
+  [[nodiscard]] auto to_string(std::u8string_view s) noexcept
+      -> std::string;
 
-  [[nodiscard]] auto to_wstring(std::u8string_view s) -> std::wstring;
+  [[nodiscard]] auto to_wstring(std::u8string_view s) noexcept
+      -> std::wstring;
 
-  [[nodiscard]] auto to_integer(std::string_view s) -> int64_t;
+  [[nodiscard]] auto to_integer(std::string_view s) noexcept
+      -> int64_t;
 
-  [[nodiscard]] auto to_integer(std::u8string_view s) -> int64_t;
+  [[nodiscard]] auto to_integer(std::u8string_view s) noexcept
+      -> int64_t;
 
-  [[nodiscard]] auto to_uint(std::string_view s) -> uint64_t;
+  [[nodiscard]] auto to_uint(std::string_view s) noexcept -> uint64_t;
 
-  [[nodiscard]] auto to_uint(std::u8string_view s) -> uint64_t;
+  [[nodiscard]] auto to_uint(std::u8string_view s) noexcept
+      -> uint64_t;
 
-  [[nodiscard]] auto to_real(std::string_view s) -> double;
+  [[nodiscard]] auto to_real(std::string_view s) noexcept -> double;
 
-  [[nodiscard]] auto to_real(std::u8string_view s) -> double;
+  [[nodiscard]] auto to_real(std::u8string_view s) noexcept -> double;
 
   template <typename view_type>
-  [[nodiscard]] auto to_u8string(view_type s) -> std::u8string;
+  [[nodiscard]] auto to_u8string(view_type s) noexcept
+      -> std::u8string;
 }
 
 #include "string.impl.h"

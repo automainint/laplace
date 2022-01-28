@@ -1,6 +1,4 @@
-/*  laplace/core/string.impl.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -15,28 +13,24 @@
 
 namespace laplace {
   constexpr auto hex_to_int(char x) noexcept -> int {
-    auto result = int {};
+    if (x >= '0' && x <= '9')
+      return x - '0';
+    if (x >= 'a' && x <= 'f')
+      return 10 + (x - 'a');
+    if (x >= 'A' && x <= 'F')
+      return 10 + (x - 'A');
 
-    if (x >= '0' && x <= '9') {
-      result = x - '0';
-    } else if (x >= 'a' && x <= 'f') {
-      result = 10 + (x - 'a');
-    } else if (x >= 'A' && x <= 'F') {
-      result = 10 + (x - 'A');
-    }
-
-    return result;
+    error_("No HEX digit.", __FUNCTION__);
+    return {};
   }
 
   constexpr auto int_to_hex(int x) noexcept -> char {
-    if (x >= 0 && x < 10) {
+    if (x >= 0 && x < 10)
       return static_cast<char>('0' + x);
-    }
-
-    if (x >= 10 && x < 16) {
+    if (x >= 10 && x < 16)
       return static_cast<char>('a' + (x - 10));
-    }
 
+    error_("No HEX digit.", __FUNCTION__);
     return '\0';
   }
 
@@ -49,28 +43,29 @@ namespace laplace {
   }
 
   template <typename view_type>
-  inline auto to_u8string(view_type s) -> std::u8string {
+  inline auto to_u8string(view_type s) noexcept -> std::u8string {
     auto result = std::u8string {};
     auto offset = sl::index {};
 
-    for (auto &c : s) {
+    for (auto &c : s)
       if (!utf8::encode(c, result, offset)) {
         error_("Unable to encode UTF-8 string.", __FUNCTION__);
         break;
       }
-    }
 
     return result;
   }
 
   template <>
-  inline auto to_u8string<>(std::string_view s) -> std::u8string {
+  inline auto to_u8string<>(std::string_view s) noexcept
+      -> std::u8string {
     return std::u8string(reinterpret_cast<char8_t const *>(s.data()),
                          s.size());
   }
 
   template <>
-  inline auto to_u8string<>(std::u8string_view s) -> std::u8string {
+  inline auto to_u8string<>(std::u8string_view s) noexcept
+      -> std::u8string {
     return std::u8string(s.begin(), s.end());
   }
 }
