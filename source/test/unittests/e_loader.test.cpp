@@ -82,23 +82,23 @@ namespace laplace::test {
   TEST(engine, loader_single_task) {
     auto _mtx = mutex {};
 
-    auto              l              = loader {};
-    bool              decode_called  = false;
-    bool              perform_called = false;
-    bool              task_match     = false;
-    ptr_prime_impact *task           = nullptr;
+    auto          l              = loader {};
+    bool          decode_called  = false;
+    bool          perform_called = false;
+    bool          task_match     = false;
+    prime_impact *task           = nullptr;
 
     l.on_decode([&](span_cbyte) -> ptr_prime_impact {
-      auto _ul      = unique_lock(_mtx);
+      auto _ul = unique_lock(_mtx);
       decode_called = true;
       auto p        = make_unique<prime_impact>();
-      task          = &p;
+      task          = p.get();
       return p;
     });
 
     l.on_perform([&](ptr_prime_impact const &p) {
-      auto _ul       = unique_lock(_mtx);
-      task_match     = &p == task;
+      auto _ul = unique_lock(_mtx);
+      task_match     = p.get() == task;
       perform_called = true;
     });
 
@@ -115,27 +115,27 @@ namespace laplace::test {
   TEST(engine, loader_two_tasks) {
     auto _mtx = mutex {};
 
-    auto              l             = loader {};
-    int               task1_called  = {};
-    int               task2_called  = {};
-    bool              correct_order = false;
-    ptr_prime_impact *task1         = nullptr;
-    ptr_prime_impact *task2         = nullptr;
+    auto          l             = loader {};
+    int           task1_called  = {};
+    int           task2_called  = {};
+    bool          correct_order = false;
+    prime_impact *task1         = nullptr;
+    prime_impact *task2         = nullptr;
 
     l.on_decode([&](span_cbyte seq) -> ptr_prime_impact {
       auto _ul = unique_lock(_mtx);
 
       auto p = make_unique<prime_impact>();
-      if (task1 == &p)
+      if (task1 == p.get())
         task1 = nullptr;
-      if (task2 == &p)
+      if (task2 == p.get())
         task2 = nullptr;
 
       if (!seq.empty()) {
         if (seq[0] == 1)
-          task1 = &p;
+          task1 = p.get();
         else if (seq[0] == 2)
-          task2 = &p;
+          task2 = p.get();
       }
 
       return p;
@@ -144,12 +144,12 @@ namespace laplace::test {
     l.on_perform([&](ptr_prime_impact const &p) {
       auto _ul = unique_lock(_mtx);
 
-      if (&p == task1)
+      if (p.get() == task1)
         task1_called++;
-      else if (&p == task2)
+      else if (p.get() == task2)
         task2_called++;
 
-      if (&p == task2 && task1_called == 1)
+      if (p.get() == task2 && task1_called == 1)
         correct_order = true;
     });
 
