@@ -25,7 +25,7 @@ namespace laplace::network {
       std::string, std::string_view, std::chrono::milliseconds,
       engine::ptr_impact, engine::prime_impact, engine::seed_type,
       engine::loader, engine::time_undefined, engine::id_undefined,
-      engine::encode, crypto::ecc_rabbit;
+      engine::encode, crypto::ecc_rabbit, engine::ptr_prime_impact;
 
   const sl::whole udp_server::default_chunk_size        = 4192;
   const sl::whole udp_server::chunk_size_increment      = 512;
@@ -511,8 +511,27 @@ namespace laplace::network {
 
       if (!m_loader) {
         m_loader = make_unique<loader>();
-        m_loader->set_world(get_world());
-        m_loader->set_factory(get_factory());
+
+        m_loader->on_decode([fac = get_factory()](
+                                span_cbyte seq) -> ptr_prime_impact {
+          if (!fac) {
+            error_("No factory.", __FUNCTION__);
+            return {};
+          }
+
+          return fac->decode(seq);
+        });
+
+        m_loader->on_perform(
+            [wor = get_world()](ptr_prime_impact const &task) {
+              if (!wor) {
+                error_("No world.", __FUNCTION__);
+                return;
+              }
+
+              if (task)
+                task->perform({ *wor, access::data });
+            });
       }
 
       if (!m_instant_events.empty()) {

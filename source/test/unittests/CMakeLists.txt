@@ -13,6 +13,7 @@ target_sources(
       e3_triangle.test.cpp m_basic.test.cpp nc_ecc_rabbit.test.cpp
       nc_wolfssl.test.cpp ee_integral.test.cpp e3_vector.test.cpp
       ee_hierarchical_grid.test.cpp ui_layout.test.cpp m_traits.test.cpp m_matrix.test.cpp
-      e3_sphere.test.cpp ui_rect.test.cpp e3_ray.test.cpp c_utf8.test.cpp
-      c_utils.test.cpp ee_astar.test.cpp c_unival.test.cpp c_profiler.test.cpp
+      e3_sphere.test.cpp ui_rect.test.cpp e_loader.test.cpp e3_ray.test.cpp
+      c_utf8.test.cpp c_utils.test.cpp ee_astar.test.cpp c_unival.test.cpp
+      c_profiler.test.cpp
 )

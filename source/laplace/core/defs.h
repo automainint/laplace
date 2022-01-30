@@ -1,9 +1,4 @@
-/*  laplace/core/defs.h
- *
- *      The core definitions. Type definitions and log
- *      functions.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -30,10 +25,10 @@ namespace laplace {
   using span_uint16 = std::span<uint16_t>;
   using span_uint32 = std::span<uint32_t>;
 
-  using span_cbyte   = std::span<const uint8_t>;
-  using span_cindex  = std::span<const sl::index>;
-  using span_cuint16 = std::span<const uint16_t>;
-  using span_cuint32 = std::span<const uint32_t>;
+  using span_cbyte   = std::span<uint8_t const>;
+  using span_cindex  = std::span<sl::index const>;
+  using span_cuint16 = std::span<uint16_t const>;
+  using span_cuint32 = std::span<uint32_t const>;
 }
 
 #endif
