@@ -90,7 +90,6 @@ namespace laplace::test {
 
     l.on_decode([&](span_cbyte) -> ptr_prime_impact {
       auto _ul = unique_lock(_mtx);
-      verb("  decode");
       decode_called = true;
       auto p        = make_unique<prime_impact>();
       task          = p.get();
@@ -99,17 +98,14 @@ namespace laplace::test {
 
     l.on_perform([&](ptr_prime_impact const &p) {
       auto _ul = unique_lock(_mtx);
-      verb("  perform");
       task_match     = p.get() == task;
       perform_called = true;
     });
 
-    verb("  add task");
     l.add_task({});
     sleep_for(milliseconds { 10 });
 
     auto _ul = unique_lock(_mtx);
-    verb("  done");
     EXPECT_TRUE(l.is_ready());
     EXPECT_TRUE(decode_called);
     EXPECT_TRUE(perform_called);
