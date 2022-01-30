@@ -103,7 +103,7 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
 
     add_test(
       NAME ${LAPLACE_UNITTESTS}
-      COMMAND ${QUADWAR_EXE} --tests)
+      COMMAND ${QUADWAR_EXE} --tests --gtest_filter=engine.loader_*)
 
     set_tests_properties(
       ${LAPLACE_UNITTESTS}
