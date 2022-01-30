@@ -72,6 +72,8 @@ namespace laplace::test {
 
     l.add_task({});
     sleep_for(milliseconds { 10 });
+
+    auto _ul = unique_lock(_mtx);
     EXPECT_TRUE(l.is_ready());
     EXPECT_TRUE(decode_called);
     EXPECT_FALSE(perform_called);
@@ -102,6 +104,8 @@ namespace laplace::test {
 
     l.add_task({});
     sleep_for(milliseconds { 10 });
+
+    auto _ul = unique_lock(_mtx);
     EXPECT_TRUE(l.is_ready());
     EXPECT_TRUE(decode_called);
     EXPECT_TRUE(perform_called);
@@ -153,6 +157,8 @@ namespace laplace::test {
     l.add_task(vbyte { 2 });
 
     sleep_for(milliseconds { 10 });
+
+    auto _ul = unique_lock(_mtx);
     EXPECT_TRUE(l.is_ready());
     EXPECT_TRUE(correct_order);
     EXPECT_EQ(task1_called, 1);
