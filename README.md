@@ -21,7 +21,7 @@ Official repository: [GitHub][laplace-link]
 - [google/benchmark][benchmark-link] for benchmarks.
 
 ##  How to build
-To build the project CMake 3.18, Git and Python 3 are required. Make sure your compiler [supports][compiler-support-link] C++20.
+To build the project CMake 3.16, Git and Python 3 are required. Make sure your compiler [supports][compiler-support-link] C++20.
 
 ### With provided build script
 - Execute the build script.
@@ -44,8 +44,14 @@ Laplace CMake configuration options:
 - `LAPLACE_ENABLE_LIB` - build the static library. `OFF` by default.
 - `LAPLACE_ENABLE_TESTING` - enable testing. `OFF` by default.
 - `LAPLACE_ENABLE_COVERAGE` - enable coverage reporting. `OFF` by default.
+- `LAPLACE_CODEGEN` - perform code generation. Will generate embedded data code and OpenGL interface code. `ON` by default.
 - `LAPLACE_VERBOSE` - enable verbose logging of Laplace. `ON` by default.
 - `LAPLACE_UNSAFE` - disable safety checks of Laplace. `OFF` by default.
+- Dependencies' git tags:
+  - `LAPLACE_GOOGLETEST_TAG` - googletest git tag. `release-1.11.0` by default.
+  - `LAPLACE_GOOGLEBENCHMARK_TAG` - google/benchmark git tag. `v1.5.3` by default.
+  - `LAPLACE_WOLFSSL_TAG` - wolfSSL git tag. `v4.8.1-stable` by default.
+  - `LAPLACE_FREETYPE_TAG` - FreeType git tag. `VER-2-10-4` by default.
 
 Tests will be created if `LAPLACE_ENABLE_TESTING` or `LAPLACE_ENABLE_COVERAGE` is `ON`.
 
@@ -53,13 +59,21 @@ To build only dependencies set `LAPLACE_ENABLE_EXE` to `OFF`.
 
 ##  Hacking
 If you want to build the source code by hand, follow the instructions below:
-- Use `tools/build-deps.py` to build dependencies. Required headers will be in `include` folder, libraries will be in `lib` folder.
+- Use CMake to build and install dependencies.
+  - Set `LAPLACE_ENABLE_EXE=OFF` to build dependencies only.
+  - Set `CMAKE_INSTALL_PREFIX` to specify install folder.
+
+```shell
+cmake -D LAPLACE_ENABLE_EXE=OFF -D CMAKE_INSTALL_PREFIX=thirdparty -S . -B build-deps
+cmake --build build-deps
+cmake --install build-deps
+```
+
 - Use `tools/gen-gl.py` to generate OpenGL interface files.
 - Use `tools/embed.py` to generate embedded data source files.
 
 ```shell
 cd tools
-python3 build-deps.py
 python3 gen-gl.py
 python3 embed.py
 cd ..

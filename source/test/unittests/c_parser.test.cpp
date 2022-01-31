@@ -141,7 +141,7 @@ namespace laplace::test {
     EXPECT_EQ(y, 30);
   }
 
-  TEST(code, parser_float) {
+  TEST(core, parser_float) {
     auto const s = "3.1415 0.00031415 31415.001";
     auto       p = parser::wrap(s);
 

@@ -1,3 +1,11 @@
+if(LAPLACE_VERBOSE)
+  add_compile_definitions(LAPLACE_VERBOSE)
+endif()
+
+if(LAPLACE_UNSAFE)
+  add_compile_definitions(LAPLACE_UNSAFE)
+endif()
+
 find_package(Threads REQUIRED)
 
 add_library(${LAPLACE_CONFIG} INTERFACE)
@@ -28,29 +36,25 @@ if(LAPLACE_ENABLE_COVERAGE)
       ${LAPLACE_CONFIG}
         INTERFACE
           -O0 -g --coverage
-          -fsanitize=undefined,address
-    )
+          -fsanitize=undefined,address)
 
     target_link_options(
       ${LAPLACE_CONFIG}
         INTERFACE
            --coverage
-           -fsanitize=undefined,address
-    )
+           -fsanitize=undefined,address)
   endif()
 elseif(LAPLACE_ENABLE_TESTING)
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(
       ${LAPLACE_CONFIG}
         INTERFACE
-          -O0 -fsanitize=undefined,address
-    )
+          -O0 -fsanitize=undefined,address)
 
     target_link_options(
       ${LAPLACE_CONFIG}
         INTERFACE
-           -fsanitize=undefined,address
-    )
+           -fsanitize=undefined,address)
   elseif(MSVC)
     target_compile_options(${LAPLACE_CONFIG} INTERFACE /Od)
   endif()
