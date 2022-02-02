@@ -1,6 +1,4 @@
-/*  test/unittests/c_unival.test.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -298,6 +296,45 @@ namespace laplace::test {
 
     EXPECT_FALSE(f.has("abc"));
     EXPECT_TRUE(f.has("def"));
+  }
+
+  TEST(core, unival_set_key_fail_1) {
+    auto f = unival { 1 };
+    f.set_key(0, "def");
+    EXPECT_FALSE(f.is_composite());
+  }
+
+  TEST(core, unival_set_key_fail_2) {
+    auto f = unival { 1 };
+    f.key(0);
+    f.set_key(-1, "foo");
+    f.set_key(2, "foo");
+    EXPECT_EQ(f.is_composite(), 1);
+    EXPECT_EQ(f.get_size(), 1);
+  }
+
+  TEST(core, unival_by_key_or_index) {
+    auto x = unival {};
+    x.key(1);
+    x.key(5);
+    x.key(3);
+
+    x.by_key(1) = 10;
+    x.by_key(3) = 20;
+    x.by_key(5) = 30;
+
+    EXPECT_EQ(x.by_index(0).get_integer(), 10);
+    EXPECT_EQ(x.by_index(1).get_integer(), 20);
+    EXPECT_EQ(x.by_index(2).get_integer(), 30);
+
+    auto const y = x;
+
+    EXPECT_EQ(y.by_key(1).get_integer(), 10);
+    EXPECT_EQ(y.by_key(3).get_integer(), 20);
+    EXPECT_EQ(y.by_key(5).get_integer(), 30);
+    EXPECT_EQ(y.by_index(0).get_integer(), 10);
+    EXPECT_EQ(y.by_index(1).get_integer(), 20);
+    EXPECT_EQ(y.by_index(2).get_integer(), 30);
   }
 
   TEST(core, unival_merge_simple) {

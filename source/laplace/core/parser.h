@@ -25,7 +25,7 @@ namespace laplace::core {
     parser(parser &&) noexcept = default;
     auto operator=(parser &&) noexcept -> parser & = default;
 
-    explicit parser(input_stream stream = nullptr) noexcept;
+    explicit parser(input_stream stream) noexcept;
     ~parser() = default;
 
     /*  "% "    - one whitespace
@@ -47,9 +47,6 @@ namespace laplace::core {
      *  "%u"    - URL           - u8string *
      */
     auto parse(char const *format, ...) noexcept -> bool;
-
-    void               set_stream(input_stream stream) noexcept;
-    [[nodiscard]] auto get_stream() const noexcept -> input_stream;
 
     [[nodiscard]] auto is_eof() const noexcept -> bool;
 

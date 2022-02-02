@@ -1,6 +1,4 @@
-/*  laplace/core/unival.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -405,15 +403,9 @@ namespace laplace::core {
       n_composite
     };
 
-    using field_type = std::variant<std::monostate,
-                                    uint64_t,
-                                    bool,
-                                    int64_t,
-                                    double,
-                                    std::u8string,
-                                    vbyte,
-                                    vec,
-                                    composite>;
+    using field_type =
+        std::variant<std::monostate, uint64_t, bool, int64_t, double,
+                     std::u8string, vbyte, vec, composite>;
 
     field_type m_data;
   };

@@ -142,16 +142,230 @@ namespace laplace::test {
   }
 
   TEST(core, parser_float) {
-    auto const s = "3.1415 0.00031415 31415.001";
+    auto const s = "3.1415 0.00031415 31415.001 +1 -1 +1e1 -1e1 "
+                   "+1e+1 +1e-1 +1.2e-2";
     auto       p = parser::wrap(s);
 
     auto a = double {};
     auto b = double {};
     auto c = double {};
+    auto d = double {};
+    auto e = double {};
+    auto f = double {};
+    auto g = double {};
+    auto h = double {};
+    auto i = double {};
+    auto j = double {};
 
-    EXPECT_TRUE(p.parse(" %f %f %f ", &a, &b, &c));
+    EXPECT_TRUE(p.parse(" %f %f %f %f %f %f %f %f %f %f ", &a, &b, &c,
+                        &d, &e, &f, &g, &h, &i, &j));
+
     EXPECT_DOUBLE_EQ(a, 3.1415);
     EXPECT_DOUBLE_EQ(b, 0.00031415);
     EXPECT_DOUBLE_EQ(c, 31415.001);
+    EXPECT_DOUBLE_EQ(d, +1);
+    EXPECT_DOUBLE_EQ(e, -1);
+    EXPECT_DOUBLE_EQ(f, +1e1);
+    EXPECT_DOUBLE_EQ(g, -1e1);
+    EXPECT_DOUBLE_EQ(h, +1e+1);
+    EXPECT_DOUBLE_EQ(i, +1e-1);
+    EXPECT_DOUBLE_EQ(j, +1.2e-2);
+  }
+
+  TEST(core, parser_invalid_format) {
+    auto const s = " foo bar ";
+    auto       p = parser::wrap(s);
+    EXPECT_FALSE(p.parse(" %"));
+  }
+
+  TEST(core, parser_char_fail) {
+    auto const s = "";
+    auto       p = parser::wrap(s);
+    EXPECT_FALSE(p.parse("x"));
+  }
+
+  TEST(core, parser_string_fail) {
+    auto const s = " ";
+    auto       p = parser::wrap(s);
+    auto       x = u8string {};
+    EXPECT_FALSE(p.parse(" %s ", &x));
+  }
+
+  TEST(core, parser_id_fail) {
+    auto const s = " 1foo ";
+    auto       p = parser::wrap(s);
+    auto       x = u8string {};
+    EXPECT_FALSE(p.parse(" %a ", &x));
+  }
+
+  TEST(core, parser_word_fail) {
+    auto const s = " _foo ";
+    auto       p = parser::wrap(s);
+    auto       x = u8string {};
+    EXPECT_FALSE(p.parse(" %A ", &x));
+  }
+
+  TEST(core, parser_file_path_fail) {
+    auto const s = " ";
+    auto       p = parser::wrap(s);
+    auto       x = u8string {};
+    EXPECT_FALSE(p.parse(" %p ", &x));
+  }
+
+  TEST(core, parser_percent) {
+    auto const s = " % ";
+    auto       p = parser::wrap(s);
+    EXPECT_TRUE(p.parse(" %% "));
+  }
+
+  TEST(core, parser_percent_fail) {
+    auto const s = " foo ";
+    auto       p = parser::wrap(s);
+    EXPECT_FALSE(p.parse(" %% "));
+  }
+
+  TEST(core, parser_whitespace) {
+    auto const s = " ";
+    auto       p = parser::wrap(s);
+    EXPECT_TRUE(p.parse("% "));
+  }
+
+  TEST(core, parser_whitespace_fail) {
+    auto const s = "x";
+    auto       p = parser::wrap(s);
+    EXPECT_FALSE(p.parse("% "));
+  }
+
+  TEST(core, parser_lf) {
+    auto const s = "\n";
+    auto       p = parser::wrap(s);
+    EXPECT_TRUE(p.parse("%n"));
+  }
+
+  TEST(core, parser_cr) {
+    auto const s = "\r";
+    auto       p = parser::wrap(s);
+    EXPECT_FALSE(p.parse("%n"));
+  }
+
+  TEST(core, parser_crlf) {
+    auto const s = "\r\n";
+    auto       p = parser::wrap(s);
+    EXPECT_TRUE(p.parse("%n"));
+  }
+
+  TEST(core, parser_line_end_fail) {
+    auto const s = " ";
+    auto       p = parser::wrap(s);
+    EXPECT_FALSE(p.parse("%n"));
+  }
+
+  TEST(core, parser_url_numbers) {
+    auto const s = " 12345 ";
+    auto       p = parser::wrap(s);
+    auto       x = u8string {};
+    EXPECT_TRUE(p.parse(" %u ", &x));
+    EXPECT_EQ(x, u8"12345");
+  }
+
+  TEST(core, parser_url_fail) {
+    auto const s = " ";
+    auto       p = parser::wrap(s);
+    auto       x = u8string {};
+    EXPECT_FALSE(p.parse("%u", &x));
+  }
+
+  TEST(core, parser_plus_bin) {
+    auto const s = " +100 ";
+    auto       p = parser::wrap(s);
+    auto       x = int64_t {};
+    EXPECT_TRUE(p.parse(" %b ", &x));
+    EXPECT_EQ(x, 4);
+  }
+
+  TEST(core, parser_plus_oct) {
+    auto const s = " +72 ";
+    auto       p = parser::wrap(s);
+    auto       x = int64_t {};
+    EXPECT_TRUE(p.parse(" %o ", &x));
+    EXPECT_EQ(x, 072);
+  }
+
+  TEST(core, parser_plus_dec) {
+    auto const s = " +123 ";
+    auto       p = parser::wrap(s);
+    auto       x = int64_t {};
+    EXPECT_TRUE(p.parse(" %d ", &x));
+    EXPECT_EQ(x, 123);
+  }
+
+  TEST(core, parser_plus_hex) {
+    auto const s = " +f00 ";
+    auto       p = parser::wrap(s);
+    auto       x = int64_t {};
+    EXPECT_TRUE(p.parse(" %x ", &x));
+    EXPECT_EQ(x, 0xf00);
+  }
+
+  TEST(core, parser_bin_fail) {
+    auto const s = " + ";
+    auto       p = parser::wrap(s);
+    auto       x = int64_t {};
+    EXPECT_FALSE(p.parse(" %b ", &x));
+  }
+
+  TEST(core, parser_oct_fail) {
+    auto const s = " + ";
+    auto       p = parser::wrap(s);
+    auto       x = int64_t {};
+    EXPECT_FALSE(p.parse(" %o ", &x));
+  }
+
+  TEST(core, parser_dec_fail) {
+    auto const s = " + ";
+    auto       p = parser::wrap(s);
+    auto       x = int64_t {};
+    EXPECT_FALSE(p.parse(" %d ", &x));
+  }
+
+  TEST(core, parser_hex_fail) {
+    auto const s = " + ";
+    auto       p = parser::wrap(s);
+    auto       x = int64_t {};
+    EXPECT_FALSE(p.parse(" %x ", &x));
+  }
+
+  TEST(core, parser_uint_bin_fail) {
+    auto const s = " x ";
+    auto       p = parser::wrap(s);
+    auto       x = int64_t {};
+    EXPECT_FALSE(p.parse(" %B ", &x));
+  }
+
+  TEST(core, parser_uint_oct_fail) {
+    auto const s = " x ";
+    auto       p = parser::wrap(s);
+    auto       x = int64_t {};
+    EXPECT_FALSE(p.parse(" %O ", &x));
+  }
+
+  TEST(core, parser_uint_dec_fail) {
+    auto const s = " x ";
+    auto       p = parser::wrap(s);
+    auto       x = int64_t {};
+    EXPECT_FALSE(p.parse(" %D ", &x));
+  }
+
+  TEST(core, parser_uint_hex_fail) {
+    auto const s = " x ";
+    auto       p = parser::wrap(s);
+    auto       x = int64_t {};
+    EXPECT_FALSE(p.parse(" %X ", &x));
+  }
+
+  TEST(core, parser_next_line) {
+    auto const s = " foo  \n bar";
+    auto       p = parser::wrap(s);
+    EXPECT_TRUE(p.parse(" foo\n bar "));
   }
 }

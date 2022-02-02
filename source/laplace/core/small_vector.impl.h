@@ -1,6 +1,4 @@
-/*  laplace/core/small_vector.impl.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -15,16 +13,15 @@
 
 namespace laplace {
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
-  inline small_vector<elem_, small_size_, unsafe_>::
-      small_vector() noexcept {
-    m_values = _static_data();
-  }
+  inline small_vector<elem_, small_size_,
+                      unsafe_>::small_vector() noexcept :
+      m_values(_static_data()) { }
 
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
   inline small_vector<elem_, small_size_, unsafe_>::small_vector(
-      small_vector &&v) noexcept {
-    m_capacity = v.m_capacity;
-    m_size     = v.m_size;
+      small_vector &&v) noexcept :
+      m_capacity(v.m_capacity),
+      m_size(v.m_size) {
 
     if (m_capacity <= small_count) {
       m_values = _static_data();
@@ -40,21 +37,21 @@ namespace laplace {
 
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
   inline small_vector<elem_, small_size_, unsafe_>::small_vector(
-      const small_vector &v) noexcept {
+      small_vector const &v) noexcept {
     _assign(v.m_values, v.m_values + v.m_size);
   }
 
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
   template <ptrdiff_t size2_, bool unsafe2_>
   inline small_vector<elem_, small_size_, unsafe_>::small_vector(
-      const small_vector<elem_, size2_, unsafe2_> &v) noexcept {
+      small_vector<elem_, size2_, unsafe2_> const &v) noexcept {
     _assign(v.begin(), v.end());
   }
 
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
   inline small_vector<elem_, small_size_, unsafe_>::small_vector(
-      const ptrdiff_t size, const elem_ value) noexcept {
-    m_values = _static_data();
+      const ptrdiff_t size, const elem_ value) noexcept :
+      m_values(_static_data()) {
 
     reserve(size);
     _fill(m_values, m_values + size, value);
@@ -64,8 +61,8 @@ namespace laplace {
 
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
   inline small_vector<elem_, small_size_, unsafe_>::small_vector(
-      const ptrdiff_t size, auto &&...args) noexcept {
-    m_values = _static_data();
+      const ptrdiff_t size, auto &&...args) noexcept :
+      m_values(_static_data()) {
 
     reserve(size);
     _fill(m_values, m_values + size, args...);
@@ -75,8 +72,8 @@ namespace laplace {
 
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
   inline small_vector<elem_, small_size_, unsafe_>::small_vector(
-      std::initializer_list<elem_> values) noexcept {
-    m_values = _static_data();
+      std::initializer_list<elem_> values) noexcept :
+      m_values(_static_data()) {
 
     reserve(values.size());
     _copy(values.begin(), values.end(), m_values);
@@ -85,13 +82,12 @@ namespace laplace {
   }
 
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
-  inline small_vector<elem_, small_size_, unsafe_>::
-      ~small_vector() noexcept {
+  inline small_vector<elem_, small_size_,
+                      unsafe_>::~small_vector() noexcept {
     _free(m_values, m_values + m_size);
 
-    if (m_capacity > small_count) {
+    if (m_capacity > small_count)
       _dealloc(m_values);
-    }
   }
 
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
@@ -100,9 +96,8 @@ namespace laplace {
 
     _free(m_values, m_values + m_size);
 
-    if (m_capacity > small_count) {
+    if (m_capacity > small_count)
       _dealloc(m_values);
-    }
 
     m_capacity = v.m_capacity;
     m_size     = v.m_size;
@@ -200,7 +195,7 @@ namespace laplace {
 
     _fill_one(m_values + m_size, m_values[m_size - 1]);
 
-    const auto p = position - m_values;
+    auto const p = position - m_values;
     std::move_backward(m_values + p, m_values + m_size - 1,
                        m_values + m_size);
     m_values[p] = value;
@@ -224,9 +219,9 @@ namespace laplace {
       }
     }
 
-    const auto p = position - m_values;
-    const auto s = end - begin;
-    const auto x = m_size - p;
+    auto const p = position - m_values;
+    auto const s = end - begin;
+    auto const x = m_size - p;
 
     reserve(m_size + s);
 
@@ -260,7 +255,7 @@ namespace laplace {
 
     reserve(m_size + 1);
 
-    const auto p = position - m_values;
+    auto const p = position - m_values;
 
     if (p < m_size) {
       _fill_one(m_values + m_size, m_values[m_size - 1]);
@@ -292,7 +287,7 @@ namespace laplace {
       }
     }
 
-    const auto p = position - m_values;
+    auto const p = position - m_values;
     std::move(m_values + p + 1, m_values + m_size, m_values + p);
     m_size--;
     _free_one(m_values + m_size);
@@ -310,8 +305,8 @@ namespace laplace {
       }
     }
 
-    const auto p = begin - m_values;
-    const auto s = end - begin;
+    auto const p = begin - m_values;
+    auto const s = end - begin;
 
     std::move(m_values + p + s, m_values + m_size, m_values + p);
     _free(m_values + m_size - s, m_values + m_size);
@@ -334,12 +329,11 @@ namespace laplace {
       return;
     }
 
-    const auto  n = std::bit_ceil(static_cast<size_t>(size));
+    auto const  n = std::bit_ceil(static_cast<size_t>(size));
     auto *const p = _alloc(n);
 
-    if (p == nullptr) {
+    if (p == nullptr)
       return;
-    }
 
     _move(m_values, m_values + m_size, p);
     _free(m_values, m_values + m_size);
@@ -389,7 +383,7 @@ namespace laplace {
 
     if constexpr (!unsafe_) {
       if (n < 0 || n >= m_size) {
-        static const auto x = elem_ {};
+        static auto const x = elem_ {};
         error_("Out of range.", __FUNCTION__);
         return x;
       }
@@ -481,7 +475,7 @@ namespace laplace {
       const small_vector<elem_, size2_, unsafe2_> &v) const noexcept
       -> int {
 
-    const auto n = std::min(m_size, v.size());
+    auto const n = std::min(m_size, v.size());
 
     for (ptrdiff_t i = 0; i < n; i++) {
       if (m_values[i] < v.at(i))
@@ -547,7 +541,7 @@ namespace laplace {
 
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
   inline void small_vector<elem_, small_size_, unsafe_>::_assign(
-      const auto *begin, const auto *end) {
+      auto const *begin, auto const *end) {
 
     if constexpr (!unsafe_) {
       if (end < begin) {
@@ -581,7 +575,7 @@ namespace laplace {
 
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
   inline void small_vector<elem_, small_size_, unsafe_>::_copy(
-      const auto *begin, const auto *end, elem_ *dst) noexcept {
+      auto const *begin, auto const *end, elem_ *dst) noexcept {
     while (begin < end) { new (dst++) elem_(*(begin++)); }
   }
 
@@ -594,7 +588,7 @@ namespace laplace {
   template <typename elem_, ptrdiff_t small_size_, bool unsafe_>
   inline void
   small_vector<elem_, small_size_, unsafe_>::_move_backward(
-      const auto *begin, const auto *end, elem_ *dst_end) noexcept {
+      auto const *begin, auto const *end, elem_ *dst_end) noexcept {
     while (begin < end) {
       new (--dst_end) elem_(std::move(*(--end)));
     }
