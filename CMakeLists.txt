@@ -25,7 +25,7 @@ include(cmake/fetch-deps.cmake)
 if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
 
   include(cmake/codegen.cmake)
-  include(cmake/config.cmake)
+  include(cmake/build.cmake)
 
   add_library(${LAPLACE_OBJ} OBJECT)
   add_library(${QUADWAR_OBJ} OBJECT)
@@ -34,26 +34,27 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
   target_link_libraries(
     ${LAPLACE_OBJ}
       PUBLIC
-        ${LAPLACE_CONFIG}
-        gtest benchmark wolfssl freetype)
+        ${LAPLACE_BUILD}
+        ${LAPLACE_DEPENDENCIES})
 
   target_link_libraries(
     ${QUADWAR_OBJ}
       PUBLIC
-        ${LAPLACE_CONFIG}
+        ${LAPLACE_BUILD}
         ${LAPLACE_OBJ})
 
   if(LAPLACE_ENABLE_LIB)
     add_library(${LAPLACE_LIB} STATIC)
 
-    target_include_directories(${LAPLACE_LIB}
-      PUBLIC
-        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+    target_include_directories(
+      ${LAPLACE_LIB}
+        PUBLIC
+          "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
     target_link_libraries(
       ${LAPLACE_LIB}
         PUBLIC
-          ${LAPLACE_CONFIG}
+          ${LAPLACE_BUILD}
           ${LAPLACE_OBJ})
   endif()
 
@@ -62,7 +63,7 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
 
     target_link_libraries(
       ${QUADWAR_EXE}
-        ${LAPLACE_CONFIG}
+        ${LAPLACE_BUILD}
         ${QUADWAR_OBJ}
         ${LAPLACE_OBJ})
 

@@ -1,30 +1,30 @@
 # FreeType2 include folder hotfix.
 # Move "include/freetype2/*" to "include/".
 
-install(CODE "set(FORWARD_INSTALL_PREFIX      ${CMAKE_INSTALL_PREFIX})")
-install(CODE "set(FORWARD_INSTALL_INCLUDEDIR  ${CMAKE_INSTALL_INCLUDEDIR})")
+install(CODE "set(forward_prefix_     ${CMAKE_INSTALL_PREFIX})")
+install(CODE "set(forward_includedir_ ${CMAKE_INSTALL_INCLUDEDIR})")
 
 install(CODE [[
   file(
-    GLOB freetype2_headers
+    GLOB headers_
     LIST_DIRECTORIES true
-    ${FORWARD_INSTALL_PREFIX}/${FORWARD_INSTALL_INCLUDEDIR}/freetype2/*)
+    ${forward_prefix_}/${forward_includedir_}/freetype2/*)
 
-  foreach(fullpath ${freetype2_headers})
-    get_filename_component(filename ${fullpath} NAME)
+  foreach(fullpath_ ${headers_})
+    get_filename_component(filename_ ${fullpath_} NAME)
 
     file(
       RENAME
-      ${FORWARD_INSTALL_PREFIX}/${FORWARD_INSTALL_INCLUDEDIR}/freetype2/${filename}
-      ${FORWARD_INSTALL_PREFIX}/${FORWARD_INSTALL_INCLUDEDIR}/${filename})
+      ${forward_prefix_}/${forward_includedir_}/freetype2/${filename_}
+      ${forward_prefix_}/${forward_includedir_}/${filename_})
   endforeach()
 
-  file(REMOVE_RECURSE ${FORWARD_INSTALL_PREFIX}/${FORWARD_INSTALL_INCLUDEDIR}/freetype2)
+  file(REMOVE_RECURSE ${forward_prefix_}/${forward_includedir_}/freetype2)
 
-  unset(freetype2_headers)
-  unset(fullpath)
-  unset(filename)
+  unset(headers_)
+  unset(fullpath_)
+  unset(filename_)
   
-  unset(FORWARD_INSTALL_PREFIX)
-  unset(FORWARD_INSTALL_INCLUDEDIR)
+  unset(forward_prefix_)
+  unset(forward_includedir_)
 ]])
