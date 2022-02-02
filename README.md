@@ -2,9 +2,12 @@
 [![build-and-test][build-badge]][build-link]
 [![codecov][codecov-badge]][codecov-link]
 
-The quality of a real-time strategy game relies on low-latency responsiveness and vertical scalability. Vertical scalability requires parallelism on the local instance and lockstep networking. Lockstep systems require a totally deterministic engine. In addition, extensibility is a useful feature.
+The quality of a real-time strategy game relies on low-latency responsiveness and vertical scalability.
+Vertical scalability requires parallelism on the local instance and lockstep networking.
+Lockstep systems require a totally deterministic engine. In addition, extensibility is a useful feature.
 
-Laplace is an interactive multimedia framework that provides the deterministic and extensible engine with concurrency support and lockstep synchronization.
+Laplace is an interactive multimedia framework that provides the deterministic and extensible engine
+with concurrency support and lockstep synchronization.
 
 Official repository: [GitHub][laplace-link]
 
@@ -21,7 +24,8 @@ Official repository: [GitHub][laplace-link]
 - [google/benchmark][benchmark-link] for benchmarks.
 
 ##  How to build
-To build the project CMake 3.16, Git and Python 3 are required. Make sure your compiler [supports][compiler-support-link] C++20.
+To build the project CMake 3.16, Git and Python 3 are required.
+Make sure your compiler [supports][compiler-support-link] C++20.
 
 ### With provided build script
 - Execute the build script.
@@ -44,10 +48,12 @@ Laplace CMake configuration options:
 - `LAPLACE_ENABLE_LIB` - build the static library. `OFF` by default.
 - `LAPLACE_ENABLE_TESTING` - enable testing. `OFF` by default.
 - `LAPLACE_ENABLE_COVERAGE` - enable coverage reporting. `OFF` by default.
-- `LAPLACE_CODEGEN` - perform code generation. Will generate embedded data code and OpenGL interface code. `ON` by default.
+- `LAPLACE_CODEGEN` - perform code generation.
+Will generate embedded data code and OpenGL interface code. `ON` by default.
 - `LAPLACE_VERBOSE` - enable verbose logging of Laplace. `ON` by default.
 - `LAPLACE_UNSAFE` - disable safety checks of Laplace. `OFF` by default.
-- Dependencies' git tags:
+- `LAPLACE_FETCH_DEPENDENCIES` - fetch dependencies from source.
+Set to `OFF` is you have installed dependencies. `ON` by default.
   - `LAPLACE_GOOGLETEST_TAG` - googletest git tag. `release-1.11.0` by default.
   - `LAPLACE_GOOGLEBENCHMARK_TAG` - google/benchmark git tag. `v1.5.3` by default.
   - `LAPLACE_WOLFSSL_TAG` - wolfSSL git tag. `v4.8.1-stable` by default.
@@ -80,8 +86,6 @@ cd ..
 ```
 
 Add `source` to the project and build manually.
-
-If you want to generate Visual Studio project files, use `tools/gen-vs.py`.
 
 If you change the source code files structure, use `tools/gen-cmake.py` to generate `CMakeLists.txt` files.
 

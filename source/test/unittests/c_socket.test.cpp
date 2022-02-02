@@ -27,9 +27,7 @@ namespace laplace::test {
 
   TEST(core, socket_error) {
     auto sockets = socket_library {};
-    auto s       = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    EXPECT_EQ(socket_error(), 0);
-    EXPECT_EQ(socket_close(s), 0);
+    std::ignore  = socket_error();
   }
 
   TEST(core, socket_tcp) {

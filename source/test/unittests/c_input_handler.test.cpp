@@ -13,7 +13,7 @@
 
 namespace laplace::test {
   using core::input_event, core::is_key_down, core::is_key_up,
-      core::get_wheel_delta;
+      core::get_wheel_delta, std::string_view;
   namespace keys = core::keys;
 
   TEST(core, input_handler_key_state) {
@@ -29,6 +29,8 @@ namespace laplace::test {
   }
 
   TEST(core, input_handler_wheel_state) {
+    setup_log([](string_view) {});
+
     auto wheel = input_event { .key = keys::key_wheel, .delta = 123 };
     auto key   = input_event { .key = keys::key_space, .delta = 123 };
 
@@ -43,5 +45,7 @@ namespace laplace::test {
     }
 
     EXPECT_EQ(get_wheel_delta(wheel), 123);
+
+    setup_log({});
   }
 }

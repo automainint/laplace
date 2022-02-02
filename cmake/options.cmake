@@ -5,7 +5,7 @@ option(LAPLACE_ENABLE_COVERAGE    "Enable coverage reporting"       OFF)
 option(LAPLACE_CODEGEN            "Perform code generation"         ON)
 option(LAPLACE_VERBOSE            "Enable verbose logging"          ON)
 option(LAPLACE_UNSAFE             "Disable safety checks"           OFF)
-option(LAPLACE_FETCH_DEPENDENCIES "Fetch dependencies from source." ON)
+option(LAPLACE_FETCH_DEPENDENCIES "Fetch dependencies from source"  ON)
 
 set(LAPLACE_GOOGLETEST_TAG      "release-1.11.0"  CACHE STRING "googletest git tag")
 set(LAPLACE_GOOGLEBENCHMARK_TAG "v1.5.3"          CACHE STRING "google/benchmark git tag")
