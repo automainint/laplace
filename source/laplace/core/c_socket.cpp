@@ -80,7 +80,7 @@ namespace laplace {
 
     if (::ioctlsocket(s, FIONBIO, &flag) == -1)
       return -1;
-    
+
     return 0;
   }
 

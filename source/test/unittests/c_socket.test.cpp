@@ -17,17 +17,19 @@ namespace laplace::test {
   }
 
   TEST(core, socket_error_codes) {
-    socket_inprogress();
-    socket_wouldblock();
-    socket_msgsize();
-    socket_isconn();
-    socket_connreset();
-    socket_addrinuse();
+    std::ignore = socket_inprogress();
+    std::ignore = socket_wouldblock();
+    std::ignore = socket_msgsize();
+    std::ignore = socket_isconn();
+    std::ignore = socket_connreset();
+    std::ignore = socket_addrinuse();
   }
 
   TEST(core, socket_error) {
     auto sockets = socket_library {};
+    auto s       = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     EXPECT_EQ(socket_error(), 0);
+    EXPECT_EQ(socket_close(s), 0);
   }
 
   TEST(core, socket_tcp) {

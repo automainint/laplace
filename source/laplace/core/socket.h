@@ -47,7 +47,8 @@ namespace laplace {
     auto operator=(socket_library &&s) noexcept -> socket_library &;
 
     socket_library(const socket_library &) = delete;
-    auto operator=(const socket_library &) -> socket_library & = delete;
+    auto operator                          =(const socket_library &)
+        -> socket_library                & = delete;
 
     socket_library() noexcept;
     ~socket_library() noexcept;
@@ -58,18 +59,20 @@ namespace laplace {
 
   /*  Equivalent for errno or WSAGetLastError().
    */
-  auto socket_error() noexcept -> int;
+  [[nodiscard]] auto socket_error() noexcept -> int;
 
   auto socket_close(socket_t s) noexcept -> int;
-  auto socket_set_blocking(socket_t s) noexcept -> int;
-  auto socket_set_nonblocking(socket_t s) noexcept -> int;
 
-  auto socket_inprogress() noexcept -> int;
-  auto socket_wouldblock() noexcept -> int;
-  auto socket_msgsize() noexcept -> int;
-  auto socket_isconn() noexcept -> int;
-  auto socket_connreset() noexcept -> int;
-  auto socket_addrinuse() noexcept -> int;
+  [[nodiscard]] auto socket_set_blocking(socket_t s) noexcept -> int;
+  [[nodiscard]] auto socket_set_nonblocking(socket_t s) noexcept
+      -> int;
+
+  [[nodiscard]] auto socket_inprogress() noexcept -> int;
+  [[nodiscard]] auto socket_wouldblock() noexcept -> int;
+  [[nodiscard]] auto socket_msgsize() noexcept -> int;
+  [[nodiscard]] auto socket_isconn() noexcept -> int;
+  [[nodiscard]] auto socket_connreset() noexcept -> int;
+  [[nodiscard]] auto socket_addrinuse() noexcept -> int;
 }
 
 #endif
