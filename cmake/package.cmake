@@ -40,7 +40,7 @@ if(LAPLACE_ENABLE_LIB)
   include(CMakePackageConfigHelpers)
 
   configure_package_config_file(
-    ${CMAKE_SOURCE_DIR}/config.cmake.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/${project_lower_}-config.cmake"
       INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
