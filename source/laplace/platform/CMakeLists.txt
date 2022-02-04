@@ -4,8 +4,7 @@ target_sources(
       p_basic_input.cpp p_opengl.cpp
     PUBLIC
       opengl.h basic_input.h thread.h events.h gldef.h wrap.h
-      dummy.h
-)
+      dummy.h)
 if(WIN32)
   add_subdirectory(win32)
 endif()

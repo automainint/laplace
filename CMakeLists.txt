@@ -26,8 +26,7 @@ project(
 
 include(cmake/fetch-deps.cmake)
 
-if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
-
+if(LAPLACE_ENABLE_OBJ OR LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
   include(cmake/codegen.cmake)
   include(cmake/build.cmake)
 
@@ -40,7 +39,9 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
       PUBLIC
         ${LAPLACE_BUILD}
         ${LAPLACE_DEPENDENCIES})
+endif()
 
+if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
   target_link_libraries(
     ${QUADWAR_OBJ}
       PUBLIC
@@ -88,7 +89,6 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
         PROPERTIES
           TIMEOUT "40")
   endif()
-
 endif()
 
 include(cmake/package.cmake)

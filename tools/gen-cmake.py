@@ -47,7 +47,7 @@ def print_sources(folder: str, target_name: str):
       buf += '\n    PRIVATE\n' + print_list(srcs, 6)
     if len(hdrs) > 0:
       buf += '\n    PUBLIC\n' + print_list(hdrs, 6)
-    buf += '\n)\n'
+    buf += ')\n'
   return buf
 
 def print_subdirs(folder: str):
@@ -95,7 +95,6 @@ def main():
   src_dir = os.path.join('..', 'source')
 
   gen_cmake(os.path.join(src_dir, 'laplace'),         '${LAPLACE_OBJ}')
-  gen_cmake(os.path.join(src_dir, 'generated'),       '${LAPLACE_OBJ}')
   gen_cmake(os.path.join(src_dir, 'test'),            '${LAPLACE_OBJ}')
   gen_cmake(os.path.join(src_dir, 'apps', 'quadwar'), '${QUADWAR_OBJ}')
 

@@ -1,8 +1,4 @@
-/*  laplace/platform/gldef.h
- *
- *      OpenGL declarations.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -15,8 +11,8 @@
 #ifndef laplace_platform_gldef_h
 #define laplace_platform_gldef_h
 
-#include "../../generated/gl/decls.h"
-#include "../../generated/gl/enums.h"
-#include "../../generated/gl/types.h"
+#include "../generated/gl/decls.h"
+#include "../generated/gl/enums.h"
+#include "../generated/gl/types.h"
 
 #endif

@@ -4,6 +4,45 @@ include(cmake/hotfix-ft2.cmake)
 string(TOLOWER ${CMAKE_SYSTEM_NAME} system_lower_)
 string(TOLOWER ${PROJECT_NAME}      project_lower_)
 
+if(LAPLACE_ENABLE_OBJ)
+  target_include_directories(
+    ${LAPLACE_OBJ}
+      INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/source)
+
+  add_library(${PROJECT_NAME}::${LAPLACE_LIB} ALIAS ${LAPLACE_OBJ})
+endif()
+
+if(LAPLACE_ENABLE_OBJ OR LAPLACE_ENABLE_LIB)
+  macro(add_headers folder)
+    file(
+      GLOB_RECURSE headers_
+      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/source/${folder}
+      ${CMAKE_CURRENT_SOURCE_DIR}/source/${folder}/*.h)
+
+    foreach(path_ ${headers_})
+      get_filename_component(dir_ "${path_}" DIRECTORY)
+
+      install(
+        FILES ${CMAKE_CURRENT_SOURCE_DIR}/source/${folder}/${path_}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${folder}/${dir_}
+        COMPONENT ${LAPLACE_COMPONENT_DEVELOPMENT})
+    endforeach()
+
+    unset(headers_)
+    unset(path_)
+    unset(dir_)
+  endmacro()
+
+  add_headers(laplace)
+  add_headers(generated)
+
+  install(
+    TARGETS ${LAPLACE_OBJ}
+    PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+      COMPONENT ${LAPLACE_COMPONENT_DEVELOPMENT})
+endif()
+
 if(LAPLACE_ENABLE_EXE)
   install(
     TARGETS ${QUADWAR_EXE}

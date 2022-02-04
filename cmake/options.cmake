@@ -1,5 +1,6 @@
 option(LAPLACE_ENABLE_EXE         "Enable building executable"      ON)
 option(LAPLACE_ENABLE_LIB         "Enable building static library"  OFF)
+option(LAPLACE_ENABLE_OBJ         "Enable object library"           OFF)
 option(LAPLACE_ENABLE_TESTING     "Enable testing"                  OFF)
 option(LAPLACE_ENABLE_COVERAGE    "Enable coverage reporting"       OFF)
 option(LAPLACE_CODEGEN            "Perform code generation"         ON)

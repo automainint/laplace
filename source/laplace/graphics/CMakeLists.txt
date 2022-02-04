@@ -5,6 +5,5 @@ target_sources(
       g_texture.cpp
     PUBLIC
       image.impl.h pixel.h utils.h pixel.impl.h program.h
-      color.h texture.h defs.h image.h
-)
+      color.h texture.h defs.h image.h)
 add_subdirectory(flat)

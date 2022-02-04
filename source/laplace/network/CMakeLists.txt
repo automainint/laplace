@@ -5,6 +5,5 @@ target_sources(
       n_transfer.cpp n_udp_server.cpp n_remote.cpp n_udp_node.cpp
     PUBLIC
       server.h udp_server.h udp_node.h utils.h remote.h host.h
-      transfer.h defs.h
-)
+      transfer.h defs.h)
 add_subdirectory(crypto)

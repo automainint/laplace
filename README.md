@@ -46,6 +46,7 @@ cmake --build build --config Release
 Laplace CMake configuration options:
 - `LAPLACE_ENABLE_EXE` - build the executable. `ON` by default.
 - `LAPLACE_ENABLE_LIB` - build the static library. `OFF` by default.
+- `LAPLACE_ENABLE_OBJ` - enable object library. `OFF` by default.
 - `LAPLACE_ENABLE_TESTING` - enable testing. `OFF` by default.
 - `LAPLACE_ENABLE_COVERAGE` - enable coverage reporting. `OFF` by default.
 - `LAPLACE_CODEGEN` - perform code generation.
@@ -60,8 +61,6 @@ Set to `OFF` is you have installed dependencies. `ON` by default.
   - `LAPLACE_FREETYPE_TAG` - FreeType git tag. `VER-2-10-4` by default.
 
 Tests will be created if `LAPLACE_ENABLE_TESTING` or `LAPLACE_ENABLE_COVERAGE` is `ON`.
-
-To build only dependencies set `LAPLACE_ENABLE_EXE` to `OFF`.
 
 ##  Hacking
 If you want to build the source code by hand, follow the instructions below:

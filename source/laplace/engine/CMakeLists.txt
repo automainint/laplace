@@ -8,8 +8,7 @@ target_sources(
       eventorder.impl.h scheduler.h basic_impact.predef.h prime_impact.impl.h
       world.h basic_factory.impl.h basic_entity.h solver.h
       basic_entity.predef.h basic_impact.h basic_impact.impl.h prime_impact.h
-      basic_entity.impl.h eventorder.h loader.h defs.h
-)
+      basic_entity.impl.h eventorder.h loader.h defs.h)
 add_subdirectory(access)
 add_subdirectory(object)
 add_subdirectory(action)

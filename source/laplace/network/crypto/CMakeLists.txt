@@ -5,5 +5,4 @@ target_sources(
       nc_stream_cipher.cpp nc_rabbit.cpp
     PUBLIC
       ecc.h rabbit.h stream_cipher.h basic_cipher.h
-      ecc_rabbit.h
-)
+      ecc_rabbit.h)

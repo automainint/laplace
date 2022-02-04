@@ -1,4 +1,5 @@
 add_subdirectory(math)
+add_subdirectory(generated)
 add_subdirectory(network)
 add_subdirectory(ui)
 add_subdirectory(core)
