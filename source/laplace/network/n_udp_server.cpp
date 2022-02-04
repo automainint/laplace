@@ -10,8 +10,9 @@
 
 #include "udp_server.h"
 
+#include "../engine/eval/arithmetic.impl.h"
 #include "../engine/protocol/all.h"
-#include "crypto/ecc_rabbit.h"
+#include "udp_ipv4_interface.h"
 #include <algorithm>
 #include <chrono>
 #include <thread>
@@ -20,20 +21,24 @@ namespace laplace::network {
   namespace access = engine::access;
   using namespace engine::protocol;
 
-  using std::this_thread::sleep_for, std::min, std::max, std::any_of,
-      std::find_if, std::make_unique, std::span, std::numeric_limits,
+  using std::min, std::max, std::any_of, std::make_unique,
       std::string, std::string_view, std::chrono::milliseconds,
       engine::ptr_impact, engine::prime_impact, engine::seed_type,
       engine::loader, engine::time_undefined, engine::id_undefined,
-      engine::encode, crypto::ecc_rabbit, engine::ptr_prime_impact;
+      engine::encode, engine::ptr_prime_impact,
+      engine::eval::impl::wrap_add;
 
-  const sl::whole udp_server::default_chunk_size        = 4192;
-  const sl::whole udp_server::chunk_size_increment      = 512;
-  const sl::whole udp_server::default_loss_compensation = 4;
-  const uint16_t  udp_server::default_max_command_id    = 400;
-  const sl::index udp_server::max_index_delta           = 0x1000;
+  sl::whole const udp_server::default_chunk_size        = 4192;
+  sl::whole const udp_server::chunk_size_increment      = 512;
+  sl::whole const udp_server::default_loss_compensation = 4;
+  uint16_t const  udp_server::default_max_command_id    = 400;
+  sl::index const udp_server::max_index_delta           = 0x1000;
 
-  udp_server::~udp_server() {
+  udp_server::udp_server() noexcept {
+    m_socket_interface = make_unique<udp_ipv4_interface>();
+  }
+
+  udp_server::~udp_server() noexcept {
     cleanup();
   }
 
@@ -41,12 +46,9 @@ namespace laplace::network {
     m_is_encryption_enabled = is_enabled;
   }
 
-  void udp_server::set_allowed_commands(span_cuint16 commands) {
+  void udp_server::set_allowed_commands(
+      span_cuint16 commands) noexcept {
     m_allowed_commands.assign(commands.begin(), commands.end());
-  }
-
-  void udp_server::set_chunk_size(sl::whole size) {
-    m_buffer.resize(size);
   }
 
   void udp_server::queue(span_cbyte seq) {
@@ -113,7 +115,7 @@ namespace laplace::network {
     if (server_reserve::scan(seq)) {
       if (get_state() == server_state::prepare) {
         if (auto w = get_world(); w) {
-          const auto count = server_reserve::get_value(seq);
+          auto const count = server_reserve::get_value(seq);
 
           for (sl::index n = 0; n < count; n++) { w->reserve(n); }
         }
@@ -148,7 +150,7 @@ namespace laplace::network {
 
     if (request_events::scan(seq) && slot != slot_host) {
       if (slot >= 0 && slot < m_slots.size()) {
-        const auto count    = request_events::get_event_count(seq);
+        auto const count    = request_events::get_event_count(seq);
         sl::index  distance = 0;
 
         for (sl::index i = 0; i < count; i++) {
@@ -179,13 +181,13 @@ namespace laplace::network {
     }
 
     if (ping_request::scan(seq) && slot != slot_host) {
-      const auto time = ping_request::get_value(seq);
+      auto const time = ping_request::get_value(seq);
       send_event_to(slot, encode<ping_response>(time));
       return true;
     }
 
     if (ping_response::scan(seq) && slot != slot_host) {
-      const auto ping = get_local_time() -
+      auto const ping = get_local_time() -
                         ping_response::get_value(seq);
 
       set_ping(ping);
@@ -330,7 +332,7 @@ namespace laplace::network {
   auto udp_server::add_slot(std::string_view address, uint16_t port)
       -> sl::index {
 
-    const auto id = m_slots.size();
+    auto const id = m_slots.size();
     m_slots.emplace_back(
         slot_info { .address = string(address), .port = port });
     return id;
@@ -436,7 +438,7 @@ namespace laplace::network {
   void udp_server::clean_slots() {
     if (is_master() && get_state() == server_state::prepare) {
       m_slots.erase(std::remove_if(m_slots.begin(), m_slots.end(),
-                                   [](const auto &s) {
+                                   [](auto const &s) {
                                      return !s.is_connected;
                                    }),
                     m_slots.end());
@@ -575,8 +577,7 @@ namespace laplace::network {
       return;
 
     for (;;) {
-      auto const n = m_node->receive_to(m_buffer.data(),
-                                        m_buffer.size(), async);
+      auto const n = m_node->receive(m_buffer, async);
 
       if (n == m_buffer.size() || m_node->is_msgsize())
         if (has_slot(m_node->get_remote_address(),
@@ -638,8 +639,7 @@ namespace laplace::network {
       return;
 
     for (;;) {
-      auto const n = s.node->receive_to(m_buffer.data(),
-                                        m_buffer.size(), async);
+      auto const n = s.node->receive(m_buffer, async);
 
       auto const sender_changed = s.address !=
                                       s.node->get_remote_address() ||
@@ -746,7 +746,7 @@ namespace laplace::network {
                    slot));
 
     } else if (index >= qu.index) {
-      const auto n = index - qu.index;
+      auto const n = index - qu.index;
 
       if (n >= qu.events.size()) {
         if (n - qu.events.size() >= max_index_delta) {
@@ -777,14 +777,14 @@ namespace laplace::network {
     for (sl::index slot = 0; slot < m_slots.size(); slot++) {
 
       for (sl::index i = 0; i < m_slots[slot].in.size(); i++) {
-        const auto &ev = m_slots[slot].in[i];
-        const auto  id = prime_impact::get_id(ev);
+        auto const &ev = m_slots[slot].in[i];
+        auto const  id = prime_impact::get_id(ev);
 
         if (is_allowed(slot, id)) {
           add_event(slot, ev);
         } else {
           if (is_verbose()) {
-            const auto s = engine::basic_factory::name_by_id_native(
+            auto const s = engine::basic_factory::name_by_id_native(
                 id);
 
             if (s.empty()) {
@@ -845,9 +845,9 @@ namespace laplace::network {
                                          : transfer::plain;
 
     if (s.is_exclusive && s.node)
-      add_bytes_sent(s.node->send_to(s.address, s.port, chunk));
+      add_bytes_sent(s.node->send(s.address, s.port, chunk));
     else
-      add_bytes_sent(m_node->send_to(s.address, s.port, chunk));
+      add_bytes_sent(m_node->send(s.address, s.port, chunk));
   }
 
   void udp_server::send_chunks() {
@@ -920,10 +920,10 @@ namespace laplace::network {
   }
 
   void udp_server::update_local_time(sl::time delta_msec) {
-    const auto t = m_local_time;
-    m_local_time += delta_msec;
+    auto const t = m_local_time;
+    m_local_time = wrap_add(m_local_time, delta_msec);
 
-    if (t > m_local_time) {
+    if (m_local_time < t) {
       error_("Time value overflow.", __FUNCTION__);
       set_quit(true);
     }
@@ -936,10 +936,10 @@ namespace laplace::network {
 
   auto udp_server::convert_delta(sl::time delta_msec) -> sl::time {
     if (auto sol = get_solver(); sol) {
-      const auto time = sol->get_time();
+      auto const time = sol->get_time();
 
       if (time < m_time_limit) {
-        const auto delta = adjust_delta(delta_msec) +
+        auto const delta = adjust_delta(delta_msec) +
                            adjust_overtake(time);
 
         return min(delta, m_time_limit - time);

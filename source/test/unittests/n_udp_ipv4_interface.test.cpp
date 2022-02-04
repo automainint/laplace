@@ -8,17 +8,14 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_defs_h
-#define laplace_network_defs_h
+#include "../../laplace/network/udp_ipv4_interface.h"
+#include <gtest/gtest.h>
 
-#include "../core/defs.h"
+namespace laplace::test {
+  using std::make_unique, network::udp_ipv4_interface;
 
-namespace laplace::network {
-  extern sl::whole const max_chunk_size;
-  extern char const      localhost[];
-  extern uint16_t const  any_port;
-
-  enum io_mode { async, sync };
+  TEST(network, udp_ipv4_interface_open) {
+    auto p = make_unique<udp_ipv4_interface>();
+    EXPECT_TRUE(p->open(0));
+  }
 }
-
-#endif

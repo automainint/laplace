@@ -14,30 +14,28 @@
 #include "../engine/defs.h"
 #include "../engine/loader.h"
 #include "server.h"
+#include "socket_interface.h"
 #include "transfer.h"
-#include "udp_node.h"
 
 namespace laplace::network {
-  /*  Base class for host and
-   *  remote servers.
+  /*  Base class for host and remote servers.
    */
   class udp_server : public server {
   public:
     static constexpr sl::index slot_host            = -1;
     static constexpr sl::index slot_count_unlimited = -1;
 
-    static const sl::whole default_chunk_size;
-    static const sl::whole chunk_size_increment;
-    static const sl::whole default_loss_compensation;
-    static const uint16_t  default_max_command_id;
-    static const sl::index max_index_delta;
+    static sl::whole const default_chunk_size;
+    static sl::whole const chunk_size_increment;
+    static sl::whole const default_loss_compensation;
+    static uint16_t const  default_max_command_id;
+    static sl::index const max_index_delta;
 
-    ~udp_server() override;
+    udp_server() noexcept;
+    ~udp_server() noexcept override;
 
     void set_encryption_enabled(bool is_enabled) noexcept;
-    void set_allowed_commands(span_cuint16 commands);
-
-    void set_chunk_size(sl::whole size);
+    void set_allowed_commands(span_cuint16 commands) noexcept;
 
     void queue(span_cbyte seq) override;
     void tick(sl::time delta_msec) override;
@@ -69,11 +67,10 @@ namespace laplace::network {
       event_queue queue;
       transfer    tran;
 
-      std::unique_ptr<udp_node> node;
+      std::unique_ptr<socket_interface::node> node;
     };
 
-    /*  Returns false if the event should be
-     *  added to the main queue.
+    /*  Returns false if the event should be added to the main queue.
      */
     [[nodiscard]] virtual auto perform_control(sl::index  slot,
                                                span_cbyte seq)
@@ -148,8 +145,9 @@ namespace laplace::network {
     [[nodiscard]] auto get_max_event_size() const noexcept
         -> sl::whole;
 
-    std::vector<slot_info>    m_slots;
-    std::unique_ptr<udp_node> m_node;
+    std::vector<slot_info>                  m_slots;
+    std::unique_ptr<socket_interface::node> m_node;
+    std::unique_ptr<socket_interface>       m_socket_interface;
 
   private:
     [[nodiscard]] auto has_free_slots() const -> bool;

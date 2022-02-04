@@ -55,10 +55,6 @@ Will generate embedded data code and OpenGL interface code. `ON` by default.
 - `LAPLACE_UNSAFE` - disable safety checks of Laplace. `OFF` by default.
 - `LAPLACE_FETCH_DEPENDENCIES` - fetch dependencies from source.
 Set to `OFF` is you have installed dependencies. `ON` by default.
-  - `LAPLACE_GOOGLETEST_TAG` - googletest git tag. `release-1.11.0` by default.
-  - `LAPLACE_GOOGLEBENCHMARK_TAG` - google/benchmark git tag. `v1.5.3` by default.
-  - `LAPLACE_WOLFSSL_TAG` - wolfSSL git tag. `v4.8.1-stable` by default.
-  - `LAPLACE_FREETYPE_TAG` - FreeType git tag. `VER-2-10-4` by default.
 
 Tests will be created if `LAPLACE_ENABLE_TESTING` or `LAPLACE_ENABLE_COVERAGE` is `ON`.
 

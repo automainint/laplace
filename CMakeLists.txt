@@ -80,14 +80,25 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
   if(LAPLACE_ENABLE_TESTING OR LAPLACE_ENABLE_COVERAGE)
     enable_testing()
 
-    add_test(
-      NAME ${LAPLACE_UNITTESTS}
-      COMMAND ${QUADWAR_EXE} --tests --gtest_filter=*.*)
+    macro(laplace_add_test name)
+      add_test(
+        NAME ${LAPLACE_UNITTESTS}-${name}
+        COMMAND ${QUADWAR_EXE} --tests --gtest_filter=${name}.*)
 
-    set_tests_properties(
-      ${LAPLACE_UNITTESTS}
+      set_tests_properties(
+        ${LAPLACE_UNITTESTS}-${name}
         PROPERTIES
-          TIMEOUT "40")
+        TIMEOUT "20")
+    endmacro()
+
+    laplace_add_test(core)
+    laplace_add_test(math)
+    laplace_add_test(engine)
+    laplace_add_test(format)
+    laplace_add_test(network)
+    laplace_add_test(platform)
+    laplace_add_test(graphics)
+    laplace_add_test(ui)
   endif()
 endif()
 

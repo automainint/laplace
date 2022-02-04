@@ -8,20 +8,19 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_utils_h
-#define laplace_network_utils_h
+#ifndef laplace_network_udp_ipv4_interface_h
+#define laplace_network_udp_ipv4_interface_h
 
-#include "../core/socket.h"
-#include "defs.h"
+#include "socket_interface.h"
 
 namespace laplace::network {
-  [[nodiscard]] auto clamp_chunk(sl::whole size) noexcept -> int;
+  class udp_ipv4_interface : public socket_interface {
+  public:
+    ~udp_ipv4_interface() noexcept override = default;
 
-  [[nodiscard]] auto to_string(::sockaddr const &a) noexcept
-      -> std::string;
-
-  [[nodiscard]] auto set_mode(socket_t &s, io_mode m) noexcept
-      -> bool;
+    [[nodiscard]] auto open(uint16_t port) noexcept
+        -> std::unique_ptr<node> override;
+  };
 }
 
 #endif

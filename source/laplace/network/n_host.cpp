@@ -45,7 +45,7 @@ namespace laplace::network {
     cleanup();
     set_connected(true);
 
-    m_node = make_unique<udp_node>(port);
+    m_node = m_socket_interface->open(port);
 
     process_event(slot_host,
                   encode<server_clock>(get_tick_duration()));
@@ -66,7 +66,7 @@ namespace laplace::network {
       const auto cipher_id = session_request::get_cipher(seq);
 
       m_slots[slot].token = generate_token();
-      m_slots[slot].node  = make_unique<udp_node>(any_port);
+      m_slots[slot].node  = m_socket_interface->open(any_port);
 
       if (cipher_id == ids::cipher_ecc_rabbit) {
         m_slots[slot].tran.setup_cipher<ecc_rabbit>();

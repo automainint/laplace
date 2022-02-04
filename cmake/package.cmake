@@ -9,12 +9,10 @@ if(LAPLACE_ENABLE_OBJ)
     ${LAPLACE_OBJ}
       INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/source)
-
-  add_library(${PROJECT_NAME}::${LAPLACE_LIB} ALIAS ${LAPLACE_OBJ})
 endif()
 
 if(LAPLACE_ENABLE_OBJ OR LAPLACE_ENABLE_LIB)
-  macro(add_headers folder)
+  macro(laplace_add_headers folder)
     file(
       GLOB_RECURSE headers_
       RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/source/${folder}
@@ -34,8 +32,8 @@ if(LAPLACE_ENABLE_OBJ OR LAPLACE_ENABLE_LIB)
     unset(dir_)
   endmacro()
 
-  add_headers(laplace)
-  add_headers(generated)
+  laplace_add_headers(laplace)
+  laplace_add_headers(generated)
 
   install(
     TARGETS ${LAPLACE_OBJ}
