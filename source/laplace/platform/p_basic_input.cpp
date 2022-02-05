@@ -1,6 +1,4 @@
-/*  laplace/platform/c_basic_input.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -87,12 +85,18 @@ namespace laplace::platform {
       return;
 
     m_events.emplace_back<input_event>(
-        { .cursor_x  = get_cursor_x(),
-          .cursor_y  = get_cursor_y(),
-          .key       = code,
-          .delta     = is_down ? input_event::delta_key_down
-                               : input_event::delta_key_up,
-          .character = process_char(code, is_down) });
+        { .is_capslock   = is_capslock(),
+          .is_numlock    = is_numlock(),
+          .is_scrolllock = is_scrolllock(),
+          .is_alt        = is_alt(),
+          .is_shift      = is_shift(),
+          .is_control    = is_control(),
+          .cursor_x      = get_cursor_x(),
+          .cursor_y      = get_cursor_y(),
+          .key           = code,
+          .delta         = is_down ? input_event::delta_key_down
+                                   : input_event::delta_key_up,
+          .character     = process_char(code, is_down) });
 
     m_keyboard[code].is_down = is_down;
   }
@@ -101,10 +105,16 @@ namespace laplace::platform {
     m_wheel_delta += delta * m_wheel_scale;
 
     m_events.emplace_back<input_event>(
-        { .cursor_x = get_cursor_x(),
-          .cursor_y = get_cursor_y(),
-          .key      = key_wheel,
-          .delta    = delta * m_wheel_scale });
+        { .is_capslock   = is_capslock(),
+          .is_numlock    = is_numlock(),
+          .is_scrolllock = is_scrolllock(),
+          .is_alt        = is_alt(),
+          .is_shift      = is_shift(),
+          .is_control    = is_control(),
+          .cursor_x      = get_cursor_x(),
+          .cursor_y      = get_cursor_y(),
+          .key           = key_wheel,
+          .delta         = delta * m_wheel_scale });
   }
 
   void basic_input::update_cursor(sl::index x, sl::index y) noexcept {
@@ -139,9 +149,15 @@ namespace laplace::platform {
 
     if (m_char_time_msec < 0) {
       m_events.emplace_back<input_event>(
-          { .cursor_x  = get_cursor_x(),
-            .cursor_y  = get_cursor_y(),
-            .character = m_last_char });
+          { .is_capslock   = is_capslock(),
+            .is_numlock    = is_numlock(),
+            .is_scrolllock = is_scrolllock(),
+            .is_alt        = is_alt(),
+            .is_shift      = is_shift(),
+            .is_control    = is_control(),
+            .cursor_x      = get_cursor_x(),
+            .cursor_y      = get_cursor_y(),
+            .character     = m_last_char });
 
       m_char_time_msec += m_char_period_msec;
     }

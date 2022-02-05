@@ -1,6 +1,4 @@
-/*  laplace/ui/elem/uie_button.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -15,15 +13,20 @@
 #include <utility>
 
 namespace laplace::ui::elem {
-  using core::cref_input_handler, core::keys::key_lbutton,
-      core::is_key_down, core::is_key_up;
+  using core::input_event, core::input_handler,
+      core::keys::key_lbutton, core::is_key_down, core::is_key_up;
 
   void button::on_click(event_button_click ev) noexcept {
     m_on_click = std::move(ev);
   }
 
-  void button::tick(sl::time           delta_msec,
-                    cref_input_handler in) noexcept {
+  auto button::process_event(input_event const &ev) noexcept
+      -> event_status {
+    return button_process_event(ev);
+  }
+
+  void button::tick(sl::time             delta_msec,
+                    input_handler const &in) noexcept {
     button_tick(in);
   }
 
@@ -61,50 +64,44 @@ namespace laplace::ui::elem {
   auto button::update(ptr_widget const         &object,
                       button_state              button_state,
                       event_button_click const &on_button_click,
-                      cref_input_handler        in) noexcept
+                      input_event const        &ev) noexcept
       -> update_result {
-    auto is_pressed = button_state.is_pressed;
+    auto const x = ev.cursor_x;
+    auto const y = ev.cursor_y;
 
-    for (auto const &ev : in.get_events()) {
-      if (ev.key != key_lbutton)
-        continue;
+    auto const has_cursor = contains(button_state.bounds, x, y) &&
+                            (!object || object->event_allowed(x, y));
 
-      auto const x = ev.cursor_x;
-      auto const y = ev.cursor_y;
+    if (ev.key != key_lbutton)
+      return { button_state.is_pressed };
 
-      auto const has_cursor = contains(button_state.bounds, x, y) &&
-                              (!object ||
-                               object->event_allowed(x, y));
+    if (button_state.is_pressed) {
+      if (is_key_up(ev)) {
+        if (has_cursor && on_button_click)
+          on_button_click(object);
 
-      if (is_pressed) {
-        if (is_key_up(ev)) {
-          if (has_cursor && on_button_click)
-            on_button_click(object);
-
-          is_pressed = false;
-        }
-      } else if (is_key_down(ev) && has_cursor) {
-        is_pressed = true;
+        return { false };
       }
+    } else if (is_key_down(ev) && has_cursor) {
+      return { true };
     }
 
+    return { button_state.is_pressed };
+  }
+
+  auto button::button_process_event(input_event const &ev) noexcept
+      -> event_status {
+    set_pressed(
+        update(shared_from_this(), get_button_state(), m_on_click, ev)
+            .is_pressed);
+    return event_status::proceed;
+  }
+
+  void button::button_tick(input_handler const &in) noexcept {
     auto const x = in.get_cursor_x();
     auto const y = in.get_cursor_y();
 
-    auto const has_cursor = contains(button_state.bounds, x, y) &&
-                            (!object ||
-                             object->event_allowed(x, y)) &&
-                            (is_pressed ||
-                             !in.is_key_down(key_lbutton));
-
-    return { is_pressed, has_cursor };
-  }
-
-  void button::button_tick(cref_input_handler in) noexcept {
-    auto status = update(shared_from_this(), get_button_state(),
-                         m_on_click, in);
-
-    set_pressed(status.is_pressed);
-    set_cursor(status.has_cursor);
+    set_cursor(event_allowed(x, y) &&
+               (is_pressed() || !in.is_key_down(key_lbutton)));
   }
 }

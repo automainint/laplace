@@ -45,6 +45,7 @@ namespace laplace::ui {
     sl::whole          length_limit = 0;
     sl::index          cursor       = 0;
     sl::index          selection    = 0;
+    sl::index          flash        = 0;
   };
 
   using fn_prepare     = std::function<void()>;

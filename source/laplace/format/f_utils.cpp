@@ -1,6 +1,4 @@
-/*  laplace/format/f_utils.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -34,8 +32,8 @@ namespace laplace::format {
         return 0;
       }
 
-      out.write(
-          reinterpret_cast<const char *>(data.data()), data.size());
+      out.write(reinterpret_cast<const char *>(data.data()),
+                data.size());
 
       return data.size();
     };
