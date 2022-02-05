@@ -199,29 +199,20 @@ namespace laplace::test {
       my_host->set_allowed_commands(allowed_commands);
       my_host->listen();
 
-      my_host->set_verbose(true);
-      client->set_verbose(true);
-      
       constexpr int64_t test_value = 100;
 
       for (sl::index k = 1; k <= test_value; k++)
         my_host->emit<debug>(1);
 
-      verb(" * Host    *");
       my_host->tick(1);
-      verb("");
 
       client->connect(localhost, my_host->get_port());
 
       for (sl::index k = 0; k < 20; k++) {
         yield();
-        verb(" * Host    *");
         my_host->tick(10);
-        verb("");
         yield();
-        verb(" * Client  *");
         client->tick(10);
-        verb("");
       }
 
       int64_t echo_value = 0;

@@ -1,8 +1,4 @@
-/*  laplace/platform/opengl.h
- *
- *      OpenGL utility.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -18,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "../../generated/gl/types.h"
+#include "../generated/gl/types.h"
 
 namespace laplace::gl {
   using ptr_function = void(LAPLACE_GL_API *)();

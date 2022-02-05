@@ -1,6 +1,4 @@
-/*  laplace/format/f_text.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -69,9 +67,8 @@ namespace laplace::format::text {
     return result;
   }
 
-  static bool parse(parser &in,
-                    unival &f,
-                    bool    is_vec_elem = false) noexcept {
+  static bool parse(parser &in, unival &f,
+                    bool is_vec_elem = false) noexcept {
     auto field = unival {};
 
     auto x_u64 = uint64_t {};
@@ -235,8 +232,7 @@ namespace laplace::format::text {
   }
 
   static bool printdown(function<bool(string_view)> print,
-                        unival const &              f,
-                        sl::whole                   indent = 0,
+                        unival const &f, sl::whole indent = 0,
                         bool is_vec_elem = false) noexcept {
     if (f.is_boolean()) {
       return print(f ? "true" : "false");

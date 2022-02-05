@@ -1,8 +1,4 @@
-/*  laplace/stem/application.cpp
- *
- *      Base class for application.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -35,8 +31,7 @@ namespace laplace::stem {
       std::ifstream, std::filesystem::path, std::chrono::steady_clock,
       std::chrono::milliseconds, std::chrono::duration_cast;
 
-  application::application(int           argc,
-                           char        **argv,
+  application::application(int argc, char **argv,
                            unival const &def_cfg) noexcept {
     m_config     = load(argc, argv, def_cfg);
     m_frame_time = steady_clock::now();

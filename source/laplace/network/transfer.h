@@ -1,6 +1,4 @@
-/*  laplace/network/transfer.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -18,20 +16,22 @@
 namespace laplace::network {
   class transfer {
   public:
+    enum encryption_tag { plain, encrypted };
+
     void set_verbose(bool is_verbose) noexcept;
     void set_cipher(std::unique_ptr<crypto::basic_cipher> cipher);
     void set_remote_key(span_cbyte key);
 
-    [[nodiscard]] auto pack(std::span<const span_cbyte> data)
+    [[nodiscard]] static auto pack(std::span<span_cbyte const> data)
         -> vbyte;
-    [[nodiscard]] auto unpack(span_cbyte data) -> sl::vector<vbyte>;
 
-    [[nodiscard]] auto encode(std::span<const span_cbyte> data)
+    [[nodiscard]] auto encode(std::span<span_cbyte const> data,
+                              encryption_tag _enc = encrypted)
         -> vbyte;
+
     [[nodiscard]] auto decode(span_cbyte data) -> sl::vector<vbyte>;
 
     [[nodiscard]] auto get_public_key() const noexcept -> span_cbyte;
-    [[nodiscard]] auto get_mutual_key() const noexcept -> span_cbyte;
 
     [[nodiscard]] auto is_encrypted() const noexcept -> bool;
 
@@ -39,6 +39,7 @@ namespace laplace::network {
 
     [[nodiscard]] static auto get_data_overhead() noexcept
         -> sl::whole;
+
     [[nodiscard]] static auto check_sum(span_cbyte data) -> uint64_t;
 
     template <typename cipher_>
@@ -47,11 +48,10 @@ namespace laplace::network {
     }
 
   private:
-    [[nodiscard]] auto pack_internal(std::span<const span_cbyte> data,
-                                     const uint16_t mark) -> vbyte;
+    [[nodiscard]] static auto pack_internal(
+        std::span<const span_cbyte> data, uint16_t mark) -> vbyte;
 
-    [[nodiscard]] auto unpack_internal(span_cbyte     data,
-                                       const uint16_t mark)
+    [[nodiscard]] auto unpack_internal(span_cbyte data, uint16_t mark)
         -> std::vector<vbyte>;
 
     [[nodiscard]] auto scan(span_cbyte data,

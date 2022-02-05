@@ -15,12 +15,17 @@
 
 namespace laplace::ui {
   using std::weak_ptr, std::lower_bound, std::u8string_view,
-      core::cref_input_handler;
+      core::input_handler, core::input_event, core::input_event;
 
   weak_ptr<context> basic_widget::m_default_context;
 
-  void basic_widget::tick(sl::time           delta_msec,
-                          cref_input_handler in) noexcept {
+  auto basic_widget::process_event(input_event const &ev) noexcept
+      -> event_status {
+    return widget_process_event(ev);
+  }
+
+  void basic_widget::tick(sl::time             delta_msec,
+                          input_handler const &in) noexcept {
     widget_tick(delta_msec, in);
   }
 
@@ -41,6 +46,12 @@ namespace laplace::ui {
       return true;
 
     return p->event_allowed(x, y);
+  }
+
+  void basic_widget::process_events_and_tick(
+      sl::time delta_msec, input_handler const &in) noexcept {
+    for (auto const &ev : in.get_events()) process_event(ev);
+    tick(delta_msec, in);
   }
 
   void basic_widget::set_layout(layout fn) noexcept {
@@ -149,8 +160,26 @@ namespace laplace::ui {
     m_is_changed = false;
   }
 
-  void basic_widget::widget_tick(sl::time           delta_msec,
-                                 cref_input_handler in) noexcept {
+  auto basic_widget::widget_process_event(
+      input_event const &ev) noexcept -> event_status {
+    if (is_attached() || (is_visible() && is_enabled())) {
+      auto list = sl::vector<basic_widget *> {};
+      list.reserve(m_childs.size());
+
+      for (auto &c : m_childs)
+        if (c->is_visible() && c->is_enabled())
+          list.emplace_back(c.get());
+
+      for (auto &c : list)
+        if (c->process_event(ev) == event_status::remove)
+          return event_status::remove;
+    }
+
+    return event_status::proceed;
+  }
+
+  void basic_widget::widget_tick(sl::time             delta_msec,
+                                 input_handler const &in) noexcept {
     if (!is_attached()) {
       m_absolute_x = m_rect.x;
       m_absolute_y = m_rect.y;
@@ -172,14 +201,14 @@ namespace laplace::ui {
     if (is_attached()) {
       draw_attached_widgets(con);
     } else
-        /*  Check if visible only for root widget. Visibility
-         *  checking for attached widgets in widget::draw_childs.
-         */
-        if (is_visible()) {
-      con.prepare();
-      update_root();
-      draw_attached_widgets(con);
-    }
+      /*  Check if visible only for root widget. Visibility
+       *  checking for attached widgets in widget::draw_childs.
+       */
+      if (is_visible()) {
+        con.prepare();
+        update_root();
+        draw_attached_widgets(con);
+      }
   }
 
   auto basic_widget::is_widget_changed() const noexcept -> bool {

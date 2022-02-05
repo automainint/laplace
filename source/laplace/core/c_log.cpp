@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -21,18 +21,18 @@ namespace laplace {
       std::string_view, std::u8string_view, std::cerr,
       std::ostringstream;
 
-  static auto g_log_default = [](string_view s) {
-    cerr << s << '\n';
+  static auto g_log_default = [](string_view message) {
+    cerr << message << '\n';
   };
 
   static bool g_verbose  = true;
   static auto g_log_lock = shared_mutex {};
   static auto g_log      = fn_log { g_log_default };
 
-  void setup_log(fn_log fn) noexcept {
+  void setup_log(fn_log const &write) noexcept {
     if constexpr (_log_enabled) {
       auto _ul = unique_lock(g_log_lock);
-      g_log    = fn ? fn : g_log_default;
+      g_log    = write ? write : g_log_default;
     }
   }
 
@@ -52,30 +52,30 @@ namespace laplace {
     }
   }
 
-  void log(string_view s) noexcept {
+  void log(string_view message) noexcept {
     if constexpr (_log_enabled) {
       auto _ul = unique_lock(g_log_lock);
-      g_log(s);
+      g_log(message);
     }
   }
 
-  void log(u8string_view s) noexcept {
+  void log(u8string_view message) noexcept {
     if constexpr (_log_enabled) {
-      log(as_ascii_string(s));
+      log(as_ascii_string(message));
     }
   }
 
-  void verb(string_view s) noexcept {
-    if constexpr (_log_enabled) {
-      if (is_verbose())
-        log(s);
-    }
-  }
-
-  void verb(u8string_view s) noexcept {
+  void verb(string_view message) noexcept {
     if constexpr (_log_enabled) {
       if (is_verbose())
-        log(s);
+        log(message);
+    }
+  }
+
+  void verb(u8string_view message) noexcept {
+    if constexpr (_log_enabled) {
+      if (is_verbose())
+        log(message);
     }
   }
 

@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -260,25 +260,6 @@ namespace laplace::engine {
 
     void invalidate_range(sl::vector<_range> &ranges, sl::index n,
                           sl::whole count) noexcept;
-
-    [[nodiscard, maybe_unused]] static auto _add(int8_t x,
-                                                 int8_t y) noexcept
-        -> int8_t;
-    [[nodiscard, maybe_unused]] static auto _add(int32_t x,
-                                                 int32_t y) noexcept
-        -> int32_t;
-    [[nodiscard, maybe_unused]] static auto _add(int64_t x,
-                                                 int64_t y) noexcept
-        -> int64_t;
-    [[nodiscard, maybe_unused]] static auto _sub(int8_t x,
-                                                 int8_t y) noexcept
-        -> int8_t;
-    [[nodiscard, maybe_unused]] static auto _sub(int32_t x,
-                                                 int32_t y) noexcept
-        -> int32_t;
-    [[nodiscard, maybe_unused]] static auto _sub(int64_t x,
-                                                 int64_t y) noexcept
-        -> int64_t;
 
     std::shared_timed_mutex m_lock;
     std::weak_ptr<world>    m_world;

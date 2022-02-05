@@ -1,6 +1,4 @@
-/*  test/unittests/c_utf8.test.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -19,6 +17,25 @@ namespace laplace::test {
   TEST(core, utf8_length) {
     EXPECT_EQ(utf8::length(u8""), 0);
     EXPECT_EQ(utf8::length(u8"foo bar"), 7);
+  }
+
+  TEST(core, utf8_offset) {
+    EXPECT_EQ(utf8::offset(u8"", 10), 0);
+    EXPECT_EQ(utf8::offset(u8"foo bar", 0), 0);
+    EXPECT_EQ(utf8::offset(u8"foo bar", 3), 3);
+    EXPECT_EQ(utf8::offset(u8"foo bar", 7), 7);
+  }
+
+  TEST(core, utf8_next) {
+    EXPECT_EQ(utf8::next(u8"", 0), 0);
+    EXPECT_EQ(utf8::next(u8"foo bar", 0), 1);
+    EXPECT_EQ(utf8::next(u8"foo bar", 7), 7);
+  }
+
+  TEST(core, utf8_previous) {
+    EXPECT_EQ(utf8::previous(u8"", 0), 0);
+    EXPECT_EQ(utf8::previous(u8"foo bar", 0), 0);
+    EXPECT_EQ(utf8::previous(u8"foo bar", 7), 6);
   }
 
   TEST(core, utf8_decode) {

@@ -1,8 +1,4 @@
-/*  laplace/platform/win32/win32_audio.cpp
- *
- *      Win32 audio implementation.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -23,6 +19,7 @@
 
 #include "thread.h"
 #include <algorithm>
+#include <mutex>
 
 namespace laplace::win32 {
   using std::make_unique, std::unique_lock, std::shared_lock,

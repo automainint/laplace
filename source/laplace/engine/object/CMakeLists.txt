@@ -3,5 +3,4 @@ target_sources(
     PRIVATE
       eo_actor.cpp eo_sets.cpp eo_timer.cpp
     PUBLIC
-      sets.h actor.h timer.h
-)
+      sets.h actor.h timer.h)

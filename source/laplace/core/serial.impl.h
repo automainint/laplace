@@ -1,6 +1,4 @@
-/*  laplace/core/serial.impl.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -68,9 +66,8 @@ namespace laplace::serial {
   }
 
   template <trivial type_>
-  constexpr auto rd(span_cbyte const seq,
-                    sl::index const  offset,
-                    type_ const      invalid) noexcept -> type_ {
+  constexpr auto rd(span_cbyte const seq, sl::index const offset,
+                    type_ const invalid) noexcept -> type_ {
     if (offset < 0 || offset + sizeof(type_) > seq.size())
       return invalid;
     return _convert_endian(
@@ -78,9 +75,8 @@ namespace laplace::serial {
   }
 
   template <trivial type_>
-  constexpr void wr(span_byte const seq,
-                    sl::index const offset,
-                    type_ const     value) noexcept {
+  constexpr void wr(span_byte const seq, sl::index const offset,
+                    type_ const value) noexcept {
     if (offset < 0 || offset + sizeof value > seq.size())
       return;
     _move(_convert_endian(value),
@@ -170,8 +166,7 @@ namespace laplace::serial {
   }
 
   template <typename arg0_, typename... args_>
-  constexpr void write_bytes(span_byte data,
-                             arg0_     arg0,
+  constexpr void write_bytes(span_byte data, arg0_ arg0,
                              args_... args) noexcept {
     const auto size = byte_count(arg0);
 
@@ -199,7 +194,7 @@ namespace laplace::serial {
   }
 
   template <typename... args_>
-  constexpr auto pack_to_bytes(args_... args) noexcept {
+  inline auto pack_to_bytes(args_... args) noexcept {
     auto result = vbyte(byte_count(args...));
     write_bytes(result, args...);
     return result;

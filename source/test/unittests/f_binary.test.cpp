@@ -1,6 +1,4 @@
-/*  test/unittests/f_text.test.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -211,10 +209,10 @@ namespace laplace::test {
   }
 
   TEST(format, binary_compact_composite) {
-    auto src = unival {};
-    src[3]   = "Foo";
-    src[1]   = "Bar";
-    src[10]  = 42;
+    auto src       = unival {};
+    src.by_key(3)  = "Foo";
+    src.by_key(1)  = "Bar";
+    src.by_key(10) = 42;
 
     auto ss = ostringstream {};
 

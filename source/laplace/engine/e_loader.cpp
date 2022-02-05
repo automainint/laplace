@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -13,82 +13,75 @@
 namespace laplace::engine {
   using std::shared_lock, std::unique_lock, std::jthread;
 
-  loader::loader() {
-    m_thread = jthread([this]() {
+  loader::loader() noexcept {
+    auto loop = [this]() {
       auto _ul = unique_lock(m_lock);
 
       while (!m_is_done) {
         while (!m_queue.empty()) {
-          if (!m_factory) {
-            error_("No factory.", __FUNCTION__);
+          if (!m_context.decode || !m_context.perform) {
+            error_("Invalid context.", __FUNCTION__);
             break;
           }
 
-          if (!m_world) {
-            error_("No world.", __FUNCTION__);
-            break;
-          }
-
-          auto task = m_factory->decode(m_queue.front());
+          auto task = m_context.decode(m_queue.front());
           m_queue.erase(m_queue.begin());
 
-          _ul.unlock();
+          if (task) {
+            _ul.unlock();
+            m_context.perform(task);
+            _ul.lock();
+          }
 
-          task->perform({ *m_world, access::data });
-
-          _ul.lock();
           m_progress++;
         }
 
         m_is_ready = true;
 
-        if (m_is_done) {
+        if (m_is_done)
+          /*  Break to prevent freeze.
+           */
           break;
-        }
 
         m_sync.wait(_ul);
       }
-    });
+    };
+
+    m_thread = jthread(loop);
   }
 
-  loader::~loader() {
+  loader::~loader() noexcept {
     done();
   }
 
-  void loader::set_world(ptr_world w) {
-    auto _ul = unique_lock(m_lock);
-    m_world  = w;
+  void loader::on_decode(fn_decode const &decode) noexcept {
+    auto _ul         = unique_lock(m_lock);
+    m_context.decode = decode;
   }
 
-  void loader::set_factory(ptr_factory f) {
-    auto _ul  = unique_lock(m_lock);
-    m_factory = f;
+  void loader::on_perform(fn_perform const &perform) noexcept {
+    auto _ul          = unique_lock(m_lock);
+    m_context.perform = perform;
   }
 
-  void loader::add_task(span_cbyte task) {
+  void loader::add_task(span_cbyte task) noexcept {
     auto _ul   = unique_lock(m_lock);
     m_is_ready = false;
     m_queue.emplace_back(vbyte { task.begin(), task.end() });
     m_sync.notify_all();
   }
 
-  auto loader::is_ready() -> bool {
+  auto loader::is_ready() noexcept -> bool {
     auto _ul = unique_lock(m_lock);
     return m_is_ready;
   }
 
-  auto loader::get_progress() -> sl::index {
+  auto loader::get_progress() noexcept -> sl::index {
     auto _ul = unique_lock(m_lock);
     return m_progress;
   }
 
-  void loader::set_ready(bool is_ready) {
-    auto _ul   = unique_lock(m_lock);
-    m_is_ready = is_ready;
-    m_sync.notify_all();
-  }
-
-  void loader::done() {
+  void loader::done() noexcept {
     auto _ul  = unique_lock(m_lock);
     m_is_done = true;
     m_sync.notify_all();

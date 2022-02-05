@@ -40,7 +40,7 @@ namespace laplace::network {
     set_state(server_state::prepare);
     set_connected(true);
 
-    m_node = make_unique<udp_node>(m_client_port);
+    m_node = m_socket_interface->open(m_client_port);
 
     auto slot = add_slot(m_host_address, m_host_port);
 
@@ -82,11 +82,13 @@ namespace laplace::network {
 
       if (!key.empty()) {
         m_slots[slot].tran.set_remote_key(key);
-        m_slots[slot].is_encrypted =
-            m_slots[slot].tran.is_encrypted();
+
+        m_slots[slot].encryption = m_slots[slot].tran.is_encrypted()
+                                       ? transfer::encrypted
+                                       : transfer::plain;
       }
 
-      m_slots[slot].node         = make_unique<udp_node>(any_port);
+      m_slots[slot].node         = m_socket_interface->open(any_port);
       m_slots[slot].port         = session_response::get_port(seq);
       m_slots[slot].is_exclusive = true;
 

@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -13,6 +13,7 @@
 #include "../core/utils.h"
 #include "access/world.h"
 #include "action/remove.h"
+#include "eval/arithmetic.impl.h"
 #include "world.h"
 #include <algorithm>
 #include <chrono>
@@ -21,7 +22,8 @@ namespace laplace::engine {
   namespace sets = object::sets;
 
   using std::unique_lock, std::shared_lock, std::span, std::min,
-      std::max, std::move, std::make_unique, std::lower_bound;
+      std::max, std::move, std::make_unique, std::lower_bound,
+      eval::impl::wrap_add, eval::impl::wrap_sub;
 
   using ms = std::chrono::milliseconds;
 
@@ -181,8 +183,8 @@ namespace laplace::engine {
         return;
       }
 
-      m_sets[n].delta = _add(m_sets[n].delta,
-                             _sub(value, m_sets[n].value));
+      m_sets[n].delta = wrap_add(m_sets[n].delta,
+                                 wrap_sub(value, m_sets[n].value));
       sets_invalidate(n);
 
     } else {
@@ -199,7 +201,7 @@ namespace laplace::engine {
         return;
       }
 
-      m_sets[n].delta = _add(m_sets[n].delta, delta);
+      m_sets[n].delta = wrap_add(m_sets[n].delta, delta);
       sets_invalidate(n);
 
     } else {
@@ -275,8 +277,8 @@ namespace laplace::engine {
         return;
       }
 
-      m_bytes[n].delta = _add(m_bytes[n].delta,
-                              _sub(value, m_bytes[n].value));
+      m_bytes[n].delta = wrap_add(m_bytes[n].delta,
+                                  wrap_sub(value, m_bytes[n].value));
       bytes_invalidate(n);
 
     } else {
@@ -295,9 +297,9 @@ namespace laplace::engine {
       }
 
       for (sl::index i = 0; i < values.size(); i++)
-        m_bytes[n + i].delta = _add(
+        m_bytes[n + i].delta = wrap_add(
             m_bytes[n + i].delta,
-            _sub(values[i], m_bytes[n + i].value));
+            wrap_sub(values[i], m_bytes[n + i].value));
 
       bytes_invalidate(n, values.size());
 
@@ -316,7 +318,7 @@ namespace laplace::engine {
         return;
       }
 
-      m_bytes[n].delta = _add(m_bytes[n].delta, delta);
+      m_bytes[n].delta = wrap_add(m_bytes[n].delta, delta);
       bytes_invalidate(n);
 
     } else {
@@ -335,7 +337,8 @@ namespace laplace::engine {
       }
 
       for (sl::index i = 0; i < deltas.size(); i++)
-        m_bytes[n + i].delta = _add(m_bytes[n + i].delta, deltas[i]);
+        m_bytes[n + i].delta = wrap_add(m_bytes[n + i].delta,
+                                        deltas[i]);
 
       bytes_invalidate(n, deltas.size());
 
@@ -355,7 +358,8 @@ namespace laplace::engine {
       }
 
       for (sl::index i = 0; i < deltas.size(); i++)
-        m_bytes[n + i].delta = _sub(m_bytes[n + i].delta, deltas[i]);
+        m_bytes[n + i].delta = wrap_sub(m_bytes[n + i].delta,
+                                        deltas[i]);
 
       bytes_invalidate(n, deltas.size());
 
@@ -430,8 +434,8 @@ namespace laplace::engine {
         return;
       }
 
-      m_vec[n].delta = _add(m_vec[n].delta,
-                            _sub(value, m_vec[n].value));
+      m_vec[n].delta = wrap_add(m_vec[n].delta,
+                                wrap_sub(value, m_vec[n].value));
       vec_invalidate(n);
 
     } else {
@@ -449,7 +453,7 @@ namespace laplace::engine {
         return;
       }
 
-      m_vec[n].delta = _add(m_vec[n].delta, delta);
+      m_vec[n].delta = wrap_add(m_vec[n].delta, delta);
       vec_invalidate(n);
 
     } else {
@@ -486,8 +490,9 @@ namespace laplace::engine {
       }
 
       for (sl::index i = 0; i < values.size(); i++) {
-        m_vec[n + i].delta = _add(
-            m_vec[n + i].delta, _sub(values[i], m_vec[n + i].value));
+        m_vec[n + i].delta = wrap_add(
+            m_vec[n + i].delta,
+            wrap_sub(values[i], m_vec[n + i].value));
       }
 
       vec_invalidate(n, values.size());
@@ -508,7 +513,7 @@ namespace laplace::engine {
       }
 
       for (sl::index i = 0; i < deltas.size(); i++)
-        m_vec[n + i].delta = _add(m_vec[n + i].delta, deltas[i]);
+        m_vec[n + i].delta = wrap_add(m_vec[n + i].delta, deltas[i]);
 
       vec_invalidate(n, deltas.size());
 
@@ -528,7 +533,7 @@ namespace laplace::engine {
       }
 
       for (sl::index i = 0; i < deltas.size(); i++)
-        m_vec[n + i].delta = _sub(m_vec[n + i].delta, deltas[i]);
+        m_vec[n + i].delta = wrap_sub(m_vec[n + i].delta, deltas[i]);
 
       vec_invalidate(n, deltas.size());
 
@@ -558,7 +563,7 @@ namespace laplace::engine {
     if (auto _ul = unique_lock(m_lock, ms(lock_timeout_msec)); _ul) {
 
       m_vec.reserve(m_vec.size() + bunch.size());
-      for (auto x : bunch) m_vec.emplace_back<vec_row>({ x, 0 });
+      for (auto row : bunch) m_vec.emplace_back<vec_row>({ row, 0 });
 
     } else {
       error_("Lock timeout.", __FUNCTION__);
@@ -823,7 +828,7 @@ namespace laplace::engine {
 
     for (auto const &range : m_sets_changed)
       for (sl::index i = range.begin; i != range.end; i++) {
-        m_sets[i].value = _add(m_sets[i].value, m_sets[i].delta);
+        m_sets[i].value = wrap_add(m_sets[i].value, m_sets[i].delta);
         m_sets[i].delta = 0;
       }
 
@@ -846,7 +851,8 @@ namespace laplace::engine {
   void basic_entity::bytes_validate_all() noexcept {
     for (auto const &range : m_bytes_changed)
       for (sl::index i = range.begin; i != range.end; i++) {
-        m_bytes[i].value = _add(m_bytes[i].value, m_bytes[i].delta);
+        m_bytes[i].value = wrap_add(m_bytes[i].value,
+                                    m_bytes[i].delta);
         m_bytes[i].delta = 0;
       }
 
@@ -871,7 +877,7 @@ namespace laplace::engine {
   void basic_entity::vec_validate_all() noexcept {
     for (auto const &range : m_vec_changed)
       for (sl::index i = range.begin; i != range.end; i++) {
-        m_vec[i].value = _add(m_vec[i].value, m_vec[i].delta);
+        m_vec[i].value = wrap_add(m_vec[i].value, m_vec[i].delta);
         m_vec[i].delta = 0;
       }
 
@@ -944,47 +950,5 @@ namespace laplace::engine {
       i->end = j->end;
       ranges.erase(i + 1, j + 1);
     }
-  }
-
-  [[maybe_unused]] auto basic_entity::_add(int8_t x,
-                                           int8_t y) noexcept
-      -> int8_t {
-    return static_cast<int8_t>(static_cast<uint8_t>(x) +
-                               static_cast<uint8_t>(y));
-  }
-
-  [[maybe_unused]] auto basic_entity::_add(int32_t x,
-                                           int32_t y) noexcept
-      -> int32_t {
-    return static_cast<int32_t>(static_cast<uint32_t>(x) +
-                                static_cast<uint32_t>(y));
-  }
-
-  [[maybe_unused]] auto basic_entity::_add(int64_t x,
-                                           int64_t y) noexcept
-      -> int64_t {
-    return static_cast<int64_t>(static_cast<uint64_t>(x) +
-                                static_cast<uint64_t>(y));
-  }
-
-  [[maybe_unused]] auto basic_entity::_sub(int8_t x,
-                                           int8_t y) noexcept
-      -> int8_t {
-    return static_cast<int8_t>(static_cast<uint8_t>(x) -
-                               static_cast<uint8_t>(y));
-  }
-
-  [[maybe_unused]] auto basic_entity::_sub(int32_t x,
-                                           int32_t y) noexcept
-      -> int32_t {
-    return static_cast<int32_t>(static_cast<uint32_t>(x) -
-                                static_cast<uint32_t>(y));
-  }
-
-  [[maybe_unused]] auto basic_entity::_sub(int64_t x,
-                                           int64_t y) noexcept
-      -> int64_t {
-    return static_cast<int64_t>(static_cast<uint64_t>(x) -
-                                static_cast<uint64_t>(y));
   }
 }

@@ -3,6 +3,5 @@ target_sources(
     PRIVATE
       ui_rect.cpp ui_layout.cpp ui_basic_widget.cpp
     PUBLIC
-      basic_widget.h helper.h rect.h context.h layout.h
-)
+      basic_widget.h helper.h rect.h context.h layout.h)
 add_subdirectory(elem)

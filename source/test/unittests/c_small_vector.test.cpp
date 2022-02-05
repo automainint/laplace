@@ -1,6 +1,4 @@
-/*  test/unittests/c_small_vector.test.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -15,6 +13,8 @@
 #include <string>
 
 namespace laplace::test {
+  using std::string_view;
+
   TEST(core, small_vector_empty_at_construct) {
     auto v = small_vector<int> {};
     EXPECT_TRUE(v.empty());
@@ -66,6 +66,25 @@ namespace laplace::test {
     v.resize(1);
     v.at(0) = 3;
     EXPECT_EQ(v.at(0), 3);
+  }
+
+  TEST(core, small_vector_at_fail_1) {
+    setup_log([](string_view) {});
+
+    auto v = small_vector<int, 80, false> {};
+    EXPECT_EQ(v.at(-1), 0);
+    EXPECT_EQ(v.at(0), 0);
+
+    setup_log({});
+  }
+  TEST(core, small_vector_at_fail_2) {
+    setup_log([](string_view) {});
+
+    auto const v = small_vector<int, 80, false> {};
+    EXPECT_EQ(v.at(-1), 0);
+    EXPECT_EQ(v.at(0), 0);
+
+    setup_log({});
   }
 
   TEST(core, small_vector_push_back_twice) {
@@ -272,6 +291,15 @@ namespace laplace::test {
     EXPECT_GE(v.capacity(), 100);
   }
 
+  TEST(core, small_vector_reserve_fail) {
+    setup_log([](string_view) {});
+
+    auto v = small_vector<int, 80, false> {};
+    v.reserve(-1);
+
+    setup_log({});
+  }
+
   TEST(core, small_vector_clear) {
     auto v = small_vector<int> {};
     v.push_back(0);
@@ -286,11 +314,49 @@ namespace laplace::test {
     EXPECT_TRUE(v.empty());
   }
 
-  TEST(core, small_vector_insert) {
+  TEST(core, small_vector_insert_1) {
     auto v = small_vector<int> {};
     v.resize(100, 1);
     v.insert(v.begin() + 5, 10);
     EXPECT_EQ(v.at(5), 10);
+  }
+
+  TEST(core, small_vector_insert_2) {
+    auto v = small_vector<int> {};
+    auto x = small_vector<int> {};
+    x.push_back(1);
+    x.push_back(2);
+    v.insert(v.begin(), x.begin(), x.end());
+    v.insert(v.end(), x.begin(), x.end());
+    EXPECT_EQ(v.at(0), 1);
+    EXPECT_EQ(v.at(1), 2);
+    EXPECT_EQ(v.at(2), 1);
+    EXPECT_EQ(v.at(3), 2);
+  }
+
+  TEST(core, small_vector_insert_invalid_1) {
+    setup_log([](string_view) {});
+
+    auto v = small_vector<int, 80, false> {};
+    v.insert(v.begin() - 1, 10);
+    v.insert(v.end() + 1, 10);
+    EXPECT_EQ(v.size(), 0);
+
+    setup_log({});
+  }
+
+  TEST(core, small_vector_insert_invalid_2) {
+    setup_log([](string_view) {});
+
+    auto v = small_vector<int, 80, false> {};
+    auto x = small_vector<int, 80, false> {};
+    x.push_back(0);
+    v.insert(v.begin(), x.begin(), x.begin() - 1);
+    v.insert(v.begin() - 1, x.begin(), x.end());
+    v.insert(v.end() + 1, x.begin(), x.end());
+    EXPECT_EQ(v.size(), 0);
+
+    setup_log({});
   }
 
   TEST(core, small_vector_emplace) {
@@ -404,6 +470,16 @@ namespace laplace::test {
     EXPECT_EQ(v.at(3), 5);
   }
 
+  TEST(core, small_vector_erase_fail) {
+    setup_log([](string_view) {});
+
+    auto v = small_vector<int, 80, false> { 1, 2, 3, 4, 5 };
+    v.erase(v.begin() - 1);
+    EXPECT_EQ(v.size(), 5);
+
+    setup_log({});
+  }
+
   TEST(core, small_vector_erase_range) {
     auto v = small_vector<int> { 1, 2, 3, 4, 5 };
     v.erase(v.begin() + 1, v.begin() + 4);
@@ -411,6 +487,16 @@ namespace laplace::test {
     EXPECT_EQ(v.size(), 2);
     EXPECT_EQ(v.at(0), 1);
     EXPECT_EQ(v.at(1), 5);
+  }
+
+  TEST(core, small_vector_erase_range_fail) {
+    setup_log([](string_view) {});
+
+    auto v = small_vector<int, 80, false> { 1, 2, 3, 4, 5 };
+    v.erase(v.begin() + 1, v.begin());
+    EXPECT_EQ(v.size(), 5);
+
+    setup_log({});
   }
 
   TEST(core, small_vector_insert_range) {

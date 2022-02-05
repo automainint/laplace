@@ -1,6 +1,4 @@
-/*  laplace/stem/ui/su_context.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,6 +8,7 @@
  *  the MIT License for more details.
  */
 
+#include "../../core/utf8.h"
 #include "../../graphics/utils.h"
 #include "context.h"
 
@@ -100,9 +99,9 @@ namespace laplace::stem::ui {
       }
     }
 
-    const sl::whole n0 = state.is_enabled ? 0 : 4;
+    sl::whole const n0 = state.is_enabled ? 0 : 4;
 
-    sl::whole n_color = 0;
+    auto n_color = sl::whole {};
 
     if (state.is_pressed) {
       n_color = n0 + 2;
@@ -153,12 +152,29 @@ namespace laplace::stem::ui {
       _render_solid(f, colors[0]);
     }
 
-    auto const a  = m_font->adjust(state.text);
-    auto const dy = state.bounds.height - a.height;
-    auto const x  = state.bounds.x + dy / 2;
-    auto const y  = state.bounds.y + dy / 2;
+    auto const text_rect = m_font->adjust(state.text);
+    auto const dy        = state.bounds.height - text_rect.height;
+    auto const x         = state.bounds.x + dy / 2;
+    auto const y         = state.bounds.y + dy / 2;
 
     m_font->render(x, y, state.text);
+
+    if (state.has_focus) {
+      if (state.flash < 0) {
+        auto const cursor_rect = m_font->adjust(
+            { state.text.begin(),
+              state.text.begin() +
+                  utf8::offset(state.text, state.cursor) });
+
+        auto const flash_rect = m_font->adjust(u8"|");
+
+        auto const flash_x = x + cursor_rect.width -
+                             flash_rect.width / 2;
+        auto const flash_y = y;
+
+        m_font->render(flash_x, flash_y, u8"|");
+      }
+    }
   }
 
   void context_impl::_render_solid(rectf      r,

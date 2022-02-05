@@ -1,6 +1,4 @@
-/*  laplace/format/utils.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -17,7 +15,7 @@
 
 namespace laplace::format {
   auto wrap(std::istream &in) noexcept -> fn_read;
-  auto wrap(std::ostream &out) noexcept-> fn_write;
+  auto wrap(std::ostream &out) noexcept -> fn_write;
 }
 
 #endif

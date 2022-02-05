@@ -86,7 +86,7 @@ def process_file(file_name, incs = list()):
 
 def main():
   data_folder = os.path.join('..', 'data')
-  folder = os.path.join('..', 'source', 'generated')
+  folder = os.path.join('..', 'source', 'laplace', 'generated')
 
   os.makedirs(folder, exist_ok=True)
 

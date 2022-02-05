@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -31,17 +31,17 @@ namespace laplace::engine {
 
     auto parse_multi(std::string_view commands) const
         -> sl::vector<vbyte>;
-    auto print_multi(std::span<const span_cbyte> seqs) const
+    auto print_multi(std::span<span_cbyte const> seqs) const
         -> std::string;
 
     static auto id_by_name_native(std::string_view name) -> uint16_t;
     static auto name_by_id_native(uint16_t id) -> std::string;
 
-    static auto parse_native(fn_id_by_name    id_by_name,
-                             std::string_view command) -> vbyte;
+    static auto parse_native(fn_id_by_name const &id_by_name,
+                             std::string_view     command) -> vbyte;
 
-    static auto print_native(fn_name_by_id name_by_id, span_cbyte seq)
-        -> std::string;
+    static auto print_native(fn_name_by_id const &name_by_id,
+                             span_cbyte           seq) -> std::string;
 
     static auto decode_native(span_cbyte seq) -> ptr_prime_impact;
 

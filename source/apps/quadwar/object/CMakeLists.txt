@@ -5,5 +5,4 @@ target_sources(
       aqo_unit.cpp aqo_root.cpp
     PUBLIC
       sets.h unit.h pathmap.h landscape.h player.h root.h
-      defs.h
-)
+      defs.h)

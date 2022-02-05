@@ -1,6 +1,4 @@
-/*  test/unittests/c_serial.test.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -14,7 +12,8 @@
 #include <gtest/gtest.h>
 
 namespace laplace::test {
-  using serial::rd, serial::wr, serial::write_bytes, std::array,
+  using serial::rd, serial::wr, serial::write_bytes,
+      serial::pack_to_array, serial::pack_to_bytes, std::array,
       std::span;
 
   TEST(core, serial_read) {
@@ -59,5 +58,59 @@ namespace laplace::test {
     EXPECT_EQ(rd<uint8_t>(data, 13), 6);
     EXPECT_EQ(rd<uint8_t>(data, 14), 7);
     EXPECT_EQ(rd<uint8_t>(data, 15), 8);
+  }
+
+  TEST(core, serial_pack_to_array) {
+    int16_t x = 10;
+    int32_t y = 20;
+    int64_t z = 30;
+
+    auto v = pack_to_array(x, y, z);
+
+    EXPECT_EQ(v.size(), 14);
+
+    if (v.size() == 14) {
+      EXPECT_EQ(v[0], 10);
+      EXPECT_EQ(v[1], 0);
+      EXPECT_EQ(v[2], 20);
+      EXPECT_EQ(v[3], 0);
+      EXPECT_EQ(v[4], 0);
+      EXPECT_EQ(v[5], 0);
+      EXPECT_EQ(v[6], 30);
+      EXPECT_EQ(v[7], 0);
+      EXPECT_EQ(v[8], 0);
+      EXPECT_EQ(v[9], 0);
+      EXPECT_EQ(v[10], 0);
+      EXPECT_EQ(v[11], 0);
+      EXPECT_EQ(v[12], 0);
+      EXPECT_EQ(v[13], 0);
+    }
+  }
+
+  TEST(core, serial_pack_to_bytes) {
+    int16_t x = 10;
+    int32_t y = 20;
+    int64_t z = 30;
+
+    auto v = pack_to_bytes(x, y, z);
+
+    EXPECT_EQ(v.size(), 14);
+
+    if (v.size() == 14) {
+      EXPECT_EQ(v[0], 10);
+      EXPECT_EQ(v[1], 0);
+      EXPECT_EQ(v[2], 20);
+      EXPECT_EQ(v[3], 0);
+      EXPECT_EQ(v[4], 0);
+      EXPECT_EQ(v[5], 0);
+      EXPECT_EQ(v[6], 30);
+      EXPECT_EQ(v[7], 0);
+      EXPECT_EQ(v[8], 0);
+      EXPECT_EQ(v[9], 0);
+      EXPECT_EQ(v[10], 0);
+      EXPECT_EQ(v[11], 0);
+      EXPECT_EQ(v[12], 0);
+      EXPECT_EQ(v[13], 0);
+    }
   }
 }

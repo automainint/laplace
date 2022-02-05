@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,8 +10,9 @@
 
 #include "udp_server.h"
 
+#include "../engine/eval/arithmetic.impl.h"
 #include "../engine/protocol/all.h"
-#include "crypto/ecc_rabbit.h"
+#include "udp_ipv4_interface.h"
 #include <algorithm>
 #include <chrono>
 #include <thread>
@@ -20,20 +21,24 @@ namespace laplace::network {
   namespace access = engine::access;
   using namespace engine::protocol;
 
-  using std::this_thread::sleep_for, std::min, std::max, std::any_of,
-      std::find_if, std::make_unique, std::span, std::numeric_limits,
+  using std::min, std::max, std::any_of, std::make_unique,
       std::string, std::string_view, std::chrono::milliseconds,
       engine::ptr_impact, engine::prime_impact, engine::seed_type,
       engine::loader, engine::time_undefined, engine::id_undefined,
-      engine::encode, crypto::ecc_rabbit;
+      engine::encode, engine::ptr_prime_impact,
+      engine::eval::impl::wrap_add;
 
-  const sl::whole udp_server::default_chunk_size        = 4192;
-  const sl::whole udp_server::chunk_size_increment      = 512;
-  const sl::whole udp_server::default_loss_compensation = 4;
-  const uint16_t  udp_server::default_max_command_id    = 400;
-  const sl::index udp_server::max_index_delta           = 0x1000;
+  sl::whole const udp_server::default_chunk_size        = 4192;
+  sl::whole const udp_server::chunk_size_increment      = 512;
+  sl::whole const udp_server::default_loss_compensation = 4;
+  uint16_t const  udp_server::default_max_command_id    = 400;
+  sl::index const udp_server::max_index_delta           = 0x1000;
 
-  udp_server::~udp_server() {
+  udp_server::udp_server() noexcept {
+    m_socket_interface = make_unique<udp_ipv4_interface>();
+  }
+
+  udp_server::~udp_server() noexcept {
     cleanup();
   }
 
@@ -41,12 +46,9 @@ namespace laplace::network {
     m_is_encryption_enabled = is_enabled;
   }
 
-  void udp_server::set_allowed_commands(span_cuint16 commands) {
+  void udp_server::set_allowed_commands(
+      span_cuint16 commands) noexcept {
     m_allowed_commands.assign(commands.begin(), commands.end());
-  }
-
-  void udp_server::set_chunk_size(sl::whole size) {
-    m_buffer.resize(size);
   }
 
   void udp_server::queue(span_cbyte seq) {
@@ -113,7 +115,7 @@ namespace laplace::network {
     if (server_reserve::scan(seq)) {
       if (get_state() == server_state::prepare) {
         if (auto w = get_world(); w) {
-          const auto count = server_reserve::get_value(seq);
+          auto const count = server_reserve::get_value(seq);
 
           for (sl::index n = 0; n < count; n++) { w->reserve(n); }
         }
@@ -148,7 +150,7 @@ namespace laplace::network {
 
     if (request_events::scan(seq) && slot != slot_host) {
       if (slot >= 0 && slot < m_slots.size()) {
-        const auto count    = request_events::get_event_count(seq);
+        auto const count    = request_events::get_event_count(seq);
         sl::index  distance = 0;
 
         for (sl::index i = 0; i < count; i++) {
@@ -179,13 +181,13 @@ namespace laplace::network {
     }
 
     if (ping_request::scan(seq) && slot != slot_host) {
-      const auto time = ping_request::get_value(seq);
+      auto const time = ping_request::get_value(seq);
       send_event_to(slot, encode<ping_response>(time));
       return true;
     }
 
     if (ping_response::scan(seq) && slot != slot_host) {
-      const auto ping = get_local_time() -
+      auto const ping = get_local_time() -
                         ping_response::get_value(seq);
 
       set_ping(ping);
@@ -330,7 +332,7 @@ namespace laplace::network {
   auto udp_server::add_slot(std::string_view address, uint16_t port)
       -> sl::index {
 
-    const auto id = m_slots.size();
+    auto const id = m_slots.size();
     m_slots.emplace_back(
         slot_info { .address = string(address), .port = port });
     return id;
@@ -436,7 +438,7 @@ namespace laplace::network {
   void udp_server::clean_slots() {
     if (is_master() && get_state() == server_state::prepare) {
       m_slots.erase(std::remove_if(m_slots.begin(), m_slots.end(),
-                                   [](const auto &s) {
+                                   [](auto const &s) {
                                      return !s.is_connected;
                                    }),
                     m_slots.end());
@@ -511,8 +513,27 @@ namespace laplace::network {
 
       if (!m_loader) {
         m_loader = make_unique<loader>();
-        m_loader->set_world(get_world());
-        m_loader->set_factory(get_factory());
+
+        m_loader->on_decode([fac = get_factory()](
+                                span_cbyte seq) -> ptr_prime_impact {
+          if (!fac) {
+            error_("No factory.", __FUNCTION__);
+            return {};
+          }
+
+          return fac->decode(seq);
+        });
+
+        m_loader->on_perform(
+            [wor = get_world()](ptr_prime_impact const &task) {
+              if (!wor) {
+                error_("No world.", __FUNCTION__);
+                return;
+              }
+
+              if (task)
+                task->perform({ *wor, access::data });
+            });
       }
 
       if (!m_instant_events.empty()) {
@@ -556,8 +577,7 @@ namespace laplace::network {
       return;
 
     for (;;) {
-      auto const n = m_node->receive_to(m_buffer.data(),
-                                        m_buffer.size(), async);
+      auto const n = m_node->receive(m_buffer, async);
 
       if (n == m_buffer.size() || m_node->is_msgsize())
         if (has_slot(m_node->get_remote_address(),
@@ -619,8 +639,7 @@ namespace laplace::network {
       return;
 
     for (;;) {
-      auto const n = s.node->receive_to(m_buffer.data(),
-                                        m_buffer.size(), async);
+      auto const n = s.node->receive(m_buffer, async);
 
       auto const sender_changed = s.address !=
                                       s.node->get_remote_address() ||
@@ -727,7 +746,7 @@ namespace laplace::network {
                    slot));
 
     } else if (index >= qu.index) {
-      const auto n = index - qu.index;
+      auto const n = index - qu.index;
 
       if (n >= qu.events.size()) {
         if (n - qu.events.size() >= max_index_delta) {
@@ -758,14 +777,14 @@ namespace laplace::network {
     for (sl::index slot = 0; slot < m_slots.size(); slot++) {
 
       for (sl::index i = 0; i < m_slots[slot].in.size(); i++) {
-        const auto &ev = m_slots[slot].in[i];
-        const auto  id = prime_impact::get_id(ev);
+        auto const &ev = m_slots[slot].in[i];
+        auto const  id = prime_impact::get_id(ev);
 
         if (is_allowed(slot, id)) {
           add_event(slot, ev);
         } else {
           if (is_verbose()) {
-            const auto s = engine::basic_factory::name_by_id_native(
+            auto const s = engine::basic_factory::name_by_id_native(
                 id);
 
             if (s.empty()) {
@@ -783,45 +802,63 @@ namespace laplace::network {
     }
   }
 
+  auto udp_server::encode_chunk(sl::index slot) noexcept -> vbyte {
+    auto &s = m_slots[slot];
+
+    auto plain = sl::vector<span_cbyte> {};
+    auto size  = sl::whole {};
+
+    for (sl::index i = 0; i < s.out.size(); i++) {
+      size += s.tran.get_data_overhead();
+      size += s.out[i].size();
+
+      if (size >= get_max_chunk_size()) {
+        if (is_verbose())
+          verb(fmt("Network: Some events discarded on slot %d.",
+                   (int) slot));
+        break;
+      }
+
+      plain.emplace_back<span_cbyte>(
+          { s.out[i].begin(), s.out[i].end() });
+    }
+
+    auto const chunk = s.tran.encode(plain, s.encryption);
+
+    if (chunk.empty() && is_verbose())
+      verb(fmt("Network: Unable to encode chunk on slot %d.",
+               (int) slot));
+
+    s.out.clear();
+
+    return chunk;
+  }
+
+  void udp_server::send_chunk(sl::index  slot,
+                              span_cbyte chunk) noexcept {
+    if (chunk.empty())
+      return;
+
+    auto &s = m_slots[slot];
+
+    s.encryption = s.tran.is_encrypted() ? transfer::encrypted
+                                         : transfer::plain;
+
+    if (s.is_exclusive && s.node)
+      add_bytes_sent(s.node->send(s.address, s.port, chunk));
+    else
+      add_bytes_sent(m_node->send(s.address, s.port, chunk));
+  }
+
   void udp_server::send_chunks() {
     if (!m_node)
       return;
 
-    for (auto &s : m_slots) {
-      if (s.out.empty())
+    for (sl::index slot = 0; slot < m_slots.size(); slot++) {
+      if (m_slots[slot].out.empty())
         continue;
 
-      auto plain      = sl::vector<span_cbyte> {};
-      auto plain_size = sl::index {};
-
-      for (auto &x : s.out) {
-        if (plain_size + x.size() >= get_max_chunk_size()) {
-          if (is_verbose())
-            verb(fmt("Network: Some events discarded."));
-          break;
-        }
-
-        plain_size += x.size();
-        plain.emplace_back(x.begin(), x.end());
-      }
-
-      auto const chunk = s.is_encrypted ? s.tran.encode(plain)
-                                        : s.tran.pack(plain);
-
-      s.out.clear();
-
-      if (chunk.empty()) {
-        if (is_verbose())
-          verb("Network: Unable to encode chunk.");
-        continue;
-      }
-
-      s.is_encrypted = s.tran.is_encrypted();
-
-      if (s.is_exclusive && s.node)
-        add_bytes_sent(s.node->send_to(s.address, s.port, chunk));
-      else
-        add_bytes_sent(m_node->send_to(s.address, s.port, chunk));
+      send_chunk(slot, encode_chunk(slot));
     }
   }
 
@@ -883,10 +920,10 @@ namespace laplace::network {
   }
 
   void udp_server::update_local_time(sl::time delta_msec) {
-    const auto t = m_local_time;
-    m_local_time += delta_msec;
+    auto const t = m_local_time;
+    m_local_time = wrap_add(m_local_time, delta_msec);
 
-    if (t > m_local_time) {
+    if (m_local_time < t) {
       error_("Time value overflow.", __FUNCTION__);
       set_quit(true);
     }
@@ -899,10 +936,10 @@ namespace laplace::network {
 
   auto udp_server::convert_delta(sl::time delta_msec) -> sl::time {
     if (auto sol = get_solver(); sol) {
-      const auto time = sol->get_time();
+      auto const time = sol->get_time();
 
       if (time < m_time_limit) {
-        const auto delta = adjust_delta(delta_msec) +
+        auto const delta = adjust_delta(delta_msec) +
                            adjust_overtake(time);
 
         return min(delta, m_time_limit - time);

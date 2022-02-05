@@ -1,8 +1,4 @@
-/*  laplace/platform/p_opengl.cpp
- *
- *      OpenGL functions loading.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -15,30 +11,29 @@
 #include "opengl.h"
 
 #include "../core/defs.h"
-#include "../core/string.h"
 #include "wrap.h"
 #include <algorithm>
 #include <iostream>
 #include <string>
 
-#include "../../generated/gl/funcs.impl.h"
+#include "../generated/gl/funcs.impl.h"
 
-#define LAPLACE_GL_LOAD(a)                                          \
-  if (!a) {                                                         \
-    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a));     \
-        !a) {                                                       \
-      error_(fmt("Unable to load %s function.", #a), __FUNCTION__); \
-      ok = false;                                                   \
-    }                                                               \
+#define LAPLACE_GL_LOAD(a)                                      \
+  if (!a) {                                                     \
+    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a)); \
+        !a) {                                                   \
+      error_("Unable to load " #a " function.", __FUNCTION__);  \
+      ok = false;                                               \
+    }                                                           \
   }
 
-#define LAPLACE_GL_LOAD_EX(a)                                       \
-  if (!a) {                                                         \
-    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a));     \
-        !a) {                                                       \
-      error_(fmt("Unable to load %s function.", #a), __FUNCTION__); \
-      status = false;                                               \
-    }                                                               \
+#define LAPLACE_GL_LOAD_EX(a)                                   \
+  if (!a) {                                                     \
+    if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a)); \
+        !a) {                                                   \
+      error_("Unable to load " #a " function.", __FUNCTION__);  \
+      status = false;                                           \
+    }                                                           \
   }
 
 #define LAPLACE_GL_HAS(a) has_extension(#a)
@@ -86,7 +81,7 @@ namespace laplace::gl {
 
     auto status = true;
 
-#include "../../generated/gl/loads.impl.h"
+#include "../generated/gl/loads.impl.h"
 
     if (has_extensions_required && !status)
       ok = false;

@@ -18,8 +18,12 @@
 namespace laplace::ui::elem {
   using namespace core::keys;
 
-  using std::u8string_view, std::u8string, core::cref_input_handler,
-      core::is_key_down, core::input_event;
+  using std::u8string_view, std::u8string, core::is_key_down,
+      core::input_event, core::input_handler;
+
+  sl::whole textedit::default_length_limit = 24;
+  sl::whole textedit::default_flash_on     = 300;
+  sl::whole textedit::default_flash_off    = 300;
 
   textedit::textedit() noexcept {
     set_handler(true);
@@ -29,9 +33,14 @@ namespace laplace::ui::elem {
     m_filter = std::move(f);
   }
 
-  void textedit::tick(sl::time           delta_msec,
-                      cref_input_handler in) noexcept {
-    textedit_tick(in);
+  auto textedit::process_event(input_event const &ev) noexcept
+      -> event_status {
+    return textedit_process_event(ev);
+  }
+
+  void textedit::tick(sl::time delta_msec,
+                      input_handler const &) noexcept {
+    textedit_flash(delta_msec);
   }
 
   void textedit::render(context const &con) noexcept {
@@ -73,6 +82,10 @@ namespace laplace::ui::elem {
     return m_text;
   }
 
+  auto textedit::get_length_limit() const noexcept -> sl::whole {
+    return m_length_limit;
+  }
+
   auto textedit::get_cursor() const noexcept -> sl::index {
     return m_cursor;
   }
@@ -81,17 +94,23 @@ namespace laplace::ui::elem {
     return m_selection;
   }
 
-  auto textedit::get_textedit_state() const noexcept
-      -> textedit_state {
-    return {
-      panel::get_panel_state(), has_focus(),  get_text(),
-      m_length_limit,           get_cursor(), get_selection()
-    };
+  auto textedit::get_flash() const noexcept -> sl::index {
+    return m_flash;
   }
 
-  auto textedit::update(ptr_widget const  &object,
-                        textedit_state     state,
-                        filter const      &f,
+  auto textedit::get_textedit_state() const noexcept
+      -> textedit_state {
+    return { panel::get_panel_state(),
+             has_focus(),
+             get_text(),
+             get_length_limit(),
+             get_cursor(),
+             get_selection(),
+             get_flash() };
+  }
+
+  auto textedit::update(ptr_widget const &object,
+                        textedit_state state, filter const &f,
                         input_event const &ev) noexcept
       -> update_result {
 
@@ -101,29 +120,36 @@ namespace laplace::ui::elem {
     auto cursor    = state.cursor;
     auto selection = state.selection;
 
-    const auto x = ev.cursor_x;
-    const auto y = ev.cursor_y;
+    auto const x = ev.cursor_x;
+    auto const y = ev.cursor_y;
 
-    const auto has_cursor = contains(state.bounds, x, y) &&
+    auto const has_cursor = contains(state.bounds, x, y) &&
                             (!object || object->event_allowed(x, y));
 
     if (has_focus) {
       if (ev.character == ctrl_backspace) {
-        auto n   = sl::index {};
-        auto buf = char32_t {};
-
-        for (sl::index i = 0; i < cursor;) {
-          n = i;
-
-          if (!utf8::decode(text, i, buf))
-            break;
+        if (cursor > 0) {
+          auto const n = cursor;
+          cursor       = utf8::previous(text, cursor);
+          text.erase(text.begin() + cursor, text.begin() + n);
         }
+      } else if (ev.character == ctrl_delete) {
+        if (cursor < text.size())
+          text.erase(text.begin() + cursor,
+                     text.begin() + utf8::next(text, cursor));
 
-        text.erase(text.begin() + n, text.begin() + cursor);
-        cursor = n;
-
-      } else if (ev.character != U'\0' &&
-                 ev.character != ctrl_delete) {
+      } else if (ev.character == ctrl_return) {
+      } else if (ev.character == ctrl_left) {
+        if (cursor > 0)
+          cursor = utf8::previous(text, cursor);
+      } else if (ev.character == ctrl_right) {
+        if (cursor < text.size())
+          cursor = utf8::next(text, cursor);
+      } else if (ev.character == ctrl_up) {
+        cursor = 0;
+      } else if (ev.character == ctrl_down) {
+        cursor = text.size();
+      } else if (ev.character != U'\0') {
         if (!f || f(ev.character)) {
           if (state.length_limit == 0 ||
               text.size() < state.length_limit)
@@ -140,21 +166,44 @@ namespace laplace::ui::elem {
     return { has_focus, text, cursor, selection };
   }
 
-  void textedit::textedit_tick(cref_input_handler in) noexcept {
-    for (auto const &ev : in.get_events()) {
-      if (ev.key == key_tab && is_key_down(ev)) {
-        if (auto p = get_parent(); p) {
-          p->next_tab();
-        }
-      } else {
-        auto const s = update(shared_from_this(),
-                              get_textedit_state(), m_filter, ev);
+  void textedit::textedit_set_focus(bool has_focus_) noexcept {
+    if (has_focus() != has_focus_)
+      set_flash(-m_flash_on - m_flash_off);
 
-        set_focus(s.has_focus);
-        set_text(s.text);
-        set_cursor(s.cursor);
-        set_selection(s.selection);
-      }
+    set_focus(has_focus_);
+  }
+
+  void textedit::set_flash(sl::index flash) noexcept {
+    if (has_focus() && (m_flash < 0) != (flash < 0))
+      set_expired(true);
+
+    m_flash = flash;
+  }
+
+  void textedit::textedit_flash(sl::time delta_msec) noexcept {
+    auto flash = get_flash() + delta_msec;
+    if (flash >= m_flash_off)
+      flash -= m_flash_on + m_flash_off;
+    set_flash(flash);
+  }
+
+  auto textedit::textedit_process_event(
+      input_event const &ev) noexcept -> event_status {
+
+    if (ev.character == key_tab && has_focus()) {
+      if (auto p = get_parent(); p)
+        p->next_tab();
+      return event_status::remove;
     }
+
+    auto const s = update(shared_from_this(), get_textedit_state(),
+                          m_filter, ev);
+
+    textedit_set_focus(s.has_focus);
+    set_text(s.text);
+    set_cursor(s.cursor);
+    set_selection(s.selection);
+
+    return event_status::proceed;
   }
 }

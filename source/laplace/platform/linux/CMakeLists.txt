@@ -5,5 +5,4 @@ target_sources(
       linux_audio.cpp linux_thread.cpp linux_glcontext.cpp linux_window.cpp
     PUBLIC
       audio.h glx.h thread.h input.h xlib.h clipboard.h
-      glcontext.h window.h
-)
+      glcontext.h window.h)

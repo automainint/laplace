@@ -9,5 +9,4 @@ target_sources(
       small_vector.impl.h utf8.h profiler.h socket.h utils.h bytestream.h
       small_vector.h unival.impl.h keys.h serial.h embedded.h utils.impl.h
       string.impl.h slib.h log.h parser.h input_handler.h serial.impl.h
-      options.h defs.h
-)
+      options.h defs.h)

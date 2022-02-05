@@ -1,6 +1,4 @@
-/*  laplace/format/f_binary.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -42,20 +40,19 @@ namespace laplace::format::binary {
   static constexpr auto mantissa_factor = 1e17;
 
   static auto is_packable(unival const &value) noexcept -> bool {
-    if (!value.is_composite()) {
+    if (!value.is_composite())
       return false;
-    }
 
     for (sl::index i = 0; i < value.get_size(); i++) {
-      if (!value.get_key(i).is_string()) {
+      auto const &key = value.get_key(i);
+
+      if (!key.is_string())
         return false;
-      }
 
       if (auto j = lower_bound(dictionary.begin(), dictionary.end(),
-                               value.get_string());
-          j == dictionary.end() || *j != value.get_string()) {
+                               key.get_string());
+          j == dictionary.end() || *j != key.get_string())
         return false;
-      }
     }
 
     return true;
@@ -155,9 +152,8 @@ namespace laplace::format::binary {
 
     for (i = 0, n = 0; i < size; n++) {
       for (k = 0; k < 8 && i < size; k++, i++) {
-        if (n >= v.size()) {
+        if (n >= v.size())
           return false;
-        }
 
         value[i] = (v[n] & (0x80 >> k)) ? true : false;
       }
@@ -172,9 +168,8 @@ namespace laplace::format::binary {
       -> bool {
     const auto v = read(8);
 
-    if (v.size() != 8) {
+    if (v.size() != 8)
       return false;
-    }
 
     const auto size = as_index(rd<int64_t>(v, 0));
 
@@ -183,9 +178,8 @@ namespace laplace::format::binary {
     for (sl::index i = 0; i < size; i++) {
       auto field = unival {};
 
-      if (!read_pack(read, field)) {
+      if (!read_pack(read, field))
         return false;
-      }
 
       value[i] = field;
     }
@@ -197,9 +191,8 @@ namespace laplace::format::binary {
       -> bool {
     const auto v = read(8);
 
-    if (v.size() != 8) {
+    if (v.size() != 8)
       return false;
-    }
 
     auto size = as_index(rd<int64_t>(v, 0));
 
@@ -224,9 +217,8 @@ namespace laplace::format::binary {
                                      unival &value) noexcept -> bool {
     auto v = read(8);
 
-    if (v.size() != 8) {
+    if (v.size() != 8)
       return false;
-    }
 
     auto size = as_index(rd<int64_t>(v, 0));
 
@@ -237,19 +229,16 @@ namespace laplace::format::binary {
 
       v = read(8);
 
-      if (v.size() != 8) {
+      if (v.size() != 8)
         return false;
-      }
 
       auto n = as_index(rd<int64_t>(v, 0));
 
-      if (n < 0) {
+      if (n < 0)
         return false;
-      }
 
-      if (!read_pack(read, field)) {
+      if (!read_pack(read, field))
         return false;
-      }
 
       value.by_key(n) = field;
     }
@@ -261,15 +250,13 @@ namespace laplace::format::binary {
       -> bool {
     auto v = read(8);
 
-    if (v.size() != 8) {
+    if (v.size() != 8)
       return false;
-    }
 
     auto n = as_index(rd<int64_t>(v, 0));
 
-    if (n < 0 || n >= dictionary.size()) {
+    if (n < 0 || n >= dictionary.size())
       return false;
-    }
 
     value = dictionary[n];
     return true;
@@ -279,9 +266,8 @@ namespace laplace::format::binary {
                                     unival &value) noexcept -> bool {
     auto v = read(8);
 
-    if (v.size() != 8) {
+    if (v.size() != 8)
       return false;
-    }
 
     auto size = as_index(rd<int64_t>(v, 0));
 
@@ -292,19 +278,16 @@ namespace laplace::format::binary {
 
       v = read(8);
 
-      if (v.size() != 8) {
+      if (v.size() != 8)
         return false;
-      }
 
       auto n = as_index(rd<int64_t>(v, 0));
 
-      if (n < 0 || n >= dictionary.size()) {
+      if (n < 0 || n >= dictionary.size())
         return false;
-      }
 
-      if (!read_pack(read, field)) {
+      if (!read_pack(read, field))
         return false;
-      }
 
       value[u8string_view { dictionary[n] }] = field;
     }
@@ -316,9 +299,8 @@ namespace laplace::format::binary {
       -> bool {
     const auto v = read(1);
 
-    if (v.size() != 1) {
+    if (v.size() != 1)
       return false;
-    }
 
     const auto id = v[0];
 
@@ -541,9 +523,8 @@ namespace laplace::format::binary {
     wr<uint8_t>(v, 0, ids::compact_composite);
     wr<uint64_t>(v, 1, value.get_size());
 
-    if (write(v) != v.size()) {
+    if (write(v) != v.size())
       return false;
-    }
 
     v.resize(8);
 
@@ -573,9 +554,8 @@ namespace laplace::format::binary {
     wr<uint8_t>(v, 0, ids::packed_composite);
     wr<uint64_t>(v, 1, value.get_size());
 
-    if (write(v) != v.size()) {
+    if (write(v) != v.size())
       return false;
-    }
 
     for (sl::index i = 0; i < value.get_size(); i++) {
       auto &key = value.get_key(i);
@@ -612,30 +592,27 @@ namespace laplace::format::binary {
       return false;
     }
 
-    if (is_packable(value)) {
+    if (is_packable(value))
       return write_packed_composite(write, value);
-    }
 
     auto is_compact = [](unival const &value) -> bool {
-      for (sl::index i = 0; i < value.get_size(); i++)
-        if (!value.get_key(i).is_integer()) {
+      for (sl::index i = 0; i < value.get_size(); i++) {
+        if (!value.get_key(i).is_integer())
           return false;
-        }
+      }
 
       return true;
     };
 
-    if (is_compact(value)) {
+    if (is_compact(value))
       return write_compact_composite(write, value);
-    }
 
     auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::composite);
     wr<uint64_t>(v, 1, value.get_size());
 
-    if (write(v) != v.size()) {
+    if (write(v) != v.size())
       return false;
-    }
 
     for (sl::index i = 0; i < value.get_size(); i++) {
       if (!writedown(write, value.get_key(i)))

@@ -1,8 +1,4 @@
-/*  laplace/core/serial.h
- *
- *      The serialization features.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -27,17 +23,15 @@ namespace laplace::serial {
   /*  Read value of specified type from specified offset.
    */
   template <trivial type_>
-  [[nodiscard]] constexpr auto rd(span_cbyte seq,
-                                  sl::index  offset,
-                                  type_      invalid = -1) noexcept
+  [[nodiscard]] constexpr auto rd(span_cbyte seq, sl::index offset,
+                                  type_ invalid = -1) noexcept
       -> type_;
 
   /*  Write the value to specified offset.
    */
   template <trivial type_>
-  constexpr void wr(span_byte seq,
-                    sl::index offset,
-                    type_     value) noexcept;
+  constexpr void wr(span_byte seq, sl::index offset,
+                    type_ value) noexcept;
 
   [[nodiscard]] constexpr auto byte_count() noexcept -> sl::whole;
 
@@ -70,8 +64,7 @@ namespace laplace::serial {
                              arg0_trivial_ arg0) noexcept;
 
   template <typename arg0_, typename... args_>
-  constexpr void write_bytes(span_byte data,
-                             arg0_     arg0,
+  constexpr void write_bytes(span_byte data, arg0_ arg0,
                              args_... args) noexcept;
 
   template <trivial... args_trivial_>
@@ -79,7 +72,7 @@ namespace laplace::serial {
       args_trivial_... args) noexcept;
 
   template <typename... args_>
-  [[nodiscard]] constexpr auto pack_to_bytes(args_... args) noexcept;
+  [[nodiscard]] auto pack_to_bytes(args_... args) noexcept;
 }
 
 #include "serial.impl.h"

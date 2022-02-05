@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -7,8 +7,6 @@
  *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  *  the MIT License for more details.
  */
-
-#include "options.h"
 
 /*  Make sure all integer types are correct.
  */

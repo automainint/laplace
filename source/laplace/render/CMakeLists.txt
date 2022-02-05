@@ -3,5 +3,4 @@ target_sources(
     PRIVATE
       r_context.cpp
     PUBLIC
-      context.h
-)
+      context.h)

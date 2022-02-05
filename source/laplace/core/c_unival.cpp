@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -399,29 +399,24 @@ namespace laplace::core {
   }
 
   auto unival::get_size() const noexcept -> sl::whole {
-    if (m_data.index() == n_bytes) {
+    if (m_data.index() == n_bytes)
       return get<n_bytes>(m_data).size();
-    }
 
-    if (m_data.index() == n_vector) {
+    if (m_data.index() == n_vector)
       return get<n_vector>(m_data).size();
-    }
 
-    if (m_data.index() == n_composite) {
+    if (m_data.index() == n_composite)
       return get<n_composite>(m_data).size();
-    }
 
-    if (m_data.index() == n_string) {
+    if (m_data.index() == n_string)
       return get<n_string>(m_data).size();
-    }
 
     return 0;
   }
 
   auto unival::has(cref_unival key) const noexcept -> bool {
-    if (m_data.index() != n_composite) {
+    if (m_data.index() != n_composite)
       return false;
-    }
 
     bool result = true;
 
@@ -444,7 +439,7 @@ namespace laplace::core {
   void unival::set_key(signed long long n, cref_unival k) noexcept {
     if (m_data.index() != n_composite)
       return;
-    if (get<n_composite>(m_data).size() <= n)
+    if (n < 0 || get<n_composite>(m_data).size() <= n)
       return;
 
     get<n_composite>(m_data).erase(get<n_composite>(m_data).begin() +
@@ -453,7 +448,7 @@ namespace laplace::core {
     auto i = lower_bound(
         get<n_composite>(m_data).begin(),
         get<n_composite>(m_data).end(), k,
-        [](const pair<unival, unival> &x, const unival &k) {
+        [](pair<unival, unival> const &x, const unival &k) {
           return x.first.compare(k) < 0;
         });
 
@@ -465,9 +460,8 @@ namespace laplace::core {
   }
 
   void unival::key(cref_unival k) noexcept {
-    if (m_data.index() != n_composite) {
+    if (m_data.index() != n_composite)
       m_data = vector<pair<unival, unival>>();
-    }
 
     auto i = lower_bound(
         get<n_composite>(m_data).begin(),
@@ -544,9 +538,8 @@ namespace laplace::core {
 
   auto unival::get_value(cref_unival key) const noexcept
       -> cref_unival {
-    if (m_data.index() != n_composite) {
+    if (m_data.index() != n_composite)
       return logic_error();
-    }
 
     auto i = lower_bound(
         get<n_composite>(m_data).begin(),

@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -130,6 +130,10 @@ namespace laplace::core {
     }
   }
 
+  auto parser::is_whitespace(char32_t c) noexcept -> bool {
+    return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+  }
+
   auto parser::is_path(char32_t c) noexcept -> bool {
     if (c < 32) {
       return false;
@@ -148,26 +152,21 @@ namespace laplace::core {
   }
 
   auto parser::is_url(char32_t c) noexcept -> bool {
-    if (c >= '0' && c <= '9') {
+    if (c >= '0' && c <= '9')
       return true;
-    }
 
-    if (c >= 'a' && c <= 'z') {
+    if (c >= 'a' && c <= 'z')
       return true;
-    }
 
-    if (c >= 'A' && c <= 'Z') {
+    if (c >= 'A' && c <= 'Z')
       return true;
-    }
 
-    if (c == '-' || c == '_' || c == '.' || c == '~') {
+    if (c == '-' || c == '_' || c == '.' || c == '~')
       return true;
-    }
 
     if (c == ':' || c == '@' || c == '/' || c == '?' || c == '&' ||
-        c == '=' || c == '+' || c == '%') {
+        c == '=' || c == '+' || c == '%')
       return true;
-    }
 
     return false;
   }
@@ -184,6 +183,9 @@ namespace laplace::core {
 
   auto parser::string_end(char32_t c, const char *p) noexcept
       -> bool {
+    if (c == '\0')
+      return true;
+
     if (p[1] == '%') {
       switch (p[2]) {
         case c_line_end: return c == '\r' || c == '\n';
@@ -208,6 +210,9 @@ namespace laplace::core {
 
       return c == static_cast<char32_t>(p[2]);
     }
+
+    if (p[1] == ' ')
+      return is_whitespace(c);
 
     return c == static_cast<char32_t>(p[1]);
   }
@@ -290,11 +295,10 @@ namespace laplace::core {
           }
 
           while (c == '0' || c == '1') {
-            if (i_value == -1) {
+            if (i_value == -1)
               i_value = 0;
-            } else {
+            else
               i_value *= 2;
-            }
 
             i_value += static_cast<int64_t>(c) - '0';
 
@@ -307,9 +311,8 @@ namespace laplace::core {
             result  = false;
             is_done = true;
           } else if (!is_silent) {
-            if (is_negative) {
+            if (is_negative)
               i_value = -i_value;
-            }
 
             *va_arg(ap, int64_t *) = i_value;
           }
@@ -330,11 +333,10 @@ namespace laplace::core {
           }
 
           while (c >= '0' && c <= '7') {
-            if (i_value == -1) {
+            if (i_value == -1)
               i_value = 0;
-            } else {
+            else
               i_value *= 8;
-            }
 
             i_value += static_cast<int64_t>(c) - '0';
 
@@ -347,9 +349,8 @@ namespace laplace::core {
             result  = false;
             is_done = true;
           } else if (!is_silent) {
-            if (is_negative) {
+            if (is_negative)
               i_value = -i_value;
-            }
 
             *va_arg(ap, int64_t *) = i_value;
           }
@@ -370,11 +371,10 @@ namespace laplace::core {
           }
 
           while (c >= '0' && c <= '9') {
-            if (i_value == -1) {
+            if (i_value == -1)
               i_value = 0;
-            } else {
+            else
               i_value *= 10;
-            }
 
             i_value += static_cast<int64_t>(c) - '0';
 
@@ -574,11 +574,10 @@ namespace laplace::core {
           }
 
           while (c >= '0' && c <= '9') {
-            if (f_whole == -1) {
+            if (f_whole == -1)
               f_whole = 0;
-            } else {
+            else
               f_whole *= 10;
-            }
 
             f_whole += c - '0';
 
@@ -589,11 +588,10 @@ namespace laplace::core {
             c = get_char();
 
             while (c >= '0' && c <= '9') {
-              if (f_frac_value == -1) {
+              if (f_frac_value == -1)
                 f_frac_value = 0;
-              } else {
+              else
                 f_frac_value *= 10;
-              }
 
               f_frac_value += c - '0';
               f_frac_power++;
@@ -646,21 +644,18 @@ namespace laplace::core {
               if (f_frac_value != -1) {
                 f_value += static_cast<decltype(f_value)>(
                                f_frac_value) *
-                           pow(10,
-                               static_cast<double>(-f_frac_power));
+                           powl(10, -f_frac_power);
               }
 
               if (f_exp_value != -1) {
-                if (f_exp_negative) {
+                if (f_exp_negative)
                   f_exp_value = -f_exp_value;
-                }
 
-                f_value *= pow(10, static_cast<double>(f_exp_value));
+                f_value *= powl(10, f_exp_value);
               }
 
-              if (f_negative) {
+              if (f_negative)
                 f_value = -f_value;
-              }
 
               *va_arg(ap, double *) = static_cast<double>(f_value);
             }
@@ -690,16 +685,14 @@ namespace laplace::core {
             is_empty = false;
 
             if (c == '\\') {
-              if (!is_silent) {
+              if (!is_silent)
                 s_value.append(1, static_cast<char8_t>(c));
-              }
 
               c = get_char();
             }
 
-            if (!is_silent) {
+            if (!is_silent)
               s_value.append(1, static_cast<char8_t>(c));
-            }
 
             if (c == '\0') {
               result  = false;
@@ -727,17 +720,15 @@ namespace laplace::core {
 
           if (c == '_' || (c >= 'a' && c <= 'z') ||
               (c >= 'A' && c <= 'Z')) {
-            if (!is_silent) {
+            if (!is_silent)
               s_value.append(1, static_cast<char8_t>(c));
-            }
 
             c = get_char();
 
             while (c == '_' || (c >= '0' && c <= '9') ||
                    (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
-              if (!is_silent) {
+              if (!is_silent)
                 s_value.append(1, static_cast<char8_t>(c));
-              }
 
               c = get_char();
             }
@@ -763,9 +754,8 @@ namespace laplace::core {
           while ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
             is_empty = false;
 
-            if (!is_silent) {
+            if (!is_silent)
               s_value.append(1, static_cast<char8_t>(c));
-            }
 
             c = get_char();
           }
@@ -790,9 +780,8 @@ namespace laplace::core {
           while (is_path(c)) {
             is_empty = false;
 
-            if (!is_silent) {
+            if (!is_silent)
               s_value.append(1, static_cast<char8_t>(c));
-            }
 
             c = get_char();
           }
@@ -809,7 +798,7 @@ namespace laplace::core {
           /*  URL string.
            */
 
-          u8string s_value;
+          auto s_value = u8string {};
 
           bool     is_empty = true;
           char32_t c        = get_char();
@@ -817,9 +806,8 @@ namespace laplace::core {
           while (is_url(c)) {
             is_empty = false;
 
-            if (!is_silent) {
+            if (!is_silent)
               s_value.append(1, static_cast<char8_t>(c));
-            }
 
             c = get_char();
           }
@@ -839,18 +827,16 @@ namespace laplace::core {
 
         char32_t c = get_char();
 
-        while (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
-          c = get_char();
-        }
+        while (is_whitespace(c)) c = get_char();
 
         unget_char();
       } else if (*p == '\n') {
         /*  Whitespaces until next line.
          */
 
-        char32_t c = get_char();
+        auto c = get_char();
 
-        while (c == ' ' || c == '\t' || c == '\r') { c = get_char(); }
+        while (c == ' ' || c == '\t' || c == '\r') c = get_char();
 
         if (c != '\n') {
           result  = false;
@@ -868,14 +854,6 @@ namespace laplace::core {
 
     apply(result);
     return result;
-  }
-
-  void parser::set_stream(parser::input_stream stream) noexcept {
-    this->m_stream = std::move(stream);
-  }
-
-  auto parser::get_stream() const noexcept -> parser::input_stream {
-    return this->m_stream;
   }
 
   auto parser::is_eof() const noexcept -> bool {

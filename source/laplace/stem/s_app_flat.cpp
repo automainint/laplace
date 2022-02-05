@@ -1,8 +1,4 @@
-/*  laplace/stem/s_app_flat.cpp
- *
- *      Base class for UI and 2D graphics application.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -19,8 +15,7 @@
 namespace laplace::stem {
   using std::make_shared, std::abs, core::unival, ui::frame;
 
-  app_flat::app_flat(int           argc,
-                     char        **argv,
+  app_flat::app_flat(int argc, char **argv,
                      unival const &def_cfg) noexcept :
       application(argc, argv, def_cfg) { }
 
@@ -37,7 +32,7 @@ namespace laplace::stem {
   }
 
   void app_flat::update(sl::time delta_msec) noexcept {
-    m_ui->tick(delta_msec, get_input());
+    m_ui->process_events_and_tick(delta_msec, get_input());
   }
 
   void app_flat::render() noexcept {

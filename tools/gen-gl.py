@@ -141,6 +141,22 @@ def main():
               args.append([ type_full, '' ])
         funcs.append([ name, proto_full, args, 0 ])
 
+  for i, f in enumerate(funcs):
+    if funcs[i][3] == 0:
+      funcs[i][3] = -1
+
+  for feat in root:
+    if feat.tag == 'feature' and feat.get('api') == 'gl':
+      for req in feat:
+        if req.tag == 'require':
+          for cmd in req:
+            if cmd.tag == 'command':
+              fname = cmd.get('name')
+              for i, f in enumerate(funcs):
+                if f[0] == fname and f[3] == -1:
+                  funcs[i][3] = 0
+                  break
+
   for child in root:
     if child.tag == 'extensions':
       for ex in child.findall('extension'):
@@ -150,11 +166,12 @@ def main():
           for cmd in req.findall('command'):
             fname = cmd.get('name')
             for i, f in enumerate(funcs):
-              if f[0] == fname:
+              if f[0] == fname and f[3] != -1:
                 funcs[i][3] += 1
                 cmds.append(i)
                 break
-        extensions.append([ name, cmds ])
+        if len(cmds) > 0:
+          extensions.append([ name, cmds ])
 
   # glNamedBufferPageCommitmentARB
   # glVertexWeighthNV
@@ -187,7 +204,7 @@ def main():
       else:
         enums.append(last_en)
 
-  folder = os.path.join('..', 'source', 'generated', 'gl')
+  folder = os.path.join('..', 'source', 'laplace', 'generated', 'gl')
   os.makedirs(folder, exist_ok=True)
 
   out = open(os.path.join(folder, 'types.h'), 'w')

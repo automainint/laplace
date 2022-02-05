@@ -23,6 +23,8 @@ namespace laplace::ui {
   class basic_widget
       : public std::enable_shared_from_this<basic_widget> {
   public:
+    enum class event_status { remove, proceed };
+
     using ptr_widget  = std::shared_ptr<basic_widget>;
     using vptr_widget = sl::vector<ptr_widget>;
 
@@ -36,14 +38,20 @@ namespace laplace::ui {
 
     virtual ~basic_widget() noexcept = default;
 
-    virtual void tick(sl::time                 delta_msec,
-                      core::cref_input_handler in) noexcept;
+    virtual auto process_event(core::input_event const &ev) noexcept
+        -> event_status;
+
+    virtual void tick(sl::time                   delta_msec,
+                      core::input_handler const &in) noexcept;
 
     virtual void render(context const &con) noexcept;
 
     [[nodiscard]] virtual auto event_allowed(sl::index x,
                                              sl::index y) noexcept
         -> bool;
+
+    void process_events_and_tick(
+        sl::time delta_msec, core::input_handler const &in) noexcept;
 
     void set_layout(layout fn) noexcept;
     void set_level(sl::index level) noexcept;
@@ -101,8 +109,11 @@ namespace laplace::ui {
     void draw_attached_widgets(context const &con) noexcept;
     void up_to_date() noexcept;
 
-    void widget_tick(sl::time                 delta_msec,
-                     core::cref_input_handler in) noexcept;
+    auto widget_process_event(core::input_event const &ev) noexcept
+        -> event_status;
+
+    void widget_tick(sl::time                   delta_msec,
+                     core::input_handler const &in) noexcept;
 
     void widget_render(context const &con) noexcept;
 

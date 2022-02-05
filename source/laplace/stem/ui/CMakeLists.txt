@@ -3,5 +3,4 @@ target_sources(
     PRIVATE
       su_frame.cpp su_context.cpp
     PUBLIC
-      frame.h context.h
-)
+      frame.h context.h)

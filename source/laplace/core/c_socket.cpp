@@ -26,9 +26,8 @@ namespace laplace {
 
   auto socket_library::operator=(socket_library &&s) noexcept
       -> socket_library & {
-    if (m_is_ok) {
+    if (m_is_ok)
       WSACleanup();
-    }
 
     m_is_ok   = s.m_is_ok;
     s.m_is_ok = false;
@@ -49,9 +48,8 @@ namespace laplace {
   }
 
   socket_library::~socket_library() noexcept {
-    if (m_is_ok) {
+    if (m_is_ok)
       WSACleanup();
-    }
   }
 
   auto socket_error() noexcept -> int {
@@ -63,29 +61,25 @@ namespace laplace {
   }
 
   auto socket_set_blocking(socket_t s) noexcept -> int {
-    if (s == -1) {
+    if (s == -1)
       return -1;
-    }
 
     auto flag = u_long {};
 
-    if (::ioctlsocket(s, FIONBIO, &flag) == -1) {
+    if (::ioctlsocket(s, FIONBIO, &flag) == -1)
       return -1;
-    }
 
     return 0;
   }
 
   auto socket_set_nonblocking(socket_t s) noexcept -> int {
-    if (s == -1) {
+    if (s == -1)
       return -1;
-    }
 
     auto flag = u_long { 1 };
 
-    if (::ioctlsocket(s, FIONBIO, &flag) == -1) {
+    if (::ioctlsocket(s, FIONBIO, &flag) == -1)
       return -1;
-    }
 
     return 0;
   }

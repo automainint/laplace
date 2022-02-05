@@ -1,5 +1,4 @@
 target_sources(
   ${LAPLACE_OBJ}
     PRIVATE
-      laplace_fuzz.cpp
-)
+      laplace_fuzz.cpp)

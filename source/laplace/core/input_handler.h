@@ -22,6 +22,13 @@ namespace laplace::core {
     static constexpr sl::index delta_key_down = 1;
     static constexpr sl::index delta_key_up   = -1;
 
+    bool is_capslock   = false;
+    bool is_numlock    = false;
+    bool is_scrolllock = false;
+    bool is_alt        = false;
+    bool is_shift      = false;
+    bool is_control    = false;
+
     sl::index cursor_x  = {};
     sl::index cursor_y  = {};
     sl::index key       = {};

@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -12,7 +12,6 @@
 #define laplace_network_defs_h
 
 #include "../core/defs.h"
-#include "../core/socket.h"
 
 namespace laplace::network {
   extern sl::whole const max_chunk_size;

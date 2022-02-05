@@ -1,7 +1,5 @@
-/bin/**
-/lib*/**
-/*build*/**
-/include/**
+/*build*/
+/thirdparty/
 
 /.vs/
 /.idea/
@@ -11,6 +9,6 @@
 *.user
 
 /data/lcd.h
-/source/generated/*.cpp
-/source/generated/gl/*.h
+/source/laplace/generated/*.cpp
+/source/laplace/generated/gl/*.h
 /tools/OpenGL-Registry/

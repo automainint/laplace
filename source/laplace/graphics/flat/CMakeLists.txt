@@ -5,5 +5,4 @@ target_sources(
       g2_framebuffer.cpp g2_solid_buffer.cpp g2_sprite_buffer.cpp
     PUBLIC
       framebuffer.h sprite_buffer.h solid_buffer.h
-      solid_shader.h sprite_shader.h
-)
+      solid_shader.h sprite_shader.h)

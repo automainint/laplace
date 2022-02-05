@@ -1,6 +1,4 @@
-/*  laplace/core/parser.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -27,7 +25,7 @@ namespace laplace::core {
     parser(parser &&) noexcept = default;
     auto operator=(parser &&) noexcept -> parser & = default;
 
-    explicit parser(input_stream stream = nullptr) noexcept;
+    explicit parser(input_stream stream) noexcept;
     ~parser() = default;
 
     /*  "% "    - one whitespace
@@ -48,10 +46,7 @@ namespace laplace::core {
      *  "%p"    - file path     - u8string *
      *  "%u"    - URL           - u8string *
      */
-    auto parse(const char *format, ...) noexcept -> bool;
-
-    void               set_stream(input_stream stream) noexcept;
-    [[nodiscard]] auto get_stream() const noexcept -> input_stream;
+    auto parse(char const *format, ...) noexcept -> bool;
 
     [[nodiscard]] auto is_eof() const noexcept -> bool;
 
@@ -95,6 +90,7 @@ namespace laplace::core {
     auto get_char() noexcept -> char32_t;
     void unget_char() noexcept;
 
+    static auto is_whitespace(char32_t c) noexcept -> bool;
     static auto is_path(char32_t c) noexcept -> bool;
     static auto is_url(char32_t c) noexcept -> bool;
     static auto is_hex(char32_t c) noexcept -> bool;
