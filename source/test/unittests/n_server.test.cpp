@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,6 +10,7 @@
 
 #include "../../laplace/engine/object/sets.h"
 #include "../../laplace/engine/protocol/all.h"
+#include "../../laplace/engine/world.h"
 #include "../../laplace/network/host.h"
 #include "../../laplace/network/remote.h"
 #include <gtest/gtest.h>

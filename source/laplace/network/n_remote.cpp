@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -11,13 +11,13 @@
 #include "remote.h"
 
 #include "../engine/protocol/all.h"
+#include "../engine/world.h"
 #include "crypto/ecc_rabbit.h"
 
 namespace laplace::network {
   using namespace engine::protocol;
 
-  using std::min, std::make_unique, std::string, std::string_view,
-      engine::encode, engine::prime_impact, engine::time_undefined,
+  using std::string, std::string_view, engine::encode,
       crypto::ecc_rabbit;
 
   remote::remote() {
@@ -29,13 +29,11 @@ namespace laplace::network {
   void remote::reconnect() {
     cleanup();
 
-    if (auto wor = get_world(); wor) {
+    if (auto wor = get_world(); wor)
       wor->clear();
-    }
 
-    if (auto sol = get_solver(); sol) {
+    if (auto sol = get_solver(); sol)
       sol->clear_history();
-    }
 
     set_state(server_state::prepare);
     set_connected(true);

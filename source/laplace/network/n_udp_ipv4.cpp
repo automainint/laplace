@@ -8,14 +8,15 @@
  *  the MIT License for more details.
  */
 
-#include "../../laplace/network/udp_ipv4_interface.h"
-#include <gtest/gtest.h>
+#include "udp_ipv4.h"
 
-namespace laplace::test {
-  using std::make_unique, network::udp_ipv4_interface;
+#include "udp_ipv4_node.h"
 
-  TEST(network, udp_ipv4_interface_open) {
-    auto p = make_unique<udp_ipv4_interface>();
-    EXPECT_TRUE(p->open(0));
+namespace laplace::network {
+  using std::unique_ptr, std::make_unique;
+
+  auto udp_ipv4::open(uint16_t port) noexcept
+      -> unique_ptr<node> {
+    return make_unique<udp_ipv4_node>(port);
   }
 }

@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -11,72 +11,63 @@
 #ifndef laplace_engine_solver_h
 #define laplace_engine_solver_h
 
-#include "basic_factory.h"
 #include "basic_impact.h"
-#include "world.h"
 
 namespace laplace::engine {
   /*  World live execution solver.
    */
   class solver {
   public:
-    static const bool default_allow_rewind;
+    using fn_reset    = std::function<void()>;
+    using fn_seed     = std::function<void(seed_type)>;
+    using fn_tick     = std::function<void(sl::time)>;
+    using fn_schedule = std::function<void(sl::time)>;
+    using fn_join     = std::function<void()>;
+    using fn_queue    = std::function<void(ptr_impact)>;
+    using fn_decode   = std::function<ptr_impact(span_cbyte)>;
 
-    solver()  = default;
-    ~solver() = default;
+    solver() noexcept  = default;
+    ~solver() noexcept = default;
 
-    void set_factory(ptr_factory f);
-    void set_world(ptr_world w);
+    void on_reset(fn_reset callback) noexcept;
+    void on_seed(fn_seed callback) noexcept;
+    void on_tick(fn_tick callback) noexcept;
+    void on_schedule(fn_schedule callback) noexcept;
+    void on_join(fn_join callback) noexcept;
+    void on_queue(fn_queue callback) noexcept;
+    void on_decode(fn_decode callback) noexcept;
 
-    void reset_factory();
-    void reset_world();
+    auto apply(span_cbyte event) noexcept -> sl::time;
+    void rewind_to(sl::time time) noexcept;
+    void schedule(sl::time delta) noexcept;
 
-    /*  Apply an event. May cause recalculation of the
-     *  entire timeline if event time is set befure
-     *  current time.
-     *
-     *  If event time not set, uses current time.
-     *
-     *  Returns adjusted event time.
-     */
-    auto apply(span_cbyte ev) -> sl::time;
+    [[nodiscard]] auto get_time() const noexcept -> sl::time;
+    [[nodiscard]] auto get_position() const noexcept -> sl::index;
 
-    void rewind_to(sl::time time);
+    void               set_seed(seed_type seed) noexcept;
+    [[nodiscard]] auto get_seed() const noexcept -> seed_type;
 
-    void schedule(sl::time delta);
-    void join();
+    void clear_history() noexcept;
 
-    /*  Allow to automatically rewind the timeline when an
-     *  out-of-date impact added.
-     */
-    void allow_rewind(bool is_rewind_allowed);
+    [[nodiscard]] auto get_history() const noexcept
+        -> std::span<vbyte const>;
 
-    [[nodiscard]] auto is_rewind_allowed() const -> bool;
-
-    [[nodiscard]] auto get_time() const -> sl::time;
-    [[nodiscard]] auto get_position() const -> sl::index;
-
-    void               set_seed(seed_type seed);
-    [[nodiscard]] auto get_seed() const -> seed_type;
-
-    void clear_history();
-
-    [[nodiscard]] auto get_history_count() const -> sl::whole;
-    [[nodiscard]] auto get_history(sl::index n) const -> vbyte;
-
-    [[nodiscard]] static auto generate_seed() -> seed_type;
+    [[nodiscard]] static auto generate_seed() noexcept -> seed_type;
 
   private:
-    void adjust(sl::time time);
-
-    ptr_world         m_world;
-    ptr_factory       m_factory;
     sl::vector<vbyte> m_history;
 
-    sl::time  m_time              = 0;
-    sl::index m_position          = 0;
-    bool      m_is_rewind_allowed = default_allow_rewind;
-    seed_type m_seed              = 0;
+    sl::time  m_time     = 0;
+    sl::index m_position = 0;
+    seed_type m_seed     = 0;
+
+    fn_reset    m_reset;
+    fn_seed     m_set_seed;
+    fn_tick     m_tick;
+    fn_schedule m_schedule;
+    fn_join     m_join;
+    fn_queue    m_queue;
+    fn_decode   m_decode;
   };
 
   using ptr_solver = std::shared_ptr<solver>;

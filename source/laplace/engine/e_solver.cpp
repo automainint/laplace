@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -12,186 +12,162 @@
 
 #include "prime_impact.h"
 #include <algorithm>
+#include <utility>
 
 namespace laplace::engine {
-  const bool solver::default_allow_rewind = false;
+  using std::move;
 
-  void solver::set_factory(ptr_factory f) {
-    m_factory = f;
+  void solver::on_reset(fn_reset callback) noexcept {
+    m_reset = move(callback);
   }
 
-  void solver::set_world(ptr_world w) {
-    if (m_world != w) {
-      m_world = w;
-
-      if (m_world) {
-        m_world->get_random().seed(m_seed);
-      }
-    }
+  void solver::on_seed(fn_seed callback) noexcept {
+    m_set_seed = move(callback);
   }
 
-  void solver::reset_factory() {
-    m_factory.reset();
+  void solver::on_tick(fn_tick callback) noexcept {
+    m_tick = move(callback);
   }
 
-  void solver::reset_world() {
-    m_world.reset();
+  void solver::on_schedule(fn_schedule callback) noexcept {
+    m_schedule = move(callback);
   }
 
-  auto solver::apply(span_cbyte ev) -> sl::time {
-    if (ev.empty()) {
+  void solver::on_join(fn_join callback) noexcept {
+    m_join = move(callback);
+  }
+
+  void solver::on_queue(fn_queue callback) noexcept {
+    m_queue = move(callback);
+  }
+
+  void solver::on_decode(fn_decode callback) noexcept {
+    m_decode = move(callback);
+  }
+
+  auto solver::apply(span_cbyte event) noexcept -> sl::time {
+    if (event.empty()) {
       error_("No event.", __FUNCTION__);
       return time_undefined;
     }
 
-    auto event_time = prime_impact::get_time(ev);
+    auto event_time = prime_impact::get_time(event);
 
-    if (event_time == time_undefined) {
+    if (event_time == time_undefined)
       event_time = m_time;
-    }
 
     if (event_time < m_time) {
-      if (!m_is_rewind_allowed) {
-        error_("Rewind is not allowed. Event ignored.", __FUNCTION__);
-        return time_undefined;
-      }
-
-      auto const current_time = m_time;
-      rewind_to(event_time);
-      m_history.emplace(m_history.begin() + m_position, ev.begin(),
-                        ev.end());
-      rewind_to(current_time);
-
-    } else {
-      auto const it = lower_bound(
-          m_history.begin() + m_position, m_history.end(), event_time,
-          [](vbyte const &a, sl::time b) -> bool {
-            return prime_impact::get_time(a) < b;
-          });
-
-      auto const n = it - m_history.begin();
-
-      m_history.emplace(it, ev.begin(), ev.end());
-
-      prime_impact::set_time(m_history[n], event_time);
+      error_("Invalid time. Event ignored.", __FUNCTION__);
+      return time_undefined;
     }
+
+    m_history.emplace_back(event.begin(), event.end());
+    prime_impact::set_time(m_history.back(), event_time);
 
     return event_time;
   }
 
-  void solver::rewind_to(sl::time time) {
-    adjust(time);
-    join();
-  }
+  void solver::rewind_to(sl::time time) noexcept {
+    if (m_time == time)
+      return;
 
-  void solver::schedule(sl::time delta) {
-    adjust(m_time + delta);
-  }
+    if (time < m_time) {
+      if (m_reset)
+        m_reset();
 
-  void solver::join() {
-    if (m_world) {
-      m_world->join();
+      m_time     = 0;
+      m_position = 0;
     }
+
+    if (time <= 0)
+      return;
+
+    if (m_time == 0 && m_position == 0 && m_set_seed)
+      m_set_seed(m_seed);
+
+    auto const i_end = lower_bound(
+        m_history.begin() + m_position, m_history.end(), time,
+        [](vbyte const &event, sl::time time_point) -> bool {
+          return prime_impact::get_time(event) < time_point;
+        });
+
+    auto time_previous = m_time;
+    bool joined        = false;
+
+    for (auto i = m_history.begin() + m_position; i != i_end; i++) {
+      auto time_now = prime_impact::get_time(*i);
+
+      if (time_previous < time_now) {
+        if (m_tick)
+          m_tick(time_now - time_previous);
+
+        time_previous = time_now;
+        joined        = true;
+      }
+
+      if (m_decode && m_queue) {
+        if (!joined) {
+          joined = true;
+          if (m_join)
+            m_join();
+        }
+
+        m_queue(m_decode(*i));
+      }
+    }
+
+    if (time_previous < time && m_schedule)
+      m_schedule(time - time_previous);
+
+    m_time     = time;
+    m_position = i_end - m_history.begin();
   }
 
-  void solver::allow_rewind(bool is_rewind_allowed) {
-    m_is_rewind_allowed = is_rewind_allowed;
+  void solver::schedule(sl::time delta) noexcept {
+    if (delta <= 0) {
+      if (delta < 0)
+        error_("Invalid time.", __FUNCTION__);
+      return;
+    }
+
+    rewind_to(m_time + delta);
   }
 
-  auto solver::is_rewind_allowed() const -> bool {
-    return m_is_rewind_allowed;
-  }
-
-  auto solver::get_time() const -> sl::time {
+  auto solver::get_time() const noexcept -> sl::time {
     return m_time;
   }
 
-  auto solver::get_position() const -> sl::index {
+  auto solver::get_position() const noexcept -> sl::index {
     return m_position;
   }
 
-  void solver::set_seed(seed_type seed) {
+  void solver::set_seed(seed_type seed) noexcept {
     m_seed = seed;
 
-    if (m_world) {
-      m_world->get_random().seed(m_seed);
-    }
+    if (m_set_seed)
+      m_set_seed(m_seed);
   }
 
-  auto solver::get_seed() const -> seed_type {
+  auto solver::get_seed() const noexcept -> seed_type {
     return m_seed;
   }
 
-  void solver::clear_history() {
+  void solver::clear_history() noexcept {
     m_time     = 0;
     m_position = 0;
 
     m_history.clear();
   }
 
-  auto solver::get_history_count() const -> sl::whole {
-    return m_history.size();
+  auto solver::get_history() const noexcept
+      -> std::span<vbyte const> {
+    return m_history;
   }
 
-  auto solver::get_history(sl::index n) const -> vbyte {
-    if (n < 0 || n >= m_history.size()) {
-      error_("Invalid index.", __FUNCTION__);
-      return {};
-    }
-
-    return m_history[n];
-  }
-
-  auto solver::generate_seed() -> seed_type {
+  auto solver::generate_seed() noexcept -> seed_type {
     auto dev  = std::random_device {};
     auto dist = std::uniform_int_distribution<seed_type> {};
 
     return dist(dev);
-  }
-
-  void solver::adjust(sl::time time) {
-    if (m_time == time) {
-      return;
-    }
-
-    if (time < m_time) {
-      if (m_world) {
-        m_world->clear();
-        m_world->get_random().seed(m_seed);
-      }
-
-      m_time     = 0;
-      m_position = 0;
-    }
-
-    auto const i_end = lower_bound(
-        m_history.begin() + m_position, m_history.end(), time,
-        [](vbyte const &a, sl::time b) -> bool {
-          return prime_impact::get_time(a) < b;
-        });
-
-    auto t0 = m_time;
-
-    for (auto i = m_history.begin() + m_position; i != i_end; i++) {
-      auto t1 = prime_impact::get_time(*i);
-
-      if (t0 < t1) {
-        if (m_world) {
-          m_world->tick(t1 - t0);
-        }
-        t0 = t1;
-      }
-
-      if (m_world && m_factory) {
-        m_world->queue(m_factory->decode(*i));
-      }
-    }
-
-    if (t0 < time && m_world) {
-      m_world->schedule(time - t0);
-    }
-
-    m_time     = time;
-    m_position = static_cast<size_t>(i_end - m_history.begin());
   }
 }

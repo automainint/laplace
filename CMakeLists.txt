@@ -88,17 +88,19 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
       set_tests_properties(
         ${LAPLACE_UNITTESTS}-${name}
         PROPERTIES
-        TIMEOUT "20")
+        TIMEOUT "15")
     endmacro()
 
     laplace_add_test(core)
     laplace_add_test(math)
     laplace_add_test(engine)
-    laplace_add_test(format)
     laplace_add_test(network)
+    laplace_add_test(format)
+    laplace_add_test(ui)
     laplace_add_test(platform)
     laplace_add_test(graphics)
-    laplace_add_test(ui)
+    laplace_add_test(render)
+    laplace_add_test(stem)
   endif()
 endif()
 

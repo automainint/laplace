@@ -1,6 +1,4 @@
-/*  laplace/network/server.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -36,7 +34,7 @@ namespace laplace::network {
     server() = default;
     virtual ~server();
 
-    void set_factory(engine::ptr_factory fac);
+    void set_factory(engine::ptr_factory factory) noexcept;
     void set_verbose(bool verbose) noexcept;
 
     virtual void queue(span_cbyte seq);
@@ -44,9 +42,12 @@ namespace laplace::network {
 
     virtual void reconnect();
 
-    [[nodiscard]] auto get_factory() const -> engine::ptr_factory;
-    [[nodiscard]] auto get_solver() const -> engine::ptr_solver;
-    [[nodiscard]] auto get_world() const -> engine::ptr_world;
+    [[nodiscard]] auto get_factory() const noexcept
+        -> engine::ptr_factory;
+    [[nodiscard]] auto get_solver() const noexcept
+        -> engine::ptr_solver;
+    [[nodiscard]] auto get_world() const noexcept
+        -> engine::ptr_world;
 
     [[nodiscard]] auto get_ping() const noexcept -> sl::time;
 
@@ -65,18 +66,19 @@ namespace laplace::network {
     [[nodiscard]] auto is_verbose() const noexcept -> bool;
 
     template <typename prime_impact_, typename... args_>
-    inline void emit(args_... args) {
+    inline void emit(args_... args) noexcept {
       this->queue(engine::encode<prime_impact_>(args...));
     }
 
     template <typename factory_, typename... args_>
-    inline void make_factory(args_... args) {
+    inline void make_factory(args_... args) noexcept {
       this->set_factory(std::make_shared<factory_>(args...));
     }
 
   protected:
-    void setup_solver();
-    void setup_world();
+    void setup_callbacks() noexcept;
+    void setup_solver() noexcept;
+    void setup_world() noexcept;
 
     void set_connected(bool is_connected) noexcept;
     void set_quit(bool is_quit) noexcept;
@@ -106,9 +108,10 @@ namespace laplace::network {
     [[nodiscard]] auto get_overtake_factor() const noexcept
         -> sl::whole;
 
-    void verb_queue(sl::index n, span_cbyte seq) const;
-    void verb_slot(sl::index slot, sl::index n, span_cbyte seq) const;
-    void dump(span_cbyte bytes) const;
+    void verb_queue(sl::index n, span_cbyte seq) const noexcept;
+    void verb_slot(sl::index slot, sl::index n,
+                   span_cbyte seq) const noexcept;
+    void dump(span_cbyte bytes) const noexcept;
 
   private:
     bool m_verbose      = default_verbose;

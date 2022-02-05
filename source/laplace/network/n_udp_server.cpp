@@ -12,7 +12,8 @@
 
 #include "../engine/eval/arithmetic.impl.h"
 #include "../engine/protocol/all.h"
-#include "udp_ipv4_interface.h"
+#include "../engine/world.h"
+#include "udp_ipv4.h"
 #include <algorithm>
 #include <chrono>
 #include <thread>
@@ -35,7 +36,7 @@ namespace laplace::network {
   sl::index const udp_server::max_index_delta           = 0x1000;
 
   udp_server::udp_server() noexcept {
-    m_socket_interface = make_unique<udp_ipv4_interface>();
+    m_socket_interface = make_unique<udp_ipv4>();
   }
 
   udp_server::~udp_server() noexcept {

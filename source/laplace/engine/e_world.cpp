@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -187,28 +187,28 @@ namespace laplace::engine {
   }
 
   void world::queue(ptr_impact ev) noexcept {
-    if (ev) {
-      if (ev->is_async()) {
-        auto _ul = unique_lock(m_lock);
-        m_queue.emplace_back(std::move(ev));
+    if (!ev)
+      return;
 
-      } else {
-        auto _ul = unique_lock(m_lock);
+    if (ev->is_async()) {
+      auto _ul = unique_lock(m_lock);
+      m_queue.emplace_back(std::move(ev));
 
-        auto iter = lower_bound(
-            m_sync_queue.begin(), m_sync_queue.end(), ev->get_order(),
-            [](ptr_impact const &a, cref_eventorder b) -> bool {
-              return a->get_order() < b;
-            });
+    } else {
+      auto _ul = unique_lock(m_lock);
 
-        m_sync_queue.emplace(iter, std::move(ev));
-      }
+      auto iter = lower_bound(
+          m_sync_queue.begin(), m_sync_queue.end(), ev->get_order(),
+          [](ptr_impact const &a, cref_eventorder b) -> bool {
+            return a->get_order() < b;
+          });
+
+      m_sync_queue.emplace(iter, std::move(ev));
     }
   }
 
   void world::tick(sl::time delta) noexcept {
     schedule(delta);
-
     join();
   }
 

@@ -1,10 +1,10 @@
 target_sources(
   ${LAPLACE_OBJ}
     PRIVATE
-      ee_maze.test.cpp f_text.test.cpp uie_textedit.test.cpp
-      c_string.test.cpp ee_grid.test.cpp ui_basic_widget.test.cpp
-      e3_quad.test.cpp n_transfer.test.cpp c_bytestream.test.cpp
-      c_socket.test.cpp c_serial.test.cpp e_world.test.cpp
+      e_solver.test.cpp ee_maze.test.cpp f_text.test.cpp
+      uie_textedit.test.cpp c_string.test.cpp ee_grid.test.cpp
+      ui_basic_widget.test.cpp e3_quad.test.cpp n_udp_ipv4.test.cpp n_transfer.test.cpp
+      c_bytestream.test.cpp c_socket.test.cpp c_serial.test.cpp e_world.test.cpp
       c_input_handler.test.cpp c_embedded.test.cpp e3_cylinder.test.cpp
       p_opengl.test.cpp e3_intersection.test.cpp e3_polygon.test.cpp
       n_udp_ipv4_node.test.cpp ee_arithmetic.test.cpp m_vector.test.cpp g_color.test.cpp
@@ -15,5 +15,5 @@ target_sources(
       nc_wolfssl.test.cpp ee_integral.test.cpp e3_vector.test.cpp
       ee_hierarchical_grid.test.cpp ui_layout.test.cpp m_traits.test.cpp m_matrix.test.cpp
       e3_sphere.test.cpp ui_rect.test.cpp e_loader.test.cpp e3_ray.test.cpp
-      c_utf8.test.cpp n_udp_ipv4_interface.test.cpp c_utils.test.cpp
-      ee_astar.test.cpp c_unival.test.cpp c_profiler.test.cpp)
+      c_utf8.test.cpp c_utils.test.cpp ee_astar.test.cpp c_unival.test.cpp
+      c_profiler.test.cpp)

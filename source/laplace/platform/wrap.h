@@ -1,8 +1,4 @@
-/*  laplace/platform/wrap.h
- *
- *      Platform API.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -16,6 +12,7 @@
 #define laplace_platform_wrap_h
 
 #include "../core/defs.h"
+#include "thread.h"
 
 #define LAPLACE_USING_PLATFORM(PREFIX_)                             \
   using PREFIX_::gl_get_proc_address, PREFIX_::set_background_mode, \

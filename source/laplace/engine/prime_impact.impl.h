@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -80,18 +80,16 @@ namespace laplace::engine {
   }
 
   constexpr auto prime_impact::get_time(span_cbyte seq) -> sl::time {
-    if (is_control_id(get_id(seq))) {
+    if (is_control_id(get_id(seq)))
       return time_undefined;
-    }
 
     return get_time_unsafe(seq);
   }
 
   constexpr auto prime_impact::get_actor(span_cbyte seq)
       -> sl::index {
-    if (is_control_id(get_id(seq))) {
+    if (is_control_id(get_id(seq)))
       return id_undefined;
-    }
 
     return get_actor_unsafe(seq);
   }

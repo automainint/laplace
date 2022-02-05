@@ -13,6 +13,7 @@
 #include "host.h"
 
 #include "../engine/protocol/all.h"
+#include "../engine/world.h"
 #include "crypto/ecc_rabbit.h"
 
 namespace laplace::network {
