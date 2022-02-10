@@ -11,8 +11,6 @@
 #ifndef laplace_network_udp_server_h
 #define laplace_network_udp_server_h
 
-#include "../engine/defs.h"
-#include "../engine/loader.h"
 #include "server.h"
 #include "socket_interface.h"
 #include "transfer.h"

@@ -10,15 +10,12 @@
 
 #include "server.h"
 
-#include "../engine/world.h"
+#include "../core/string.h"
 #include <iomanip>
 
 namespace laplace::network {
   using std::ostringstream, std::hex, std::setw, std::make_shared,
-      std::move, engine::ptr_factory, engine::ptr_world,
-      engine::ptr_solver, engine::solver, engine::world,
-      engine::seed_type, engine::basic_factory, engine::prime_impact,
-      engine::ptr_impact;
+      std::move;
 
   bool const      server::default_verbose                 = false;
   sl::time const  server::default_tick_duration_msec      = 10;
@@ -31,19 +28,14 @@ namespace laplace::network {
     if (!is_verbose())
       return;
 
-    verb(fmt("Total bytes sent:      %zu", m_total_sent));
-    verb(fmt("Total bytes received:  %zu", m_total_received));
+    verb(fmt("Total bytes sent:      %d", (int) m_total_sent));
+    verb(fmt("Total bytes received:  %d", (int) m_total_received));
 
     if (m_total_received > 0) {
-      verb(fmt("Corruption:  %zu bytes (%zu%%)", m_total_loss,
-               (m_total_loss * 100 + m_total_received / 2) /
+      verb(fmt("Corruption:  %d bytes (%d%%)", (int) m_total_loss,
+               (int) (m_total_loss * 100 + m_total_received / 2) /
                    m_total_received));
     }
-  }
-
-  void server::set_factory(ptr_factory factory) noexcept {
-    m_factory = factory;
-    setup_callbacks();
   }
 
   void server::set_verbose(bool verbose) noexcept {
@@ -53,18 +45,6 @@ namespace laplace::network {
   void server::queue(span_cbyte seq) { }
   void server::tick(sl::time delta_msec) { }
   void server::reconnect() { }
-
-  auto server::get_factory() const noexcept -> ptr_factory {
-    return m_factory;
-  }
-
-  auto server::get_solver() const noexcept -> ptr_solver {
-    return m_solver;
-  }
-
-  auto server::get_world() const noexcept -> ptr_world {
-    return m_world;
-  }
 
   auto server::get_ping() const noexcept -> sl::time {
     return m_ping_msec;
@@ -102,48 +82,31 @@ namespace laplace::network {
     return m_verbose;
   }
 
-  void server::setup_callbacks() noexcept {
-    if (!m_solver)
+  void server::set_random_seed(sl::whole64 seed) noexcept {
+    if (m_set_seed) {
+      error_("No set seed function.");
       return;
-
-    if (m_world) {
-      m_solver->on_reset([wor = m_world]() { wor->clear(); });
-      m_solver->on_seed([wor = m_world](seed_type seed_value) {
-        wor->get_random().seed(seed_value);
-      });
-      m_solver->on_tick(
-          [wor = m_world](sl::time delta) { wor->tick(delta); });
-      m_solver->on_schedule(
-          [wor = m_world](sl::time delta) { wor->schedule(delta); });
-      m_solver->on_join([wor = m_world]() { wor->join(); });
-      m_solver->on_queue([wor = m_world](ptr_impact event) {
-        wor->queue(move(event));
-      });
     }
 
-    if (m_factory)
-      m_solver->on_decode([fac = m_factory](span_cbyte event) {
-        return fac->decode(event);
-      });
+    m_set_seed(seed);
   }
 
-  void server::setup_solver() noexcept {
-    if (m_solver)
-      return;
+  auto server::get_id(span_cbyte seq) const noexcept -> uint16_t {
+    if (!m_get_id) {
+      error_("No get id function.");
+      return 0;
+    }
 
-    m_solver = make_shared<solver>();
-    setup_callbacks();
+    return m_get_id(seq);
   }
 
-  void server::setup_world() noexcept {
-    if (m_world)
-      return;
+  auto server::get_name_by_id(uint16_t id) const noexcept -> string {
+    if (!m_get_name_by_id) {
+      error_("No get by id function.");
+      return "";
+    }
 
-    if (!m_solver)
-      m_solver = make_shared<solver>();
-
-    m_world = make_shared<world>();
-    setup_callbacks();
+    return m_get_name_by_id(id);
   }
 
   void server::set_connected(bool is_connected) noexcept {
@@ -157,11 +120,6 @@ namespace laplace::network {
   void server::set_tick_duration(
       sl::time tick_duration_msec) noexcept {
     m_tick_duration_msec = tick_duration_msec;
-  }
-
-  void server::set_random_seed(seed_type seed) {
-    if (m_solver)
-      m_solver->set_seed(seed);
   }
 
   void server::set_ping(sl::time ping_msec) noexcept {
@@ -228,8 +186,8 @@ namespace laplace::network {
     if (!is_verbose())
       return;
 
-    auto const id   = prime_impact::get_id(seq);
-    auto const name = basic_factory::name_by_id_native(id);
+    auto const id   = get_id(seq);
+    auto const name = get_name_by_id(id);
 
     if (!name.empty())
       verb(fmt(" :: queue %4d '%s (%d)'", (int) n, name.c_str(),
@@ -243,8 +201,8 @@ namespace laplace::network {
     if (!is_verbose())
       return;
 
-    auto const id   = prime_impact::get_id(seq);
-    auto const name = basic_factory::name_by_id_native(id);
+    auto const id   = get_id(seq);
+    auto const name = get_name_by_id(id);
 
     if (!name.empty())
       verb(fmt(" :: (slot %2d) %4d '%s (%d)'", (int) slot, (int) n,

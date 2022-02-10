@@ -11,14 +11,17 @@
 #ifndef laplace_network_server_h
 #define laplace_network_server_h
 
-#include "../engine/basic_factory.h"
-#include "../engine/solver.h"
+#include "defs.h"
 
 namespace laplace::network {
   enum class server_state { prepare, action, pause };
 
   class server {
   public:
+    using fn_set_seed       = std::function<void(sl::whole64)>;
+    using fn_get_id         = std::function<void(span_cbyte)>;
+    using fn_get_name_by_id = std::function<std::string(uint16_t)>;
+
     static const bool      default_verbose;
     static const sl::time  default_tick_duration_msec;
     static const sl::time  default_update_timeout_msec;
@@ -34,20 +37,12 @@ namespace laplace::network {
     server() = default;
     virtual ~server();
 
-    void set_factory(engine::ptr_factory factory) noexcept;
     void set_verbose(bool verbose) noexcept;
 
     virtual void queue(span_cbyte seq);
     virtual void tick(sl::time delta_msec);
 
     virtual void reconnect();
-
-    [[nodiscard]] auto get_factory() const noexcept
-        -> engine::ptr_factory;
-    [[nodiscard]] auto get_solver() const noexcept
-        -> engine::ptr_solver;
-    [[nodiscard]] auto get_world() const noexcept
-        -> engine::ptr_world;
 
     [[nodiscard]] auto get_ping() const noexcept -> sl::time;
 
@@ -67,24 +62,20 @@ namespace laplace::network {
 
     template <typename prime_impact_, typename... args_>
     inline void emit(args_... args) noexcept {
-      this->queue(engine::encode<prime_impact_>(args...));
-    }
-
-    template <typename factory_, typename... args_>
-    inline void make_factory(args_... args) noexcept {
-      this->set_factory(std::make_shared<factory_>(args...));
+      this->queue(prime_impact_(args...).encode());
     }
 
   protected:
-    void setup_callbacks() noexcept;
-    void setup_solver() noexcept;
-    void setup_world() noexcept;
+    void               set_random_seed(sl::whole64 seed) noexcept;
+    [[nodiscard]] auto get_id(span_cbyte seq) const noexcept
+        -> uint16_t;
+    [[nodiscard]] auto get_name_by_id(uint16_t id) const noexcept
+        -> std::string;
 
     void set_connected(bool is_connected) noexcept;
     void set_quit(bool is_quit) noexcept;
 
     void set_tick_duration(sl::time tick_duration_msec) noexcept;
-    void set_random_seed(engine::seed_type seed);
     void set_ping(sl::time ping_msec) noexcept;
     void set_state(server_state state) noexcept;
 
@@ -113,14 +104,14 @@ namespace laplace::network {
                    span_cbyte seq) const noexcept;
     void dump(span_cbyte bytes) const noexcept;
 
+    fn_set_seed       m_set_seed;
+    fn_get_id         m_get_id;
+    fn_get_name_by_id m_get_name_by_id;
+
   private:
     bool m_verbose      = default_verbose;
     bool m_is_connected = false;
     bool m_is_quit      = false;
-
-    engine::ptr_factory m_factory;
-    engine::ptr_solver  m_solver;
-    engine::ptr_world   m_world;
 
     sl::time m_ping_msec          = 0;
     sl::time m_tick_clock_msec    = 0;

@@ -10,9 +10,6 @@
 
 #include "udp_server.h"
 
-#include "../engine/eval/arithmetic.impl.h"
-#include "../engine/protocol/all.h"
-#include "../engine/world.h"
 #include "udp_ipv4.h"
 #include <algorithm>
 #include <chrono>
