@@ -14,10 +14,8 @@
 #include <iomanip>
 
 namespace laplace::network {
-  using std::ostringstream, std::hex, std::setw, std::make_shared,
-      std::move;
+  using std::ostringstream, std::string;
 
-  bool const      server::default_verbose                 = false;
   sl::time const  server::default_tick_duration_msec      = 10;
   sl::time const  server::default_update_timeout_msec     = 10;
   sl::time const  server::default_ping_timeout_msec       = 100;
@@ -25,21 +23,36 @@ namespace laplace::network {
   sl::whole const server::default_overtake_factor         = 3;
 
   server::~server() {
-    if (!is_verbose())
-      return;
-
-    verb(fmt("Total bytes sent:      %d", (int) m_total_sent));
-    verb(fmt("Total bytes received:  %d", (int) m_total_received));
+    m_log.print(fmt("Total bytes sent:      %d", (int) m_total_sent));
+    m_log.print(
+        fmt("Total bytes received:  %d", (int) m_total_received));
 
     if (m_total_received > 0) {
-      verb(fmt("Corruption:  %d bytes (%d%%)", (int) m_total_loss,
-               (int) (m_total_loss * 100 + m_total_received / 2) /
-                   m_total_received));
+      m_log.print(
+          fmt("Corruption:  %d bytes (%d%%)", (int) m_total_loss,
+              (int) (m_total_loss * 100 + m_total_received / 2) /
+                  m_total_received));
     }
   }
 
-  void server::set_verbose(bool verbose) noexcept {
-    m_verbose = verbose;
+  void server::setup_event_interface(
+      event_interface const &in) noexcept {
+    if (!check_event_interface(in)) {
+      error_("Invalid event interface.", __FUNCTION__);
+      return;
+    }
+
+    m_interface = in;
+  }
+
+  void server::setup_log_interface(
+      log_interface const &log) noexcept {
+    if (!check_log_interface(log)) {
+      error_("Invalid log interface.", __FUNCTION__);
+      return;
+    }
+
+    m_log = log;
   }
 
   void server::queue(span_cbyte seq) { }
@@ -76,37 +89,6 @@ namespace laplace::network {
 
   auto server::is_quit() const noexcept -> bool {
     return m_is_quit;
-  }
-
-  auto server::is_verbose() const noexcept -> bool {
-    return m_verbose;
-  }
-
-  void server::set_random_seed(sl::whole64 seed) noexcept {
-    if (m_set_seed) {
-      error_("No set seed function.");
-      return;
-    }
-
-    m_set_seed(seed);
-  }
-
-  auto server::get_id(span_cbyte seq) const noexcept -> uint16_t {
-    if (!m_get_id) {
-      error_("No get id function.");
-      return 0;
-    }
-
-    return m_get_id(seq);
-  }
-
-  auto server::get_name_by_id(uint16_t id) const noexcept -> string {
-    if (!m_get_name_by_id) {
-      error_("No get by id function.");
-      return "";
-    }
-
-    return m_get_name_by_id(id);
   }
 
   void server::set_connected(bool is_connected) noexcept {
@@ -179,50 +161,5 @@ namespace laplace::network {
 
   auto server::get_overtake_factor() const noexcept -> sl::whole {
     return m_overtake_factor;
-  }
-
-  void server::verb_queue(sl::index  n,
-                          span_cbyte seq) const noexcept {
-    if (!is_verbose())
-      return;
-
-    auto const id   = get_id(seq);
-    auto const name = get_name_by_id(id);
-
-    if (!name.empty())
-      verb(fmt(" :: queue %4d '%s (%d)'", (int) n, name.c_str(),
-               (int) id));
-    else
-      verb(fmt(" :: queue %4d '%d'", (int) n, (int) id));
-  }
-
-  void server::verb_slot(sl::index slot, sl::index n,
-                         span_cbyte seq) const noexcept {
-    if (!is_verbose())
-      return;
-
-    auto const id   = get_id(seq);
-    auto const name = get_name_by_id(id);
-
-    if (!name.empty())
-      verb(fmt(" :: (slot %2d) %4d '%s (%d)'", (int) slot, (int) n,
-               name.c_str(), (int) id));
-    else
-      verb(fmt(" :: (slot %2d) %4d '%d'", (int) slot, (int) n,
-               (int) id));
-  }
-
-  void server::dump(span_cbyte bytes) const noexcept {
-    if (!is_verbose())
-      return;
-
-    auto ss = ostringstream {};
-    ss << " ";
-    for (sl::index i = 0; i < bytes.size(); i++) {
-      ss << " " << setw(2) << hex << static_cast<unsigned>(bytes[i]);
-      if ((i % 16) == 15)
-        ss << "\n ";
-    }
-    verb(fmt("\n  DUMP\n%s\n", ss.str().c_str()));
   }
 }

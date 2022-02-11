@@ -23,10 +23,8 @@ namespace laplace::network {
     static constexpr sl::index slot_host            = -1;
     static constexpr sl::index slot_count_unlimited = -1;
 
-    static sl::whole const default_chunk_size;
-    static sl::whole const chunk_size_increment;
+    static sl::whole const chunk_size;
     static sl::whole const default_loss_compensation;
-    static uint16_t const  default_max_command_id;
     static sl::index const max_index_delta;
 
     udp_server() noexcept;
@@ -47,8 +45,8 @@ namespace laplace::network {
     };
 
     struct slot_info {
-      std::string address = localhost;
-      uint16_t    port    = any_port;
+      std::string address;
+      uint16_t    port = any_port;
       vbyte       token;
 
       sl::index                id_actor     = engine::id_undefined;
@@ -91,9 +89,6 @@ namespace laplace::network {
     void set_max_slot_count(sl::whole count);
     void set_master(bool is_master);
 
-    [[nodiscard]] auto is_allowed(sl::index slot,
-                                  uint16_t  command_id) const -> bool;
-
     [[nodiscard]] auto is_master() const -> bool;
 
     auto add_slot(std::string_view address, uint16_t port)
@@ -123,8 +118,6 @@ namespace laplace::network {
     void process_chunk(sl::index slot, span_cbyte chunk);
     void send_event_history_to(sl::index slot);
 
-    void inc_buffer_size();
-
     void add_event(sl::index slot, span_cbyte seq);
     auto encode_chunk(sl::index slot) noexcept -> vbyte;
     void send_chunk(sl::index slot, span_cbyte chunk) noexcept;
@@ -138,11 +131,6 @@ namespace laplace::network {
     [[nodiscard]] auto convert_delta(sl::time delta_msec) -> sl::time;
     [[nodiscard]] auto adjust_overtake(sl::time time) -> sl::time;
 
-    [[nodiscard]] auto get_max_chunk_size() const noexcept
-        -> sl::whole;
-    [[nodiscard]] auto get_max_event_size() const noexcept
-        -> sl::whole;
-
     std::vector<slot_info>                  m_slots;
     std::unique_ptr<socket_interface::node> m_node;
     std::unique_ptr<socket_interface>       m_socket_interface;
@@ -150,15 +138,12 @@ namespace laplace::network {
   private:
     [[nodiscard]] auto has_free_slots() const -> bool;
 
-    vbyte       m_buffer = vbyte(default_chunk_size);
+    vbyte       m_buffer = vbyte(chunk_size);
     event_queue m_queue;
-
-    std::unique_ptr<engine::loader> m_loader;
 
     sl::vector<vbyte> m_instant_events;
 
     vuint16   m_allowed_commands;
-    uint16_t  m_max_command_id        = default_max_command_id;
     bool      m_is_master             = false;
     bool      m_is_encryption_enabled = true;
     sl::whole m_max_slot_count        = 0;

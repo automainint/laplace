@@ -11,18 +11,18 @@
 #ifndef laplace_network_server_h
 #define laplace_network_server_h
 
-#include "defs.h"
+#include "event_interface.h"
+#include "log_interface.h"
 
 namespace laplace::network {
   enum class server_state { prepare, action, pause };
 
   class server {
   public:
-    using fn_set_seed       = std::function<void(sl::whole64)>;
-    using fn_get_id         = std::function<void(span_cbyte)>;
-    using fn_get_name_by_id = std::function<std::string(uint16_t)>;
+    static constexpr sl::index id_undefined    = -1;
+    static constexpr sl::index index_undefined = -1;
+    static constexpr sl::time  time_undefined  = -1;
 
-    static const bool      default_verbose;
     static const sl::time  default_tick_duration_msec;
     static const sl::time  default_update_timeout_msec;
     static const sl::time  default_ping_timeout_msec;
@@ -37,7 +37,8 @@ namespace laplace::network {
     server() = default;
     virtual ~server();
 
-    void set_verbose(bool verbose) noexcept;
+    void setup_event_interface(event_interface const &in) noexcept;
+    void setup_log_interface(log_interface const &in) noexcept;
 
     virtual void queue(span_cbyte seq);
     virtual void tick(sl::time delta_msec);
@@ -58,20 +59,12 @@ namespace laplace::network {
     [[nodiscard]] auto is_connected() const noexcept -> bool;
     [[nodiscard]] auto is_quit() const noexcept -> bool;
 
-    [[nodiscard]] auto is_verbose() const noexcept -> bool;
-
     template <typename prime_impact_, typename... args_>
     inline void emit(args_... args) noexcept {
       this->queue(prime_impact_(args...).encode());
     }
 
   protected:
-    void               set_random_seed(sl::whole64 seed) noexcept;
-    [[nodiscard]] auto get_id(span_cbyte seq) const noexcept
-        -> uint16_t;
-    [[nodiscard]] auto get_name_by_id(uint16_t id) const noexcept
-        -> std::string;
-
     void set_connected(bool is_connected) noexcept;
     void set_quit(bool is_quit) noexcept;
 
@@ -99,17 +92,10 @@ namespace laplace::network {
     [[nodiscard]] auto get_overtake_factor() const noexcept
         -> sl::whole;
 
-    void verb_queue(sl::index n, span_cbyte seq) const noexcept;
-    void verb_slot(sl::index slot, sl::index n,
-                   span_cbyte seq) const noexcept;
-    void dump(span_cbyte bytes) const noexcept;
-
-    fn_set_seed       m_set_seed;
-    fn_get_id         m_get_id;
-    fn_get_name_by_id m_get_name_by_id;
+    event_interface m_interface = blank_event_interface();
+    log_interface   m_log       = blank_log_interface();
 
   private:
-    bool m_verbose      = default_verbose;
     bool m_is_connected = false;
     bool m_is_quit      = false;
 

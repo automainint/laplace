@@ -15,7 +15,6 @@
 
 namespace laplace::network {
   extern sl::whole const max_chunk_size;
-  extern char const      localhost[];
   extern uint16_t const  any_port;
 
   enum io_mode { async, sync };

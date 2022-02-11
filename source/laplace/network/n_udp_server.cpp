@@ -10,26 +10,18 @@
 
 #include "udp_server.h"
 
+#include "../core/string.h"
 #include "udp_ipv4.h"
 #include <algorithm>
 #include <chrono>
 #include <thread>
 
 namespace laplace::network {
-  namespace access = engine::access;
-  using namespace engine::protocol;
-
   using std::min, std::max, std::any_of, std::make_unique,
-      std::string, std::string_view, std::chrono::milliseconds,
-      engine::ptr_impact, engine::prime_impact, engine::seed_type,
-      engine::loader, engine::time_undefined, engine::id_undefined,
-      engine::encode, engine::ptr_prime_impact,
-      engine::eval::impl::wrap_add;
+      std::string, std::string_view, std::chrono::milliseconds;
 
-  sl::whole const udp_server::default_chunk_size        = 4192;
-  sl::whole const udp_server::chunk_size_increment      = 512;
+  sl::whole const udp_server::chunk_size                = 4192;
   sl::whole const udp_server::default_loss_compensation = 4;
-  uint16_t const  udp_server::default_max_command_id    = 400;
   sl::index const udp_server::max_index_delta           = 0x1000;
 
   udp_server::udp_server() noexcept {
@@ -59,11 +51,11 @@ namespace laplace::network {
       process_event(slot_host, seq);
 
     } else {
-      verb_queue(m_queue.events.size(), seq);
+      m_log.queue(m_queue.events.size(), seq);
 
       auto &qu = m_queue.events;
       qu.emplace_back(seq.begin(), seq.end());
-      prime_impact::set_index(qu.back(), qu.size() - 1);
+      m_interface.set_event_index(qu.back(), qu.size() - 1);
     }
   }
 
@@ -87,88 +79,72 @@ namespace laplace::network {
   auto udp_server::perform_control(sl::index slot, span_cbyte seq)
       -> bool {
 
-    if (request_token::scan(seq)) {
+    if (m_interface.scan_request_token(seq)) {
       if (slot < 0 || slot >= m_slots.size()) {
         error_("Invalid slot.", __FUNCTION__);
         return true;
       }
 
       if (!m_slots[slot].token.empty())
-        send_event_to(slot,
-                      encode<session_token>(m_slots[slot].token));
+        send_event_to(slot, m_interface.encode_session_token(
+                                m_slots[slot].token));
 
       return true;
     }
 
-    if (server_action::scan(seq)) {
+    if (m_interface.scan_server_action(seq)) {
       set_state(server_state::action);
       return !is_master();
     }
 
-    if (server_pause::scan(seq)) {
+    if (m_interface.scan_server_pause(seq)) {
       set_state(server_state::pause);
       return !is_master();
     }
 
-    if (server_reserve::scan(seq)) {
-      if (get_state() == server_state::prepare) {
-        if (auto w = get_world(); w) {
-          auto const count = server_reserve::get_value(seq);
-
-          for (sl::index n = 0; n < count; n++) { w->reserve(n); }
-        }
-
-      } else {
-        if (is_verbose()) {
-          verb("Network: Ignore reserve command.");
-        }
-      }
+    if (m_interface.scan_server_reserve(seq)) {
+      if (get_state() == server_state::prepare)
+        m_interface.do_server_reserve(seq);
+      else
+        m_log.print("Ignore reserve command.");
 
       return true;
     }
 
-    if (server_clock::scan(seq)) {
-      set_tick_duration(server_clock::get_value(seq));
+    if (m_interface.scan_server_clock(seq)) {
+      set_tick_duration(m_interface.decode_server_clock(seq));
       return !is_master();
     }
 
-    if (server_seed::scan(seq)) {
+    if (m_interface.scan_server_seed(seq)) {
       if (get_state() == server_state::prepare) {
-
-        set_random_seed(
-            static_cast<seed_type>(server_seed::get_value(seq)));
-
+        m_interface.do_server_seed(seq);
         return !is_master();
       }
 
-      if (is_verbose())
-        verb("Network: Ignore seed command.");
+      m_log.print("Ignore seed command.");
       return true;
     }
 
-    if (request_events::scan(seq) && slot != slot_host) {
+    if (m_interface.scan_request_events(seq) && slot != slot_host) {
       if (slot >= 0 && slot < m_slots.size()) {
-        auto const count    = request_events::get_event_count(seq);
+        auto const events   = m_interface.decode_request_events(seq);
         sl::index  distance = 0;
 
-        for (sl::index i = 0; i < count; i++) {
-          auto n = request_events::get_event(seq, i);
-
-          if (n < m_queue.events.size()) {
+        for (auto const n : events) {
+          if (n >= 0 && n < m_queue.events.size()) {
             distance = max<sl::index>(distance,
                                       m_queue.events.size() - n);
             send_event_to(slot, m_queue.events[n]);
-          } else if (is_verbose()) {
-            verb(fmt("Network: No requested event %zu.", n));
+          } else {
+            m_log.print(fmt("No requested event %d.", (int) n));
           }
         }
 
         if (m_loss_compensation < distance) {
           m_loss_compensation++;
-
-          if (is_verbose())
-            verb(fmt("Network: Loss compensation %zu.",
-                     m_loss_compensation));
+          m_log.print(fmt("Loss compensation %d.",
+                          (int) m_loss_compensation));
         }
 
       } else {
@@ -178,17 +154,14 @@ namespace laplace::network {
       return true;
     }
 
-    if (ping_request::scan(seq) && slot != slot_host) {
-      auto const time = ping_request::get_value(seq);
-      send_event_to(slot, encode<ping_response>(time));
+    if (m_interface.scan_ping_request(seq) && slot != slot_host) {
+      send_event_to(slot, m_interface.encode_ping_response(seq));
       return true;
     }
 
-    if (ping_response::scan(seq) && slot != slot_host) {
-      auto const ping = get_local_time() -
-                        ping_response::get_value(seq);
-
-      set_ping(ping);
+    if (m_interface.scan_ping_response(seq) && slot != slot_host) {
+      set_ping(get_local_time() -
+               m_interface.decode_ping_response(seq));
       return true;
     }
 
@@ -196,15 +169,13 @@ namespace laplace::network {
   }
 
   void udp_server::cleanup() {
-    if (m_loader)
-      m_loader.reset();
+    m_interface.do_cleanup();
 
     if (m_node) {
-      if (is_master()) {
-        emit<server_quit>();
-      } else {
-        emit<client_leave>();
-      }
+      if (is_master())
+        queue(m_interface.encode_server_quit());
+      else
+        queue(m_interface.encode_client_leave());
 
       send_events();
     }
@@ -227,45 +198,34 @@ namespace laplace::network {
   }
 
   void udp_server::update_world(sl::time delta_msec) {
-    if (m_loader && m_loader->is_ready())
-      m_loader.reset();
-
-    if (m_loader)
+    if (!m_interface.do_wait_loading())
       return;
 
     perform_instant_events();
 
-    if (get_state() == server_state::action) {
-      if (auto sol = get_solver(); sol) {
-        sol->schedule(is_master() ? adjust_delta(delta_msec)
+    if (get_state() == server_state::action)
+      m_interface.do_schedule(is_master()
+                                  ? adjust_delta(delta_msec)
                                   : convert_delta(delta_msec));
-      } else {
-        error_("No solver.", __FUNCTION__);
-        set_state(server_state::pause);
-      }
-    }
 
-    if (auto wor = get_world(); wor)
-      if (wor->is_desync())
-        set_quit(true);
+    if (m_interface.is_desync())
+      set_quit(true);
   }
 
   void udp_server::send_events() {
-    if (m_queue.index < 0) {
+    if (m_queue.index < 0)
       return;
-    }
 
-    while (m_queue.index < m_queue.events.size()) {
+    while (m_queue.index < m_queue.events.size())
       send_event(m_queue.events[m_queue.index++]);
-    }
 
     send_chunks();
   }
 
   void udp_server::send_event_to(sl::index slot, span_cbyte seq) {
-    if (slot_create::scan(seq)) {
-      auto buf = vbyte(seq.begin(), seq.end());
-      slot_create::alter(buf, m_slots[slot].id_actor);
+    if (m_interface.scan_slot_create(seq)) {
+      auto buf = vbyte { seq.begin(), seq.end() };
+      m_interface.alter_slot_create_flag(buf, m_slots[slot].id_actor);
       append_event(slot, buf);
     } else {
       append_event(slot, seq);
@@ -273,20 +233,20 @@ namespace laplace::network {
   }
 
   void udp_server::send_event(span_cbyte seq) {
-    if (slot_create::scan(seq)) {
-      auto buf = vbyte(seq.begin(), seq.end());
+    if (m_interface.scan_slot_create(seq)) {
+      auto buf = vbyte { seq.begin(), seq.end() };
 
       for (sl::index i = 0; i < m_slots.size(); i++)
         if (m_slots[i].is_exclusive) {
-          slot_create::alter(buf, m_slots[i].id_actor);
+          m_interface.alter_slot_create_flag(buf,
+                                             m_slots[i].id_actor);
           append_event(i, buf);
         }
 
     } else {
       for (sl::index i = 0; i < m_slots.size(); i++)
-        if (m_slots[i].is_exclusive) {
+        if (m_slots[i].is_exclusive)
           append_event(i, seq);
-        }
     }
   }
 
@@ -301,26 +261,6 @@ namespace laplace::network {
 
   void udp_server::set_master(bool is_master) {
     m_is_master = is_master;
-  }
-
-  auto udp_server::is_allowed(sl::index slot,
-                              uint16_t  command_id) const -> bool {
-    if (command_id >= m_max_command_id) {
-      return false;
-    }
-
-    if (!m_slots[slot].is_exclusive) {
-      return command_id == ids::session_request ||
-             command_id == ids::session_response;
-    }
-
-    if (m_allowed_commands.empty()) {
-      return true;
-    }
-
-    return any_of(m_allowed_commands.begin(),
-                  m_allowed_commands.end(),
-                  [command_id](auto id) { return id == command_id; });
   }
 
   auto udp_server::is_master() const -> bool {
@@ -349,21 +289,20 @@ namespace laplace::network {
   auto udp_server::find_slot(string_view address, uint16_t port)
       -> sl::index {
 
-    for (sl::index i = 0; i < m_slots.size(); i++) {
-      if (m_slots[i].address == address && m_slots[i].port == port) {
+    for (sl::index i = 0; i < m_slots.size(); i++)
+      if (m_slots[i].address == address && m_slots[i].port == port)
         return i;
-      }
-    }
 
     if (!is_master()) {
-      error_("Joining is disabled.", __FUNCTION__);
-      verb(fmt("  port: %d", (int) port));
-      return -1;
+      m_log.print(fmt("Reject %s:%d. Joining is disabled.",
+                      address.data(), (int) port));
+      return index_undefined;
     }
 
     if (!has_free_slots()) {
-      error_("No free slots.", __FUNCTION__);
-      return -1;
+      m_log.print(fmt("Reject %s:%d. No free slots.", address.data(),
+                      (int) port));
+      return index_undefined;
     }
 
     return add_slot(address, port);
@@ -373,17 +312,16 @@ namespace laplace::network {
     for (sl::index i = 0; i < m_slots.size(); i++) {
       process_queue(i);
 
-      if (m_slots[i].is_exclusive) {
+      if (m_slots[i].is_exclusive)
         check_outdate(i);
-      }
     }
 
     clean_slots();
   }
 
   void udp_server::process_queue(sl::index slot) {
-    auto     &qu = m_slots[slot].queue;
-    sl::index n  = 0;
+    auto &qu = m_slots[slot].queue;
+    auto  n  = sl::index {};
 
     for (; n < qu.events.size(); n++) {
       auto &seq = qu.events[n];
@@ -392,19 +330,21 @@ namespace laplace::network {
       process_event(slot, seq);
     }
 
+    /*  TODO
+     *  Make sure to request the rest events afterwards.
+     */
     if (n < qu.events.size() && !m_slots[slot].request_flag) {
-      auto events = sl::vector<sl::index> {};
+      auto       events = sl::vector<sl::index> {};
+      auto const limit  = m_interface.get_request_events_limit();
 
       for (sl::index i = n; i < qu.events.size(); i++) {
         if (qu.events[i].empty())
           events.emplace_back(qu.index + i);
-
-        if (events.size() >=
-            request_events::get_max_event_count(get_max_event_size()))
+        if (events.size() >= limit)
           break;
       }
 
-      send_event_to(slot, encode<request_events>(events));
+      send_event_to(slot, m_interface.encode_request_events(events));
 
       m_slots[slot].request_flag = true;
     }
@@ -419,9 +359,8 @@ namespace laplace::network {
       return;
 
     if (is_master())
-      if (auto sol = get_solver(); sol)
-        send_event_to(slot, encode<server_idle>(m_queue.events.size(),
-                                                sol->get_time()));
+      send_event_to(slot, m_interface.encode_server_idle(
+                              m_queue.events.size()));
 
     auto const compensate = min<sl::index>(m_queue.events.size(),
                                            m_loss_compensation);
@@ -434,34 +373,32 @@ namespace laplace::network {
   }
 
   void udp_server::clean_slots() {
-    if (is_master() && get_state() == server_state::prepare) {
-      m_slots.erase(std::remove_if(m_slots.begin(), m_slots.end(),
-                                   [](auto const &s) {
-                                     return !s.is_connected;
-                                   }),
-                    m_slots.end());
-    }
+    /*  TODO
+     *  Remove disconnected slots in action state also?
+     *  Slot can reconnect by secret token.
+     */
+    if (!is_master() || get_state() != server_state::prepare)
+      return;
+
+    m_slots.erase(
+        std::remove_if(m_slots.begin(), m_slots.end(),
+                       [](auto const &s) { return !s.is_connected; }),
+        m_slots.end());
   }
 
   void udp_server::process_event(sl::index slot, span_cbyte seq) {
-    if (prime_impact::get_time(seq) == time_undefined) {
+    if (m_interface.get_event_time(seq) == time_undefined) {
       if (perform_control(slot, seq))
         return;
-
-      if (is_master()) {
+      if (is_master())
         distribute_event(slot, seq);
-      } else {
+      else
         add_instant_event(seq);
-      }
-
     } else {
-      if (!is_master()) {
+      if (!is_master())
         perform_event(slot, seq);
-      } else {
-        if (is_verbose()) {
-          verb("Network: Ignore timed event.");
-        }
-      }
+      else
+        m_log.print("Ignore timed event.");
     }
   }
 
@@ -473,100 +410,45 @@ namespace laplace::network {
 
     auto buf = vbyte { seq.begin(), seq.end() };
 
-    /*  Set the event actor id.
-     */
     if (slot != slot_host)
-      prime_impact::set_actor(buf, m_slots[slot].id_actor);
+      m_interface.set_event_actor(buf, m_slots[slot].id_actor);
 
     sl::index const n = m_queue.events.size();
 
-    prime_impact::set_index(buf, n);
+    m_interface.set_event_index(buf, n);
 
-    verb_queue(n, seq);
+    m_log.queue(n, seq);
 
-    if (get_state() == server_state::prepare) {
-      /*  Perform the event.
-       */
+    if (get_state() == server_state::prepare)
       add_instant_event(buf);
+    else
+      m_interface.set_event_time(buf, m_interface.do_apply(buf));
 
-    } else {
-      if (auto sol = get_solver(); sol) {
-        /*  Apply the event.
-         */
-        auto time = sol->apply(buf);
-
-        /*  Set the event time.
-         */
-        prime_impact::set_time(buf, time);
-      }
-    }
-
-    /*  Add the event to the main queue.
-     */
     m_queue.events.emplace_back(buf);
   }
 
   void udp_server::add_instant_event(span_cbyte seq) {
-    if (prime_impact::get_id(seq) == ids::server_loading) {
-
-      if (!m_loader) {
-        m_loader = make_unique<loader>();
-
-        m_loader->on_decode([fac = get_factory()](
-                                span_cbyte seq) -> ptr_prime_impact {
-          if (!fac) {
-            error_("No factory.", __FUNCTION__);
-            return {};
-          }
-
-          return fac->decode(seq);
-        });
-
-        m_loader->on_perform(
-            [wor = get_world()](ptr_prime_impact const &task) {
-              if (!wor) {
-                error_("No world.", __FUNCTION__);
-                return;
-              }
-
-              if (task)
-                task->perform({ *wor, access::data });
-            });
-      }
-
-      if (!m_instant_events.empty()) {
-        for (sl::index i = 0; i < m_instant_events.size(); i++)
-          m_loader->add_task(m_instant_events[i]);
-
-        m_instant_events.clear();
-      }
-
-      m_loader->add_task(seq);
-
-    } else {
+    if (!m_interface.scan_server_loading(seq)) {
       m_instant_events.emplace_back(seq.begin(), seq.end());
+      return;
     }
+
+    if (!m_instant_events.empty()) {
+      for (sl::index i = 0; i < m_instant_events.size(); i++)
+        m_interface.do_loading(m_instant_events[i]);
+      m_instant_events.clear();
+    }
+
+    m_interface.do_loading(seq);
   }
 
   void udp_server::perform_event(sl::index slot, span_cbyte seq) {
-    update_time_limit(prime_impact::get_time(seq));
-
-    if (auto sol = get_solver(); sol) {
-      sol->apply(seq);
-    }
+    update_time_limit(m_interface.get_event_time(seq));
+    m_interface.do_apply(seq);
   }
 
   void udp_server::perform_instant_events() {
-    auto wor = get_world();
-    auto fac = get_factory();
-
-    if (wor && fac) {
-      for (sl::index i = 0; i < m_instant_events.size(); i++) {
-        auto ev = fac->decode(m_instant_events[i]);
-        ev->perform({ *wor, access::sync });
-      }
-    }
-
+    for (auto &ev : m_instant_events) m_interface.do_perform(ev);
     m_instant_events.clear();
   }
 
@@ -577,11 +459,6 @@ namespace laplace::network {
     for (;;) {
       auto const n = m_node->receive(m_buffer, async);
 
-      if (n == m_buffer.size() || m_node->is_msgsize())
-        if (has_slot(m_node->get_remote_address(),
-                     m_node->get_remote_port()))
-          inc_buffer_size();
-
       if (n == 0) {
         if (m_node->is_connreset()) {
           auto const slot = find_slot(m_node->get_remote_address(),
@@ -590,9 +467,8 @@ namespace laplace::network {
           if (slot < 0 || slot >= m_slots.size())
             continue;
 
-          if (is_verbose())
-            verb(fmt("Network: Reset connection on slot %d.",
-                     (int) slot));
+          m_log.print(
+              fmt("Reset connection on slot %d.", (int) slot));
 
           disconnect(slot);
 
@@ -639,13 +515,9 @@ namespace laplace::network {
     for (;;) {
       auto const n = s.node->receive(m_buffer, async);
 
-      auto const sender_changed = s.address !=
+      bool const sender_changed = s.address !=
                                       s.node->get_remote_address() ||
                                   s.port != s.node->get_remote_port();
-
-      if (n == m_buffer.size() || m_node->is_msgsize())
-        if (!sender_changed)
-          inc_buffer_size();
 
       if (n == 0) {
         if (m_node->is_connreset()) {
@@ -653,9 +525,8 @@ namespace laplace::network {
           if (sender_changed)
             continue;
 
-          if (is_verbose())
-            verb(fmt("Network: Reset connection on slot %d.",
-                     (int) slot));
+          m_log.print(
+              fmt("Reset connection on slot %d.", (int) slot));
 
           disconnect(slot);
 
@@ -719,50 +590,50 @@ namespace laplace::network {
       return;
     }
 
+    /*  TODO
+     *  Check for sent event count.
+     */
     for (sl::index i = 0; i < m_queue.index; i++)
       send_event_to(slot, m_queue.events[i]);
   }
 
-  void udp_server::inc_buffer_size() {
-    if (m_buffer.size() >= max_chunk_size)
-      return;
-
-    if (is_verbose())
-      verb("Network: Increase buffer size.");
-
-    m_buffer.resize(m_buffer.size() + chunk_size_increment);
-  }
-
   void udp_server::add_event(sl::index slot, span_cbyte seq) {
-    auto  index = prime_impact::get_index(seq);
+    auto  index = m_interface.get_event_index(seq);
     auto &qu    = m_slots[slot].queue;
 
-    if (index == -1) {
+    if (index == index_undefined) {
       if (!perform_control(slot, seq))
-        if (is_verbose())
-          verb(fmt("Network: Ignore unindexed command on slot %zu.",
-                   slot));
+        m_log.print(
+            fmt("Ignore unindexed command on slot %d.", (int) slot));
+      return;
+    }
 
-    } else if (index >= qu.index) {
-      auto const n = index - qu.index;
+    if (index < qu.index) {
+      m_log.print(
+          fmt("Ignore command duplicate on slot %d.", (int) slot));
+      return;
+    }
 
-      if (n >= qu.events.size()) {
-        if (n - qu.events.size() >= max_index_delta) {
-          if (is_verbose())
-            verb(fmt("Network: Invalid command index on slot %d.",
-                     (int) slot));
-          return;
-        }
+    auto const n = index - qu.index;
 
-        qu.events.resize(n + 1);
+    if (n >= qu.events.size()) {
+      /*  TODO
+       *  Index delta limit may be error prone.
+       */
+      if (n - qu.events.size() >= max_index_delta) {
+        m_log.print(
+            fmt("Invalid command index on slot %d.", (int) slot));
+        return;
       }
 
-      if (qu.events[n].empty()) {
-        verb_slot(slot, index, seq);
+      qu.events.resize(n + 1);
+    }
 
-        qu.events[n].assign(seq.begin(), seq.end());
-        m_slots[slot].outdate = 0;
-      }
+    if (qu.events[n].empty()) {
+      m_log.slot(slot, index, seq);
+
+      qu.events[n].assign(seq.begin(), seq.end());
+      m_slots[slot].outdate = 0;
     }
   }
 
@@ -776,24 +647,11 @@ namespace laplace::network {
 
       for (sl::index i = 0; i < m_slots[slot].in.size(); i++) {
         auto const &ev = m_slots[slot].in[i];
-        auto const  id = prime_impact::get_id(ev);
 
-        if (is_allowed(slot, id)) {
+        if (m_interface.is_allowed(ev, m_slots[i].is_exclusive))
           add_event(slot, ev);
-        } else {
-          if (is_verbose()) {
-            auto const s = engine::basic_factory::name_by_id_native(
-                id);
-
-            if (s.empty()) {
-              verb(fmt("Network: Command '%d' not allowed.",
-                       (int) id));
-            } else {
-              verb(fmt("Network: Command '%s (%d)' not allowed.",
-                       s.c_str(), (int) id));
-            }
-          }
-        }
+        else
+          m_log.not_allowed(slot, ev);
       }
 
       m_slots[slot].in.clear();
@@ -810,10 +668,9 @@ namespace laplace::network {
       size += s.tran.get_data_overhead();
       size += s.out[i].size();
 
-      if (size >= get_max_chunk_size()) {
-        if (is_verbose())
-          verb(fmt("Network: Some events discarded on slot %d.",
-                   (int) slot));
+      if (size >= chunk_size) {
+        m_log.print(
+            fmt("Some events discarded on slot %d.", (int) slot));
         break;
       }
 
@@ -823,9 +680,9 @@ namespace laplace::network {
 
     auto const chunk = s.tran.encode(plain, s.encryption);
 
-    if (chunk.empty() && is_verbose())
-      verb(fmt("Network: Unable to encode chunk on slot %d.",
-               (int) slot));
+    if (chunk.empty())
+      m_log.print(
+          fmt("Unable to encode chunk on slot %d.", (int) slot));
 
     s.out.clear();
 
@@ -836,6 +693,8 @@ namespace laplace::network {
                               span_cbyte chunk) noexcept {
     if (chunk.empty())
       return;
+    if (chunk.size() >= get_max_chunk_size())
+      m_log.print("Warning: Chunk size too big.");
 
     auto &s = m_slots[slot];
 
@@ -861,44 +720,36 @@ namespace laplace::network {
   }
 
   void udp_server::disconnect(sl::index slot) {
-    if (slot >= 0 && slot < m_slots.size()) {
-      m_slots[slot].is_connected = false;
-
-      if (is_master()) {
-        if (get_state() == server_state::prepare &&
-            m_slots[slot].id_actor != id_undefined) {
-
-          process_event(slot, encode<slot_remove>());
-          m_slots[slot].id_actor = id_undefined;
-        }
-      } else {
-        set_connected(false);
-      }
-
-      if (is_verbose()) {
-        verb(fmt("Network: Disconnect on slot %d.", (int) slot));
-      }
-
-    } else {
+    if (slot < 0 || slot >= m_slots.size()) {
       error_("Invalid slot.", __FUNCTION__);
+      return;
     }
+
+    m_slots[slot].is_connected = false;
+
+    if (is_master()) {
+      if (get_state() == server_state::prepare &&
+          m_slots[slot].id_actor != id_undefined) {
+        process_event(slot, m_interface.encode_slot_remove());
+        m_slots[slot].id_actor = id_undefined;
+      }
+    } else {
+      set_connected(false);
+    }
+
+    m_log.print(fmt("Disconnect on slot %d.", (int) slot));
   }
 
   void udp_server::update_slots(sl::time delta_msec) {
     for (sl::index i = 0; i < m_slots.size(); i++) {
-      if (!m_slots[i].is_connected) {
+      if (!m_slots[i].is_connected)
         continue;
-      }
 
       m_slots[i].outdate += delta_msec;
       m_slots[i].wait += delta_msec;
 
       if (m_slots[i].wait >= get_connection_timeout()) {
-        if (is_verbose()) {
-          verb(fmt("Network: Connection timeout on slot %d.",
-                   (int) i));
-        }
-
+        m_log.print(fmt("Connection timeout on slot %d.", (int) i));
         disconnect(i);
       }
     }
@@ -910,7 +761,8 @@ namespace laplace::network {
       for (sl::index slot = 0; slot < m_slots.size(); slot++)
         if (m_slots[slot].is_connected &&
             m_slots[slot].is_exclusive) {
-          send_event_to(slot, encode<ping_request>(get_local_time()));
+          send_event_to(slot, m_interface.encode_ping_request(
+                                  get_local_time()));
         }
 
       m_ping_clock = 0;
@@ -919,7 +771,10 @@ namespace laplace::network {
 
   void udp_server::update_local_time(sl::time delta_msec) {
     auto const t = m_local_time;
-    m_local_time = wrap_add(m_local_time, delta_msec);
+
+    m_local_time = static_cast<sl::time>(
+        static_cast<uint64_t>(m_local_time) +
+        static_cast<uint64_t>(delta_msec));
 
     if (m_local_time < t) {
       error_("Time value overflow.", __FUNCTION__);
@@ -933,15 +788,13 @@ namespace laplace::network {
   }
 
   auto udp_server::convert_delta(sl::time delta_msec) -> sl::time {
-    if (auto sol = get_solver(); sol) {
-      auto const time = sol->get_time();
+    auto const time = m_interface.get_current_time();
 
-      if (time < m_time_limit) {
-        auto const delta = adjust_delta(delta_msec) +
-                           adjust_overtake(time);
+    if (time < m_time_limit) {
+      auto const delta = adjust_delta(delta_msec) +
+                         adjust_overtake(time);
 
-        return min(delta, m_time_limit - time);
-      }
+      return min(delta, m_time_limit - time);
     }
 
     return 0;
@@ -961,14 +814,6 @@ namespace laplace::network {
     }
 
     return overtake;
-  }
-
-  auto udp_server::get_max_chunk_size() const noexcept -> sl::whole {
-    return default_chunk_size;
-  }
-
-  auto udp_server::get_max_event_size() const noexcept -> sl::whole {
-    return default_chunk_size / 2;
   }
 
   auto udp_server::has_free_slots() const -> bool {

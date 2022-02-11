@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -64,7 +64,7 @@ namespace laplace::engine::protocol::ids {
 
     /*  uint16_t    id
      */
-    client_desync,
+    // client_desync,
 
     /*  uint16_t    id
      *  uint64_t    last index
