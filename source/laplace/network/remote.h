@@ -1,6 +1,4 @@
-/*  laplace/network/remote.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -16,8 +14,6 @@
 #include "udp_server.h"
 
 namespace laplace::network {
-  /*  Remote server.
-   */
   class remote final : public udp_server {
   public:
     remote();
@@ -30,9 +26,9 @@ namespace laplace::network {
 
   private:
     auto perform_control(sl::index slot, span_cbyte seq)
-        -> bool override;
+        -> event_status override;
 
-    std::string m_host_address = localhost;
+    std::string m_host_address;
     uint16_t    m_host_port    = any_port;
     uint16_t    m_client_port  = any_port;
 

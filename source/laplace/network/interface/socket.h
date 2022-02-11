@@ -8,10 +8,10 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_socket_interface_h
-#define laplace_network_socket_interface_h
+#ifndef laplace_network_interface_socket_h
+#define laplace_network_interface_socket_h
 
-#include "defs.h"
+#include "../defs.h"
 
 namespace laplace::network {
   class socket_interface {

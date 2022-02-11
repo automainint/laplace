@@ -11,13 +11,11 @@
 #ifndef laplace_network_udp_server_h
 #define laplace_network_udp_server_h
 
+#include "interface/socket.h"
 #include "server.h"
-#include "socket_interface.h"
 #include "transfer.h"
 
 namespace laplace::network {
-  /*  Base class for host and remote servers.
-   */
   class udp_server : public server {
   public:
     static constexpr sl::index slot_host            = -1;
@@ -49,7 +47,7 @@ namespace laplace::network {
       uint16_t    port = any_port;
       vbyte       token;
 
-      sl::index                id_actor     = engine::id_undefined;
+      sl::index                id_actor     = id_undefined;
       bool                     is_connected = true;
       transfer::encryption_tag encryption   = transfer::plain;
       bool                     is_exclusive = false;
@@ -66,11 +64,11 @@ namespace laplace::network {
       std::unique_ptr<socket_interface::node> node;
     };
 
-    /*  Returns false if the event should be added to the main queue.
-     */
+    enum class event_status { proceed, remove };
+
     [[nodiscard]] virtual auto perform_control(sl::index  slot,
                                                span_cbyte seq)
-        -> bool;
+        -> event_status;
 
     void cleanup();
 

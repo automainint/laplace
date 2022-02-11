@@ -35,14 +35,24 @@ namespace laplace::network {
     }
   }
 
-  void server::setup_event_interface(
-      event_interface const &in) noexcept {
-    if (!check_event_interface(in)) {
+  void server::setup_protocol_interface(
+      protocol_interface const &in) noexcept {
+    if (!check_protocol_interface(in)) {
+      error_("Invalid protocol interface.", __FUNCTION__);
+      return;
+    }
+
+    m_proto = in;
+  }
+
+  void server::setup_execution_interface(
+      execution_interface const &in) noexcept {
+    if (!check_execution_interface(in)) {
       error_("Invalid event interface.", __FUNCTION__);
       return;
     }
 
-    m_interface = in;
+    m_exe = in;
   }
 
   void server::setup_log_interface(

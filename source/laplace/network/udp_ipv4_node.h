@@ -12,7 +12,7 @@
 #define laplace_network_udp_ipv4_node_h
 
 #include "../core/socket.h"
-#include "socket_interface.h"
+#include "interface/socket.h"
 
 namespace laplace::network {
   class udp_ipv4_node : public socket_interface::node {

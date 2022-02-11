@@ -8,10 +8,10 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_log_interface_h
-#define laplace_network_log_interface_h
+#ifndef laplace_network_interface_log_h
+#define laplace_network_interface_log_h
 
-#include "defs.h"
+#include "../defs.h"
 
 namespace laplace::network {
   using fn_log_print = std::function<void(std::string_view)>;

@@ -10,30 +10,17 @@
 
 #include "remote.h"
 
-#include "../engine/protocol/all.h"
-#include "../engine/world.h"
 #include "crypto/ecc_rabbit.h"
 
 namespace laplace::network {
-  using namespace engine::protocol;
-
-  using std::string, std::string_view, engine::encode,
-      crypto::ecc_rabbit;
+  using std::string, std::string_view, crypto::ecc_rabbit;
 
   remote::remote() {
-    setup_world();
-
     set_master(false);
   }
 
   void remote::reconnect() {
     cleanup();
-
-    if (auto wor = get_world(); wor)
-      wor->clear();
-
-    if (auto sol = get_solver(); sol)
-      sol->clear_history();
 
     set_state(server_state::prepare);
     set_connected(true);
@@ -45,16 +32,15 @@ namespace laplace::network {
     if (is_encryption_enabled()) {
       m_slots[slot].tran.setup_cipher<ecc_rabbit>();
 
-      send_event_to(slot, encode<session_request>(
-                              ids::cipher_ecc_rabbit,
+      send_event_to(slot, m_proto.encode_session_request(
+                              cipher::rabbit,
                               m_slots[slot].tran.get_public_key()));
     } else {
-
-      send_event_to(slot, encode<session_request>(ids::cipher_plain,
-                                                  span_cbyte {}));
+      send_event_to(
+          slot, m_proto.encode_session_request(cipher::plain, {}));
     }
 
-    emit<client_enter>();
+    queue(m_proto.encode_client_enter());
   }
 
   void remote::connect(string_view host_address, uint16_t host_port,
@@ -68,15 +54,15 @@ namespace laplace::network {
   }
 
   auto remote::perform_control(sl::index slot, span_cbyte seq)
-      -> bool {
+      -> event_status {
 
-    if (session_response::scan(seq)) {
+    if (m_proto.scan_session_response(seq)) {
       if (slot < 0 || slot >= m_slots.size()) {
         error_("Invalid slot.", __FUNCTION__);
-        return true;
+        return event_status::remove;
       }
 
-      const auto key = session_response::get_key(seq);
+      auto const key = m_proto.decode_public_key(seq);
 
       if (!key.empty()) {
         m_slots[slot].tran.set_remote_key(key);
@@ -86,38 +72,38 @@ namespace laplace::network {
                                        : transfer::plain;
       }
 
-      m_slots[slot].node         = m_socket_interface->open(any_port);
-      m_slots[slot].port         = session_response::get_port(seq);
+      m_slots[slot].node = m_socket_interface->open(any_port);
+      m_slots[slot].port = m_proto.decode_session_response_port(seq);
       m_slots[slot].is_exclusive = true;
 
       if (m_token.empty())
-        send_event_to(slot, encode<request_token>());
+        send_event_to(slot, m_proto.encode_request_token());
       else
-        send_event_to(slot, encode<session_token>(m_token));
+        send_event_to(slot, m_proto.encode_session_token(m_token));
 
-      return true;
+      return event_status::remove;
     }
 
-    if (session_token::scan(seq)) {
+    if (m_proto.scan_session_token(seq)) {
       if (slot < 0 || slot >= m_slots.size()) {
         error_("Invalid slot.", __FUNCTION__);
-        return true;
+        return event_status::remove;
       }
 
-      const auto token = session_token::get_token(seq);
+      auto const token = m_proto.decode_session_token(seq);
 
       m_token.assign(token.begin(), token.end());
 
-      return true;
+      return event_status::remove;
     }
 
-    if (server_idle::scan(seq)) {
+    if (m_proto.scan_server_heartbeat(seq)) {
       if (slot < 0 || slot >= m_slots.size()) {
         error_("Invalid slot.", __FUNCTION__);
-        return true;
+        return event_status::remove;
       }
 
-      auto const index = server_idle::get_idle_index(seq);
+      auto const [index, time] = m_proto.decode_server_heartbeat(seq);
 
       if (index >= 0) {
         auto const &qu          = m_slots[slot].queue;
@@ -128,32 +114,30 @@ namespace laplace::network {
 
           for (sl::index n = event_count; n < index; n++) {
             events.emplace_back(n);
-
-            if (events.size() >= request_events::get_max_event_count(
-                                     get_max_event_size()))
+            if (events.size() >= m_proto.get_request_events_limit())
               break;
           }
 
-          send_event_to(slot, encode<request_events>(events));
+          send_event_to(slot, m_proto.encode_request_events(events));
         }
 
-        update_time_limit(server_idle::get_idle_time(seq));
+        update_time_limit(time);
       }
 
-      return true;
+      return event_status::remove;
     }
 
-    if (server_quit::scan(seq)) {
+    if (m_proto.scan_server_quit(seq)) {
       if (slot < 0 || slot >= m_slots.size()) {
         error_("Invalid slot.", __FUNCTION__);
-        return true;
+        return event_status::remove;
       }
 
       set_connected(false);
       set_quit(true);
       m_node.reset();
 
-      return true;
+      return event_status::remove;
     }
 
     return udp_server::perform_control(slot, seq);

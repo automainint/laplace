@@ -11,13 +11,13 @@
 #ifndef laplace_network_udp_ipv4_h
 #define laplace_network_udp_ipv4_h
 
-#include "socket_interface.h"
+#include "interface/socket.h"
 
 namespace laplace::network {
   class udp_ipv4 : public socket_interface {
   public:
     ~udp_ipv4() noexcept override = default;
-    
+
     [[nodiscard]] auto open(uint16_t port) noexcept
         -> std::unique_ptr<node> override;
   };

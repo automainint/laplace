@@ -11,8 +11,9 @@
 #ifndef laplace_network_server_h
 #define laplace_network_server_h
 
-#include "event_interface.h"
-#include "log_interface.h"
+#include "interface/execution.h"
+#include "interface/log.h"
+#include "interface/protocol.h"
 
 namespace laplace::network {
   enum class server_state { prepare, action, pause };
@@ -37,7 +38,10 @@ namespace laplace::network {
     server() = default;
     virtual ~server();
 
-    void setup_event_interface(event_interface const &in) noexcept;
+    void setup_protocol_interface(
+        protocol_interface const &in) noexcept;
+    void setup_execution_interface(
+        execution_interface const &in) noexcept;
     void setup_log_interface(log_interface const &in) noexcept;
 
     virtual void queue(span_cbyte seq);
@@ -92,8 +96,9 @@ namespace laplace::network {
     [[nodiscard]] auto get_overtake_factor() const noexcept
         -> sl::whole;
 
-    event_interface m_interface = blank_event_interface();
-    log_interface   m_log       = blank_log_interface();
+    protocol_interface  m_proto = blank_protocol_interface();
+    execution_interface m_exe   = blank_execution_interface();
+    log_interface       m_log   = blank_log_interface();
 
   private:
     bool m_is_connected = false;

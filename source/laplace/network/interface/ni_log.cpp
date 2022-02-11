@@ -8,11 +8,12 @@
  *  the MIT License for more details.
  */
 
-#include "log_interface.h"
+#include "log.h"
 
 namespace laplace::network {
   auto check_log_interface(log_interface const &in) noexcept -> bool {
-    return in.print && in.queue && in.slot && in.not_allowed && in.dump;
+    return in.print && in.queue && in.slot && in.not_allowed &&
+           in.dump;
   }
 
   auto blank_log_interface() noexcept -> log_interface {
