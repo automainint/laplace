@@ -11,6 +11,7 @@
 #ifndef laplace_network_server_h
 #define laplace_network_server_h
 
+#include "clock.h"
 #include "interface/execution.h"
 #include "interface/log.h"
 #include "interface/protocol.h"
@@ -24,11 +25,9 @@ namespace laplace::network {
     static constexpr sl::index index_undefined = -1;
     static constexpr sl::time  time_undefined  = -1;
 
-    static const sl::time  default_tick_duration_msec;
-    static const sl::time  default_update_timeout_msec;
-    static const sl::time  default_ping_timeout_msec;
-    static const sl::time  default_connection_timeout_msec;
-    static const sl::whole default_overtake_factor;
+    static const sl::time default_update_timeout_msec;
+    static const sl::time default_ping_timeout_msec;
+    static const sl::time default_connection_timeout_msec;
 
     server(server const &) = delete;
     server(server &&)      = delete;
@@ -49,11 +48,7 @@ namespace laplace::network {
 
     virtual void reconnect();
 
-    [[nodiscard]] auto get_ping() const noexcept -> sl::time;
-
     [[nodiscard]] auto get_state() const noexcept -> server_state;
-    [[nodiscard]] auto get_tick_duration() const noexcept
-        -> sl::whole;
 
     [[nodiscard]] auto get_bytes_sent() const noexcept -> sl::whole;
     [[nodiscard]] auto get_bytes_received() const noexcept
@@ -72,8 +67,6 @@ namespace laplace::network {
     void set_connected(bool is_connected) noexcept;
     void set_quit(bool is_quit) noexcept;
 
-    void set_tick_duration(sl::time tick_duration_msec) noexcept;
-    void set_ping(sl::time ping_msec) noexcept;
     void set_state(server_state state) noexcept;
 
     void reset_tick() noexcept;
@@ -81,21 +74,14 @@ namespace laplace::network {
     void add_bytes_received(sl::whole count) noexcept;
     void add_bytes_loss(sl::whole count) noexcept;
 
-    /*  Update tick timer. Returns time
-     *  delta in ticks.
-     */
-    [[nodiscard]] auto adjust_delta(sl::time delta_msec) noexcept
-        -> sl::time;
-
     [[nodiscard]] auto get_connection_timeout() const noexcept
         -> sl::time;
 
     [[nodiscard]] auto get_update_timeout() const noexcept
         -> sl::time;
     [[nodiscard]] auto get_ping_timeout() const noexcept -> sl::time;
-    [[nodiscard]] auto get_overtake_factor() const noexcept
-        -> sl::whole;
 
+    clock               m_clock;
     protocol_interface  m_proto = blank_protocol_interface();
     execution_interface m_exe   = blank_execution_interface();
     log_interface       m_log   = blank_log_interface();
@@ -104,14 +90,10 @@ namespace laplace::network {
     bool m_is_connected = false;
     bool m_is_quit      = false;
 
-    sl::time m_ping_msec          = 0;
-    sl::time m_tick_clock_msec    = 0;
-    sl::time m_tick_duration_msec = default_tick_duration_msec;
     sl::time m_connection_timeout_msec =
         default_connection_timeout_msec;
-    sl::time  m_update_timeout_msec = default_update_timeout_msec;
-    sl::time  m_ping_timeout_msec   = default_ping_timeout_msec;
-    sl::whole m_overtake_factor     = default_overtake_factor;
+    sl::time m_update_timeout_msec = default_update_timeout_msec;
+    sl::time m_ping_timeout_msec   = default_ping_timeout_msec;
 
     sl::whole m_bytes_sent     = 0;
     sl::whole m_bytes_received = 0;

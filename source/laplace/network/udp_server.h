@@ -29,7 +29,6 @@ namespace laplace::network {
     ~udp_server() noexcept override;
 
     void set_encryption_enabled(bool is_enabled) noexcept;
-    void set_allowed_commands(span_cuint16 commands) noexcept;
 
     void queue(span_cbyte seq) override;
     void tick(sl::time delta_msec) override;
@@ -75,7 +74,7 @@ namespace laplace::network {
     [[nodiscard]] auto is_encryption_enabled() const noexcept -> bool;
     [[nodiscard]] auto get_local_time() const noexcept -> sl::time;
 
-    void update_world(sl::time delta_msec);
+    void update_world();
 
     void send_events();
 
@@ -123,11 +122,6 @@ namespace laplace::network {
     void disconnect(sl::index slot);
 
     void update_slots(sl::time delta_msec);
-    void update_local_time(sl::time delta_msec);
-    void update_time_limit(sl::time time);
-
-    [[nodiscard]] auto convert_delta(sl::time delta_msec) -> sl::time;
-    [[nodiscard]] auto adjust_overtake(sl::time time) -> sl::time;
 
     std::vector<slot_info>                  m_slots;
     std::unique_ptr<socket_interface::node> m_node;
@@ -141,7 +135,6 @@ namespace laplace::network {
 
     sl::vector<vbyte> m_instant_events;
 
-    vuint16   m_allowed_commands;
     bool      m_is_master             = false;
     bool      m_is_encryption_enabled = true;
     sl::whole m_max_slot_count        = 0;

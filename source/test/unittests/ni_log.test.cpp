@@ -8,9 +8,15 @@
  *  the MIT License for more details.
  */
 
-#include "../../laplace/network/server.h"
+#include "../../laplace/network/interface/log.h"
 #include <gtest/gtest.h>
 
 namespace laplace::test {
-  TEST(network, server) { }
+  using network::check_log_interface, network::blank_log_interface,
+      network::log_interface;
+
+  TEST(network, interface_log) {
+    EXPECT_TRUE(check_log_interface(blank_log_interface()));
+    EXPECT_FALSE(check_log_interface(log_interface {}));
+  }
 }

@@ -31,8 +31,8 @@ namespace laplace::network {
 
     m_node = m_socket_interface->open(port);
 
-    process_event(slot_host,
-                  m_proto.encode_server_clock(get_tick_duration()));
+    process_event(slot_host, m_proto.encode_server_clock(
+                                 m_clock.get_tick_duration()));
     process_event(slot_host, m_proto.encode_server_seed(m_seed));
     process_event(slot_host, m_proto.encode_server_init());
 
@@ -88,7 +88,7 @@ namespace laplace::network {
         if (i == slot || s.token.empty())
           continue;
 
-        auto bool equal = [&]() {
+        bool const equal = [&]() {
           if (s.token.size() != token.size())
             return false;
           for (sl::index k = 0; k < token.size(); k++)

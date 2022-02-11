@@ -130,10 +130,10 @@ namespace laplace::engine::protocol {
 
   using request_token = instant_event<ids::request_token>;
 
-  // using client_desync = instant_event<ids::client_desync>;
-  using client_enter = basic_event<ids::client_enter>;
-  using client_leave = basic_event<ids::client_leave>;
-  using client_ready = inheritable_event<ids::client_ready>;
+  using client_desync = instant_event<ids::client_desync>;
+  using client_enter  = basic_event<ids::client_enter>;
+  using client_leave  = basic_event<ids::client_leave>;
+  using client_ready  = inheritable_event<ids::client_ready>;
 
   using server_action = basic_event<ids::server_action>;
   using server_pause  = basic_event<ids::server_pause>;

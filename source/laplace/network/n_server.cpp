@@ -16,11 +16,9 @@
 namespace laplace::network {
   using std::ostringstream, std::string;
 
-  sl::time const  server::default_tick_duration_msec      = 10;
-  sl::time const  server::default_update_timeout_msec     = 10;
-  sl::time const  server::default_ping_timeout_msec       = 100;
-  sl::time const  server::default_connection_timeout_msec = 20000;
-  sl::whole const server::default_overtake_factor         = 3;
+  sl::time const server::default_update_timeout_msec     = 10;
+  sl::time const server::default_ping_timeout_msec       = 100;
+  sl::time const server::default_connection_timeout_msec = 20000;
 
   server::~server() {
     m_log.print(fmt("Total bytes sent:      %d", (int) m_total_sent));
@@ -69,16 +67,8 @@ namespace laplace::network {
   void server::tick(sl::time delta_msec) { }
   void server::reconnect() { }
 
-  auto server::get_ping() const noexcept -> sl::time {
-    return m_ping_msec;
-  }
-
   auto server::get_state() const noexcept -> server_state {
     return m_state;
-  }
-
-  auto server::get_tick_duration() const noexcept -> sl::whole {
-    return m_tick_duration_msec;
   }
 
   auto server::get_bytes_sent() const noexcept -> sl::whole {
@@ -109,15 +99,6 @@ namespace laplace::network {
     m_is_quit = is_quit;
   }
 
-  void server::set_tick_duration(
-      sl::time tick_duration_msec) noexcept {
-    m_tick_duration_msec = tick_duration_msec;
-  }
-
-  void server::set_ping(sl::time ping_msec) noexcept {
-    m_ping_msec = ping_msec;
-  }
-
   void server::set_state(server_state state) noexcept {
     m_state = state;
   }
@@ -144,19 +125,6 @@ namespace laplace::network {
     m_bytes_loss += count;
   }
 
-  auto server::adjust_delta(sl::time delta_msec) noexcept
-      -> sl::time {
-    auto delta = sl::time {};
-
-    if (m_tick_duration_msec > 0) {
-      delta = (m_tick_clock_msec + delta_msec) / m_tick_duration_msec;
-      m_tick_clock_msec = (m_tick_clock_msec + delta_msec) %
-                          m_tick_duration_msec;
-    }
-
-    return delta;
-  }
-
   auto server::get_connection_timeout() const noexcept -> sl::time {
     return m_connection_timeout_msec;
   }
@@ -167,9 +135,5 @@ namespace laplace::network {
 
   auto server::get_ping_timeout() const noexcept -> sl::time {
     return m_ping_timeout_msec;
-  }
-
-  auto server::get_overtake_factor() const noexcept -> sl::whole {
-    return m_overtake_factor;
   }
 }

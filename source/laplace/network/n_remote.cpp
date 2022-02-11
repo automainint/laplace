@@ -121,7 +121,7 @@ namespace laplace::network {
           send_event_to(slot, m_proto.encode_request_events(events));
         }
 
-        update_time_limit(time);
+        m_clock.set_master_time(time);
       }
 
       return event_status::remove;

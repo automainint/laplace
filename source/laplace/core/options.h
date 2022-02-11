@@ -1,8 +1,4 @@
-/*  laplace/core/options.h
- *
- *      Laplace options.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -52,13 +48,13 @@ namespace laplace {
 #ifdef LAPLACE_UNSAFE
   constexpr bool _unsafe = true;
 #else
-  constexpr bool _unsafe     = false;
+  constexpr bool _unsafe      = false;
 #endif
 
 #ifdef _DEBUG
   constexpr bool _is_debug = true;
 #else
-  constexpr bool _is_debug   = false;
+  constexpr bool _is_debug    = false;
 #endif
 
 #ifdef LAPLACE_VERBOSE

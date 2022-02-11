@@ -13,7 +13,7 @@
 namespace laplace::network {
   auto check_execution_interface(
       execution_interface const &in) noexcept -> bool {
-    return in.is_desync && in.get_current_time && in.do_server_seed &&
+    return in.is_desync && in.do_server_seed &&
            in.do_server_reserve && in.do_reserve &&
            in.do_wait_loading && in.do_loading && in.do_apply &&
            in.do_perform && in.do_schedule && in.do_cleanup;
@@ -23,7 +23,6 @@ namespace laplace::network {
     auto const blank_action = [](span_cbyte) {};
 
     return { .is_desync = []() -> bool { return false; },
-             .get_current_time = []() -> sl::time { return 0; },
              .do_server_seed    = blank_action,
              .do_server_reserve = blank_action,
              .do_reserve        = []() -> sl::index { return -1; },

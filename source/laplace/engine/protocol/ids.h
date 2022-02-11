@@ -64,7 +64,7 @@ namespace laplace::engine::protocol::ids {
 
     /*  uint16_t    id
      */
-    // client_desync,
+    client_desync,
 
     /*  uint16_t    id
      *  uint64_t    last index

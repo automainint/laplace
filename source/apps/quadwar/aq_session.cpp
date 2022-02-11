@@ -13,8 +13,6 @@
 #include "../../laplace/engine/protocol/basic_event.h"
 #include "../../laplace/engine/protocol/slot_create.h"
 #include "../../laplace/engine/world.h"
-#include "../../laplace/network/host.h"
-#include "../../laplace/network/remote.h"
 #include "object/landscape.h"
 #include "object/player.h"
 #include "object/root.h"
@@ -31,8 +29,8 @@ namespace quadwar_app {
   namespace ids    = protocol::ids;
 
   using std::find, std::make_shared, std::string, std::string_view,
-      std::u8string_view, std::ofstream, std::ifstream, network::host,
-      network::remote, protocol::qw_player_name, object::root,
+      std::u8string_view, std::ofstream, std::ifstream, stem::host,
+      stem::remote, protocol::qw_player_name, object::root,
       object::landscape, object::player, engine::id_undefined,
       core::cref_input_handler, view::vec2, view::real,
       core::is_key_down, core::get_wheel_delta, core::keys::key_wheel,
@@ -229,8 +227,8 @@ namespace quadwar_app {
     if (!f)
       return string { default_address };
 
-    verb(fmt("Host address found: %s:%hu", network::localhost, port));
-    return fmt("%s:%hu", network::localhost, port);
+    verb(fmt("Host port found: %hu", port));
+    return fmt("127.0.0.1:%hu", port);
   }
 
   void session::update_control(sl::time           delta_msec,

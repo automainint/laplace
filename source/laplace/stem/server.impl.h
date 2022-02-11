@@ -8,9 +8,15 @@
  *  the MIT License for more details.
  */
 
-#include "../../laplace/network/server.h"
-#include <gtest/gtest.h>
+#ifndef laplace_stem_server_impl_h
+#define laplace_stem_server_impl_h
 
-namespace laplace::test {
-  TEST(network, server) { }
+namespace laplace::stem {
+  template <typename factory>
+  inline void server::make_factory() noexcept { }
+
+  template <typename impact, typename... args_>
+  inline void server::emit(args_... args) noexcept { }
 }
+
+#endif

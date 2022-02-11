@@ -11,7 +11,7 @@
 #include "protocol.h"
 
 namespace laplace::network {
-  auto check_event_interface(protocol_interface const &in) noexcept
+  auto check_protocol_interface(protocol_interface const &in) noexcept
       -> bool {
     return in.get_request_events_limit && in.get_event_index &&
            in.get_event_time && in.set_event_index &&
@@ -29,7 +29,7 @@ namespace laplace::network {
            in.encode_ping_response && in.encode_server_heartbeat &&
            in.encode_server_init && in.encode_server_clock &&
            in.encode_server_seed && in.encode_server_quit &&
-           in.encode_client_leave && in.encode_client_enter &&
+           in.encode_client_enter && in.encode_client_leave &&
            in.encode_slot_create && in.encode_slot_remove &&
 
            in.scan_request_events && in.scan_request_token &&
@@ -45,7 +45,7 @@ namespace laplace::network {
            in.scan_slot_create && in.scan_slot_remove;
   }
 
-  auto blank_event_interface() noexcept -> protocol_interface {
+  auto blank_protocol_interface() noexcept -> protocol_interface {
     auto const blank_scan   = [](span_cbyte) { return false; };
     auto const blank_encode = []() -> vbyte { return {}; };
 
@@ -121,7 +121,9 @@ namespace laplace::network {
       .scan_server_quit      = blank_scan,
       .scan_client_enter     = blank_scan,
       .scan_client_leave     = blank_scan,
-      .scan_client_ready     = blank_scan
+      .scan_client_ready     = blank_scan,
+      .scan_slot_create      = blank_scan,
+      .scan_slot_remove      = blank_scan
     };
   }
 }

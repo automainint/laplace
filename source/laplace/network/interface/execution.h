@@ -14,9 +14,7 @@
 #include "../defs.h"
 
 namespace laplace::network {
-  using fn_is_desync        = std::function<bool()>;
-  using fn_get_current_time = std::function<sl::time()>;
-
+  using fn_is_desync         = std::function<bool()>;
   using fn_do_server_seed    = std::function<void(span_cbyte)>;
   using fn_do_server_reserve = std::function<void(span_cbyte)>;
   using fn_do_reserve        = std::function<sl::index()>;
@@ -29,7 +27,6 @@ namespace laplace::network {
 
   struct execution_interface {
     fn_is_desync         is_desync;
-    fn_get_current_time  get_current_time;
     fn_do_server_seed    do_server_seed;
     fn_do_server_reserve do_server_reserve;
     fn_do_reserve        do_reserve;

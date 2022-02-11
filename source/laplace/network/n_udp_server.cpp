@@ -11,14 +11,14 @@
 #include "udp_server.h"
 
 #include "../core/string.h"
+#include "../core/utils.h"
 #include "udp_ipv4.h"
-#include <algorithm>
 #include <chrono>
 #include <thread>
 
 namespace laplace::network {
-  using std::min, std::max, std::any_of, std::make_unique,
-      std::string, std::string_view, std::chrono::milliseconds;
+  using std::min, std::max, std::make_unique, std::string,
+      std::string_view, std::chrono::milliseconds;
 
   sl::whole const udp_server::chunk_size                = 4192;
   sl::whole const udp_server::default_loss_compensation = 4;
@@ -34,11 +34,6 @@ namespace laplace::network {
 
   void udp_server::set_encryption_enabled(bool is_enabled) noexcept {
     m_is_encryption_enabled = is_enabled;
-  }
-
-  void udp_server::set_allowed_commands(
-      span_cuint16 commands) noexcept {
-    m_allowed_commands.assign(commands.begin(), commands.end());
   }
 
   void udp_server::queue(span_cbyte seq) {
@@ -60,6 +55,11 @@ namespace laplace::network {
   }
 
   void udp_server::tick(sl::time delta_msec) {
+    m_clock.tick(delta_msec);
+
+    if (m_clock.is_overflow())
+      set_quit(true);
+
     reset_tick();
 
     receive_events();
@@ -68,8 +68,7 @@ namespace laplace::network {
 
     send_events();
 
-    update_world(delta_msec);
-    update_local_time(delta_msec);
+    update_world();
   }
 
   auto udp_server::get_port() const -> uint16_t {
@@ -114,7 +113,7 @@ namespace laplace::network {
     }
 
     if (m_proto.scan_server_clock(seq)) {
-      set_tick_duration(m_proto.decode_server_clock(seq));
+      m_clock.set_tick_duration(m_proto.decode_server_clock(seq));
       return is_master() ? event_status::proceed
                          : event_status::remove;
     }
@@ -164,7 +163,8 @@ namespace laplace::network {
     }
 
     if (m_proto.scan_ping_response(seq) && slot != slot_host) {
-      set_ping(get_local_time() - m_proto.decode_ping_response(seq));
+      m_clock.set_latency(m_clock.get_local_time() -
+                          m_proto.decode_ping_response(seq));
       return event_status::remove;
     }
 
@@ -200,15 +200,14 @@ namespace laplace::network {
     return m_local_time;
   }
 
-  void udp_server::update_world(sl::time delta_msec) {
+  void udp_server::update_world() {
     if (!m_exe.do_wait_loading())
       return;
 
     perform_instant_events();
 
     if (get_state() == server_state::action)
-      m_exe.do_schedule(is_master() ? adjust_delta(delta_msec)
-                                    : convert_delta(delta_msec));
+      m_exe.do_schedule(m_clock.get_time_elapsed());
 
     if (m_exe.is_desync())
       set_quit(true);
@@ -360,8 +359,10 @@ namespace laplace::network {
       return;
 
     if (is_master())
-      send_event_to(
-          slot, m_proto.encode_server_heartbeat(m_queue.events.size()));
+      send_event_to(slot,
+                    m_proto.encode_server_heartbeat(
+                        { .index = as_index(m_queue.events.size()),
+                          .time  = m_clock.get_time() }));
 
     auto const compensate = min<sl::index>(m_queue.events.size(),
                                            m_loss_compensation);
@@ -389,7 +390,7 @@ namespace laplace::network {
 
   void udp_server::process_event(sl::index slot, span_cbyte seq) {
     if (m_proto.get_event_time(seq) == time_undefined) {
-      if (perform_control(slot, seq))
+      if (perform_control(slot, seq) == event_status::remove)
         return;
       if (is_master())
         distribute_event(slot, seq);
@@ -444,7 +445,7 @@ namespace laplace::network {
   }
 
   void udp_server::perform_event(sl::index slot, span_cbyte seq) {
-    update_time_limit(m_proto.get_event_time(seq));
+    m_clock.set_master_time(m_proto.get_event_time(seq));
     m_exe.do_apply(seq);
   }
 
@@ -603,7 +604,7 @@ namespace laplace::network {
     auto &qu    = m_slots[slot].queue;
 
     if (index == index_undefined) {
-      if (!perform_control(slot, seq))
+      if (perform_control(slot, seq) == event_status::proceed)
         m_log.print(
             fmt("Ignore unindexed command on slot %d.", (int) slot));
       return;
@@ -679,7 +680,7 @@ namespace laplace::network {
           { s.out[i].begin(), s.out[i].end() });
     }
 
-    auto const chunk = s.tran.encode(plain, s.encryption);
+    auto chunk = s.tran.encode(plain, s.encryption);
 
     if (chunk.empty())
       m_log.print(
@@ -695,7 +696,7 @@ namespace laplace::network {
     if (chunk.empty())
       return;
     if (chunk.size() >= chunk_size)
-      m_log.print("Warning: Chunk size too big.");
+      m_log.print("Chunk size too big.");
 
     auto &s = m_slots[slot];
 
@@ -768,53 +769,6 @@ namespace laplace::network {
 
       m_ping_clock = 0;
     }
-  }
-
-  void udp_server::update_local_time(sl::time delta_msec) {
-    auto const t = m_local_time;
-
-    m_local_time = static_cast<sl::time>(
-        static_cast<uint64_t>(m_local_time) +
-        static_cast<uint64_t>(delta_msec));
-
-    if (m_local_time < t) {
-      error_("Time value overflow.", __FUNCTION__);
-      set_quit(true);
-    }
-  }
-
-  void udp_server::update_time_limit(sl::time time) {
-    if (time >= 0 && m_time_limit < time)
-      m_time_limit = time;
-  }
-
-  auto udp_server::convert_delta(sl::time delta_msec) -> sl::time {
-    auto const time = m_exe.get_current_time();
-
-    if (time < m_time_limit) {
-      auto const delta = adjust_delta(delta_msec) +
-                         adjust_overtake(time);
-
-      return min(delta, m_time_limit - time);
-    }
-
-    return 0;
-  }
-
-  auto udp_server::adjust_overtake(sl::time time) -> sl::time {
-    auto overtake = sl::time {};
-
-    if (get_tick_duration() > 0) {
-      auto ping_ticks = get_ping() /
-                        (get_tick_duration() * get_overtake_factor());
-
-      auto time_gape = m_time_limit - time;
-
-      if (time_gape > ping_ticks)
-        overtake = time_gape - ping_ticks;
-    }
-
-    return overtake;
   }
 
   auto udp_server::has_free_slots() const -> bool {

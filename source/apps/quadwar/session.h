@@ -11,8 +11,7 @@
 #ifndef quadwar_session_h
 #define quadwar_session_h
 
-#include "../../laplace/network/defs.h"
-#include "../../laplace/network/server.h"
+#include "../../laplace/stem/server.h"
 #include "protocol/ids.h"
 #include "qw_factory.h"
 #include "ui/lobby.h"
@@ -84,7 +83,7 @@ namespace quadwar_app {
     bool          m_host_info_saved = false;
     bool          m_show_game       = false;
 
-    network::ptr_server m_server;
+    stem::ptr_server m_server;
 
     view::game m_view;
 
