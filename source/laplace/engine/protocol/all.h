@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -8,14 +8,14 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_protocol_all_h
-#define laplace_engine_protocol_all_h
+#ifndef LAPLACE_ENGINE_PROTOCOL_ALL_H
+#define LAPLACE_ENGINE_PROTOCOL_ALL_H
 
 #include "basic_event.h"
 #include "basic_value.h"
 #include "debug.h"
 #include "request_events.h"
-#include "server_idle.h"
+#include "server_heartbeat.h"
 #include "session_request.h"
 #include "session_response.h"
 #include "session_token.h"

@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_protocol_ids_h
-#define laplace_engine_protocol_ids_h
+#ifndef LAPLACE_ENGINE_PROTOCOL_IDS_H
+#define LAPLACE_ENGINE_PROTOCOL_IDS_H
 
 #include <cstdint>
 #include <string>
@@ -70,7 +70,15 @@ namespace laplace::engine::protocol::ids {
      *  uint64_t    last index
      *  uint64_t    time msec
      */
-    server_idle,
+    server_heartbeat,
+
+    /*  Reserve entity ids.
+     *
+     *  uint16_t    id
+     *  uint64_t    index
+     *  uint64_t    entity count
+     */
+    server_reserve,
 
     /*  Indexed control commands
      *
@@ -103,14 +111,6 @@ namespace laplace::engine::protocol::ids {
      *  uint64_t    index
      */
     server_pause,
-
-    /*  Reserve entity ids.
-     *
-     *  uint16_t    id
-     *  uint64_t    index
-     *  uint64_t    entity count
-     */
-    server_reserve,
 
     /*  uint16_t    id
      *  uint64_t    index

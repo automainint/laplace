@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef quadwar_protocol_qw_slot_create_h
-#define quadwar_protocol_qw_slot_create_h
+#ifndef QUADWAR_PROTOCOL_QW_SLOT_CREATE_H
+#define QUADWAR_PROTOCOL_QW_SLOT_CREATE_H
 
 #include "../../../laplace/engine/protocol/slot_create.h"
 #include "../object/player.h"
@@ -19,13 +19,14 @@
 namespace quadwar_app::protocol {
   class qw_slot_create : public slot_create {
   public:
-    ~qw_slot_create() override = default;
+    ~qw_slot_create() noexcept override = default;
 
     constexpr qw_slot_create(sl::index index, sl::time time,
-                             sl::index id_actor, bool is_local) :
+                             sl::index id_actor,
+                             bool      is_local) noexcept :
         slot_create(index, time, id_actor, is_local) { }
 
-    inline void perform(world w) const override {
+    inline void perform(world w) const noexcept override {
       verb(fmt(" :: event  Quadwar/slot_create: %zu %s", get_actor(),
                is_local() ? "local" : "remote"));
 
@@ -39,7 +40,7 @@ namespace quadwar_app::protocol {
       object::root::status_changed(r);
     }
 
-    static inline auto decode(span_cbyte seq) {
+    static inline auto decode(span_cbyte seq) noexcept {
       return qw_slot_create { get_index(seq), get_time(seq),
                               get_actor(seq),
                               get_local_flag(seq) > 0 };

@@ -26,13 +26,12 @@ namespace laplace::network {
     uint16_t    port = any_port;
     vbyte       token;
 
-    sl::index                id_actor     = id_undefined;
-    transfer::encryption_tag encryption   = transfer::plain;
-    bool                     is_connected = true;
-    bool                     is_exclusive = false;
-    bool                     request_flag = true;
-    sl::time                 outdate      = 0;
-    sl::time                 wait         = 0;
+    sl::index id_actor     = id_undefined;
+    bool      is_connected = true;
+    bool      is_exclusive = false;
+    bool      request_flag = true;
+    sl::time  outdate      = 0;
+    sl::time  wait         = 0;
 
     sl::vector<vbyte> in;
     sl::vector<vbyte> out;

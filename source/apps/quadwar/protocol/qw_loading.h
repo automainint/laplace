@@ -1,6 +1,4 @@
-/*  apps/quadwar/protocol/qw_loading.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef quadwar_protocol_qw_loading_h
-#define quadwar_protocol_qw_loading_h
+#ifndef QUADWAR_PROTOCOL_QW_LOADING_H
+#define QUADWAR_PROTOCOL_QW_LOADING_H
 
 #include "defs.h"
 
@@ -27,10 +25,10 @@ namespace quadwar_app::protocol {
     static constexpr uint16_t  id   = ids::server_loading;
     static constexpr sl::whole size = 34;
 
-    ~qw_loading() final = default;
+    ~qw_loading() noexcept final = default;
 
     inline qw_loading(sl::whole map_size, sl::whole player_count,
-                      sl::whole unit_count) {
+                      sl::whole unit_count) noexcept {
 
       set_encoded_size(size);
 
@@ -40,7 +38,8 @@ namespace quadwar_app::protocol {
     }
 
     inline qw_loading(sl::index index, sl::whole map_size,
-                      sl::whole player_count, sl::whole unit_count) {
+                      sl::whole player_count,
+                      sl::whole unit_count) noexcept {
 
       set_index(index);
       set_encoded_size(size);
@@ -50,34 +49,36 @@ namespace quadwar_app::protocol {
       m_unit_count   = unit_count;
     }
 
-    void perform(world w) const final;
+    void perform(world w) const noexcept final;
 
-    inline void encode_to(std::span<uint8_t> bytes) const final {
+    inline void encode_to(
+        std::span<uint8_t> bytes) const noexcept final {
       serial::write_bytes(bytes, id, get_index64(),
                           static_cast<sl::whole64>(m_map_size),
                           static_cast<sl::whole64>(m_player_count),
                           static_cast<sl::whole64>(m_unit_count));
     }
 
-    static constexpr auto scan(span_cbyte seq) -> bool {
+    static constexpr auto scan(span_cbyte seq) noexcept -> bool {
       return seq.size() == size && get_id(seq) == id;
     }
 
-    static inline auto get_map_size(span_cbyte seq) {
+    static inline auto get_map_size(span_cbyte seq) noexcept {
       return as_index(serial::rd<sl::whole64>(seq, n_map_size));
     }
 
-    static inline auto get_player_count(span_cbyte seq) {
+    static inline auto get_player_count(span_cbyte seq) noexcept {
       return as_index(serial::rd<sl::whole64>(seq, n_player_count));
     }
 
-    static inline auto get_unit_count(span_cbyte seq) {
+    static inline auto get_unit_count(span_cbyte seq) noexcept {
       return as_index(serial::rd<sl::whole64>(seq, n_unit_count));
     }
 
-    static inline auto decode(span_cbyte seq) {
+    static inline auto decode(span_cbyte seq) noexcept {
       return qw_loading { get_index(seq), get_map_size(seq),
-                          get_player_count(seq), get_unit_count(seq) };
+                          get_player_count(seq),
+                          get_unit_count(seq) };
     }
 
   private:

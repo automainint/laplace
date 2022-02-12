@@ -35,6 +35,9 @@ namespace laplace::network {
                             find_tag tag = find_default) noexcept
         -> sl::index;
 
+    [[nodiscard]] auto find_token(span_cbyte token) const noexcept
+        -> sl::index;
+
     [[nodiscard]] auto is_full() const noexcept -> bool;
 
     [[nodiscard]] auto operator[](sl::index slot) noexcept

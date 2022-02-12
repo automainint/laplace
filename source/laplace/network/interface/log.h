@@ -20,14 +20,12 @@ namespace laplace::network {
       std::function<void(sl::index, sl::index, span_cbyte)>;
   using fn_log_not_allowed =
       std::function<void(sl::index, span_cbyte)>;
-  using fn_log_dump = std::function<void(span_cbyte)>;
 
   struct log_interface {
     fn_log_print       print;
     fn_log_queue       queue;
     fn_log_slot        slot;
     fn_log_not_allowed not_allowed;
-    fn_log_dump        dump;
   };
 
   [[nodiscard]] auto check_log_interface(

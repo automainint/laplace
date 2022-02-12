@@ -43,8 +43,8 @@ namespace laplace::network {
   auto slot_pool::add(std::string_view address,
                       uint16_t         port) noexcept -> sl::index {
     sl::index const id = m_slots.size();
-    m_slots.emplace_back(
-        slot_state { .address = string { address }, .port = port });
+    m_slots.emplace_back<slot_state>(
+        { .address = string { address }, .port = port });
     return id;
   }
 
@@ -76,6 +76,27 @@ namespace laplace::network {
     }
 
     return add(address, port);
+  }
+
+  auto slot_pool::find_token(span_cbyte token) const noexcept
+      -> sl::index {
+    auto equal = [](span_cbyte left, span_cbyte right) -> bool {
+      if (left.size() != right.size())
+        return false;
+      for (sl::index i = 0; i < left.size(); i++)
+        if (left[i] != right[i])
+          return false;
+      return true;
+    };
+
+    if (token.empty())
+      return index_undefined;
+
+    for (sl::index i = 0; i < m_slots.size(); i++)
+      if (equal(m_slots[i].token, token))
+        return i;
+
+    return index_undefined;
   }
 
   auto slot_pool::is_full() const noexcept -> bool {

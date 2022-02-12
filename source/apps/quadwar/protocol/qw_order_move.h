@@ -1,6 +1,4 @@
-/*  apps/quadwar/protocol/qw_order_move.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef quadwar_protocol_qw_order_move_h
-#define quadwar_protocol_qw_order_move_h
+#ifndef QUADWAR_PROTOCOL_QW_ORDER_MOVE_H
+#define QUADWAR_PROTOCOL_QW_ORDER_MOVE_H
 
 #include "../object/unit.h"
 #include "defs.h"
@@ -28,12 +26,11 @@ namespace quadwar_app::protocol {
     static constexpr auto      id   = ids::order_move;
     static constexpr sl::whole size = 50;
 
-    ~qw_order_move() final = default;
+    ~qw_order_move() noexcept final = default;
 
-    inline qw_order_move(sl::index      id_actor,
-                         sl::index      id_unit,
+    inline qw_order_move(sl::index id_actor, sl::index id_unit,
                          engine::intval target_x,
-                         engine::intval target_y) {
+                         engine::intval target_y) noexcept {
       set_actor(id_actor);
       set_encoded_size(size);
 
@@ -42,12 +39,10 @@ namespace quadwar_app::protocol {
       m_target_y = target_y;
     }
 
-    inline qw_order_move(sl::index      n,
-                         sl::time       time,
-                         sl::index      id_actor,
-                         sl::index      id_unit,
+    inline qw_order_move(sl::index n, sl::time time,
+                         sl::index id_actor, sl::index id_unit,
                          engine::intval target_x,
-                         engine::intval target_y) {
+                         engine::intval target_y) noexcept {
       set_index(n);
       set_time(time);
       set_actor(id_actor);
@@ -58,12 +53,13 @@ namespace quadwar_app::protocol {
       m_target_y = target_y;
     }
 
-    inline void perform(world w) const final {
+    inline void perform(world w) const noexcept final {
       object::unit::order_move(w, get_actor(), m_unit,
                                { m_target_x, m_target_y });
     }
 
-    inline void encode_to(std::span<uint8_t> bytes) const final {
+    inline void encode_to(
+        std::span<uint8_t> bytes) const noexcept final {
 
       const sl::index64 unit = m_unit;
       const int64_t     x    = m_target_x;
@@ -73,23 +69,23 @@ namespace quadwar_app::protocol {
                           get_actor64(), unit, x, y);
     }
 
-    static constexpr auto scan(span_cbyte seq) -> bool {
+    static constexpr auto scan(span_cbyte seq) noexcept -> bool {
       return seq.size() == size && get_id(seq) == id;
     }
 
-    static inline auto get_unit(span_cbyte seq) {
+    static inline auto get_unit(span_cbyte seq) noexcept {
       return as_index(serial::rd<int64_t>(seq, n_unit));
     }
 
-    static inline auto get_target_x(span_cbyte seq) {
+    static inline auto get_target_x(span_cbyte seq) noexcept {
       return get_intval(seq, n_target_x);
     }
 
-    static inline auto get_target_y(span_cbyte seq) {
+    static inline auto get_target_y(span_cbyte seq) noexcept {
       return get_intval(seq, n_target_y);
     }
 
-    static inline auto decode(span_cbyte seq) {
+    static inline auto decode(span_cbyte seq) noexcept {
       return qw_order_move { get_index(seq),    get_time(seq),
                              get_actor(seq),    get_unit(seq),
                              get_target_x(seq), get_target_y(seq) };

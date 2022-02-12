@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_basic_impact_h
-#define laplace_engine_basic_impact_h
+#ifndef LAPLACE_ENGINE_BASIC_IMPACT_H
+#define LAPLACE_ENGINE_BASIC_IMPACT_H
 
 #include "../core/utils.h"
 #include "access/world.h"
@@ -48,53 +48,54 @@ namespace laplace::engine {
    */
   class basic_impact {
   public:
-    constexpr basic_impact()                     = default;
-    constexpr basic_impact(const basic_impact &) = default;
-    constexpr basic_impact(basic_impact &&)      = default;
+    constexpr basic_impact() noexcept                     = default;
+    constexpr basic_impact(const basic_impact &) noexcept = default;
+    constexpr basic_impact(basic_impact &&) noexcept      = default;
 
-    constexpr auto operator=(const basic_impact &)
-        -> basic_impact &  = default;
-    constexpr auto operator=(basic_impact &&)
-        -> basic_impact &  = default;
+    constexpr auto operator=(const basic_impact &) noexcept
+        -> basic_impact  & = default;
+    constexpr auto operator=(basic_impact &&) noexcept
+        -> basic_impact  & = default;
 
     /*  TODO
      *  Make it contexpr after MSVC implements C++20.
      */
-    virtual ~basic_impact() = default;
+    virtual ~basic_impact() noexcept = default;
 
-    constexpr void set_index(sl::index n);
+    constexpr void set_index(sl::index n) noexcept;
 
     /*  Set the order index sequence. Required for the sync
      *  Impacts to be sequentially consistent.
      */
-    constexpr void set_order(cref_eventorder order);
+    constexpr void set_order(cref_eventorder order) noexcept;
 
     /*  Set event time. If time is undefined it will be assigned
      *  by Solver due performing.
      */
-    constexpr void set_time(sl::time time);
+    constexpr void set_time(sl::time time) noexcept;
 
     /*  Set actor entity id. Can be undefined. Allows to verify
      *  players' permissions.
      */
-    constexpr void set_actor(sl::index id);
+    constexpr void set_actor(sl::index id) noexcept;
 
-    virtual void perform(access::world w) const;
+    virtual void perform(access::world w) const noexcept;
 
-    constexpr auto get_index() const -> sl::index;
-    constexpr auto get_order() const -> cref_eventorder;
-    constexpr auto get_time() const -> sl::time;
-    constexpr auto get_actor() const -> sl::index;
+    constexpr auto get_index() const noexcept -> sl::index;
+    constexpr auto get_order() const noexcept -> cref_eventorder;
+    constexpr auto get_time() const noexcept -> sl::time;
+    constexpr auto get_actor() const noexcept -> sl::index;
 
-    constexpr auto is_async() const -> bool;
+    constexpr auto is_async() const noexcept -> bool;
 
-    constexpr auto get_index64() const -> sl::index64;
-    constexpr auto get_time64() const -> sl::time64;
-    constexpr auto get_actor64() const -> sl::index64;
+    constexpr auto get_index64() const noexcept -> sl::index64;
+    constexpr auto get_time64() const noexcept -> sl::time64;
+    constexpr auto get_actor64() const noexcept -> sl::index64;
 
   protected:
-    constexpr void set_async(bool is_async);
-    constexpr auto order_of_child(sl::whole &count) const -> eventorder;
+    constexpr void set_async(bool is_async) noexcept;
+    constexpr auto order_of_child(sl::whole &count) const noexcept
+        -> eventorder;
 
   private:
     eventorder m_order;
@@ -107,8 +108,8 @@ namespace laplace::engine {
    */
   class sync_impact : public basic_impact {
   public:
-    constexpr sync_impact();
-    ~sync_impact() override = default;
+    constexpr sync_impact() noexcept;
+    ~sync_impact() noexcept override = default;
   };
 
   /*  Impact generation functor.
@@ -118,7 +119,7 @@ namespace laplace::engine {
   /*  Impact generation wrapper.
    */
   template <typename basic_impact_>
-  auto gen() -> impact_gen;
+  auto gen() noexcept -> impact_gen;
 }
 
 #include "basic_impact.impl.h"

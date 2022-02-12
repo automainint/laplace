@@ -1,6 +1,4 @@
-/*  apps/quadwar/action/aqa_pathmap_reset.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -21,11 +19,11 @@ namespace quadwar_app::action {
 
   using object::root, object::landscape, object::pathmap;
 
-  pathmap_reset::pathmap_reset(sl::index id_pathmap) {
+  pathmap_reset::pathmap_reset(sl::index id_pathmap) noexcept {
     m_id_pathmap = id_pathmap;
   }
 
-  void pathmap_reset::perform(access::world w) const {
+  void pathmap_reset::perform(access::world w) const noexcept {
     auto r    = w.get_entity(w.get_root());
     auto land = w.get_entity(root::get_landscape(r));
     auto path = w.get_entity(m_id_pathmap);

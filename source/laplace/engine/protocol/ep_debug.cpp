@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -13,7 +13,7 @@
 namespace laplace::engine::protocol {
   using std::make_shared, object::sets::debug_value;
 
-  void debug::perform(access::world w) const {
+  void debug::perform(access::world w) const noexcept {
     auto root = w.get_entity(w.get_root());
 
     if (root.exist()) {
@@ -27,7 +27,7 @@ namespace laplace::engine::protocol {
     }
   }
 
-  debug::debug_root::debug_root() {
+  debug::debug_root::debug_root() noexcept {
     setup_sets({ { debug_value, 1, 0 } });
   }
 }

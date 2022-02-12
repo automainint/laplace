@@ -1,6 +1,4 @@
-/*  apps/quadwar/protocol/qw_player_name.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef quadwar_protocol_qw_player_name_h
-#define quadwar_protocol_qw_player_name_h
+#ifndef QUADWAR_PROTOCOL_QW_PLAYER_NAME_H
+#define QUADWAR_PROTOCOL_QW_PLAYER_NAME_H
 
 #include "../object/player.h"
 #include "../object/root.h"
@@ -24,16 +22,16 @@ namespace quadwar_app::protocol {
 
     static constexpr auto id = ids::player_name;
 
-    ~qw_player_name() final = default;
+    ~qw_player_name() noexcept final = default;
 
-    inline qw_player_name(std::u8string_view name) {
+    inline qw_player_name(std::u8string_view name) noexcept {
       set_encoded_size(n_name + name.size());
 
       m_name = name;
     }
 
     inline qw_player_name(sl::index          id_host_actor,
-                          std::u8string_view name) {
+                          std::u8string_view name) noexcept {
 
       set_actor(id_host_actor);
       set_encoded_size(n_name + name.size());
@@ -41,10 +39,9 @@ namespace quadwar_app::protocol {
       m_name = name;
     }
 
-    inline qw_player_name(sl::index          n,
-                          sl::time           time,
+    inline qw_player_name(sl::index n, sl::time time,
                           sl::index          id_actor,
-                          std::u8string_view name) {
+                          std::u8string_view name) noexcept {
 
       set_index(n);
       set_time(time);
@@ -54,31 +51,32 @@ namespace quadwar_app::protocol {
       m_name = name;
     }
 
-    inline void perform(world w) const final {
+    inline void perform(world w) const noexcept final {
       verb(" :: event  Quadwar/player_name");
 
-      const auto id_actor = get_actor();
-      const auto id_root  = w.get_root();
+      auto const id_actor = get_actor();
+      auto const id_root  = w.get_root();
 
       object::player::set_name(w.get_entity(id_actor), m_name);
       object::root::status_changed(w.get_entity(id_root));
     }
 
-    inline void encode_to(std::span<uint8_t> bytes) const final {
+    inline void encode_to(
+        std::span<uint8_t> bytes) const noexcept final {
 
       serial::write_bytes(bytes, id, get_index64(), get_time64(),
                           get_actor64(), std::u8string_view(m_name));
     }
 
-    static constexpr auto scan(span_cbyte seq) -> bool {
+    static constexpr auto scan(span_cbyte seq) noexcept -> bool {
       return seq.size() >= n_name && get_id(seq) == id;
     }
 
-    static inline auto get_name(span_cbyte seq) {
+    static inline auto get_name(span_cbyte seq) noexcept {
       return get_string(seq, n_name);
     }
 
-    static inline auto decode(span_cbyte seq) {
+    static inline auto decode(span_cbyte seq) noexcept {
       return qw_player_name { get_index(seq), get_time(seq),
                               get_actor(seq), get_name(seq) };
     }

@@ -1,6 +1,4 @@
-/*  apps/quadwar/action/aqa_unit_place.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -15,11 +13,11 @@
 #include "../object/unit.h"
 
 namespace quadwar_app::action {
-  unit_place::unit_place(sl::index id_unit) {
+  unit_place::unit_place(sl::index id_unit) noexcept {
     m_id_unit = id_unit;
   }
 
-  void unit_place::perform(engine::access::world w) const {
+  void unit_place::perform(engine::access::world w) const noexcept {
     object::unit::place_footprint(w, m_id_unit);
   }
 }

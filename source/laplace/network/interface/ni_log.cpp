@@ -12,15 +12,13 @@
 
 namespace laplace::network {
   auto check_log_interface(log_interface const &in) noexcept -> bool {
-    return in.print && in.queue && in.slot && in.not_allowed &&
-           in.dump;
+    return in.print && in.queue && in.slot && in.not_allowed;
   }
 
   auto blank_log_interface() noexcept -> log_interface {
     return { .print       = [](std::string_view) {},
              .queue       = [](sl::index, span_cbyte) {},
              .slot        = [](sl::index, sl::index, span_cbyte) {},
-             .not_allowed = [](sl::index, span_cbyte) {},
-             .dump        = [](span_cbyte) {} };
+             .not_allowed = [](sl::index, span_cbyte) {} };
   }
 }

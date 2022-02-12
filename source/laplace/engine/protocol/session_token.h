@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_protocol_session_token_h
-#define laplace_engine_protocol_session_token_h
+#ifndef LAPLACE_ENGINE_PROTOCOL_SESSION_TOKEN_H
+#define LAPLACE_ENGINE_PROTOCOL_SESSION_TOKEN_H
 
 #include "../prime_impact.h"
 
@@ -23,14 +23,15 @@ namespace laplace::engine::protocol {
 
     using token_type = std::array<uint8_t, max_token_size>;
 
-    ~session_token() final = default;
+    ~session_token() noexcept final = default;
 
-    constexpr session_token() {
+    constexpr session_token() noexcept {
       set_encoded_size(n_token);
     }
 
-    constexpr session_token(span_cbyte token) {
-      m_token_size = std::min<sl::whole>(token.size(), max_token_size);
+    constexpr session_token(span_cbyte token) noexcept {
+      m_token_size = std::min<sl::whole>(token.size(),
+                                         max_token_size);
 
       set_encoded_size(n_token + m_token_size);
 
@@ -38,7 +39,8 @@ namespace laplace::engine::protocol {
                 m_token.begin());
     }
 
-    static constexpr auto get_token(span_cbyte seq) -> span_cbyte {
+    static constexpr auto get_token(span_cbyte seq) noexcept
+        -> span_cbyte {
       if (seq.size() > n_token) {
         return { seq.begin() + n_token, seq.end() };
       }
@@ -46,17 +48,18 @@ namespace laplace::engine::protocol {
       return {};
     }
 
-    inline void encode_to(std::span<uint8_t> bytes) const final {
+    inline void encode_to(
+        std::span<uint8_t> bytes) const noexcept final {
       serial::write_bytes(
           bytes, id,
           std::span<const uint8_t>(m_token.data(), m_token_size));
     }
 
-    static constexpr auto scan(span_cbyte seq) -> bool {
+    static constexpr auto scan(span_cbyte seq) noexcept -> bool {
       return seq.size() >= n_token && get_id(seq) == id;
     }
 
-    static inline auto decode(span_cbyte seq) {
+    static inline auto decode(span_cbyte seq) noexcept {
       return session_token { get_token(seq) };
     }
 

@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_protocol_basic_event_h
-#define laplace_engine_protocol_basic_event_h
+#ifndef LAPLACE_ENGINE_PROTOCOL_BASIC_EVENT_H
+#define LAPLACE_ENGINE_PROTOCOL_BASIC_EVENT_H
 
 #include "../prime_impact.h"
 
@@ -31,30 +31,31 @@ namespace laplace::engine::protocol {
     static constexpr uint16_t  id   = id_;
     static constexpr sl::whole size = 10;
 
-    ~basic_event() override = default;
+    ~basic_event() noexcept override = default;
 
-    constexpr basic_event() {
+    constexpr basic_event() noexcept {
       this->set_encoded_size(size);
     }
 
-    constexpr basic_event(sl::index n) {
+    constexpr basic_event(sl::index n) noexcept {
       this->set_index(n);
       this->set_encoded_size(size);
     }
 
-    inline void perform(access::world w) const override {
+    inline void perform(access::world w) const noexcept override {
       perform_()(std::move(w));
     }
 
-    inline void encode_to(std::span<uint8_t> bytes) const override {
+    inline void encode_to(
+        std::span<uint8_t> bytes) const noexcept override {
       serial::write_bytes(bytes, id, this->get_index64());
     }
 
-    static constexpr auto scan(span_cbyte seq) {
+    static constexpr auto scan(span_cbyte seq) noexcept {
       return seq.size() == size && prime_impact::get_id(seq) == id;
     }
 
-    static inline auto decode(span_cbyte seq) {
+    static inline auto decode(span_cbyte seq) noexcept {
       return basic_event { prime_impact::get_index(seq) };
     }
   };
@@ -66,26 +67,27 @@ namespace laplace::engine::protocol {
     static constexpr uint16_t  id   = id_;
     static constexpr sl::whole size = 10;
 
-    ~basic_event() final = default;
+    ~basic_event() noexcept final = default;
 
-    constexpr basic_event() {
+    constexpr basic_event() noexcept {
       this->set_encoded_size(size);
     }
 
-    constexpr basic_event(sl::index n) {
+    constexpr basic_event(sl::index n) noexcept {
       this->set_index(n);
       this->set_encoded_size(size);
     }
 
-    inline void encode_to(std::span<uint8_t> bytes) const final {
+    inline void encode_to(
+        std::span<uint8_t> bytes) const noexcept final {
       serial::write_bytes(bytes, id, this->get_index64());
     }
 
-    static constexpr auto scan(span_cbyte seq) {
+    static constexpr auto scan(span_cbyte seq) noexcept {
       return seq.size() == size && prime_impact::get_id(seq) == id;
     }
 
-    static inline auto decode(span_cbyte seq) {
+    static inline auto decode(span_cbyte seq) noexcept {
       return basic_event { prime_impact::get_index(seq) };
     }
   };
@@ -96,21 +98,22 @@ namespace laplace::engine::protocol {
     static constexpr uint16_t  id   = id_;
     static constexpr sl::whole size = 2;
 
-    ~instant_event() final = default;
+    ~instant_event() noexcept final = default;
 
-    constexpr instant_event() {
+    constexpr instant_event() noexcept {
       set_encoded_size(size);
     }
 
-    inline void encode_to(std::span<uint8_t> bytes) const final {
+    inline void encode_to(
+        std::span<uint8_t> bytes) const noexcept final {
       serial::write_bytes(bytes, id);
     }
 
-    static constexpr auto scan(span_cbyte seq) -> bool {
+    static constexpr auto scan(span_cbyte seq) noexcept -> bool {
       return seq.size() == size && get_id(seq) == id;
     }
 
-    static inline auto decode(span_cbyte seq) {
+    static inline auto decode(span_cbyte seq) noexcept {
       return instant_event {};
     }
   };

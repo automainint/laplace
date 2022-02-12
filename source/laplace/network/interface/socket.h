@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_interface_socket_h
-#define laplace_network_interface_socket_h
+#ifndef LAPLACE_NETWORK_INTERFACE_SOCKET_H
+#define LAPLACE_NETWORK_INTERFACE_SOCKET_H
 
 #include "../defs.h"
 
@@ -20,12 +20,10 @@ namespace laplace::network {
     public:
       virtual ~node() noexcept = default;
 
-      [[nodiscard]] virtual auto receive(span_byte,
-                                         io_mode mode) noexcept
+      [[nodiscard]] virtual auto receive(span_byte, io_mode) noexcept
           -> sl::whole = 0;
 
-      [[nodiscard]] virtual auto send(std::string_view address,
-                                      uint16_t         port,
+      [[nodiscard]] virtual auto send(std::string_view, uint16_t,
                                       span_cbyte) noexcept
           -> sl::whole = 0;
 
@@ -47,7 +45,7 @@ namespace laplace::network {
 
     virtual ~socket_interface() noexcept = default;
 
-    [[nodiscard]] virtual auto open(uint16_t port) noexcept
+    [[nodiscard]] virtual auto open(uint16_t) noexcept
         -> std::unique_ptr<node> = 0;
   };
 }

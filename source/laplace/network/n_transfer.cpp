@@ -21,11 +21,12 @@ namespace laplace::network {
     m_verbose = is_verbose;
   }
 
-  void transfer::set_cipher(unique_ptr<basic_cipher> cipher) {
+  void transfer::set_cipher(
+      unique_ptr<basic_cipher> cipher) noexcept {
     m_cipher = std::move(cipher);
   }
 
-  void transfer::set_remote_key(span_cbyte key) {
+  void transfer::set_remote_key(span_cbyte key) noexcept {
     if (m_cipher) {
       m_cipher->set_remote_key(key);
     } else {
@@ -33,21 +34,26 @@ namespace laplace::network {
     }
   }
 
-  auto transfer::pack(span<const span_cbyte> data) -> vbyte {
+  void transfer::enable_encryption(bool is_enabled) noexcept {
+    m_encryption = is_enabled;
+  }
+
+  auto transfer::pack(span<const span_cbyte> data) noexcept -> vbyte {
     return pack_internal(data, mark_plain);
   }
 
-  auto transfer::encode(span<const span_cbyte> data,
-                        encryption_tag         _enc) -> vbyte {
-    if (_enc == encrypted && is_encrypted()) {
+  auto transfer::encode(span<const span_cbyte> data) noexcept
+      -> vbyte {
+    if (is_encryption_enabled()) {
       return m_cipher->encrypt(pack_internal(data, mark_encrypted));
     }
 
     return pack_internal(data, mark_plain);
   }
 
-  auto transfer::decode(span_cbyte data) -> sl::vector<vbyte> {
-    if (is_encrypted()) {
+  auto transfer::decode(span_cbyte data) noexcept
+      -> sl::vector<vbyte> {
+    if (is_encryption_enabled()) {
       const auto plain = m_cipher->decrypt(data);
       m_loss_count     = m_cipher->get_loss_count();
       return unpack_internal(plain, mark_encrypted);
@@ -66,8 +72,12 @@ namespace laplace::network {
     return {};
   }
 
-  auto transfer::is_encrypted() const noexcept -> bool {
-    return m_cipher && m_cipher->is_ready();
+  auto transfer::is_cipher_set() const noexcept -> bool {
+    return m_cipher ? true : false;
+  }
+
+  auto transfer::is_encryption_enabled() const noexcept -> bool {
+    return is_cipher_set() && m_encryption;
   }
 
   auto transfer::get_loss_count() const noexcept -> sl::whole {
@@ -78,7 +88,7 @@ namespace laplace::network {
     return n_data;
   }
 
-  auto transfer::check_sum(span_cbyte data) -> uint64_t {
+  auto transfer::check_sum(span_cbyte data) noexcept -> uint64_t {
     auto sum = uint64_t {};
 
     for (sl::whole i = 0; i < data.size(); i += sizeof sum) {
@@ -94,7 +104,8 @@ namespace laplace::network {
   }
 
   auto transfer::pack_internal(span<const span_cbyte> data,
-                               uint16_t const         mark) -> vbyte {
+                               uint16_t const         mark) noexcept
+      -> vbyte {
     auto buf = vbyte {};
 
     buf.reserve([&]() {
@@ -121,7 +132,8 @@ namespace laplace::network {
     return buf;
   }
 
-  auto transfer::unpack_internal(span_cbyte data, uint16_t const mark)
+  auto transfer::unpack_internal(span_cbyte     data,
+                                 uint16_t const mark) noexcept
       -> sl::vector<vbyte> {
 
     auto buf    = sl::vector<vbyte> {};

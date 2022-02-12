@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_protocol_slot_remove_h
-#define laplace_engine_protocol_slot_remove_h
+#ifndef LAPLACE_ENGINE_PROTOCOL_SLOT_REMOVE_H
+#define LAPLACE_ENGINE_PROTOCOL_SLOT_REMOVE_H
 
 #include "../prime_impact.h"
 
@@ -21,34 +21,35 @@ namespace laplace::engine::protocol {
     static constexpr uint16_t  id   = ids::slot_remove;
     static constexpr sl::whole size = 26;
 
-    ~slot_remove() override = default;
+    ~slot_remove() noexcept override = default;
 
-    constexpr slot_remove() {
+    constexpr slot_remove() noexcept {
       set_encoded_size(size);
     }
 
     constexpr slot_remove(sl::index n, sl::time time,
-                          sl::index id_actor) {
+                          sl::index id_actor) noexcept {
       set_index(n);
       set_time(time);
       set_actor(id_actor);
       set_encoded_size(size);
     }
 
-    inline void perform(access::world w) const override {
+    inline void perform(access::world w) const noexcept override {
       w.remove(get_actor());
     }
 
-    inline void encode_to(std::span<uint8_t> bytes) const final {
+    inline void encode_to(
+        std::span<uint8_t> bytes) const noexcept final {
       serial::write_bytes(bytes, id, get_index64(), get_time64(),
                           get_actor64());
     }
 
-    static constexpr auto scan(span_cbyte seq) {
+    static constexpr auto scan(span_cbyte seq) noexcept {
       return seq.size() == size && get_id(seq) == id;
     }
 
-    static inline auto decode(span_cbyte seq) {
+    static inline auto decode(span_cbyte seq) noexcept {
       return slot_remove { get_index(seq), get_time(seq),
                            get_actor(seq) };
     }

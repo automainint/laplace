@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_protocol_request_events_h
-#define laplace_engine_protocol_request_events_h
+#ifndef LAPLACE_ENGINE_PROTOCOL_REQUEST_EVENTS_H
+#define LAPLACE_ENGINE_PROTOCOL_REQUEST_EVENTS_H
 
 #include "../prime_impact.h"
 
@@ -26,7 +26,7 @@ namespace laplace::engine::protocol {
       return (size_limit - n_events) / event_size;
     }
 
-    ~request_events() final = default;
+    ~request_events() noexcept final = default;
 
     inline request_events() noexcept {
       set_encoded_size(n_events);

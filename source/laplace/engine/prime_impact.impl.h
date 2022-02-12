@@ -145,7 +145,7 @@ namespace laplace::engine {
            id == ids::session_request ||
            id == ids::session_response || id == ids::session_token ||
            id == ids::ping_request || id == ids::ping_response ||
-           id == ids::client_desync || id == ids::server_idle;
+           id == ids::client_desync || id == ids::server_heartbeat;
   }
 
   constexpr auto prime_impact::is_control_id(sl::index id) -> bool {

@@ -70,8 +70,8 @@ namespace laplace::network {
     return m_is_quit;
   }
 
-  void server::set_encryption_enabled(bool is_enabled) noexcept {
-    m_is_encryption_enabled = is_enabled;
+  void server::enable_encryption(bool is_enabled) noexcept {
+    m_encryption = is_enabled;
   }
 
   void server::set_max_slot_count(sl::whole count) noexcept {
@@ -79,20 +79,22 @@ namespace laplace::network {
   }
 
   void server::listen(uint16_t port) noexcept {
+    if (!m_socket_interface) {
+      error_("No socket interface.", __FUNCTION__);
+      return;
+    }
+
     setup();
 
-    m_mode  = server_mode::host;
-    m_state = server_state::prepare;
-
+    m_mode         = server_mode::host;
+    m_state        = server_state::prepare;
+    m_node         = m_socket_interface->open(port);
     m_is_connected = true;
 
-    m_node = m_socket_interface->open(port);
-
-    process_event(slot_host, m_proto.encode_server_clock(
-                                 m_clock.get_tick_duration()));
-    process_event(slot_host,
-                  m_proto.encode_server_seed(m_random.get_seed()));
-    process_event(slot_host, m_proto.encode(control::server_init));
+    queue(m_proto.encode_server_clock(m_clock.get_tick_duration()));
+    queue(m_proto.encode_server_seed(m_random.get_seed()));
+    queue(m_proto.encode(control::server_reserve));
+    queue(m_proto.encode(control::server_init));
 
     perform_instant_events();
   }
@@ -100,18 +102,21 @@ namespace laplace::network {
   void server::connect(std::string_view host_address,
                        uint16_t         host_port,
                        uint16_t         client_port) noexcept {
+    if (!m_socket_interface) {
+      error_("No socket interface.", __FUNCTION__);
+      return;
+    }
+
     setup();
 
-    m_mode  = server_mode::remote;
-    m_state = server_state::prepare;
-
+    m_mode         = server_mode::remote;
+    m_state        = server_state::prepare;
+    m_node         = m_socket_interface->open(client_port);
     m_is_connected = true;
-
-    m_node = m_socket_interface->open(client_port);
 
     auto slot = m_slots.add(host_address, host_port);
 
-    if (m_is_encryption_enabled) {
+    if (m_encryption) {
       m_slots[slot].tran.setup_cipher<ecc_rabbit>();
 
       send_event_to(slot, m_proto.encode_session_request(
@@ -184,8 +189,6 @@ namespace laplace::network {
       case control::ping_response: return do_ping_response(slot, seq);
       case control::server_heartbeat:
         return do_server_heartbeat(slot, seq);
-      case control::server_init: return do_server_init();
-      case control::server_loading: return do_server_loading();
       case control::server_action: return do_server_action();
       case control::server_pause: return do_server_pause();
       case control::server_reserve: return do_server_reserve(seq);
@@ -246,6 +249,11 @@ namespace laplace::network {
   auto server::do_session_request(sl::index  slot,
                                   span_cbyte seq) noexcept
       -> event_status {
+    if (!m_socket_interface) {
+      error_("No socket interface.", __FUNCTION__);
+      return event_status::remove;
+    }
+
     if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return event_status::remove;
@@ -288,6 +296,11 @@ namespace laplace::network {
   auto server::do_session_response(sl::index  slot,
                                    span_cbyte seq) noexcept
       -> event_status {
+    if (!m_socket_interface) {
+      error_("No socket interface.", __FUNCTION__);
+      return event_status::remove;
+    }
+
     if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return event_status::remove;
@@ -302,10 +315,8 @@ namespace laplace::network {
 
     if (!key.empty()) {
       m_slots[slot].tran.set_remote_key(key);
-
-      m_slots[slot].encryption = m_slots[slot].tran.is_encrypted()
-                                     ? transfer::encrypted
-                                     : transfer::plain;
+      m_slots[slot].tran.enable_encryption(
+          m_slots[slot].tran.is_cipher_set());
     }
 
     m_slots[slot].node = m_socket_interface->open(any_port);
@@ -334,40 +345,24 @@ namespace laplace::network {
       return event_status::remove;
     }
 
-    auto const token = m_proto.decode_session_token(seq);
+    auto const i = m_slots.find_token(
+        m_proto.decode_session_token(seq));
 
-    if (token.empty())
+    if (i == index_undefined)
       return event_status::remove;
 
-    for (sl::index i = 0; i < m_slots.get_count(); i++) {
-      auto &s = m_slots[i];
-
-      if (i == slot || s.token.empty())
-        continue;
-
-      bool const equal = [&]() {
-        if (s.token.size() != token.size())
-          return false;
-        for (sl::index k = 0; k < token.size(); k++)
-          if (s.token[k] != token[k])
-            return false;
-        return true;
-      }();
-
-      if (!equal)
-        continue;
-
-      if (m_slots[slot].id_actor != id_undefined)
-        process_event(slot, m_proto.encode(control::slot_remove));
-
-      m_slots[slot].token    = s.token;
-      m_slots[slot].id_actor = s.id_actor;
-
-      s.id_actor     = id_undefined;
-      s.is_connected = false;
-
-      break;
+    if (m_slots[slot].id_actor != id_undefined) {
+      process_event(slot, m_proto.encode(control::slot_remove));
+      m_exe.actor_remove(m_slots[slot].id_actor);
     }
+
+    auto &s = m_slots[i];
+
+    m_slots[slot].token    = s.token;
+    m_slots[slot].id_actor = s.id_actor;
+
+    s.id_actor     = id_undefined;
+    s.is_connected = false;
 
     return event_status::remove;
   }
@@ -434,14 +429,6 @@ namespace laplace::network {
     return event_status::remove;
   }
 
-  auto server::do_server_init() noexcept -> event_status {
-    return event_status::proceed;
-  }
-
-  auto server::do_server_loading() noexcept -> event_status {
-    return event_status::proceed;
-  }
-
   auto server::do_server_action() noexcept -> event_status {
     m_state = server_state::action;
     return m_mode == server_mode::host ? event_status::proceed
@@ -457,7 +444,7 @@ namespace laplace::network {
   auto server::do_server_reserve(span_cbyte seq) noexcept
       -> event_status {
     if (m_state == server_state::prepare)
-      m_exe.do_server_reserve(seq);
+      m_exe.actor_reserve(seq);
     else
       m_log.print("Ignore reserve command.");
     return event_status::remove;
@@ -477,7 +464,7 @@ namespace laplace::network {
       return event_status::remove;
     }
 
-    m_exe.do_server_seed(seq);
+    m_exe.do_seed(seq);
     return m_mode == server_mode::host ? event_status::proceed
                                        : event_status::remove;
   }
@@ -507,7 +494,7 @@ namespace laplace::network {
     }
 
     if (m_slots[slot].id_actor == id_undefined) {
-      m_slots[slot].id_actor = m_exe.do_reserve();
+      m_slots[slot].id_actor = m_exe.actor_create();
       process_event(slot, m_proto.encode(control::slot_create));
     }
 
@@ -528,6 +515,7 @@ namespace laplace::network {
 
     if (m_state == server_state::prepare) {
       process_event(slot, m_proto.encode(control::slot_remove));
+      m_exe.actor_remove(m_slots[slot].id_actor);
       m_slots[slot].id_actor = id_undefined;
     }
 
@@ -585,7 +573,7 @@ namespace laplace::network {
   }
 
   void server::update_world() noexcept {
-    if (!m_exe.do_wait_loading())
+    if (!m_exe.is_ready())
       return;
 
     perform_instant_events();
@@ -1014,7 +1002,7 @@ namespace laplace::network {
           { s.out[i].begin(), s.out[i].end() });
     }
 
-    auto chunk = s.tran.encode(plain, s.encryption);
+    auto chunk = s.tran.encode(plain);
 
     if (chunk.empty())
       m_log.print(
@@ -1032,9 +1020,7 @@ namespace laplace::network {
       m_log.print("Chunk size too big.");
 
     auto &s = m_slots[slot];
-
-    s.encryption = s.tran.is_encrypted() ? transfer::encrypted
-                                         : transfer::plain;
+    s.tran.enable_encryption(s.tran.is_cipher_set());
 
     if (s.is_exclusive && s.node)
       m_stats.add_bytes_sent(s.node->send(s.address, s.port, chunk));
@@ -1067,6 +1053,7 @@ namespace laplace::network {
     } else if (m_state == server_state::prepare &&
                m_slots[slot].id_actor != id_undefined) {
       process_event(slot, m_proto.encode(control::slot_remove));
+      m_exe.actor_remove(m_slots[slot].id_actor);
       m_slots[slot].id_actor = id_undefined;
     }
 

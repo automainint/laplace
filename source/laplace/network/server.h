@@ -44,7 +44,7 @@ namespace laplace::network {
         execution_interface const &ein) noexcept;
     void setup_log_interface(log_interface const &lin) noexcept;
 
-    void set_encryption_enabled(bool is_enabled) noexcept;
+    void enable_encryption(bool is_enabled) noexcept;
     void set_max_slot_count(sl::whole count) noexcept;
 
     void listen(uint16_t port) noexcept;
@@ -90,8 +90,6 @@ namespace laplace::network {
     [[nodiscard]] auto do_server_heartbeat(sl::index  slot,
                                            span_cbyte seq) noexcept
         -> event_status;
-    [[nodiscard]] auto do_server_init() noexcept -> event_status;
-    [[nodiscard]] auto do_server_loading() noexcept -> event_status;
     [[nodiscard]] auto do_server_action() noexcept -> event_status;
     [[nodiscard]] auto do_server_pause() noexcept -> event_status;
     [[nodiscard]] auto do_server_reserve(span_cbyte seq) noexcept
@@ -176,9 +174,9 @@ namespace laplace::network {
 
     sl::vector<vbyte> m_instant_events;
 
-    bool      m_is_encryption_enabled = true;
-    sl::whole m_loss_compensation     = default_loss_compensation;
-    sl::time  m_ping_clock            = {};
+    bool      m_encryption        = true;
+    sl::whole m_loss_compensation = default_loss_compensation;
+    sl::time  m_ping_clock        = {};
     vbyte     m_token;
   };
 

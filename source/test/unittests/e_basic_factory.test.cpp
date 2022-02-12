@@ -44,8 +44,8 @@ namespace laplace::test {
                   fac.name_by_id_native(ids::client_desync)),
               ids::client_desync);
     EXPECT_EQ(fac.id_by_name_native(
-                  fac.name_by_id_native(ids::server_idle)),
-              ids::server_idle);
+                  fac.name_by_id_native(ids::server_heartbeat)),
+              ids::server_heartbeat);
     EXPECT_EQ(fac.id_by_name_native(
                   fac.name_by_id_native(ids::server_init)),
               ids::server_init);

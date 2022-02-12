@@ -26,19 +26,19 @@ namespace laplace::network {
     ping_request,
     ping_response,
     server_heartbeat,
-    server_init,
-    server_loading,
-    server_action,
-    server_pause,
     server_reserve,
+    server_init,
+    server_quit,
     server_clock,
     server_seed,
-    server_quit,
+    server_action,
+    server_pause,
+    server_loading,
     client_enter,
     client_leave,
     client_ready,
     slot_create,
-    slot_remove,
+    slot_remove
   };
 
   struct heartbeat {

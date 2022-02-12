@@ -86,8 +86,8 @@ namespace laplace::engine {
       return ids::ping_response;
     if (name == "client-desync")
       return ids::client_desync;
-    if (name == "server-idle")
-      return ids::server_idle;
+    if (name == "server-heartbeat")
+      return ids::server_heartbeat;
     if (name == "server-init")
       return ids::server_init;
     if (name == "server-loading")
@@ -139,8 +139,8 @@ namespace laplace::engine {
       return string("ping-response");
     if (id == ids::client_desync)
       return string("client-desync");
-    if (id == ids::server_idle)
-      return string("server-idle");
+    if (id == ids::server_heartbeat)
+      return string("server-heartbeat");
     if (id == ids::server_init)
       return string("server-init");
     if (id == ids::server_loading)
@@ -288,8 +288,8 @@ namespace laplace::engine {
       return make<ping_response>(seq);
     if (client_desync::scan(seq))
       return make<client_desync>(seq);
-    if (server_idle::scan(seq))
-      return make<server_idle>(seq);
+    if (server_heartbeat::scan(seq))
+      return make<server_heartbeat>(seq);
     if (server_init::scan(seq))
       return make<server_init>(seq);
     if (server_launch::scan(seq))

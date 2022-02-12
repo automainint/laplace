@@ -1,6 +1,4 @@
-/*  apps/quadwar/protocol/aqp_qw_loading.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -26,7 +24,7 @@ namespace quadwar_app::protocol {
       object::landscape, action::pathmap_reset, action::unit_place,
       engine::id_undefined, engine::ptr_impact;
 
-  void qw_loading::perform(world w) const {
+  void qw_loading::perform(world w) const noexcept {
     verb(" :: event  Quadwar/loading");
 
     auto r = w.get_entity(w.get_root());

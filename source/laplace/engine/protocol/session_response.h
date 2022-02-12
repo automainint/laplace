@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -8,13 +8,13 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_protocol_session_response_h
-#define laplace_engine_protocol_session_response_h
+#ifndef LAPLACE_ENGINE_PROTOCOL_SESSION_RESPONSE_H
+#define LAPLACE_ENGINE_PROTOCOL_SESSION_RESPONSE_H
 
 #include "../prime_impact.h"
 
 namespace laplace::engine::protocol {
-  class session_response : public prime_impact {
+  class session_response final : public prime_impact {
   public:
     enum encoding_offset : sl::index { n_port = 2, n_key = 4 };
 
@@ -23,13 +23,14 @@ namespace laplace::engine::protocol {
 
     using key_type = std::array<uint8_t, max_key_size>;
 
-    ~session_response() final = default;
+    ~session_response() noexcept final = default;
 
-    constexpr session_response() {
+    constexpr session_response() noexcept {
       set_encoded_size(n_key);
     }
 
-    constexpr session_response(uint16_t port, span_cbyte key) {
+    constexpr session_response(uint16_t   port,
+                               span_cbyte key) noexcept {
       m_port     = port;
       m_key_size = std::min<sl::whole>(key.size(), max_key_size);
 
@@ -38,11 +39,12 @@ namespace laplace::engine::protocol {
       std::copy(key.begin(), key.begin() + m_key_size, m_key.begin());
     }
 
-    static constexpr auto get_port(span_cbyte seq) {
+    static constexpr auto get_port(span_cbyte seq) noexcept {
       return serial::rd<uint16_t>(seq, n_port);
     }
 
-    static constexpr auto get_key(span_cbyte seq) -> span_cbyte {
+    static constexpr auto get_key(span_cbyte seq) noexcept
+        -> span_cbyte {
       if (seq.size() > n_key) {
         return { seq.begin() + n_key, seq.end() };
       }
@@ -50,17 +52,18 @@ namespace laplace::engine::protocol {
       return {};
     }
 
-    inline void encode_to(std::span<uint8_t> bytes) const final {
+    inline void encode_to(
+        std::span<uint8_t> bytes) const noexcept final {
       serial::write_bytes(
           bytes, id, m_port,
           std::span<const uint8_t>(m_key.data(), m_key_size));
     }
 
-    static constexpr auto scan(span_cbyte seq) -> bool {
+    static constexpr auto scan(span_cbyte seq) noexcept -> bool {
       return seq.size() >= n_key && get_id(seq) == id;
     }
 
-    static inline auto decode(span_cbyte seq) {
+    static inline auto decode(span_cbyte seq) noexcept {
       return session_response { get_port(seq), get_key(seq) };
     }
 

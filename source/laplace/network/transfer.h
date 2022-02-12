@@ -16,42 +16,47 @@
 namespace laplace::network {
   class transfer {
   public:
-    enum encryption_tag { plain, encrypted };
-
     void set_verbose(bool is_verbose) noexcept;
-    void set_cipher(std::unique_ptr<crypto::basic_cipher> cipher);
-    void set_remote_key(span_cbyte key);
+    void set_cipher(
+        std::unique_ptr<crypto::basic_cipher> cipher) noexcept;
+    void set_remote_key(span_cbyte key) noexcept;
 
-    [[nodiscard]] static auto pack(std::span<span_cbyte const> data)
-        -> vbyte;
+    void enable_encryption(bool is_enabled) noexcept;
 
-    [[nodiscard]] auto encode(std::span<span_cbyte const> data,
-                              encryption_tag _enc = encrypted)
-        -> vbyte;
+    [[nodiscard]] static auto pack(
+        std::span<span_cbyte const> data) noexcept -> vbyte;
 
-    [[nodiscard]] auto decode(span_cbyte data) -> sl::vector<vbyte>;
+    [[nodiscard]] auto encode(
+        std::span<span_cbyte const> data) noexcept -> vbyte;
+
+    [[nodiscard]] auto decode(span_cbyte data) noexcept
+        -> sl::vector<vbyte>;
 
     [[nodiscard]] auto get_public_key() const noexcept -> span_cbyte;
 
-    [[nodiscard]] auto is_encrypted() const noexcept -> bool;
+    [[nodiscard]] auto is_cipher_set() const noexcept -> bool;
+    [[nodiscard]] auto is_encryption_enabled() const noexcept -> bool;
 
     [[nodiscard]] auto get_loss_count() const noexcept -> sl::whole;
 
     [[nodiscard]] static auto get_data_overhead() noexcept
         -> sl::whole;
 
-    [[nodiscard]] static auto check_sum(span_cbyte data) -> uint64_t;
+    [[nodiscard]] static auto check_sum(span_cbyte data) noexcept
+        -> uint64_t;
 
     template <typename cipher_>
-    void setup_cipher() {
+    void setup_cipher() noexcept {
       this->set_cipher(std::make_unique<cipher_>());
     }
 
   private:
     [[nodiscard]] static auto pack_internal(
-        std::span<const span_cbyte> data, uint16_t mark) -> vbyte;
+        std::span<const span_cbyte> data, uint16_t mark) noexcept
+        -> vbyte;
 
-    [[nodiscard]] auto unpack_internal(span_cbyte data, uint16_t mark)
+    [[nodiscard]] auto unpack_internal(span_cbyte data,
+                                       uint16_t   mark) noexcept
         -> std::vector<vbyte>;
 
     [[nodiscard]] auto scan(span_cbyte data,
@@ -71,6 +76,7 @@ namespace laplace::network {
     std::unique_ptr<crypto::basic_cipher> m_cipher;
 
     bool      m_verbose    = false;
+    bool      m_encryption = false;
     sl::whole m_loss_count = 0;
   };
 }

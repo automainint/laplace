@@ -18,13 +18,13 @@
 namespace laplace::engine::action {
   class remove final : public sync_impact {
   public:
-    remove(sl::index id_entity) {
+    remove(sl::index id_entity) noexcept {
       m_id_entity = id_entity;
     }
 
-    ~remove() final = default;
+    ~remove() noexcept final = default;
 
-    void perform(access::world w) const final {
+    void perform(access::world w) const noexcept final {
       w.remove(m_id_entity);
     }
 

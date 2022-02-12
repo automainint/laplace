@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_basic_impact_predef_h
-#define laplace_engine_basic_impact_predef_h
+#ifndef LAPLACE_ENGINE_BASIC_IMPACT_PREDEF_H
+#define LAPLACE_ENGINE_BASIC_IMPACT_PREDEF_H
 
 #include "../core/defs.h"
 #include <memory>
