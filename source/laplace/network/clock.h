@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_clock_h
-#define laplace_network_clock_h
+#ifndef LAPLACE_NETWORK_CLOCK_H
+#define LAPLACE_NETWORK_CLOCK_H
 
 #include "../core/defs.h"
 

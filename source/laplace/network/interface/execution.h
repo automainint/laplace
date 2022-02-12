@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_interface_execution_h
-#define laplace_network_interface_execution_h
+#ifndef LAPLACE_NETWORK_INTERFACE_EXECUTION_H
+#define LAPLACE_NETWORK_INTERFACE_EXECUTION_H
 
 #include "../defs.h"
 

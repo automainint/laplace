@@ -47,7 +47,16 @@ namespace laplace::engine {
       }
     };
 
-    m_thread = jthread(loop);
+    for (int i = 0; i < 4; i++) {
+      try {
+        m_thread = jthread(loop);
+        break;
+      } catch (std::system_error &error) {
+        error_("Unable to create a thread.", __FUNCTION__);
+        error_(error.what(), __FUNCTION__);
+        std::this_thread::yield();
+      }
+    }
   }
 
   loader::~loader() noexcept {

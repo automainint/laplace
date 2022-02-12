@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_utils_h
-#define laplace_network_utils_h
+#ifndef LAPLACE_NETWORK_UTILS_H
+#define LAPLACE_NETWORK_UTILS_H
 
 #include "../core/socket.h"
 #include "defs.h"

@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_scheduler_h
-#define laplace_engine_scheduler_h
+#ifndef LAPLACE_ENGINE_SCHEDULER_H
+#define LAPLACE_ENGINE_SCHEDULER_H
 
 #include "world.predef.h"
 #include <condition_variable>

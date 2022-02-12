@@ -25,12 +25,6 @@ namespace laplace::network {
   sl::whole const server::default_loss_compensation       = 4;
   sl::index const server::max_index_delta                 = 0x1000;
 
-  server::server() noexcept {
-    auto dev = std::random_device {};
-    m_rand.seed(dev());
-    m_seed = m_rand();
-  }
-
   server::~server() noexcept {
     cleanup();
   }
@@ -62,36 +56,18 @@ namespace laplace::network {
       return;
     }
 
-    m_log = lin;
+    m_slots.set_log_interface(lin);
     m_stats.set_log_interface(lin);
-  }
 
-  auto server::get_state() const noexcept -> server_state {
-    return m_state;
+    m_log = lin;
   }
 
   auto server::is_connected() const noexcept -> bool {
     return m_is_connected;
   }
 
-  void server::set_connected(bool is_connected) noexcept {
-    m_is_connected = is_connected;
-  }
-
-  void server::set_state(server_state state) noexcept {
-    m_state = state;
-  }
-
-  auto server::get_connection_timeout() const noexcept -> sl::time {
-    return m_connection_timeout_msec;
-  }
-
-  auto server::get_update_timeout() const noexcept -> sl::time {
-    return m_update_timeout_msec;
-  }
-
-  auto server::get_ping_timeout() const noexcept -> sl::time {
-    return m_ping_timeout_msec;
+  auto server::is_quit() const noexcept -> bool {
+    return m_is_quit;
   }
 
   void server::set_encryption_enabled(bool is_enabled) noexcept {
@@ -99,21 +75,23 @@ namespace laplace::network {
   }
 
   void server::set_max_slot_count(sl::whole count) noexcept {
-    m_max_slot_count = count;
+    m_slots.set_max_count(count);
   }
 
   void server::listen(uint16_t port) noexcept {
     setup();
 
-    set_state(server_state::prepare);
-    set_master(true);
-    set_connected(true);
+    m_mode  = server_mode::host;
+    m_state = server_state::prepare;
+
+    m_is_connected = true;
 
     m_node = m_socket_interface->open(port);
 
     process_event(slot_host, m_proto.encode_server_clock(
                                  m_clock.get_tick_duration()));
-    process_event(slot_host, m_proto.encode_server_seed(m_seed));
+    process_event(slot_host,
+                  m_proto.encode_server_seed(m_random.get_seed()));
     process_event(slot_host, m_proto.encode(control::server_init));
 
     perform_instant_events();
@@ -124,15 +102,16 @@ namespace laplace::network {
                        uint16_t         client_port) noexcept {
     setup();
 
-    set_state(server_state::prepare);
-    set_master(false);
-    set_connected(true);
+    m_mode  = server_mode::remote;
+    m_state = server_state::prepare;
+
+    m_is_connected = true;
 
     m_node = m_socket_interface->open(client_port);
 
-    auto slot = add_slot(host_address, host_port);
+    auto slot = m_slots.add(host_address, host_port);
 
-    if (is_encryption_enabled()) {
+    if (m_is_encryption_enabled) {
       m_slots[slot].tran.setup_cipher<ecc_rabbit>();
 
       send_event_to(slot, m_proto.encode_session_request(
@@ -152,15 +131,15 @@ namespace laplace::network {
       return;
     }
 
-    if (is_master()) {
-      process_event(slot_host, seq);
-
-    } else {
+    if (m_mode == server_mode::remote) {
       m_log.queue(m_queue.events.size(), seq);
 
       auto &qu = m_queue.events;
       qu.emplace_back(seq.begin(), seq.end());
       m_proto.set_event_index(qu.back(), qu.size() - 1);
+
+    } else {
+      process_event(slot_host, seq);
     }
   }
 
@@ -224,7 +203,7 @@ namespace laplace::network {
   auto server::do_request_events(sl::index  slot,
                                  span_cbyte seq) noexcept
       -> event_status {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return event_status::remove;
     }
@@ -253,7 +232,7 @@ namespace laplace::network {
 
   auto server::do_request_token(sl::index slot) noexcept
       -> event_status {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return event_status::remove;
     }
@@ -267,17 +246,17 @@ namespace laplace::network {
   auto server::do_session_request(sl::index  slot,
                                   span_cbyte seq) noexcept
       -> event_status {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return event_status::remove;
     }
 
-    if (!is_master()) {
+    if (m_mode == server_mode::remote) {
       m_log.print("Ignore session request.");
       return event_status::remove;
     }
 
-    m_slots[slot].token = generate_token();
+    m_slots[slot].token = m_random.generate_token();
     m_slots[slot].node  = m_socket_interface->open(any_port);
 
     auto const cipher_id = m_proto.get_cipher_id(seq);
@@ -309,12 +288,12 @@ namespace laplace::network {
   auto server::do_session_response(sl::index  slot,
                                    span_cbyte seq) noexcept
       -> event_status {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return event_status::remove;
     }
 
-    if (is_master()) {
+    if (m_mode == server_mode::host) {
       m_log.print("Ignore session response.");
       return event_status::remove;
     }
@@ -344,12 +323,12 @@ namespace laplace::network {
   auto server::do_session_token(sl::index  slot,
                                 span_cbyte seq) noexcept
       -> event_status {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return event_status::remove;
     }
 
-    if (!is_master()) {
+    if (m_mode == server_mode::remote) {
       auto const token = m_proto.decode_session_token(seq);
       m_token.assign(token.begin(), token.end());
       return event_status::remove;
@@ -360,7 +339,7 @@ namespace laplace::network {
     if (token.empty())
       return event_status::remove;
 
-    for (sl::index i = 0; i < m_slots.size(); i++) {
+    for (sl::index i = 0; i < m_slots.get_count(); i++) {
       auto &s = m_slots[i];
 
       if (i == slot || s.token.empty())
@@ -396,7 +375,7 @@ namespace laplace::network {
   auto server::do_ping_request(sl::index  slot,
                                span_cbyte seq) noexcept
       -> event_status {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return event_status ::remove;
     }
@@ -408,7 +387,7 @@ namespace laplace::network {
   auto server::do_ping_response(sl::index  slot,
                                 span_cbyte seq) noexcept
       -> event_status {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return event_status ::remove;
     }
@@ -421,12 +400,12 @@ namespace laplace::network {
   auto server::do_server_heartbeat(sl::index  slot,
                                    span_cbyte seq) noexcept
       -> event_status {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return event_status::remove;
     }
 
-    if (is_master()) {
+    if (m_mode == server_mode::host) {
       m_log.print("Ignore server heartbeat.");
       return event_status::remove;
     }
@@ -464,18 +443,20 @@ namespace laplace::network {
   }
 
   auto server::do_server_action() noexcept -> event_status {
-    set_state(server_state::action);
-    return is_master() ? event_status::proceed : event_status::remove;
+    m_state = server_state::action;
+    return m_mode == server_mode::host ? event_status::proceed
+                                       : event_status::remove;
   }
 
   auto server::do_server_pause() noexcept -> event_status {
-    set_state(server_state::pause);
-    return is_master() ? event_status::proceed : event_status::remove;
+    m_state = server_state::pause;
+    return m_mode == server_mode::host ? event_status::proceed
+                                       : event_status::remove;
   }
 
   auto server::do_server_reserve(span_cbyte seq) noexcept
       -> event_status {
-    if (get_state() == server_state::prepare)
+    if (m_state == server_state::prepare)
       m_exe.do_server_reserve(seq);
     else
       m_log.print("Ignore reserve command.");
@@ -485,39 +466,42 @@ namespace laplace::network {
   auto server::do_server_clock(span_cbyte seq) noexcept
       -> event_status {
     m_clock.set_tick_duration(m_proto.decode_server_clock(seq));
-    return is_master() ? event_status::proceed : event_status::remove;
+    return m_mode == server_mode::host ? event_status::proceed
+                                       : event_status::remove;
   }
 
   auto server::do_server_seed(span_cbyte seq) noexcept
       -> event_status {
-    if (get_state() != server_state::prepare) {
+    if (m_state != server_state::prepare) {
       m_log.print("Ignore seed command.");
       return event_status::remove;
     }
 
     m_exe.do_server_seed(seq);
-    return is_master() ? event_status::proceed : event_status::remove;
+    return m_mode == server_mode::host ? event_status::proceed
+                                       : event_status::remove;
   }
 
   auto server::do_server_quit() noexcept -> event_status {
-    if (is_master()) {
+    if (m_mode == server_mode::host) {
       m_log.print("Ignore server quit.");
       return event_status::remove;
     }
 
     cleanup();
+    m_is_quit = true;
 
     return event_status::remove;
   }
 
   auto server::do_client_enter(sl::index slot) noexcept
       -> event_status {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return event_status::remove;
     }
 
-    if (!is_master()) {
+    if (m_mode == server_mode::remote) {
       m_log.print("Ignore client enter.");
       return event_status::remove;
     }
@@ -532,17 +516,17 @@ namespace laplace::network {
 
   auto server::do_client_leave(sl::index slot) noexcept
       -> event_status {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return event_status::remove;
     }
 
-    if (!is_master()) {
+    if (m_mode == server_mode::remote) {
       m_log.print("Ignore client leave.");
       return event_status::remove;
     }
 
-    if (get_state() == server_state::prepare) {
+    if (m_state == server_state::prepare) {
       process_event(slot, m_proto.encode(control::slot_remove));
       m_slots[slot].id_actor = id_undefined;
     }
@@ -554,17 +538,17 @@ namespace laplace::network {
   auto server::do_client_ready(sl::index  slot,
                                span_cbyte seq) noexcept
       -> event_status {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return event_status::remove;
     }
 
-    if (!is_master()) {
+    if (m_mode == server_mode::remote) {
       m_log.print("Ignore client ready.");
       return event_status::remove;
     }
 
-    if (get_state() == server_state::prepare)
+    if (m_state == server_state::prepare)
       add_instant_event(seq);
     else
       m_log.print("Ignore ready command.");
@@ -573,11 +557,11 @@ namespace laplace::network {
   }
 
   void server::reset_connection() noexcept {
-    if (m_node) {
-      if (is_master())
-        queue(m_proto.encode(control::server_quit));
-      else
+    if (m_is_connected) {
+      if (m_mode == server_mode::remote)
         queue(m_proto.encode(control::client_leave));
+      else
+        queue(m_proto.encode(control::server_quit));
 
       send_events();
     }
@@ -586,11 +570,12 @@ namespace laplace::network {
     m_queue.events.clear();
     m_slots.clear();
 
-    set_connected(false);
+    m_is_connected = false;
   }
 
   void server::setup() noexcept {
     reset_connection();
+    m_is_quit = false;
     m_exe.do_setup();
   }
 
@@ -599,17 +584,13 @@ namespace laplace::network {
     m_exe.do_cleanup();
   }
 
-  auto server::is_encryption_enabled() const noexcept -> bool {
-    return m_is_encryption_enabled;
-  }
-
   void server::update_world() noexcept {
     if (!m_exe.do_wait_loading())
       return;
 
     perform_instant_events();
 
-    if (get_state() == server_state::action)
+    if (m_state == server_state::action)
       m_exe.do_schedule(m_clock.get_time_elapsed());
 
     if (m_exe.is_desync())
@@ -641,14 +622,14 @@ namespace laplace::network {
     if (m_proto.get_control_id(seq) == control::slot_create) {
       auto buf = vbyte { seq.begin(), seq.end() };
 
-      for (sl::index i = 0; i < m_slots.size(); i++)
+      for (sl::index i = 0; i < m_slots.get_count(); i++)
         if (m_slots[i].is_exclusive) {
           m_proto.alter_slot_create_flag(buf, m_slots[i].id_actor);
           append_event(i, buf);
         }
 
     } else {
-      for (sl::index i = 0; i < m_slots.size(); i++)
+      for (sl::index i = 0; i < m_slots.get_count(); i++)
         if (m_slots[i].is_exclusive)
           append_event(i, seq);
     }
@@ -659,47 +640,8 @@ namespace laplace::network {
       m_slots[slot].out.emplace_back(seq.begin(), seq.end());
   }
 
-  void server::set_master(bool is_master) noexcept {
-    m_is_master = is_master;
-  }
-
-  auto server::is_master() const noexcept -> bool {
-    return m_is_master;
-  }
-
-  auto server::add_slot(std::string_view address,
-                        uint16_t         port) noexcept -> sl::index {
-
-    auto const id = m_slots.size();
-    m_slots.emplace_back(
-        slot_info { .address = string(address), .port = port });
-    return id;
-  }
-
-  auto server::find_slot(string_view address, uint16_t port) noexcept
-      -> sl::index {
-
-    for (sl::index i = 0; i < m_slots.size(); i++)
-      if (m_slots[i].address == address && m_slots[i].port == port)
-        return i;
-
-    if (!is_master()) {
-      m_log.print(fmt("Reject %s:%d. Joining is disabled.",
-                      address.data(), (int) port));
-      return index_undefined;
-    }
-
-    if (!has_free_slots()) {
-      m_log.print(fmt("Reject %s:%d. No free slots.", address.data(),
-                      (int) port));
-      return index_undefined;
-    }
-
-    return add_slot(address, port);
-  }
-
   void server::process_slots() noexcept {
-    for (sl::index i = 0; i < m_slots.size(); i++) {
+    for (sl::index i = 0; i < m_slots.get_count(); i++) {
       process_queue(i);
 
       if (m_slots[i].is_exclusive)
@@ -745,10 +687,10 @@ namespace laplace::network {
   }
 
   void server::check_outdate(sl::index slot) noexcept {
-    if (m_slots[slot].outdate < get_update_timeout())
+    if (m_slots[slot].outdate < m_update_timeout)
       return;
 
-    if (is_master())
+    if (m_mode == server_mode::host)
       send_event_to(slot,
                     m_proto.encode_server_heartbeat(
                         { .index = as_index(m_queue.events.size()),
@@ -769,13 +711,9 @@ namespace laplace::network {
      *  Remove disconnected slots in action state also?
      *  Slot can reconnect by secret token.
      */
-    if (!is_master() || get_state() != server_state::prepare)
-      return;
-
-    m_slots.erase(
-        std::remove_if(m_slots.begin(), m_slots.end(),
-                       [](auto const &s) { return !s.is_connected; }),
-        m_slots.end());
+    if (m_mode != server_mode::remote &&
+        m_state == server_state::prepare)
+      m_slots.erase_disconnected();
   }
 
   void server::process_event(sl::index  slot,
@@ -783,12 +721,12 @@ namespace laplace::network {
     if (m_proto.get_event_time(seq) == time_undefined) {
       if (perform_control(slot, seq) == event_status::remove)
         return;
-      if (is_master())
-        distribute_event(slot, seq);
-      else
+      if (m_mode == server_mode::remote)
         add_instant_event(seq);
+      else
+        distribute_event(slot, seq);
     } else {
-      if (!is_master())
+      if (m_mode == server_mode::host)
         perform_event(slot, seq);
       else
         m_log.print("Ignore timed event.");
@@ -813,7 +751,7 @@ namespace laplace::network {
 
     m_log.queue(n, seq);
 
-    if (get_state() == server_state::prepare)
+    if (m_state == server_state::prepare)
       add_instant_event(buf);
     else
       m_proto.set_event_time(buf, m_exe.do_apply(buf));
@@ -856,10 +794,13 @@ namespace laplace::network {
 
       if (n == 0) {
         if (m_node->is_connreset()) {
-          auto const slot = find_slot(m_node->get_remote_address(),
-                                      m_node->get_remote_port());
+          auto const slot = m_slots.find(
+              m_node->get_remote_address(), m_node->get_remote_port(),
+              m_mode == server_mode::host
+                  ? slot_pool::add_if_not_found
+                  : slot_pool::find_default);
 
-          if (slot < 0 || slot >= m_slots.size())
+          if (!m_slots.has(slot))
             continue;
 
           m_log.print(
@@ -867,7 +808,7 @@ namespace laplace::network {
 
           disconnect(slot);
 
-          if (is_master())
+          if (m_mode == server_mode::host)
             continue;
 
           cleanup();
@@ -878,10 +819,12 @@ namespace laplace::network {
 
       m_stats.add_bytes_received(n);
 
-      auto slot = find_slot(m_node->get_remote_address(),
-                            m_node->get_remote_port());
+      auto slot = m_slots.find(
+          m_node->get_remote_address(), m_node->get_remote_port(),
+          m_mode == server_mode::host ? slot_pool::add_if_not_found
+                                      : slot_pool::find_default);
 
-      if (slot < 0 || slot >= m_slots.size()) {
+      if (!m_slots.has(slot)) {
         error_("Unable to find slot.", __FUNCTION__);
         continue;
       }
@@ -891,12 +834,12 @@ namespace laplace::network {
                              static_cast<span_cbyte::size_type>(n) });
     }
 
-    for (sl::index slot = 0; slot < m_slots.size(); slot++)
+    for (sl::index slot = 0; slot < m_slots.get_count(); slot++)
       receive_from(slot);
   }
 
   void server::receive_from(sl::index slot) noexcept {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return;
     }
@@ -924,7 +867,7 @@ namespace laplace::network {
 
           disconnect(slot);
 
-          if (!is_master())
+          if (m_mode == server_mode::remote)
             cleanup();
         }
 
@@ -955,7 +898,7 @@ namespace laplace::network {
 
   void server::process_chunk(sl::index  slot,
                              span_cbyte chunk) noexcept {
-    if (slot < 0 || slot > m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return;
     }
@@ -978,7 +921,7 @@ namespace laplace::network {
   }
 
   void server::send_event_history_to(sl::index slot) noexcept {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return;
     }
@@ -1036,7 +979,7 @@ namespace laplace::network {
   }
 
   void server::process_buffers() noexcept {
-    for (sl::index slot = 0; slot < m_slots.size(); slot++) {
+    for (sl::index slot = 0; slot < m_slots.get_count(); slot++) {
 
       for (sl::index i = 0; i < m_slots[slot].in.size(); i++) {
         auto const &ev = m_slots[slot].in[i];
@@ -1103,7 +1046,7 @@ namespace laplace::network {
     if (!m_node)
       return;
 
-    for (sl::index slot = 0; slot < m_slots.size(); slot++) {
+    for (sl::index slot = 0; slot < m_slots.get_count(); slot++) {
       if (m_slots[slot].out.empty())
         continue;
 
@@ -1112,35 +1055,33 @@ namespace laplace::network {
   }
 
   void server::disconnect(sl::index slot) noexcept {
-    if (slot < 0 || slot >= m_slots.size()) {
+    if (!m_slots.has(slot)) {
       error_("Invalid slot.", __FUNCTION__);
       return;
     }
 
     m_slots[slot].is_connected = false;
 
-    if (is_master()) {
-      if (get_state() == server_state::prepare &&
-          m_slots[slot].id_actor != id_undefined) {
-        process_event(slot, m_proto.encode(control::slot_remove));
-        m_slots[slot].id_actor = id_undefined;
-      }
-    } else {
-      set_connected(false);
+    if (m_mode == server_mode::remote) {
+      m_is_connected = false;
+    } else if (m_state == server_state::prepare &&
+               m_slots[slot].id_actor != id_undefined) {
+      process_event(slot, m_proto.encode(control::slot_remove));
+      m_slots[slot].id_actor = id_undefined;
     }
 
     m_log.print(fmt("Disconnect on slot %d.", (int) slot));
   }
 
   void server::update_slots(sl::time delta_msec) noexcept {
-    for (sl::index i = 0; i < m_slots.size(); i++) {
+    for (sl::index i = 0; i < m_slots.get_count(); i++) {
       if (!m_slots[i].is_connected)
         continue;
 
       m_slots[i].outdate += delta_msec;
       m_slots[i].wait += delta_msec;
 
-      if (m_slots[i].wait >= get_connection_timeout()) {
+      if (m_slots[i].wait >= m_connection_timeout) {
         m_log.print(fmt("Connection timeout on slot %d.", (int) i));
         disconnect(i);
       }
@@ -1148,9 +1089,9 @@ namespace laplace::network {
 
     m_ping_clock += delta_msec;
 
-    if (m_ping_clock >= get_ping_timeout()) {
+    if (m_ping_clock >= m_ping_timeout) {
 
-      for (sl::index slot = 0; slot < m_slots.size(); slot++)
+      for (sl::index slot = 0; slot < m_slots.get_count(); slot++)
         if (m_slots[slot].is_connected &&
             m_slots[slot].is_exclusive) {
           send_event_to(slot, m_proto.encode_ping_request(
@@ -1159,19 +1100,5 @@ namespace laplace::network {
 
       m_ping_clock = 0;
     }
-  }
-
-  auto server::has_free_slots() const noexcept -> bool {
-    return m_max_slot_count < 0 || m_slots.size() < m_max_slot_count;
-  }
-
-  auto server::generate_token() noexcept -> vbyte {
-    auto token = vbyte(256);
-    auto dist  = std::uniform_int_distribution<int>(0, 255);
-
-    for (auto &byte : token)
-      byte = static_cast<uint8_t>(dist(m_rand));
-
-    return token;
   }
 }

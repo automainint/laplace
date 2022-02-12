@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -67,15 +67,15 @@ namespace laplace::engine {
     if (count < 0) {
       auto s = ostringstream {};
       s << "Scheduler: Invalid thread count " << count
-        << " (set to 0).";
+        << ". Set to 0.";
       verb(s.str());
       count = 0;
     }
 
     if (count > thread_count_limit) {
       auto s = ostringstream {};
-      s << "Scheduler: Invalid thread count " << count << " (max "
-        << thread_count_limit << ").";
+      s << "Scheduler: Invalid thread count " << count << ". Max "
+        << thread_count_limit << ".";
       verb(s.str());
       count = thread_count_limit;
     }
@@ -89,7 +89,14 @@ namespace laplace::engine {
 
       m_sync.notify_all();
 
-      for (auto &t : m_threads) t.join();
+      for (auto &t : m_threads) {
+        try {
+          t.join();
+        } catch (std::system_error &error) {
+          error_("Unable to join a thread.", __FUNCTION__);
+          error_(error.what(), __FUNCTION__);
+        }
+      }
 
       _ul.lock();
       m_done = false;
@@ -98,7 +105,16 @@ namespace laplace::engine {
     m_threads.resize(count);
 
     for (auto &t : m_threads)
-      t = jthread([this] { this->tick_thread(); });
+      for (int i = 0; i < 4; i++) {
+        try {
+          t = jthread([this] { this->tick_thread(); });
+          break;
+        } catch (std::system_error &error) {
+          error_("Unable to create a thread.", __FUNCTION__);
+          error_(error.what(), __FUNCTION__);
+          std::this_thread::yield();
+        }
+      }
   }
 
   void scheduler::set_done() noexcept {

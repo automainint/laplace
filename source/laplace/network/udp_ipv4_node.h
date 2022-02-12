@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_udp_ipv4_node_h
-#define laplace_network_udp_ipv4_node_h
+#ifndef LAPLACE_NETWORK_UDP_IPV4_NODE_H
+#define LAPLACE_NETWORK_UDP_IPV4_NODE_H
 
 #include "../core/socket.h"
 #include "interface/socket.h"

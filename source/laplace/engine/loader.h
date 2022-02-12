@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_loader_h
-#define laplace_engine_loader_h
+#ifndef LAPLACE_ENGINE_LOADER_H
+#define LAPLACE_ENGINE_LOADER_H
 
 #include "prime_impact.h"
 #include <condition_variable>

@@ -38,7 +38,7 @@ namespace laplace::network {
     [[nodiscard]] auto get_bytes_loss() const noexcept -> sl::whole;
 
   private:
-    log_interface m_log;
+    log_interface m_log = blank_log_interface();
 
     sl::whole m_bytes_sent     = 0;
     sl::whole m_bytes_received = 0;

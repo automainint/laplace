@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_transfer_h
-#define laplace_network_transfer_h
+#ifndef LAPLACE_NETWORK_TRANSFER_H
+#define LAPLACE_NETWORK_TRANSFER_H
 
 #include "crypto/basic_cipher.h"
 

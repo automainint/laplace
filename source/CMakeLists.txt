@@ -1,3 +1,6 @@
 add_subdirectory(apps)
 add_subdirectory(laplace)
-add_subdirectory(test)
+
+if(LAPLACE_ENABLE_TESTING OR LAPLACE_ENABLE_COVERAGE)
+  add_subdirectory(test)
+endif()

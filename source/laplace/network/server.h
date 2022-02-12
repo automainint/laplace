@@ -14,19 +14,14 @@
 #include "clock.h"
 #include "interface/execution.h"
 #include "interface/protocol.h"
-#include "interface/socket.h"
+#include "random.h"
+#include "slot_pool.h"
 #include "stats.h"
-#include "transfer.h"
-#include <random>
 
 namespace laplace::network {
   class server {
   public:
-    static constexpr sl::index slot_host            = -1;
-    static constexpr sl::index slot_count_unlimited = -1;
-    static constexpr sl::index id_undefined         = -1;
-    static constexpr sl::index index_undefined      = -1;
-    static constexpr sl::time  time_undefined       = -1;
+    static constexpr sl::index slot_host = -1;
 
     static sl::time const  default_update_timeout_msec;
     static sl::time const  default_ping_timeout_msec;
@@ -40,7 +35,7 @@ namespace laplace::network {
     auto operator=(server const &) -> server & = delete;
     auto operator=(server &&) -> server & = delete;
 
-    server() noexcept;
+    server() noexcept = default;
     ~server() noexcept;
 
     void setup_protocol_interface(
@@ -61,39 +56,12 @@ namespace laplace::network {
     [[nodiscard]] auto get_port() const noexcept -> uint16_t;
 
     [[nodiscard]] auto is_connected() const noexcept -> bool;
+    [[nodiscard]] auto is_quit() const noexcept -> bool;
 
   private:
     enum class server_state { prepare, action, pause };
+    enum class server_mode { host, remote };
     enum class event_status { proceed, remove };
-
-    struct event_queue {
-      sl::index         index = 0;
-      sl::vector<vbyte> events;
-    };
-
-    struct slot_info {
-      std::string address;
-      uint16_t    port = any_port;
-      vbyte       token;
-
-      sl::index                id_actor     = id_undefined;
-      bool                     is_connected = true;
-      transfer::encryption_tag encryption   = transfer::plain;
-      bool                     is_exclusive = false;
-      bool                     request_flag = true;
-      sl::time                 outdate      = 0;
-      sl::time                 wait         = 0;
-
-      sl::vector<vbyte> in;
-      sl::vector<vbyte> out;
-
-      event_queue queue;
-      transfer    tran;
-
-      std::unique_ptr<socket_interface::node> node;
-    };
-
-    [[nodiscard]] auto get_state() const noexcept -> server_state;
 
     [[nodiscard]] auto perform_control(sl::index  slot,
                                        span_cbyte seq) noexcept
@@ -141,20 +109,6 @@ namespace laplace::network {
                                        span_cbyte seq) noexcept
         -> event_status;
 
-    void set_connected(bool is_connected) noexcept;
-
-    void set_state(server_state state) noexcept;
-
-    [[nodiscard]] auto get_connection_timeout() const noexcept
-        -> sl::time;
-
-    [[nodiscard]] auto get_update_timeout() const noexcept
-        -> sl::time;
-    [[nodiscard]] auto get_ping_timeout() const noexcept -> sl::time;
-
-    [[nodiscard]] auto is_encryption_enabled() const noexcept -> bool;
-    [[nodiscard]] auto is_master() const noexcept -> bool;
-
     void reset_connection() noexcept;
 
     void setup() noexcept;
@@ -168,14 +122,6 @@ namespace laplace::network {
     void send_event(span_cbyte seq) noexcept;
 
     void append_event(sl::index slot, span_cbyte seq) noexcept;
-
-    void set_master(bool is_master) noexcept;
-
-    auto add_slot(std::string_view address, uint16_t port) noexcept
-        -> sl::index;
-
-    [[nodiscard]] auto find_slot(std::string_view address,
-                                 uint16_t port) noexcept -> sl::index;
 
     void process_slots() noexcept;
     void process_queue(sl::index slot) noexcept;
@@ -203,25 +149,25 @@ namespace laplace::network {
 
     void update_slots(sl::time delta_msec) noexcept;
 
-    [[nodiscard]] auto has_free_slots() const noexcept -> bool;
-    [[nodiscard]] auto generate_token() noexcept -> vbyte;
+    stats     m_stats;
+    clock     m_clock;
+    random    m_random;
+    slot_pool m_slots;
 
-    clock               m_clock;
-    stats               m_stats;
     protocol_interface  m_proto = blank_protocol_interface();
     execution_interface m_exe   = blank_execution_interface();
     log_interface       m_log   = blank_log_interface();
 
     bool m_is_connected = false;
+    bool m_is_quit      = false;
 
-    sl::time m_connection_timeout_msec =
-        default_connection_timeout_msec;
-    sl::time m_update_timeout_msec = default_update_timeout_msec;
-    sl::time m_ping_timeout_msec   = default_ping_timeout_msec;
+    sl::time m_connection_timeout = default_connection_timeout_msec;
+    sl::time m_update_timeout     = default_update_timeout_msec;
+    sl::time m_ping_timeout       = default_ping_timeout_msec;
 
+    server_mode  m_mode  = server_mode::remote;
     server_state m_state = server_state::prepare;
 
-    std::vector<slot_info>                  m_slots;
     std::unique_ptr<socket_interface::node> m_node;
     std::unique_ptr<socket_interface>       m_socket_interface;
 
@@ -230,15 +176,10 @@ namespace laplace::network {
 
     sl::vector<vbyte> m_instant_events;
 
-    bool      m_is_master             = false;
     bool      m_is_encryption_enabled = true;
-    sl::whole m_max_slot_count        = slot_count_unlimited;
     sl::whole m_loss_compensation     = default_loss_compensation;
     sl::time  m_ping_clock            = {};
     vbyte     m_token;
-
-    std::mt19937_64 m_rand;
-    uint64_t        m_seed = {};
   };
 
   using ptr_server = std::shared_ptr<server>;

@@ -8,18 +8,24 @@
  *  the MIT License for more details.
  */
 
-#ifndef LAPLACE_NETWORK_UDP_IPV4_H
-#define LAPLACE_NETWORK_UDP_IPV4_H
+#ifndef LAPLACE_NETWORK_RANDOM_H
+#define LAPLACE_NETWORK_RANDOM_H
 
-#include "interface/socket.h"
+#include "../core/defs.h"
+#include <random>
 
 namespace laplace::network {
-  class udp_ipv4 : public socket_interface {
+  class random {
   public:
-    ~udp_ipv4() noexcept override = default;
+    random() noexcept;
+    ~random() = default;
 
-    [[nodiscard]] auto open(uint16_t port) noexcept
-        -> std::unique_ptr<node> override;
+    [[nodiscard]] auto get_seed() const noexcept -> uint64_t;
+    [[nodiscard]] auto generate_token() noexcept -> vbyte;
+
+  private:
+    std::mt19937_64 m_engine;
+    uint64_t        m_seed = {};
   };
 }
 
