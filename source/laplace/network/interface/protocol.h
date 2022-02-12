@@ -58,10 +58,10 @@ namespace laplace::network {
   using fn_alter_slot_create_flag =
       std::function<void(span_byte, sl::index)>;
   using fn_get_control_id = std::function<control(span_cbyte)>;
-  using fn_get_cipher_id  = std::function<cipher(span_cbyte)>;
 
   using fn_decode_request_events =
       std::function<sl::vector<sl::index>(span_cbyte)>;
+  using fn_decode_cipher_id  = std::function<cipher(span_cbyte)>;
   using fn_decode_public_key = std::function<span_cbyte(span_cbyte)>;
   using fn_decode_session_response_port =
       std::function<uint16_t(span_cbyte)>;
@@ -96,9 +96,9 @@ namespace laplace::network {
     fn_is_allowed               is_allowed;
     fn_alter_slot_create_flag   alter_slot_create_flag;
     fn_get_control_id           get_control_id;
-    fn_get_cipher_id            get_cipher_id;
 
     fn_decode_request_events        decode_request_events;
+    fn_decode_cipher_id             decode_cipher_id;
     fn_decode_public_key            decode_public_key;
     fn_decode_session_response_port decode_session_response_port;
     fn_decode_session_token         decode_session_token;

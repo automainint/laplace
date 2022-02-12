@@ -11,10 +11,10 @@
 #ifndef LAPLACE_NETWORK_UDP_IPV4_H
 #define LAPLACE_NETWORK_UDP_IPV4_H
 
-#include "interface/socket.h"
+#include "interface/io.h"
 
 namespace laplace::network {
-  class udp_ipv4 : public socket_interface {
+  class udp_ipv4 : public io_interface {
   public:
     ~udp_ipv4() noexcept override = default;
 

@@ -1,6 +1,4 @@
-/*  laplace/network/n_utils.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -22,39 +20,20 @@ namespace laplace::network {
         max<sl::whole>(0, min(size, max_chunk_size)));
   }
 
-  auto to_string(const sockaddr &a) noexcept -> string {
+  auto to_string(::sockaddr const &a) noexcept -> string {
     char buf[64] = {};
 
     if (a.sa_family == AF_INET) {
-      const auto &ip4 = reinterpret_cast<const sockaddr_in &>(a);
+      auto const &ip4 = reinterpret_cast<::sockaddr_in const &>(a);
       ::inet_ntop(AF_INET, &ip4.sin_addr, buf, sizeof buf);
+    } else if (a.sa_family == AF_INET6) {
+      auto const &ip6 = reinterpret_cast<::sockaddr_in6 const &>(a);
+      ::inet_ntop(AF_INET6, &ip6.sin6_addr, buf, sizeof buf);
     } else {
+      error_("Unknown address family.", __FUNCTION__);
       buf[0] = '\0';
     }
 
     return buf;
-  }
-
-  auto set_mode(socket_t &s, network::io_mode m) noexcept -> bool {
-    if (m == sync) {
-      if (socket_set_blocking(s) != 0) {
-        socket_close(s);
-        s = -1;
-
-        return false;
-      }
-    } else if (m == async) {
-      if (socket_set_nonblocking(s) != 0) {
-        socket_close(s);
-        s = -1;
-
-        return false;
-      }
-    } else {
-      error_("Invalid IO mode.", __FUNCTION__);
-      return false;
-    }
-
-    return true;
   }
 }

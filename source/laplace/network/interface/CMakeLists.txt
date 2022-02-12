@@ -3,4 +3,4 @@ target_sources(
     PRIVATE
       ni_log.cpp ni_protocol.cpp ni_execution.cpp
     PUBLIC
-      execution.h socket.h log.h protocol.h)
+      execution.h log.h protocol.h io.h)

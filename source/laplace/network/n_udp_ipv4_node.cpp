@@ -46,7 +46,7 @@ namespace laplace::network {
                          sizeof name);
 
     if (status == -1) {
-      verb(fmt("UDP: bind failed (code %d).", socket_error()));
+      verb(fmt("UDPv4: bind failed (code %d).", socket_error()));
       return;
     }
 
@@ -59,7 +59,8 @@ namespace laplace::network {
 
     if (::getsockname(m_socket, reinterpret_cast<::sockaddr *>(&name),
                       &len) == -1) {
-      verb(fmt("UDP: getsockname failed (code %d).", socket_error()));
+      verb(fmt("UDPv4: getsockname failed (code %d).",
+               socket_error()));
       socket_close(m_socket);
       m_socket = -1;
       return;
@@ -68,53 +69,39 @@ namespace laplace::network {
     m_port = ntohs(name.sin_port);
   }
 
-  auto udp_ipv4_node::receive(span_byte data, io_mode mode) noexcept
-      -> sl::whole {
-    sl::whole received = 0;
+  auto udp_ipv4_node::receive(span_byte data) noexcept -> sl::whole {
+    if (m_socket == 0 || data.empty())
+      return 0;
 
     m_is_msgsize   = false;
     m_is_connreset = false;
 
-    if (m_socket != -1 && !data.empty()) {
-      ::socklen_t len = sizeof m_remote;
-      memset(&m_remote, 0, sizeof m_remote);
+    ::socklen_t len = sizeof m_remote;
+    memset(&m_remote, 0, sizeof m_remote);
 
-      auto addr    = reinterpret_cast<::sockaddr *>(&m_remote);
-      auto buf     = reinterpret_cast<char *>(data.data());
-      bool is_sync = false;
+    auto addr = reinterpret_cast<::sockaddr *>(&m_remote);
+    auto buf  = reinterpret_cast<char *>(data.data());
 
-      if (mode == sync) {
-        is_sync = set_mode(m_socket, sync);
+    auto received = ::recvfrom(
+        m_socket, buf, clamp_chunk(data.size()), 0, addr, &len);
 
-        if (!is_sync) {
-          verb(fmt("UDP: ioctlsocket failed (code %d).",
-                   socket_error()));
-          return 0;
-        }
-      }
+    if (received >= 0)
+      return received;
 
-      auto n = ::recvfrom(m_socket, buf, clamp_chunk(data.size()), 0,
-                          addr, &len);
-
-      if (n != -1) {
-        received = n;
-      } else if (socket_error() == socket_msgsize()) {
-        m_is_msgsize = true;
-      } else if (socket_error() == socket_connreset()) {
-        m_is_connreset = true;
-      } else if (socket_error() != socket_wouldblock()) {
-        verb(fmt("UDP: recvfrom failed (code %d).", socket_error()));
-      }
-
-      if (is_sync) {
-        if (!set_mode(m_socket, async)) {
-          verb(fmt("UDP: ioctlsocket failed (code %d).",
-                   socket_error()));
-        }
-      }
+    if (received != -1) {
+      verb(fmt("UDPv4: Unknown recvfrom return value %d (code %d).",
+               received, socket_error()));
+      return 0;
     }
 
-    return received;
+    if (socket_error() == socket_msgsize())
+      m_is_msgsize = true;
+    else if (socket_error() == socket_connreset())
+      m_is_connreset = true;
+    else if (socket_error() != socket_wouldblock())
+      verb(fmt("UDPv4: recvfrom failed (code %d).", socket_error()));
+
+    return 0;
   }
 
   auto udp_ipv4_node::send(string_view address, uint16_t port,
@@ -131,12 +118,11 @@ namespace laplace::network {
                                     &name.sin_addr.s_addr);
 
     if (status != 1) {
-      verb(fmt("UDP: inet_pton failed (code %d).", socket_error()));
-    } else {
-      result = send_internal(name, data);
+      verb(fmt("UDPv4: inet_pton failed (code %d).", socket_error()));
+      return 0;
     }
 
-    return result;
+    return send_internal(name, data);
   }
 
   auto udp_ipv4_node::get_port() const noexcept -> uint16_t {
@@ -151,11 +137,11 @@ namespace laplace::network {
     return ntohs(m_remote.sin_port);
   }
 
-  auto udp_ipv4_node::is_msgsize() const noexcept -> bool {
+  auto udp_ipv4_node::is_size_error() const noexcept -> bool {
     return m_is_msgsize;
   }
 
-  auto udp_ipv4_node::is_connreset() const noexcept -> bool {
+  auto udp_ipv4_node::is_connection_reset() const noexcept -> bool {
     return m_is_connreset;
   }
 
@@ -165,61 +151,50 @@ namespace laplace::network {
     m_socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
     if (m_socket == -1) {
-      verb(fmt("UDP: socket failed (code %d).", socket_error()));
+      verb(fmt("UDPv4: socket failed (code %d).", socket_error()));
       return;
     }
 
-    if (!set_mode(m_socket, async)) {
-      verb(fmt("UDP: ioctlsocket failed (code %d).", socket_error()));
+    if (socket_set_nonblocking(m_socket) != 0) {
+      verb(fmt("UDPv4: fcntl failed (code %d).", socket_error()));
+      socket_close(m_socket);
+      m_socket = -1;
     }
   }
 
   auto udp_ipv4_node::send_internal(sockaddr_in const &name,
                                     span_cbyte         data) noexcept
       -> sl::whole {
-    sl::whole sent = 0;
+    if (m_socket == 0 || data.empty())
+      return 0;
 
     m_is_msgsize   = false;
     m_is_connreset = false;
 
-    if (m_socket != -1) {
-      auto buf     = reinterpret_cast<char const *>(data.data());
-      auto addr    = reinterpret_cast<::sockaddr const *>(&name);
-      bool is_sync = false;
+    auto buf  = reinterpret_cast<char const *>(data.data());
+    auto addr = reinterpret_cast<::sockaddr const *>(&name);
 
-      auto n = ::sendto(m_socket, buf, clamp_chunk(data.size()), 0,
-                        addr, sizeof name);
+    auto sent = ::sendto(m_socket, buf, clamp_chunk(data.size()), 0,
+                         addr, sizeof name);
 
-      if (n != -1) {
-        if (n <= 0) {
-          verb("UDP: 0 bytes sent.");
-          return 0;
-        }
+    if (sent >= 0)
+      return sent;
 
-        sent += n;
-      } else if (socket_error() == socket_msgsize()) {
-        m_is_msgsize = true;
-      } else if (socket_error() == socket_connreset()) {
-        m_is_connreset = true;
-      } else if (socket_error() != socket_wouldblock()) {
-        verb(fmt("UDP: sendto failed (code %d).", socket_error()));
-      } else {
-        verb(fmt("UDP: sendto blocking."));
-
-        is_sync = set_mode(m_socket, sync);
-
-        if (!is_sync) {
-          verb(fmt("UDP: ioctlsocket failed (code %d).",
-                   socket_error()));
-          return 0;
-        }
-      }
-
-      if (is_sync && !set_mode(m_socket, async))
-        verb(fmt("UDP: ioctlsocket failed (code %d).",
-                 socket_error()));
+    if (sent != -1) {
+      verb(fmt("UDPv4: Unknown sendto return value %d (code %d).",
+               sent, socket_error()));
+      return 0;
     }
 
-    return sent;
+    if (socket_error() == socket_msgsize())
+      m_is_msgsize = true;
+    else if (socket_error() == socket_connreset())
+      m_is_connreset = true;
+    else if (socket_error() == socket_wouldblock())
+      verb(fmt("UDPv4: sendto blocking."));
+    else
+      verb(fmt("UDPv4: sendto failed (code %d).", socket_error()));
+
+    return 0;
   }
 }

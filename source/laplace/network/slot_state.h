@@ -12,7 +12,7 @@
 #define LAPLACE_NETWORK_SLOT_STATE_H
 
 #include "defs.h"
-#include "interface/socket.h"
+#include "interface/io.h"
 #include "transfer.h"
 
 namespace laplace::network {
@@ -39,7 +39,7 @@ namespace laplace::network {
     event_queue queue;
     transfer    tran;
 
-    std::unique_ptr<socket_interface::node> node;
+    std::unique_ptr<io_interface::node> node;
   };
 }
 

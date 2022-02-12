@@ -12,10 +12,10 @@
 #define LAPLACE_NETWORK_UDP_IPV4_NODE_H
 
 #include "../core/socket.h"
-#include "interface/socket.h"
+#include "interface/io.h"
 
 namespace laplace::network {
-  class udp_ipv4_node : public socket_interface::node {
+  class udp_ipv4_node : public io_interface::node {
   public:
     udp_ipv4_node() noexcept;
     explicit udp_ipv4_node(uint16_t port) noexcept;
@@ -24,7 +24,7 @@ namespace laplace::network {
 
     void bind(uint16_t port = any_port) noexcept;
 
-    [[nodiscard]] auto receive(span_byte data, io_mode mode) noexcept
+    [[nodiscard]] auto receive(span_byte data) noexcept
         -> sl::whole override;
 
     [[nodiscard]] auto send(std::string_view address, uint16_t port,
@@ -39,9 +39,11 @@ namespace laplace::network {
     [[nodiscard]] auto get_remote_port() const noexcept
         -> uint16_t override;
 
-    [[nodiscard]] auto is_msgsize() const noexcept -> bool override;
+    [[nodiscard]] auto is_size_error() const noexcept
+        -> bool override;
 
-    [[nodiscard]] auto is_connreset() const noexcept -> bool override;
+    [[nodiscard]] auto is_connection_reset() const noexcept
+        -> bool override;
 
   private:
     void init() noexcept;

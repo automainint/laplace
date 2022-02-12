@@ -8,86 +8,88 @@
  *  the MIT License for more details.
  */
 
+#include "../../laplace/network/crypto/ecc_rabbit.h"
+#include "../../laplace/network/pipe.h"
 #include "../../laplace/network/server.h"
 #include <gtest/gtest.h>
 
 namespace laplace::test {
-  using network::socket_interface, network::io_mode,
-      network::any_port, std::copy, std::min, std::max,
-      std::unique_ptr, std::make_unique;
+  using network::server, network::pipe, std::make_shared,
+      network::blank_protocol_interface, network::control,
+      network::cipher, network::transfer, network::crypto::ecc_rabbit;
 
-  struct mock_socket_interface : public socket_interface {
-    struct node_state {
-      vbyte    recv;
-      vbyte    send;
-      uint16_t remote_port = any_port;
-      bool     msgsize     = false;
-      bool     connreset   = false;
+  TEST(network, server_session_request) {
+    int is_allowed_called              = 0;
+    int get_control_id_called          = 0;
+    int decode_cipher_id_called        = 0;
+    int decode_public_key_called       = 0;
+    int encode_session_response_called = 0;
+
+    auto proto       = blank_protocol_interface();
+    proto.is_allowed = [&](span_cbyte seq, bool is_exclusive) {
+      is_allowed_called++;
+      return !seq.empty() && seq[0] == 1;
+    };
+    proto.get_control_id = [&](span_cbyte seq) -> control {
+      get_control_id_called++;
+      if (!seq.empty())
+        switch (seq[0])
+        case 1:
+          return control::session_request;
+      return control::undefined;
+    };
+    proto.decode_cipher_id = [&](span_cbyte seq) -> cipher {
+      decode_cipher_id_called++;
+      return cipher::rabbit;
+    };
+    proto.decode_public_key = [&](span_cbyte seq) -> span_cbyte {
+      decode_public_key_called++;
+      return { seq.begin() + 1, seq.end() };
+    };
+    proto.encode_session_response = [&](uint16_t   port,
+                                        span_cbyte key) {
+      encode_session_response_called++;
+      auto v = vbyte {};
+      v.emplace_back(2);
+      v.emplace_back(port & 255u);
+      v.emplace_back((port >> 8u) & 255u);
+      v.insert(v.end(), key.begin(), key.end());
+      return v;
     };
 
-    static sl::vector<node_state> nodes;
+    auto io = make_shared<pipe>();
 
-    class mock_node : public socket_interface::node {
-      node_state *p      = nullptr;
-      uint16_t    m_port = 0;
+    auto alice = server {};
+    alice.setup_protocol(proto);
+    alice.enable_encryption(true);
+    alice.listen({ .io = io, .port = 1 });
 
-    public:
-      mock_node(uint16_t port) {
-        if (port == any_port)
-          m_port = nodes.size();
-        else
-          m_port = port;
-        nodes.resize(m_port + 1);
-        p = nodes.data() + m_port;
-      }
+    auto bob = io->open(2);
 
-      ~mock_node() noexcept override = default;
+    auto tran = transfer {};
+    tran.setup_cipher<ecc_rabbit>();
+    auto key = tran.get_public_key();
 
-      auto receive(span_byte buf, io_mode mode) noexcept
-          -> sl::whole override {
-        auto const size = min(buf.size(), p->recv.size());
-        copy(p->recv.begin(), p->recv.begin() + size, buf.begin());
-        p->recv.erase(p->recv.begin(), p->recv.begin() + size);
-        return size;
-      }
+    auto req = vbyte {};
+    req.emplace_back(1);
+    req.insert(req.end(), key.begin(), key.end());
 
-      auto send(std::string_view, uint16_t port,
-                span_cbyte buf) noexcept -> sl::whole override {
-        auto *const q = nodes.data() + port;
-        q->recv.resize(q->recv.size() + buf.size());
-        q->remote_port = m_port;
-        copy(buf.begin(), buf.end(), q->recv.end() - buf.size());
-        return buf.size();
-      }
+    auto reqs = sl::vector<span_cbyte> { span_cbyte { req.begin(),
+                                                      req.end() } };
 
-      auto get_port() const noexcept -> uint16_t override {
-        return m_port;
-      }
+    std::ignore = bob->send("", alice.get_port(), tran.encode(reqs));
 
-      auto get_remote_address() const noexcept
-          -> std::string override {
-        return "localhost";
-      }
+    alice.tick(1);
 
-      auto get_remote_port() const noexcept -> uint16_t override {
-        return p->remote_port;
-      }
+    uint8_t    buf[512] = {};
+    auto const n        = bob->receive(buf);
 
-      auto is_msgsize() const noexcept -> bool override {
-        return p->msgsize;
-      }
+    EXPECT_EQ(is_allowed_called, 1);
+    EXPECT_EQ(get_control_id_called, 1);
+    EXPECT_EQ(decode_cipher_id_called, 1);
+    EXPECT_EQ(decode_public_key_called, 1);
+    EXPECT_EQ(encode_session_response_called, 1);
 
-      auto is_connreset() const noexcept -> bool override {
-        return p->connreset;
-      }
-    };
-
-    ~mock_socket_interface() noexcept override = default;
-
-    auto open(uint16_t port) noexcept -> unique_ptr<node> override {
-      return make_unique<mock_node>(port);
-    }
-  };
-
-  TEST(network, server) { }
+    EXPECT_TRUE(n > 3 && buf[0] == 2);
+  }
 }

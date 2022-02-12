@@ -14,6 +14,7 @@
 #include "../core/defs.h"
 
 namespace laplace::network {
+  static constexpr sl::index slot_host            = -1;
   static constexpr sl::index slot_count_unlimited = -1;
   static constexpr sl::index id_undefined         = -1;
   static constexpr sl::index index_undefined      = -1;
@@ -21,8 +22,6 @@ namespace laplace::network {
 
   extern sl::whole const max_chunk_size;
   extern uint16_t const  any_port;
-
-  enum io_mode { async, sync };
 }
 
 #endif

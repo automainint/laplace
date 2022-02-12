@@ -17,10 +17,9 @@ namespace laplace::network {
            in.get_event_time && in.set_event_index &&
            in.set_event_time && in.set_event_actor && in.is_allowed &&
            in.alter_slot_create_flag && in.get_control_id &&
-           in.get_cipher_id &&
 
-           in.decode_request_events && in.decode_public_key &&
-           in.decode_session_response_port &&
+           in.decode_request_events && in.decode_cipher_id &&
+           in.decode_public_key && in.decode_session_response_port &&
            in.decode_session_token && in.decode_ping_response &&
            in.decode_server_heartbeat && in.decode_server_clock &&
 
@@ -44,12 +43,12 @@ namespace laplace::network {
       .get_control_id         = [](span_cbyte) -> control {
         return control::undefined;
       },
-      .get_cipher_id = [](span_cbyte) -> cipher {
-        return cipher::undefined;
-      },
 
       .decode_request_events =
           [](span_cbyte) -> sl::vector<sl::index> { return {}; },
+      .decode_cipher_id = [](span_cbyte) -> cipher {
+        return cipher::undefined;
+      },
       .decode_public_key = [](span_cbyte) -> span_cbyte {
         return {};
       },

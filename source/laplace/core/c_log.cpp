@@ -18,11 +18,11 @@
 
 namespace laplace {
   using std::unique_lock, std::shared_lock, std::shared_mutex,
-      std::string_view, std::u8string_view, std::cerr,
+      std::string_view, std::u8string_view, std::cerr, std::flush,
       std::ostringstream;
 
   static auto g_log_default = [](string_view message) {
-    cerr << message << '\n';
+    cerr << message << '\n' << flush;
   };
 
   static bool g_verbose  = true;

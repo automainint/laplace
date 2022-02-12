@@ -13,7 +13,7 @@
 #include <thread>
 
 namespace laplace::test {
-  using network::udp_ipv4_node, network::any_port, network::async;
+  using network::udp_ipv4_node, network::any_port;
 
   namespace this_thread = std::this_thread;
 
@@ -35,7 +35,7 @@ namespace laplace::test {
       this_thread::yield();
 
       auto seq = vbyte(msg.size());
-      seq.resize(b.receive(seq, async));
+      seq.resize(b.receive(seq));
 
       if (msg == seq)
         success++;
@@ -63,7 +63,7 @@ namespace laplace::test {
       this_thread::yield();
 
       auto seq1 = vbyte(req.size());
-      seq1.resize(b.receive(seq1, async));
+      seq1.resize(b.receive(seq1));
 
       if (seq1 != req)
         continue;
@@ -75,7 +75,7 @@ namespace laplace::test {
       this_thread::yield();
 
       auto seq2 = vbyte(msg.size());
-      seq2.resize(a.receive(seq2, async));
+      seq2.resize(a.receive(seq2));
 
       if (msg == seq2)
         success++;

@@ -27,11 +27,10 @@ namespace laplace::network {
   }
 
   void transfer::set_remote_key(span_cbyte key) noexcept {
-    if (m_cipher) {
+    if (m_cipher)
       m_cipher->set_remote_key(key);
-    } else {
+    else
       error_("No cipher.", __FUNCTION__);
-    }
   }
 
   void transfer::enable_encryption(bool is_enabled) noexcept {
@@ -44,10 +43,8 @@ namespace laplace::network {
 
   auto transfer::encode(span<const span_cbyte> data) noexcept
       -> vbyte {
-    if (is_encryption_enabled()) {
+    if (is_encryption_enabled())
       return m_cipher->encrypt(pack_internal(data, mark_encrypted));
-    }
-
     return pack_internal(data, mark_plain);
   }
 
@@ -64,12 +61,9 @@ namespace laplace::network {
   }
 
   auto transfer::get_public_key() const noexcept -> span_cbyte {
-    if (m_cipher) {
-      return m_cipher->get_public_key();
-    }
-
-    error_("No cipher.", __FUNCTION__);
-    return {};
+    if (!m_cipher)
+      return {};
+    return m_cipher->get_public_key();
   }
 
   auto transfer::is_cipher_set() const noexcept -> bool {

@@ -19,9 +19,6 @@ namespace laplace::network {
 
   [[nodiscard]] auto to_string(::sockaddr const &a) noexcept
       -> std::string;
-
-  [[nodiscard]] auto set_mode(socket_t &s, io_mode m) noexcept
-      -> bool;
 }
 
 #endif
