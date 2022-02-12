@@ -23,6 +23,7 @@ namespace laplace::network {
   using fn_do_apply          = std::function<sl::time(span_cbyte)>;
   using fn_do_perform        = std::function<void(span_cbyte)>;
   using fn_do_schedule       = std::function<void(sl::time)>;
+  using fn_do_setup          = std::function<void()>;
   using fn_do_cleanup        = std::function<void()>;
 
   struct execution_interface {
@@ -35,6 +36,7 @@ namespace laplace::network {
     fn_do_apply          do_apply;
     fn_do_perform        do_perform;
     fn_do_schedule       do_schedule;
+    fn_do_setup          do_setup;
     fn_do_cleanup        do_cleanup;
   };
 

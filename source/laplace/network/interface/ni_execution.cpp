@@ -16,21 +16,21 @@ namespace laplace::network {
     return in.is_desync && in.do_server_seed &&
            in.do_server_reserve && in.do_reserve &&
            in.do_wait_loading && in.do_loading && in.do_apply &&
-           in.do_perform && in.do_schedule && in.do_cleanup;
+           in.do_perform && in.do_schedule && in.do_setup &&
+           in.do_cleanup;
   }
 
   auto blank_execution_interface() noexcept -> execution_interface {
-    auto const blank_action = [](span_cbyte) {};
-
     return { .is_desync = []() -> bool { return false; },
-             .do_server_seed    = blank_action,
-             .do_server_reserve = blank_action,
+             .do_server_seed    = [](span_cbyte) {},
+             .do_server_reserve = [](span_cbyte) {},
              .do_reserve        = []() -> sl::index { return -1; },
              .do_wait_loading = []() -> bool { return false; },
              .do_loading = [](span_cbyte) {},
              .do_apply   = [](span_cbyte) -> sl::time { return 0; },
              .do_perform  = [](span_cbyte) {},
              .do_schedule = [](sl::time) {},
+             .do_setup    = []() {},
              .do_cleanup  = []() {} };
   }
 }

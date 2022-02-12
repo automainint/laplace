@@ -13,10 +13,9 @@
 #include "udp_ipv4_node.h"
 
 namespace laplace::network {
-  using std::unique_ptr, std::make_unique;
+  using std::unique_ptr, std::string_view, std::make_unique;
 
-  auto udp_ipv4::open(uint16_t port) noexcept
-      -> unique_ptr<node> {
+  auto udp_ipv4::open(uint16_t port) noexcept -> unique_ptr<node> {
     return make_unique<udp_ipv4_node>(port);
   }
 }

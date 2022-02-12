@@ -8,13 +8,38 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_interface_protocol_h
-#define laplace_network_interface_protocol_h
+#ifndef LAPLACE_NETWORK_INTERFACE_PROTOCOL_H
+#define LAPLACE_NETWORK_INTERFACE_PROTOCOL_H
 
 #include "../defs.h"
 
 namespace laplace::network {
-  enum class cipher { plain, rabbit };
+  enum class cipher { undefined, plain, rabbit };
+
+  enum class control {
+    undefined,
+    request_events,
+    request_token,
+    session_request,
+    session_response,
+    session_token,
+    ping_request,
+    ping_response,
+    server_heartbeat,
+    server_init,
+    server_loading,
+    server_action,
+    server_pause,
+    server_reserve,
+    server_clock,
+    server_seed,
+    server_quit,
+    client_enter,
+    client_leave,
+    client_ready,
+    slot_create,
+    slot_remove,
+  };
 
   struct heartbeat {
     sl::index index = 0;
@@ -32,6 +57,8 @@ namespace laplace::network {
   using fn_is_allowed = std::function<bool(span_cbyte, bool)>;
   using fn_alter_slot_create_flag =
       std::function<void(span_byte, sl::index)>;
+  using fn_get_control_id = std::function<control(span_cbyte)>;
+  using fn_get_cipher_id  = std::function<cipher(span_cbyte)>;
 
   using fn_decode_request_events =
       std::function<sl::vector<sl::index>(span_cbyte)>;
@@ -47,7 +74,6 @@ namespace laplace::network {
 
   using fn_encode_request_events =
       std::function<vbyte(std::span<sl::index const>)>;
-  using fn_encode_request_token = std::function<vbyte()>;
   using fn_encode_session_request =
       std::function<vbyte(cipher, span_cbyte)>;
   using fn_encode_session_response =
@@ -56,37 +82,9 @@ namespace laplace::network {
   using fn_encode_ping_request     = std::function<vbyte(sl::time)>;
   using fn_encode_ping_response    = std::function<vbyte(span_cbyte)>;
   using fn_encode_server_heartbeat = std::function<vbyte(heartbeat)>;
-  using fn_encode_server_init      = std::function<vbyte()>;
   using fn_encode_server_clock     = std::function<vbyte(sl::time)>;
   using fn_encode_server_seed      = std::function<vbyte(uint64_t)>;
-  using fn_encode_server_quit      = std::function<vbyte()>;
-  using fn_encode_client_enter     = std::function<vbyte()>;
-  using fn_encode_client_leave     = std::function<vbyte()>;
-  using fn_encode_slot_create      = std::function<vbyte()>;
-  using fn_encode_slot_remove      = std::function<vbyte()>;
-
-  using fn_scan_cipher = std::function<bool(cipher, span_cbyte)>;
-  using fn_scan_request_events   = std::function<bool(span_cbyte)>;
-  using fn_scan_request_token    = std::function<bool(span_cbyte)>;
-  using fn_scan_session_request  = std::function<bool(span_cbyte)>;
-  using fn_scan_session_response = std::function<bool(span_cbyte)>;
-  using fn_scan_session_token    = std::function<bool(span_cbyte)>;
-  using fn_scan_ping_request     = std::function<bool(span_cbyte)>;
-  using fn_scan_ping_response    = std::function<bool(span_cbyte)>;
-  using fn_scan_server_heartbeat = std::function<bool(span_cbyte)>;
-  using fn_scan_server_init      = std::function<bool(span_cbyte)>;
-  using fn_scan_server_loading   = std::function<bool(span_cbyte)>;
-  using fn_scan_server_action    = std::function<bool(span_cbyte)>;
-  using fn_scan_server_pause     = std::function<bool(span_cbyte)>;
-  using fn_scan_server_reserve   = std::function<bool(span_cbyte)>;
-  using fn_scan_server_clock     = std::function<bool(span_cbyte)>;
-  using fn_scan_server_seed      = std::function<bool(span_cbyte)>;
-  using fn_scan_server_quit      = std::function<bool(span_cbyte)>;
-  using fn_scan_client_enter     = std::function<bool(span_cbyte)>;
-  using fn_scan_client_leave     = std::function<bool(span_cbyte)>;
-  using fn_scan_client_ready     = std::function<bool(span_cbyte)>;
-  using fn_scan_slot_create      = std::function<bool(span_cbyte)>;
-  using fn_scan_slot_remove      = std::function<bool(span_cbyte)>;
+  using fn_encode                  = std::function<vbyte(control)>;
 
   struct protocol_interface {
     fn_get_request_events_limit get_request_events_limit;
@@ -97,6 +95,8 @@ namespace laplace::network {
     fn_set_event_actor          set_event_actor;
     fn_is_allowed               is_allowed;
     fn_alter_slot_create_flag   alter_slot_create_flag;
+    fn_get_control_id           get_control_id;
+    fn_get_cipher_id            get_cipher_id;
 
     fn_decode_request_events        decode_request_events;
     fn_decode_public_key            decode_public_key;
@@ -107,44 +107,15 @@ namespace laplace::network {
     fn_decode_server_clock          decode_server_clock;
 
     fn_encode_request_events   encode_request_events;
-    fn_encode_request_token    encode_request_token;
     fn_encode_session_request  encode_session_request;
     fn_encode_session_response encode_session_response;
     fn_encode_session_token    encode_session_token;
     fn_encode_ping_request     encode_ping_request;
     fn_encode_ping_response    encode_ping_response;
     fn_encode_server_heartbeat encode_server_heartbeat;
-    fn_encode_server_init      encode_server_init;
     fn_encode_server_clock     encode_server_clock;
     fn_encode_server_seed      encode_server_seed;
-    fn_encode_server_quit      encode_server_quit;
-    fn_encode_client_enter     encode_client_enter;
-    fn_encode_client_leave     encode_client_leave;
-    fn_encode_slot_create      encode_slot_create;
-    fn_encode_slot_remove      encode_slot_remove;
-
-    fn_scan_request_events   scan_request_events;
-    fn_scan_request_token    scan_request_token;
-    fn_scan_session_request  scan_session_request;
-    fn_scan_session_response scan_session_response;
-    fn_scan_session_token    scan_session_token;
-    fn_scan_cipher           scan_cipher;
-    fn_scan_ping_request     scan_ping_request;
-    fn_scan_ping_response    scan_ping_response;
-    fn_scan_server_heartbeat scan_server_heartbeat;
-    fn_scan_server_init      scan_server_init;
-    fn_scan_server_loading   scan_server_loading;
-    fn_scan_server_action    scan_server_action;
-    fn_scan_server_pause     scan_server_pause;
-    fn_scan_server_reserve   scan_server_reserve;
-    fn_scan_server_clock     scan_server_clock;
-    fn_scan_server_seed      scan_server_seed;
-    fn_scan_server_quit      scan_server_quit;
-    fn_scan_client_enter     scan_client_enter;
-    fn_scan_client_leave     scan_client_leave;
-    fn_scan_client_ready     scan_client_ready;
-    fn_scan_slot_create      scan_slot_create;
-    fn_scan_slot_remove      scan_slot_remove;
+    fn_encode                  encode;
   };
 
   [[nodiscard]] auto check_protocol_interface(
