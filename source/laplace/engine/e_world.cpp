@@ -401,7 +401,7 @@ namespace laplace::engine {
 
   void world::locked_desync() noexcept {
     m_desync = true;
-    verb(" :: DESYNC");
+    log(log_event::fatal, "Desync.", "Engine/World");
   }
 
   void world::locked_add_dynamic(sl::index id) noexcept {

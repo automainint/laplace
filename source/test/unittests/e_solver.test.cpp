@@ -24,7 +24,7 @@ namespace laplace::test {
   }
 
   TEST(engine, solver_no_event) {
-    setup_log([](string_view) {});
+    disable_log();
     auto sol             = solver {};
     bool event_performed = false;
     sol.on_decode(
@@ -54,7 +54,7 @@ namespace laplace::test {
   }
 
   TEST(engine, solver_invalid_event_time) {
-    setup_log([](string_view) {});
+    disable_log();
     auto sol          = solver {};
     bool event_queued = false;
     sol.on_decode(
@@ -123,7 +123,7 @@ namespace laplace::test {
   }
 
   TEST(engine, solver_schedule_invalid_time) {
-    setup_log([](string_view) {});
+    disable_log();
     auto sol          = solver {};
     auto time_elapsed = sl::time {};
     sol.on_schedule([&](sl::time delta) { time_elapsed += delta; });

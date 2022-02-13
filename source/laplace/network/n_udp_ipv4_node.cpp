@@ -46,7 +46,8 @@ namespace laplace::network {
                          sizeof name);
 
     if (status == -1) {
-      verb(fmt("UDPv4: bind failed (code %d).", socket_error()));
+      verb(fmt("bind failed (code %d).", socket_error()),
+           "Network/UDPv4");
       return;
     }
 
@@ -59,8 +60,8 @@ namespace laplace::network {
 
     if (::getsockname(m_socket, reinterpret_cast<::sockaddr *>(&name),
                       &len) == -1) {
-      verb(fmt("UDPv4: getsockname failed (code %d).",
-               socket_error()));
+      verb(fmt("getsockname failed (code %d).", socket_error()),
+           "Network/UDPv4");
       socket_close(m_socket);
       m_socket = -1;
       return;
@@ -89,8 +90,9 @@ namespace laplace::network {
       return received;
 
     if (received != -1) {
-      verb(fmt("UDPv4: Unknown recvfrom return value %d (code %d).",
-               received, socket_error()));
+      verb(fmt("Unknown recvfrom return value %d (code %d).",
+               received, socket_error()),
+           "Network/UDPv4");
       return 0;
     }
 
@@ -99,7 +101,8 @@ namespace laplace::network {
     else if (socket_error() == socket_connreset())
       m_is_connreset = true;
     else if (socket_error() != socket_wouldblock())
-      verb(fmt("UDPv4: recvfrom failed (code %d).", socket_error()));
+      verb(fmt("recvfrom failed (code %d).", socket_error()),
+           "Network/UDPv4");
 
     return 0;
   }
@@ -118,7 +121,8 @@ namespace laplace::network {
                                     &name.sin_addr.s_addr);
 
     if (status != 1) {
-      verb(fmt("UDPv4: inet_pton failed (code %d).", socket_error()));
+      verb(fmt("inet_pton failed (code %d).", socket_error()),
+           "Network/UDPv4");
       return 0;
     }
 
@@ -151,12 +155,14 @@ namespace laplace::network {
     m_socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
     if (m_socket == -1) {
-      verb(fmt("UDPv4: socket failed (code %d).", socket_error()));
+      verb(fmt("socket failed (code %d).", socket_error()),
+           "Network/UDPv4");
       return;
     }
 
     if (socket_set_nonblocking(m_socket) != 0) {
-      verb(fmt("UDPv4: fcntl failed (code %d).", socket_error()));
+      verb(fmt("fcntl failed (code %d).", socket_error()),
+           "Network/UDPv4");
       socket_close(m_socket);
       m_socket = -1;
     }
@@ -181,8 +187,9 @@ namespace laplace::network {
       return sent;
 
     if (sent != -1) {
-      verb(fmt("UDPv4: Unknown sendto return value %d (code %d).",
-               sent, socket_error()));
+      verb(fmt("Unknown sendto return value %d (code %d).", sent,
+               socket_error()),
+           "Network/UDPv4");
       return 0;
     }
 
@@ -191,9 +198,10 @@ namespace laplace::network {
     else if (socket_error() == socket_connreset())
       m_is_connreset = true;
     else if (socket_error() == socket_wouldblock())
-      verb(fmt("UDPv4: sendto blocking."));
+      verb(fmt("sendto blocking."), "Network/UDPv4");
     else
-      verb(fmt("UDPv4: sendto failed (code %d).", socket_error()));
+      verb(fmt("sendto failed (code %d).", socket_error()),
+           "Network/UDPv4");
 
     return 0;
   }

@@ -1,6 +1,4 @@
-/*  laplace/network/crypto/nc_stream_cipher.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -19,11 +17,10 @@
 namespace laplace::network::crypto {
   using std::min, std::tuple, std::span, serial::rd, serial::wr;
 
-  const sl::whole stream_cipher::block_size        = 64;
-  const sl::whole stream_cipher::max_offset_change = 10000;
+  sl::whole const stream_cipher::block_size        = 64;
+  sl::whole const stream_cipher::max_offset_change = 10000;
 
   auto stream_cipher::encrypt(span_cbyte bytes) -> vbyte {
-
     uint8_t block[block_size] = {};
 
     auto buf = vbyte {};
@@ -59,7 +56,6 @@ namespace laplace::network::crypto {
   }
 
   auto stream_cipher::decrypt(span_cbyte bytes) -> vbyte {
-
     reset_loss_count();
 
     uint8_t block[block_size] = {};
@@ -68,8 +64,10 @@ namespace laplace::network::crypto {
     auto n   = sl::index {};
 
     while (n < bytes.size()) {
-      const auto offset = as_index(rd<uint64_t>(bytes, n + n_offset), -1, true);
-      const auto size   = as_index(rd<uint64_t>(bytes, n + n_size), -1, true);
+      auto const offset = as_index(rd<uint64_t>(bytes, n + n_offset),
+                                   -1, true);
+      auto const size = as_index(rd<uint64_t>(bytes, n + n_size), -1,
+                                 true);
 
       if (offset >= 0 && size >= 0 &&
           scan({ bytes.begin() + n, bytes.end() })) {
@@ -147,28 +145,18 @@ namespace laplace::network::crypto {
   }
 
   auto stream_cipher::scan(span_cbyte data) const -> bool {
-    const auto offset = rd<uint64_t>(data, n_offset);
-    const auto sum    = rd<uint64_t>(data, n_sum);
-    const auto size   = rd<uint64_t>(data, n_size);
+    auto const offset = rd<uint64_t>(data, n_offset);
+    auto const sum    = rd<uint64_t>(data, n_sum);
+    auto const size   = rd<uint64_t>(data, n_size);
 
-    if (offset > m_dec_offset + max_offset_change) {
+    if (offset > m_dec_offset + max_offset_change ||
+        m_dec_offset > offset + max_offset_change ||
+        block_size + n_data > data.size() || size > block_size)
       return false;
-    }
-
-    if (m_dec_offset > offset + max_offset_change) {
-      return false;
-    }
-
-    if (block_size + n_data > data.size()) {
-      return false;
-    }
-
-    if (size > block_size) {
-      return false;
-    }
 
     if (sum != transfer::check_sum({ data.data() + n_data, size })) {
-      verb_error("Stream cipher", "Wrong check sum.");
+      log(log_event::warning, "Wrong check sum.",
+          "Network/Crypto/Stream Cipher");
       return false;
     }
 

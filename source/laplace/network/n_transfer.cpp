@@ -170,7 +170,7 @@ namespace laplace::network {
         check_sum({ data.data() + n_data,
                     static_cast<span_cbyte::size_type>(size) })) {
       if (m_verbose)
-        verb("Transfer: Wrong check sum.");
+        verb("Wrong check sum.", "Network/Transfer");
       return 0;
     }
 

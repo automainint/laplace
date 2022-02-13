@@ -29,7 +29,7 @@ namespace laplace::test {
   }
 
   TEST(core, input_handler_wheel_state) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto wheel = input_event { .key = keys::key_wheel, .delta = 123 };
     auto key   = input_event { .key = keys::key_space, .delta = 123 };

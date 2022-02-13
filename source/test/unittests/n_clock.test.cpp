@@ -33,7 +33,7 @@ namespace laplace::test {
   }
 
   TEST(network, clock_options_invalid) {
-    setup_log([](string_view) {});
+    disable_log();
     auto clo = clock {};
     clo.set_tick_duration(0);
     clo.set_latency(-1);

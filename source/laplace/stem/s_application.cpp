@@ -271,7 +271,8 @@ namespace laplace::stem {
 
   auto application::open(wstring_view file_name) noexcept
       -> unique_ptr<istream> {
-    verb(fmt("Load: '%s'", to_string(file_name).c_str()));
+    verb(fmt("Load: '%s'", to_string(file_name).c_str()),
+         "Stem/Application");
 
     if (embedded::scan(file_name))
       return make_unique<ibytestream>(embedded::open(file_name));

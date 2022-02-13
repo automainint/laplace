@@ -100,7 +100,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_factory_parse) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto const fac = basic_factory {};
 
@@ -119,7 +119,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_factory_print_1) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto const fac = basic_factory {};
 
@@ -130,7 +130,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_factory_print_2) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto const fac = basic_factory {};
     auto       seq = vbyte(1);
@@ -141,7 +141,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_factory_print_3) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto const fac = basic_factory {};
 

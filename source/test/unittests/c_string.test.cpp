@@ -15,7 +15,7 @@ namespace laplace::test {
   using std::string_view;
 
   TEST(core, string_hex_to_int) {
-    setup_log([](string_view) {});
+    disable_log();
 
     EXPECT_EQ(hex_to_int('X'), 0);
     EXPECT_EQ(hex_to_int('0'), 0);
@@ -93,7 +93,7 @@ namespace laplace::test {
   }
 
   TEST(core, string_int_to_hex) {
-    setup_log([](string_view) {});
+    disable_log();
 
     for (int i = 0; i <= 15; i++)
       EXPECT_EQ(hex_to_int(int_to_hex(i)), i);

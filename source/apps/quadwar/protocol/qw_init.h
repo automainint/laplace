@@ -18,7 +18,7 @@
 
 namespace quadwar_app::protocol {
   using init_lambda = decltype([](world w) {
-    verb(" :: event  Quadwar/server_init");
+    verb(" :: event  Quadwar/server_init", "Quadwar");
 
     object::root::create(w);
   });

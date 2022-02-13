@@ -69,7 +69,7 @@ namespace laplace::test {
   }
 
   TEST(core, small_vector_at_fail_1) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto v = small_vector<int, 80, false> {};
     EXPECT_EQ(v.at(-1), 0);
@@ -78,7 +78,7 @@ namespace laplace::test {
     setup_log({});
   }
   TEST(core, small_vector_at_fail_2) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto const v = small_vector<int, 80, false> {};
     EXPECT_EQ(v.at(-1), 0);
@@ -292,7 +292,7 @@ namespace laplace::test {
   }
 
   TEST(core, small_vector_reserve_fail) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto v = small_vector<int, 80, false> {};
     v.reserve(-1);
@@ -335,7 +335,7 @@ namespace laplace::test {
   }
 
   TEST(core, small_vector_insert_invalid_1) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto v = small_vector<int, 80, false> {};
     v.insert(v.begin() - 1, 10);
@@ -346,7 +346,7 @@ namespace laplace::test {
   }
 
   TEST(core, small_vector_insert_invalid_2) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto v = small_vector<int, 80, false> {};
     auto x = small_vector<int, 80, false> {};
@@ -471,7 +471,7 @@ namespace laplace::test {
   }
 
   TEST(core, small_vector_erase_fail) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto v = small_vector<int, 80, false> { 1, 2, 3, 4, 5 };
     v.erase(v.begin() - 1);
@@ -490,7 +490,7 @@ namespace laplace::test {
   }
 
   TEST(core, small_vector_erase_range_fail) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto v = small_vector<int, 80, false> { 1, 2, 3, 4, 5 };
     v.erase(v.begin() + 1, v.begin());

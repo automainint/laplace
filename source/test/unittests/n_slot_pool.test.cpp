@@ -27,7 +27,7 @@ namespace laplace::test {
   }
 
   TEST(network, slot_pool_log) {
-    setup_log([](string_view) {});
+    disable_log();
     auto pool = slot_pool {};
     pool.set_log_interface(network::blank_log_interface());
     pool.set_log_interface(network::log_interface {});

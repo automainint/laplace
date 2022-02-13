@@ -15,7 +15,8 @@
 #include "../platform/gldef.h"
 
 namespace laplace::graphics {
-  using std::string_view, std::string, std::istringstream, std::vector;
+  using std::string_view, std::string, std::istringstream,
+      std::vector;
 
   using namespace gl;
 
@@ -128,8 +129,8 @@ namespace laplace::graphics {
       p.emplace_back(source[i].c_str());
     }
 
-    glShaderSource(
-        shader, static_cast<GLsizei>(p.size()), p.data(), nullptr);
+    glShaderSource(shader, static_cast<GLsizei>(p.size()), p.data(),
+                   nullptr);
 
     glCompileShader(shader);
 
@@ -150,7 +151,7 @@ namespace laplace::graphics {
     string info_log(static_cast<size_t>(length), '\0');
     glGetProgramInfoLog(m_id, length, &length, &info_log[0]);
     info_log.resize(static_cast<size_t>(length));
-    log(info_log);
+    verb(info_log, "Graphics/Program");
   }
 
   void program::log_shader(uint32_t shader) {
@@ -159,6 +160,6 @@ namespace laplace::graphics {
     string info_log(static_cast<size_t>(length), '\0');
     glGetShaderInfoLog(shader, length, &length, &info_log[0]);
     info_log.resize(static_cast<size_t>(length));
-    log(info_log);
+    verb(info_log, "Graphics/Program");
   }
 }

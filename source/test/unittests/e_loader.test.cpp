@@ -24,7 +24,7 @@ namespace laplace::test {
   }
 
   TEST(engine, loader_invalid_context_1) {
-    setup_log([](string_view) {});
+    disable_log();
     auto l = loader {};
     l.add_task({});
     sleep_for(milliseconds { 10 });
@@ -33,7 +33,7 @@ namespace laplace::test {
   }
 
   TEST(engine, loader_invalid_context_2) {
-    setup_log([](string_view) {});
+    disable_log();
     auto l = loader {};
     l.on_decode([](span_cbyte) -> ptr_prime_impact { return {}; });
     l.add_task({});
@@ -43,7 +43,7 @@ namespace laplace::test {
   }
 
   TEST(engine, loader_invalid_context_3) {
-    setup_log([](string_view) {});
+    disable_log();
     auto l = loader {};
     l.on_perform([](ptr_prime_impact const &) {});
     l.add_task({});
@@ -89,7 +89,7 @@ namespace laplace::test {
     prime_impact *task           = nullptr;
 
     l.on_decode([&](span_cbyte) -> ptr_prime_impact {
-      auto _ul = unique_lock(_mtx);
+      auto _ul      = unique_lock(_mtx);
       decode_called = true;
       auto p        = make_unique<prime_impact>();
       task          = p.get();
@@ -97,7 +97,7 @@ namespace laplace::test {
     });
 
     l.on_perform([&](ptr_prime_impact const &p) {
-      auto _ul = unique_lock(_mtx);
+      auto _ul       = unique_lock(_mtx);
       task_match     = p.get() == task;
       perform_called = true;
     });

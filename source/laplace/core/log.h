@@ -17,25 +17,33 @@
 #include <string>
 
 namespace laplace {
-  using fn_log = std::function<void(std::string_view)>;
+  enum class log_event { message, warning, error, fatal };
 
+  using fn_log = std::function<void(log_event, std::string_view,
+                                    std::string_view)>;
+
+  void disable_log() noexcept;
   void setup_log(fn_log const &write) noexcept;
   void set_verbose(bool is_verbose) noexcept;
   auto is_verbose() noexcept -> bool;
 
-  void log(std::string_view message) noexcept;
-  void log(std::u8string_view message) noexcept;
+  void log(log_event event, std::string_view message,
+           std::string_view origin) noexcept;
+  void log(log_event event, std::u8string_view message,
+           std::u8string_view origin) noexcept;
 
-  void verb(std::string_view message) noexcept;
-  void verb(std::u8string_view message) noexcept;
+  void verb(std::string_view message,
+            std::string_view origin) noexcept;
+  void verb(std::u8string_view message,
+            std::u8string_view origin) noexcept;
 
   /*  TODO
    *  Use source_location.
    */
   void error_(std::string_view message,
-              std::string_view loc) noexcept;
+              std::string_view origin) noexcept;
   void error_(std::u8string_view message,
-              std::string_view   loc) noexcept;
+              std::u8string_view origin) noexcept;
 }
 
 #endif

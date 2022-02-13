@@ -84,7 +84,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_dummy) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity { basic_entity::dummy };
 
@@ -123,7 +123,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_init) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = my_entity {};
     e.do_init();
@@ -171,7 +171,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_get) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity { basic_entity::proto };
 
@@ -186,7 +186,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_set) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity { basic_entity::proto };
 
@@ -200,7 +200,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_apply_delta) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity { basic_entity::proto };
 
@@ -231,7 +231,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_endity_id_of) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity { basic_entity::proto };
 
@@ -249,7 +249,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_scale_of) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity { basic_entity::proto };
 
@@ -265,7 +265,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_desync) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = make_shared<my_entity>();
     auto w = make_shared<world>();
@@ -289,7 +289,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_bytes_1) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity {};
 
@@ -499,7 +499,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_bytes_12) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity {};
 
@@ -523,7 +523,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_bytes_13) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity {};
     e.bytes_resize(-1);
@@ -538,7 +538,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_2) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity {};
     e.vec_resize(1);
@@ -571,7 +571,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_4) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity {};
     e.vec_resize(3);
@@ -595,7 +595,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_5) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity {};
     e.vec_resize(1);
@@ -629,7 +629,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_7) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity {};
     e.vec_resize(5);
@@ -655,7 +655,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_9) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity {};
     e.vec_resize(5);
@@ -695,7 +695,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_12) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity {};
     e.vec_resize(5);
@@ -722,7 +722,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_14) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity {};
     e.vec_resize(5);
@@ -734,7 +734,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_15) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = basic_entity {};
     e.vec_resize(-1);
@@ -788,7 +788,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_insert_1) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto         e      = basic_entity {};
     intval const buf[3] = { 1, 2, 3 };
@@ -799,7 +799,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_insert_2) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto         e      = basic_entity {};
     intval const buf[3] = { 1, 2, 3 };
@@ -835,7 +835,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_erase_1) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto         e      = basic_entity {};
     intval const buf[6] = { 1, 2, 3, 4, 5, 6 };
@@ -922,7 +922,7 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_deadlocks) {
-    setup_log([](string_view) {});
+    disable_log();
 
     auto e = my_entity {};
     e.lock();

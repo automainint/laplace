@@ -101,7 +101,7 @@ namespace quadwar_app {
           m_on_done();
 
       } else {
-        verb("Session: Trying to reconnect...");
+        verb("Trying to reconnect...", "Quadwar/Session");
 
         m_server->reconnect();
 
@@ -227,7 +227,7 @@ namespace quadwar_app {
     if (!f)
       return string { default_address };
 
-    verb(fmt("Host port found: %hu", port));
+    verb(fmt("Host port found: %hu", port), "Quadwar/Session");
     return fmt("127.0.0.1:%hu", port);
   }
 

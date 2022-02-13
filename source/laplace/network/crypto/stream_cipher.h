@@ -1,6 +1,4 @@
-/*  laplace/network/crypto/stream_cipher.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_crypto_stream_cipher_h
-#define laplace_network_crypto_stream_cipher_h
+#ifndef LAPALCE_NETWORK_CRYPTO_STREAM_CIPHER_H
+#define LAPALCE_NETWORK_CRYPTO_STREAM_CIPHER_H
 
 #include "basic_cipher.h"
 #include <tuple>
@@ -48,8 +46,8 @@ namespace laplace::network::crypto {
       n_data   = 24
     };
 
-    static const sl::whole block_size;
-    static const sl::whole max_offset_change;
+    static sl::whole const block_size;
+    static sl::whole const max_offset_change;
 
     sl::index m_enc_offset = 0;
     sl::index m_dec_offset = 0;

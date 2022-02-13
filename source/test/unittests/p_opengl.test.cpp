@@ -28,7 +28,7 @@ namespace laplace::test {
   }
 
   TEST(platform, opengl_load_functions) {
-    setup_log([](std::string_view) {});
+    disable_log();
     EXPECT_FALSE(gl::load_functions());
     setup_log({});
   }

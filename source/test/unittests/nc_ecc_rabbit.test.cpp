@@ -87,8 +87,6 @@ namespace laplace::test {
 
     for (sl::index i = 0; i < test_count; i++) {
       ecc_rabbit alice, bob;
-      alice.set_verbose(true);
-      bob.set_verbose(true);
 
       alice.set_remote_key(bob.get_public_key());
       bob.set_remote_key(alice.get_public_key());

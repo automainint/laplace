@@ -52,7 +52,7 @@ namespace quadwar_app::protocol {
     }
 
     inline void perform(world w) const noexcept final {
-      verb(" :: event  Quadwar/player_name");
+      verb(" :: event  Quadwar/player_name", "Quadwar");
 
       auto const id_actor = get_actor();
       auto const id_root  = w.get_root();

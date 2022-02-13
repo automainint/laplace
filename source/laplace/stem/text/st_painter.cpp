@@ -33,7 +33,7 @@ namespace laplace::stem::text {
     auto p = m_default.lock();
 
     if (!p) {
-      verb("Init default LCD font.");
+      verb("Init default LCD font.", "Stem/Text/Painter");
 
       auto lcd_font = make_shared<lcd>();
 

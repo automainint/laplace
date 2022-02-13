@@ -171,7 +171,9 @@ namespace laplace::stem::config {
           } else if (strcmp(name, a_frame) == 0) {
             arg += read_frame_size(arg + 1, end, cfg);
           } else {
-            log(fmt("Unknown command line argument '%s'.", tag));
+            log(log_event::warning,
+                fmt("Unknown command line argument '%s'.", tag),
+                "Stem/Config");
           }
         } else {
           for (auto i = 1; tag[i]; i++) {
@@ -189,14 +191,18 @@ namespace laplace::stem::config {
             } else if (tag[i] == f_frame) {
               arg += read_frame_size(arg + 1, end, cfg);
             } else {
-              log(fmt("Unknown command line flag '%c' in argument "
+              log(log_event::warning,
+                  fmt("Unknown command line flag '%c' in argument "
                       "'%s'.",
-                      tag[i], tag));
+                      tag[i], tag),
+                  "Stem/Config");
             }
           }
         }
       } else {
-        log(fmt("Command line argument '%s' ignored.", tag));
+        log(log_event::warning,
+            fmt("Command line argument '%s' ignored.", tag),
+            "Stem/Config");
       }
 
       return arg + 1;
