@@ -16,7 +16,7 @@ namespace laplace::test {
   using core::static_shaffle;
 
   TEST(core, static_shaffle_constexpr) {
-    constexpr auto x = static_shaffle({ 0, 256, 1 });
+    constexpr auto x = static_shaffle<0, 256>(1);
 
     EXPECT_NE(x[0], x[1]);
     EXPECT_NE(x[0], x[2]);
@@ -39,8 +39,8 @@ namespace laplace::test {
   TEST(core, static_shaffle_runtime) {
     auto dev = std::random_device {};
 
-    for (unsigned k = 0; k < 5; k++) {
-      auto x = static_shaffle({ 0, 256, dev() });
+    for (unsigned k = 0; k < 20; k++) {
+      auto x = static_shaffle<0, 256>(dev());
 
       for (unsigned n = 0; n < 100; n++) {
         EXPECT_TRUE(n == 1 || x[n] != x[1]);

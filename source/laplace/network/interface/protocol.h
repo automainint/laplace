@@ -17,8 +17,7 @@
 namespace laplace::network {
   enum class cipher { undefined, plain, rabbit };
 
-  static constexpr auto _id = core::static_shaffle(
-      { .begin = 0, .end = 64, .seed = 0 });
+  static constexpr auto _id = core::static_shaffle<0, 64>(1);
 
   enum class control {
     undefined        = _id[0],

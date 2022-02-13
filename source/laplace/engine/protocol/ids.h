@@ -16,8 +16,7 @@
 namespace laplace::engine::protocol::ids {
   enum cipher_id : uint16_t { cipher_plain, cipher_ecc_rabbit };
 
-  static constexpr auto _id = core::static_shaffle(
-      { .begin = 0, .end = 64, .seed = 1 });
+  static constexpr auto _id = core::static_shaffle<0, 64>(2);
 
   enum command_id : uint16_t {
     undefined = _id[0],

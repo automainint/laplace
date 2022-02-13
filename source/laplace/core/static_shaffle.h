@@ -8,19 +8,16 @@
  *  the MIT License for more details.
  */
 
-#ifndef LAPLACE_CORE_STATIC_RANDOM_H
-#define LAPLACE_CORE_STATIC_RANDOM_H
+#ifndef LAPLACE_CORE_STATIC_SHAFFLE_H
+#define LAPLACE_CORE_STATIC_SHAFFLE_H
 
-#include "defs.h"
+#include "static_random.h"
 
 namespace laplace::core {
+  template <uint64_t begin_, uint64_t end_>
   class static_shaffle {
   public:
-    struct _init {
-      uint64_t begin;
-      uint64_t end;
-      uint64_t seed;
-    };
+    static_assert(begin_ < end_);
 
     static_shaffle(static_shaffle const &) noexcept = default;
     static_shaffle(static_shaffle &&) noexcept      = default;
@@ -28,7 +25,8 @@ namespace laplace::core {
         default;
     static_shaffle &operator=(static_shaffle &&) noexcept = default;
 
-    explicit constexpr static_shaffle(_init init) noexcept;
+    explicit constexpr static_shaffle(uint64_t seed) noexcept;
+    ~static_shaffle() noexcept = default;
 
     [[nodiscard]] constexpr auto operator[](uint64_t n) const noexcept
         -> uint64_t;
@@ -37,22 +35,7 @@ namespace laplace::core {
         -> uint64_t;
 
   private:
-    struct _pair {
-      uint64_t x, z;
-    };
-
-    [[nodiscard]] static constexpr auto splitmix64(
-        uint64_t x) noexcept -> _pair;
-    [[nodiscard]] static constexpr auto rotl(uint64_t x,
-                                             int      k) noexcept
-        -> uint64_t;
-
-    constexpr auto gen() noexcept -> uint64_t;
-
-    uint64_t m_begin    = 0;
-    uint64_t m_end      = 65536;
-    uint64_t m_seed     = 0;
-    uint64_t m_state[2] = { 1, 2 };
+    uint64_t m_values[end_ - begin_] = {};
   };
 }
 
