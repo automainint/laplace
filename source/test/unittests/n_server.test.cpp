@@ -86,4 +86,8 @@ namespace laplace::test {
 
     EXPECT_TRUE(received > 3 && buf[0] == 2);
   }
+  
+  TEST(server, session_response) {
+    
+  }
 }

@@ -6,6 +6,8 @@ def get_subdirs(folder: str):
   dirs = list()
   for f in glob.glob(os.path.join(folder, '*', '')):
     dirs.append(os.path.basename(os.path.normpath(f)))
+  for f in glob.glob(os.path.join(folder, '.*', '')):
+    dirs.append(os.path.basename(os.path.normpath(f)))
   return dirs
 
 def get_files(folder: str, ext: str):
@@ -41,6 +43,13 @@ def print_sources(folder: str, target_name: str):
   buf = ''
   srcs = get_files(folder, '*.cpp')
   hdrs = get_files(folder, '*.h')
+  embedded = 'laplace_embedded.cpp'
+  if embedded in srcs:
+    buf += 'if(LAPLACE_ENABLE_EMBEDDED)\n'
+    buf += '  target_sources(' + target_name
+    buf += ' PRIVATE ' + embedded + ')\n'
+    buf += 'endif()\n'
+    srcs.remove(embedded)
   if len(srcs) > 0 or len(hdrs) > 0:
     buf += 'target_sources(\n  ' + target_name
     if len(srcs) > 0:
@@ -52,19 +61,68 @@ def print_sources(folder: str, target_name: str):
 
 def print_subdirs(folder: str):
   buf = ''
+  dir = os.path.basename(folder)
   dirs = get_subdirs(folder)
   for f in dirs:
     if check_subdirs(os.path.join(folder, f)):
-      if f == 'win32':
-        buf += 'if(WIN32)\n'
-        buf += '  add_subdirectory(' + f + ')\n'
-        buf += 'endif()\n'
-      elif f == 'linux':
+      if dir == 'platform' and f == 'linux':
         buf += 'if(UNIX AND (NOT APPLE))\n'
         buf += '  add_subdirectory(' + f + ')\n'
         buf += 'endif()\n'
-      elif f == 'macos':
+      elif dir == 'platform' and f == 'win32':
+        buf += 'if(WIN32)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif dir == 'platform' and f == 'macos':
         buf += 'if(APPLE)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif dir == 'laplace' and f == 'core':
+        buf += 'if(LAPLACE_ENABLE_CORE)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif dir == 'laplace' and f == 'coroutine':
+        buf += 'if(LAPLACE_ENABLE_COROUTINE)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif dir == 'laplace' and f == 'math':
+        buf += 'if(LAPLACE_ENABLE_MATH)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif dir == 'laplace' and f == 'engine':
+        buf += 'if(LAPLACE_ENABLE_ENGINE)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif dir == 'laplace' and f == 'network':
+        buf += 'if(LAPLACE_ENABLE_NETWORK)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif dir == 'laplace' and f == 'format':
+        buf += 'if(LAPLACE_ENABLE_FORMAT)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif dir == 'laplace' and f == 'ui':
+        buf += 'if(LAPLACE_ENABLE_UI)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif dir == 'laplace' and f == 'platform':
+        buf += 'if(LAPLACE_ENABLE_PLATFORM)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif dir == 'laplace' and f == 'graphics':
+        buf += 'if(LAPLACE_ENABLE_GRAPHICS)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif dir == 'laplace' and f == 'render':
+        buf += 'if(LAPLACE_ENABLE_RENDER)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif dir == 'laplace' and f == 'stem':
+        buf += 'if(LAPLACE_ENABLE_STEM)\n'
+        buf += '  add_subdirectory(' + f + ')\n'
+        buf += 'endif()\n'
+      elif dir == '.generated' and f == 'gl':
+        buf += 'if(LAPLACE_ENABLE_OPENGL)\n'
         buf += '  add_subdirectory(' + f + ')\n'
         buf += 'endif()\n'
       else:

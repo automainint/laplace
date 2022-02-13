@@ -204,7 +204,7 @@ def main():
       else:
         enums.append(last_en)
 
-  folder = os.path.join('..', 'source', 'laplace', 'generated', 'gl')
+  folder = os.path.join('..', 'source', 'laplace', '.generated', 'gl')
   os.makedirs(folder, exist_ok=True)
 
   out = open(os.path.join(folder, 'types.h'), 'w')

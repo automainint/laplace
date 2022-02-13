@@ -1,1 +1,3 @@
-add_subdirectory(quadwar)
+if(LAPLACE_ENABLE_EXE)
+  add_subdirectory(quadwar)
+endif()

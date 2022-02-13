@@ -92,6 +92,7 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
     endmacro()
 
     laplace_add_test(core)
+    laplace_add_test(coroutine)
     laplace_add_test(math)
     laplace_add_test(engine)
     laplace_add_test(network)

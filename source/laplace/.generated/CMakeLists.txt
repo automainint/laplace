@@ -1,0 +1,6 @@
+if(LAPLACE_ENABLE_EMBEDDED)
+  target_sources(${LAPLACE_OBJ} PRIVATE laplace_embedded.cpp)
+endif()
+if(LAPLACE_ENABLE_OPENGL)
+  add_subdirectory(gl)
+endif()

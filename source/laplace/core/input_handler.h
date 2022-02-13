@@ -1,6 +1,4 @@
-/*  laplace/core/input_handler.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_core_input_handler_h
-#define laplace_core_input_handler_h
+#ifndef LAPLACE_CORE_INPUT_HANDLER_H
+#define LAPLACE_CORE_INPUT_HANDLER_H
 
 #include "defs.h"
 #include "keys.h"

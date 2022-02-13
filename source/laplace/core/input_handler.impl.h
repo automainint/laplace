@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_core_input_handler_impl_h
-#define laplace_core_input_handler_impl_h
+#ifndef LAPLACE_CORE_INPUT_HANDLER_IMPL_H
+#define LAPLACE_CORE_INPUT_HANDLER_IMPL_H
 
 namespace laplace::core {
   constexpr auto is_key_down(input_event const &ev) noexcept -> bool {
