@@ -8,6 +8,7 @@
  *  the MIT License for more details.
  */
 
+#include "../../laplace/core/serial.h"
 #include "../../laplace/network/crypto/ecc_rabbit.h"
 #include "../../laplace/network/pipe.h"
 #include "../../laplace/network/server.h"
@@ -49,12 +50,7 @@ namespace laplace::test {
     proto.encode_session_response = [&](uint16_t   port,
                                         span_cbyte key) {
       encode_session_response_called++;
-      auto v = vbyte {};
-      v.emplace_back(2);
-      v.emplace_back(port & 255u);
-      v.emplace_back((port >> 8u) & 255u);
-      v.insert(v.end(), key.begin(), key.end());
-      return v;
+      return serial::pack_to_bytes(uint8_t { 2 }, port, key);
     };
 
     auto io = make_shared<pipe>();
@@ -70,9 +66,7 @@ namespace laplace::test {
     tran.setup_cipher<ecc_rabbit>();
     auto key = tran.get_public_key();
 
-    auto req = vbyte {};
-    req.emplace_back(1);
-    req.insert(req.end(), key.begin(), key.end());
+    auto req = serial::pack_to_bytes(uint8_t { 1 }, key);
 
     auto reqs = sl::vector<span_cbyte> { span_cbyte { req.begin(),
                                                       req.end() } };
@@ -82,7 +76,7 @@ namespace laplace::test {
     alice.tick(1);
 
     uint8_t    buf[512] = {};
-    auto const n        = bob->receive(buf);
+    auto const received = bob->receive(buf);
 
     EXPECT_EQ(is_allowed_called, 1);
     EXPECT_EQ(get_control_id_called, 1);
@@ -90,6 +84,6 @@ namespace laplace::test {
     EXPECT_EQ(decode_public_key_called, 1);
     EXPECT_EQ(encode_session_response_called, 1);
 
-    EXPECT_TRUE(n > 3 && buf[0] == 2);
+    EXPECT_TRUE(received > 3 && buf[0] == 2);
   }
 }

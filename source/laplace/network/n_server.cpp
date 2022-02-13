@@ -48,9 +48,9 @@ namespace laplace::network {
 
   void server::set_max_slot_count(sl::whole count) noexcept { }
 
-  void server::listen(span<endpoint const> endpoints) noexcept {
+  void server::listen(span<endpoint_info const> endpoints) noexcept {
     for (auto &ep : endpoints)
-      m_endpoints.emplace_back<endpoint_internal>(
+      m_endpoints.emplace_back<endpoint>(
           { .io = ep.io, .node = ep.io->open(ep.port) });
   }
 
@@ -86,7 +86,7 @@ namespace laplace::network {
     for (auto &ep : m_endpoints) read_endpoint(ep);
   }
 
-  void server::read_endpoint(endpoint_internal const &ep) noexcept {
+  void server::read_endpoint(endpoint const &ep) noexcept {
     constexpr sl::whole chunk_size      = 2048;
     uint8_t             buf[chunk_size] = {};
 
@@ -94,13 +94,13 @@ namespace laplace::network {
         ep, m_tran.decode({ buf, buf + ep.node->receive(buf) }));
   }
 
-  void server::process_requests(endpoint_internal const &ep,
+  void server::process_requests(endpoint const   &ep,
                                 span<vbyte const> reqs) noexcept {
     for (auto &req : reqs) process_request(ep, req);
   }
 
-  void server::process_request(endpoint_internal const &ep,
-                               span_cbyte req) noexcept {
+  void server::process_request(endpoint const &ep,
+                               span_cbyte      req) noexcept {
     if (!m_proto.is_allowed(req, false))
       return;
 
@@ -110,8 +110,8 @@ namespace laplace::network {
     }
   }
 
-  void server::session_open(endpoint_internal const &ep,
-                            span_cbyte               req) noexcept {
+  void server::session_open(endpoint const &ep,
+                            span_cbyte      req) noexcept {
     auto session = ep.io->open(any_port);
     auto tran    = transfer {};
 

@@ -21,7 +21,7 @@
 namespace laplace::network {
   class server {
   public:
-    struct endpoint {
+    struct endpoint_info {
       ptr_io   io;
       uint16_t port;
     };
@@ -49,7 +49,7 @@ namespace laplace::network {
     void enable_encryption(bool is_enabled) noexcept;
     void set_max_slot_count(sl::whole count) noexcept;
 
-    void listen(std::span<endpoint const> endpoints) noexcept;
+    void listen(std::span<endpoint_info const> endpoints) noexcept;
     void connect(connect_info info) noexcept;
 
     void queue(span_cbyte seq) noexcept;
@@ -61,28 +61,26 @@ namespace laplace::network {
     [[nodiscard]] auto is_connected() const noexcept -> bool;
     [[nodiscard]] auto is_quit() const noexcept -> bool;
 
-    inline void listen(endpoint const &ep) noexcept {
+    inline void listen(endpoint_info const &ep) noexcept {
       this->listen({ &ep, 1 });
     }
 
   private:
-    struct endpoint_internal {
+    struct endpoint {
       ptr_io   io;
       ptr_node node;
     };
 
     void read_endpoints() noexcept;
-    void read_endpoint(endpoint_internal const &ep) noexcept;
-    void process_requests(endpoint_internal const &ep,
-                          std::span<vbyte const>   reqs) noexcept;
-    void process_request(endpoint_internal const &ep,
-                         span_cbyte               req) noexcept;
-    void session_open(endpoint_internal const &ep,
-                      span_cbyte               req) noexcept;
+    void read_endpoint(endpoint const &ep) noexcept;
+    void process_requests(endpoint const        &ep,
+                          std::span<vbyte const> reqs) noexcept;
+    void process_request(endpoint const &ep, span_cbyte req) noexcept;
+    void session_open(endpoint const &ep, span_cbyte req) noexcept;
 
-    protocol_interface            m_proto;
-    sl::vector<endpoint_internal> m_endpoints;
-    transfer                      m_tran;
+    protocol_interface   m_proto;
+    sl::vector<endpoint> m_endpoints;
+    transfer             m_tran;
   };
 
   using ptr_server = std::shared_ptr<server>;

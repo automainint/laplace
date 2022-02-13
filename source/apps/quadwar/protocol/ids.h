@@ -19,7 +19,7 @@ namespace quadwar_app::protocol::ids {
   using namespace laplace::engine::protocol::ids;
 
   enum command_id : uint16_t {
-    player_name = _native_count,
+    player_name = _native_upper,
     order_move
   };
 }

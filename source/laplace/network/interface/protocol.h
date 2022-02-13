@@ -11,34 +11,38 @@
 #ifndef LAPLACE_NETWORK_INTERFACE_PROTOCOL_H
 #define LAPLACE_NETWORK_INTERFACE_PROTOCOL_H
 
+#include "../../core/static_shaffle.h"
 #include "../defs.h"
 
 namespace laplace::network {
   enum class cipher { undefined, plain, rabbit };
 
+  static constexpr auto _id = core::static_shaffle(
+      { .begin = 0, .end = 64, .seed = 0 });
+
   enum class control {
-    undefined,
-    request_events,
-    request_token,
-    session_request,
-    session_response,
-    session_token,
-    ping_request,
-    ping_response,
-    server_heartbeat,
-    server_reserve,
-    server_init,
-    server_quit,
-    server_clock,
-    server_seed,
-    server_action,
-    server_pause,
-    server_loading,
-    client_enter,
-    client_leave,
-    client_ready,
-    slot_create,
-    slot_remove
+    undefined        = _id[0],
+    request_events   = _id[1],
+    request_token    = _id[2],
+    session_request  = _id[3],
+    session_response = _id[4],
+    session_token    = _id[5],
+    ping_request     = _id[6],
+    ping_response    = _id[7],
+    server_heartbeat = _id[8],
+    server_reserve   = _id[9],
+    server_init      = _id[10],
+    server_quit      = _id[11],
+    server_clock     = _id[12],
+    server_seed      = _id[13],
+    server_action    = _id[14],
+    server_pause     = _id[15],
+    server_loading   = _id[16],
+    client_enter     = _id[17],
+    client_leave     = _id[18],
+    client_ready     = _id[19],
+    slot_create      = _id[20],
+    slot_remove      = _id[21]
   };
 
   struct heartbeat {

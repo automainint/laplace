@@ -16,5 +16,6 @@ target_sources(
       nc_wolfssl.test.cpp ee_integral.test.cpp e3_vector.test.cpp
       ee_hierarchical_grid.test.cpp ui_layout.test.cpp m_traits.test.cpp m_matrix.test.cpp
       e3_sphere.test.cpp ui_rect.test.cpp n_slot_pool.test.cpp e_loader.test.cpp
-      e3_ray.test.cpp ni_execution.test.cpp c_utf8.test.cpp c_utils.test.cpp
-      ee_astar.test.cpp c_unival.test.cpp c_profiler.test.cpp)
+      e3_ray.test.cpp ni_execution.test.cpp c_utf8.test.cpp
+      c_static_shaffle.test.cpp c_utils.test.cpp ee_astar.test.cpp c_unival.test.cpp
+      c_profiler.test.cpp)
