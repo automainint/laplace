@@ -27,6 +27,7 @@ namespace laplace::coroutine {
   template <typename return_type_>
   inline auto generator<return_type_>::promise_type::yield_value(
       return_type_ const &_value) noexcept {
+
     value = _value;
     return std::suspend_always {};
   }
@@ -65,21 +66,54 @@ namespace laplace::coroutine {
   }
 
   template <typename return_type_>
+  inline void generator<return_type_>::promise_type::free_handle(
+      handle_type &handle) noexcept {
+    if (!handle)
+      return;
+    handle.promise().ref_count--;
+    if (handle.promise().ref_count == 0)
+      handle.destroy();
+  }
+
+  template <typename return_type_>
+  inline generator<return_type_>::iterator::iterator(
+      iterator &&other) noexcept {
+    m_handle       = std::move(other.m_handle);
+    other.m_handle = nullptr;
+  }
+
+  template <typename return_type_>
+  inline auto generator<return_type_>::iterator::operator=(
+      iterator &&other) noexcept -> iterator & {
+    promise_type::free_handle(m_handle);
+    m_handle       = std::move(other.m_handle);
+    other.m_handle = nullptr;
+    return *this;
+  }
+
+  template <typename return_type_>
   inline generator<return_type_>::iterator::iterator(
       handle_type handle) noexcept :
-      m_handle(handle) { }
+      m_handle(handle) {
+    m_handle.promise().ref_count++;
+  }
+
+  template <typename return_type_>
+  inline generator<return_type_>::iterator::~iterator() noexcept {
+    promise_type::free_handle(m_handle);
+  }
 
   template <typename return_type_>
   inline auto
   generator<return_type_>::iterator::operator++() noexcept {
     if (!m_handle.done())
       m_handle.resume();
-    return *this;
   }
 
   template <typename return_type_>
-  inline auto
-  generator<return_type_>::iterator::operator*() noexcept {
+  inline auto generator<return_type_>::iterator::operator*() {
+    if (m_handle.promise().exception)
+      std::rethrow_exception(m_handle.promise().exception);
     return std::move(m_handle.promise().value);
   }
 
@@ -107,7 +141,8 @@ namespace laplace::coroutine {
   template <typename return_type_>
   inline auto generator<return_type_>::operator=(
       generator const &other) noexcept -> generator & {
-    free_handle();
+
+    promise_type::free_handle(m_handle);
     m_handle = other.m_handle;
     if (m_handle)
       m_handle.promise().ref_count++;
@@ -117,7 +152,7 @@ namespace laplace::coroutine {
   template <typename return_type_>
   inline auto generator<return_type_>::operator=(
       generator &&other) noexcept -> generator & {
-    free_handle();
+    promise_type::free_handle(m_handle);
     m_handle       = std::move(other.m_handle);
     other.m_handle = nullptr;
     return *this;
@@ -132,31 +167,31 @@ namespace laplace::coroutine {
 
   template <typename return_type_>
   inline generator<return_type_>::~generator() noexcept {
-    free_handle();
+    promise_type::free_handle(m_handle);
   }
 
   template <typename return_type_>
   inline auto generator<return_type_>::await_ready() const noexcept {
-    return m_handle.done();
+    return is_done();
   }
 
   template <typename return_type_>
   inline auto generator<return_type_>::await_suspend(
       std::coroutine_handle<> handle) noexcept {
-    if (!m_handle.done())
-      m_handle.resume();
+    resume();
     return false;
   }
 
   template <typename return_type_>
-  inline auto generator<return_type_>::await_resume() noexcept {
+  inline auto generator<return_type_>::await_resume() {
+    if (m_handle.promise().exception)
+      std::rethrow_exception(m_handle.promise().exception);
     return std::move(m_handle.promise().value);
   }
 
   template <typename return_type_>
   inline auto generator<return_type_>::begin() noexcept {
-    if (!m_handle.done())
-      m_handle.resume();
+    resume();
     return iterator { m_handle };
   }
 
@@ -166,24 +201,22 @@ namespace laplace::coroutine {
   }
 
   template <typename return_type_>
-  inline auto generator<return_type_>::is_done() noexcept {
-    return m_handle.done();
-  }
-
-  template <typename return_type_>
-  inline auto generator<return_type_>::get() noexcept {
-    if (!m_handle.done())
-      m_handle.resume();
+  inline auto generator<return_type_>::get() {
+    resume();
+    if (m_handle.promise().exception)
+      std::rethrow_exception(m_handle.promise().exception);
     return std::move(m_handle.promise().value);
   }
 
   template <typename return_type_>
-  inline void generator<return_type_>::free_handle() noexcept {
-    if (!m_handle)
-      return;
-    m_handle.promise().ref_count--;
-    if (m_handle.promise().ref_count == 0)
-      m_handle.destroy();
+  inline auto generator<return_type_>::is_done() const noexcept {
+    return m_handle.done();
+  }
+
+  template <typename return_type_>
+  inline void generator<return_type_>::resume() noexcept {
+    if (!m_handle.done())
+      m_handle.resume();
   }
 }
 

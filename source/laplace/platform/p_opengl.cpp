@@ -16,7 +16,7 @@
 #include <iostream>
 #include <string>
 
-#include "../generated/gl/funcs.impl.h"
+#include "../.generated/gl/funcs.impl.h"
 
 #define LAPLACE_GL_LOAD(a)                                      \
   if (!a) {                                                     \
@@ -81,7 +81,7 @@ namespace laplace::gl {
 
     auto status = true;
 
-#include "../generated/gl/loads.impl.h"
+#include "../.generated/gl/loads.impl.h"
 
     if (has_extensions_required && !status)
       ok = false;

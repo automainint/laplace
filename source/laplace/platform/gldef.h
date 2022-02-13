@@ -8,11 +8,11 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_platform_gldef_h
-#define laplace_platform_gldef_h
+#ifndef LAPLACE_PLATFORM_GLDEF_H
+#define LAPLACE_PLATFORM_GLDEF_H
 
-#include "../generated/gl/decls.h"
-#include "../generated/gl/enums.h"
-#include "../generated/gl/types.h"
+#include "../.generated/gl/decls.h"
+#include "../.generated/gl/enums.h"
+#include "../.generated/gl/types.h"
 
 #endif

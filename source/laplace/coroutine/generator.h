@@ -19,6 +19,8 @@ namespace laplace::coroutine {
   template <typename return_type_>
   struct generator {
     struct promise_type {
+      using handle_type = std::coroutine_handle<promise_type>;
+
       int                ref_count = 0;
       return_type_       value     = {};
       std::exception_ptr exception = {};
@@ -31,42 +33,51 @@ namespace laplace::coroutine {
       auto return_value(return_type_ &&_value) noexcept;
       auto get_return_object() noexcept;
       auto unhandled_exception() noexcept;
+
+      static void free_handle(handle_type &handle) noexcept;
     };
 
-    using handle_type = std::coroutine_handle<promise_type>;
+    using handle_type = typename promise_type::handle_type;
 
     struct iterator {
+      iterator(iterator const &) = delete;
+      iterator &operator=(iterator const &) = delete;
+
+      iterator(iterator &&other) noexcept;
+      auto operator=(iterator &&other) noexcept -> iterator &;
+
       explicit iterator(handle_type handle) noexcept;
+      ~iterator() noexcept;
 
       auto               operator++() noexcept;
-      [[nodiscard]] auto operator*() noexcept;
+      [[nodiscard]] auto operator*();
       [[nodiscard]] auto operator!=(std::default_sentinel_t) noexcept;
 
     private:
       handle_type m_handle;
     };
 
-    generator(generator const &) noexcept ;
-    generator(generator &&) noexcept      ;
+    generator(generator const &) noexcept;
+    generator(generator &&) noexcept;
     auto operator=(generator const &) noexcept -> generator &;
     auto operator=(generator &&) noexcept -> generator &;
 
     explicit generator(handle_type handle) noexcept;
     ~generator() noexcept;
 
-    auto await_ready() const noexcept;
+    [[nodiscard]] auto await_ready() const noexcept;
     auto await_suspend(std::coroutine_handle<> handle) noexcept;
-    auto await_resume() noexcept;
+    auto await_resume();
 
     [[nodiscard]] auto begin() noexcept;
     [[nodiscard]] auto end() noexcept;
 
-    [[nodiscard]] auto is_done() noexcept;
-    [[nodiscard]] auto get() noexcept;
+    [[nodiscard]] auto get();
+    [[nodiscard]] auto is_done() const noexcept;
 
   private:
-    void free_handle() noexcept;
-    
+    void resume() noexcept;
+
     handle_type m_handle;
   };
 }

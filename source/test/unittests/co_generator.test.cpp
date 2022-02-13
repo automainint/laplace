@@ -56,7 +56,7 @@ namespace laplace::test {
     EXPECT_EQ(gen.get(), 6);
   }
 
-  TEST(coroutine, generator_await) {
+  TEST(coroutine, generator_await_1) {
     auto range = [](int begin, int end) -> generator<int> {
       for (int i = begin; i < end; i++) co_yield i;
       co_return 0;
@@ -70,6 +70,23 @@ namespace laplace::test {
     };
 
     EXPECT_EQ(foo().get(), 15);
+  }
+
+  TEST(coroutine, generator_await_2) {
+    auto foo = [](int begin) -> task<int> {
+      co_return begin * 3 - 1;
+    };
+
+    auto range = [&](int begin) -> generator<int> {
+      int end = co_await foo(begin);
+      for (int i = begin; i < end; i++) co_yield i;
+    };
+
+    auto bar = range(2);
+
+    EXPECT_EQ(bar.get(), 2);
+    EXPECT_EQ(bar.get(), 3);
+    EXPECT_EQ(bar.get(), 4);
   }
 
   TEST(coroutine, generator_move) {
@@ -109,5 +126,17 @@ namespace laplace::test {
     EXPECT_EQ(bar.get(), 3);
     EXPECT_EQ(foo.get(), 4);
     EXPECT_EQ(bar.get(), 0);
+  }
+
+  TEST(coroutine, generator_exception) {
+    auto foo = []() -> generator<int> {
+      throw 2;
+      co_yield 1;
+    };
+    int thrown_value = -1;
+    try {
+      std::ignore = foo().get();
+    } catch (int &value) { thrown_value = value; }
+    EXPECT_EQ(thrown_value, 2);
   }
 }

@@ -99,4 +99,28 @@ namespace laplace::test {
     c.resume();
     EXPECT_TRUE(b.is_done());
   }
+
+  TEST(coroutine, task_exception_1) {
+    auto foo = []() -> task<int> {
+      throw 3;
+      co_return 1;
+    };
+    int thrown_value = -1;
+    try {
+      std::ignore = foo().get();
+    } catch (int &value) { thrown_value = value; }
+    EXPECT_EQ(thrown_value, 3);
+  }
+
+  TEST(coroutine, task_exception_2) {
+    auto foo = []() -> task<> {
+      throw 4;
+      co_return;
+    };
+    int thrown_value = -1;
+    try {
+      foo().resume();
+    } catch (int &value) { thrown_value = value; }
+    EXPECT_EQ(thrown_value, 4);
+  }
 }

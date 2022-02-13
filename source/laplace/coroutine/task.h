@@ -40,13 +40,13 @@ namespace laplace::coroutine {
     explicit task(handle_type _handle) noexcept;
     ~task() noexcept;
 
-    auto await_ready() const noexcept;
+    [[nodiscard]] auto await_ready() const noexcept;
     auto await_suspend(std::coroutine_handle<> handle) noexcept;
-    auto await_resume() noexcept;
+    auto await_resume();
 
-    auto is_done() noexcept;
-    void resume() noexcept;
-    auto get() noexcept;
+    void               resume() noexcept;
+    [[nodiscard]] auto get();
+    [[nodiscard]] auto is_done() const noexcept;
 
   private:
     void free_handle() noexcept;
@@ -77,12 +77,12 @@ namespace laplace::coroutine {
     explicit task(handle_type _handle) noexcept;
     ~task() noexcept;
 
-    auto await_ready() const noexcept;
+    [[nodiscard]] auto await_ready() const noexcept;
     auto await_suspend(std::coroutine_handle<> handle) noexcept;
-    auto await_resume() noexcept;
+    auto await_resume();
 
-    auto is_done() noexcept;
-    void resume() noexcept;
+    void               resume();
+    [[nodiscard]] auto is_done() const noexcept;
 
   private:
     void free_handle() noexcept;

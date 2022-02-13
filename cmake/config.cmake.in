@@ -1,6 +1,6 @@
 @PACKAGE_INIT@
 
-if(@LAPLACE_ENABLE_LIB@)
+if(@static_lib_@)
   include(CMakeFindDependencyMacro)
   
   find_dependency(GTest)

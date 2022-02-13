@@ -8,13 +8,13 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_platform_opengl_h
-#define laplace_platform_opengl_h
+#ifndef LAPLACE_PLATFORM_OPENGL_H
+#define LAPLACE_PLATFORM_OPENGL_H
 
 #include <string>
 #include <vector>
 
-#include "../generated/gl/types.h"
+#include "../.generated/gl/types.h"
 
 namespace laplace::gl {
   using ptr_function = void(LAPLACE_GL_API *)();

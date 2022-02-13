@@ -13,16 +13,15 @@ if(NOT DEFINED CMAKE_BUILD_PARALLEL_LEVEL)
   set(CMAKE_BUILD_PARALLEL_LEVEL 3)
 endif()
 
-set(CMAKE_CXX_STANDARD          20)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(cmake/options.cmake)
 
-project(
-  ${LAPLACE_PROJECT}
-    VERSION 0.1.1
-    DESCRIPTION "A game engine focused on RTS."
-    LANGUAGES CXX)
+project(${LAPLACE_PROJECT}
+        VERSION 0.1.1
+        DESCRIPTION "A game engine focused on RTS."
+        LANGUAGES CXX)
 
 include(cmake/fetch-deps.cmake)
 
@@ -36,41 +35,47 @@ if(LAPLACE_ENABLE_OBJ OR LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
 
   target_link_libraries(
     ${LAPLACE_OBJ}
-      PUBLIC
-        ${LAPLACE_BUILD}
-        ${LAPLACE_DEPENDENCIES})
+    PUBLIC
+    ${LAPLACE_BUILD}
+    ${LAPLACE_DEPENDENCIES})
 endif()
 
 if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
-  target_link_libraries(
-    ${QUADWAR_OBJ}
-      PUBLIC
-        ${LAPLACE_BUILD}
-        ${LAPLACE_OBJ})
+  target_link_libraries(${QUADWAR_OBJ}
+                        PUBLIC
+                        ${LAPLACE_BUILD}
+                        ${LAPLACE_OBJ})
 
   if(LAPLACE_ENABLE_LIB)
-    add_library(${LAPLACE_LIB} STATIC)
+    if(LAPLACE_ENABLE_SHARED)
+      add_library(${LAPLACE_LIB} SHARED)
 
-    target_include_directories(
-      ${LAPLACE_LIB}
-        PUBLIC
-          "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+      if(MSVC)
+        set_target_properties(${LAPLACE_LIB}
+                              PROPERTIES
+                              WINDOWS_EXPORT_ALL_SYMBOLS ON)
+      endif()
+    else()
+      add_library(${LAPLACE_LIB} STATIC)
+    endif()
 
-    target_link_libraries(
-      ${LAPLACE_LIB}
-        PUBLIC
-          ${LAPLACE_BUILD}
-          ${LAPLACE_OBJ})
+    target_include_directories(${LAPLACE_LIB}
+                               PUBLIC
+                               "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+
+    target_link_libraries(${LAPLACE_LIB}
+                          PUBLIC
+                          ${LAPLACE_BUILD}
+                          ${LAPLACE_OBJ})
   endif()
 
   if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_TESTING OR LAPLACE_ENABLE_COVERAGE)
     add_executable(${QUADWAR_EXE})
 
-    target_link_libraries(
-      ${QUADWAR_EXE}
-        ${LAPLACE_BUILD}
-        ${QUADWAR_OBJ}
-        ${LAPLACE_OBJ})
+    target_link_libraries(${QUADWAR_EXE}
+                          ${LAPLACE_BUILD}
+                          ${QUADWAR_OBJ}
+                          ${LAPLACE_OBJ})
 
     if(MSVC)
       target_link_options(${QUADWAR_EXE} PRIVATE "/SUBSYSTEM:CONSOLE")
@@ -85,10 +90,9 @@ if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
         NAME ${LAPLACE_UNITTESTS}-${name}
         COMMAND ${QUADWAR_EXE} --tests --gtest_filter=${name}.*)
 
-      set_tests_properties(
-        ${LAPLACE_UNITTESTS}-${name}
-        PROPERTIES
-        TIMEOUT "15")
+      set_tests_properties(${LAPLACE_UNITTESTS}-${name}
+                           PROPERTIES
+                           TIMEOUT "15")
     endmacro()
 
     laplace_add_test(core)

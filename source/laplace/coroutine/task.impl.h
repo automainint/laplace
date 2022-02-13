@@ -107,13 +107,10 @@ namespace laplace::coroutine {
   }
 
   template <typename return_type_>
-  inline auto task<return_type_>::await_resume() noexcept {
+  inline auto task<return_type_>::await_resume() {
+    if (m_handle.promise().exception)
+      std::rethrow_exception(m_handle.promise().exception);
     return std::move(m_handle.promise().value);
-  }
-
-  template <typename return_type_>
-  inline auto task<return_type_>::is_done() noexcept {
-    return m_handle.done();
   }
 
   template <typename return_type_>
@@ -123,10 +120,17 @@ namespace laplace::coroutine {
   }
 
   template <typename return_type_>
-  inline auto task<return_type_>::get() noexcept {
+  inline auto task<return_type_>::get() {
     if (!m_handle.done())
       m_handle.resume();
+    if (m_handle.promise().exception)
+      std::rethrow_exception(m_handle.promise().exception);
     return std::move(m_handle.promise().value);
+  }
+
+  template <typename return_type_>
+  inline auto task<return_type_>::is_done() const noexcept {
+    return m_handle.done();
   }
 
   template <typename return_type_>
@@ -206,15 +210,16 @@ namespace laplace::coroutine {
     return false;
   }
 
-  inline auto task<void>::await_resume() noexcept { }
-
-  inline auto task<void>::is_done() noexcept {
-    return m_handle.done();
+  inline auto task<void>::await_resume() {
+    if (m_handle.promise().exception)
+      std::rethrow_exception(m_handle.promise().exception);
   }
 
-  inline void task<void>::resume() noexcept {
+  inline void task<void>::resume() {
     if (!m_handle.done())
       m_handle.resume();
+    if (m_handle.promise().exception)
+      std::rethrow_exception(m_handle.promise().exception);
   }
 
   inline void task<void>::free_handle() noexcept {
@@ -223,6 +228,10 @@ namespace laplace::coroutine {
     m_handle.promise().ref_count--;
     if (m_handle.promise().ref_count == 0)
       m_handle.destroy();
+  }
+
+  inline auto task<void>::is_done() const noexcept {
+    return m_handle.done();
   }
 }
 

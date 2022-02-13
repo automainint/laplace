@@ -32,29 +32,25 @@ endif()
 
 if(LAPLACE_ENABLE_COVERAGE)
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(
-      ${LAPLACE_BUILD}
-        INTERFACE
-          -O0 -g --coverage
-          -fsanitize=undefined,address)
+    target_compile_options(${LAPLACE_BUILD}
+                           INTERFACE
+                           -O0 -g --coverage
+                           -fsanitize=undefined,address)
 
-    target_link_options(
-      ${LAPLACE_BUILD}
-        INTERFACE
-           --coverage
-           -fsanitize=undefined,address)
+    target_link_options(${LAPLACE_BUILD}
+                        INTERFACE
+                        --coverage
+                        -fsanitize=undefined,address)
   endif()
 elseif(LAPLACE_ENABLE_TESTING)
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(
-      ${LAPLACE_BUILD}
-        INTERFACE
-          -O0 -fsanitize=undefined,address)
+    target_compile_options(${LAPLACE_BUILD}
+                           INTERFACE
+                           -O0 -fsanitize=undefined,address)
 
-    target_link_options(
-      ${LAPLACE_BUILD}
-        INTERFACE
-           -fsanitize=undefined,address)
+    target_link_options(${LAPLACE_BUILD}
+                        INTERFACE
+                        -fsanitize=undefined,address)
   elseif(MSVC)
     target_compile_options(${LAPLACE_BUILD} INTERFACE /Od)
   endif()
