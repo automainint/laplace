@@ -8,12 +8,11 @@
  *  the MIT License for more details.
  */
 
-#include "../../laplace/coroutine/sentinel.h"
 #include "../../laplace/coroutine/task.h"
 #include <gtest/gtest.h>
 
 namespace laplace::test {
-  using coroutine::task, coroutine::sentinel;
+  using coroutine::task, std::default_sentinel;
 
   TEST(coroutine, task_return) {
     auto foo = []() -> task<int> { co_return 42; };
@@ -57,10 +56,23 @@ namespace laplace::test {
     EXPECT_EQ(bar().get(), 42);
   }
 
-  TEST(coroutine, task_sentinel) {
+  TEST(coroutine, task_int_await_sentinel) {
+    auto foo = [&]() -> task<int> {
+      co_await std::suspend_always {};
+      co_return 5;
+    };
+    auto bar = foo();
+    bar.resume();
+    EXPECT_FALSE(bar.is_done());
+    bar.resume();
+    EXPECT_TRUE(bar.is_done());
+    EXPECT_EQ(bar.get(), 5);
+  }
+
+  TEST(coroutine, task_void_yield_sentinel) {
     bool run = false;
     auto foo = [&]() -> task<> {
-      co_await sentinel;
+      co_yield std::default_sentinel;
       run = true;
     };
     auto bar = foo();
@@ -122,5 +134,76 @@ namespace laplace::test {
       foo().resume();
     } catch (int &value) { thrown_value = value; }
     EXPECT_EQ(thrown_value, 4);
+  }
+
+  TEST(coroutine, task_void_nested_await) {
+    bool foo_1 = false;
+    bool foo_2 = false;
+    bool bar_1 = false;
+    bool bar_2 = false;
+
+    auto foo = [&]() -> task<> {
+      foo_1 = true;
+      co_yield std::default_sentinel;
+      foo_2 = true;
+    };
+    auto bar = [&]() -> task<> {
+      bar_1 = true;
+      co_yield std::default_sentinel;
+      co_await foo();
+      co_yield std::default_sentinel;
+      bar_2 = true;
+    };
+
+    auto bus = bar();
+    EXPECT_FALSE(bar_1);
+    bus.resume();
+    EXPECT_TRUE(bar_1);
+    EXPECT_FALSE(foo_1);
+    bus.resume();
+    EXPECT_TRUE(foo_1);
+    EXPECT_FALSE(foo_2);
+    bus.resume();
+    EXPECT_TRUE(foo_2);
+    EXPECT_FALSE(bar_2);
+    bus.resume();
+    EXPECT_TRUE(bar_2);
+  }
+
+  TEST(coroutine, task_int_nested_await) {
+    bool foo_1 = false;
+    bool foo_2 = false;
+    bool bar_1 = false;
+    bool bar_2 = false;
+
+    auto foo = [&]() -> task<int> {
+      foo_1 = true;
+      co_yield std::default_sentinel;
+      foo_2 = true;
+      co_return 7;
+    };
+    auto bar = [&]() -> task<int> {
+      bar_1 = true;
+      co_yield std::default_sentinel;
+      auto x = co_await foo();
+      co_yield std::default_sentinel;
+      bar_2 = true;
+      co_return 7;
+    };
+
+    auto bus = bar();
+    EXPECT_FALSE(bar_1);
+    bus.resume();
+    EXPECT_TRUE(bar_1);
+    EXPECT_FALSE(foo_1);
+    bus.resume();
+    EXPECT_TRUE(foo_1);
+    EXPECT_FALSE(foo_2);
+    bus.resume();
+    EXPECT_TRUE(foo_2);
+    EXPECT_FALSE(bar_2);
+    bus.resume();
+    EXPECT_TRUE(bar_2);
+    EXPECT_EQ(bus.get(), 7);
   }
 }

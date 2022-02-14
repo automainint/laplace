@@ -139,4 +139,34 @@ namespace laplace::test {
     } catch (int &value) { thrown_value = value; }
     EXPECT_EQ(thrown_value, 2);
   }
+
+  TEST(coroutine, generator_nested) {
+    auto range = [](int begin, int end) -> generator<int> {
+      for (int i = begin; i < end; i++) co_yield i;
+      co_return end;
+    };
+
+    auto foo = [&](int first, int second,
+                   int third) -> generator<int> {
+      for (int i = first; i < second; i++) co_yield 1;
+      co_yield range(first + (second - first) / 2,
+                     second + (third - second) / 2);
+      for (int i = second; i < third; i++) co_yield 9;
+    };
+
+    auto gen = foo(2, 6, 8);
+
+    EXPECT_EQ(gen.get(), 1);
+    EXPECT_EQ(gen.get(), 1);
+    EXPECT_EQ(gen.get(), 1);
+    EXPECT_EQ(gen.get(), 1);
+
+    EXPECT_EQ(gen.get(), 4);
+    EXPECT_EQ(gen.get(), 5);
+    EXPECT_EQ(gen.get(), 6);
+    EXPECT_EQ(gen.get(), 7);
+
+    EXPECT_EQ(gen.get(), 9);
+    EXPECT_EQ(gen.get(), 9);
+  };
 }

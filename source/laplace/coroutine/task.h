@@ -11,26 +11,30 @@
 #ifndef LAPLACE_COROUTINE_TASK_H
 #define LAPLACE_COROUTINE_TASK_H
 
-#include <coroutine>
-#include <exception>
+#include "utils.h"
+#include <iterator>
 
 namespace laplace::coroutine {
-  template <typename return_type_ = void>
+  template <typename type_ = void>
   struct task {
     struct promise_type {
-      int                ref_count = 0;
-      return_type_       value     = {};
-      std::exception_ptr exception = {};
+      using handle_type = std::coroutine_handle<promise_type>;
+
+      type_              m_value     = {};
+      int                m_ref_count = 0;
+      std::exception_ptr m_exception = nullptr;
+      handle_type        m_nested    = nullptr;
 
       auto initial_suspend() noexcept;
       auto final_suspend() noexcept;
-      auto return_value(return_type_ const &_value) noexcept;
-      auto return_value(return_type_ &&_value) noexcept;
       auto get_return_object() noexcept;
       auto unhandled_exception() noexcept;
+      auto return_value(type_ const &_value) noexcept;
+      auto return_value(type_ &&_value) noexcept;
+      auto yield_value(std::default_sentinel_t) noexcept;
     };
 
-    using handle_type = std::coroutine_handle<promise_type>;
+    using handle_type = typename promise_type::handle_type;
 
     task(task const &) noexcept;
     task(task &&) noexcept;
@@ -41,33 +45,38 @@ namespace laplace::coroutine {
     ~task() noexcept;
 
     [[nodiscard]] auto await_ready() const noexcept;
-    auto await_suspend(std::coroutine_handle<> handle) noexcept;
-    auto await_resume();
+    auto               await_resume();
 
-    void               resume() noexcept;
+    auto await_suspend(std::coroutine_handle<> ) noexcept;
+    auto await_suspend(handle_type handle) noexcept;
+
+    void resume() noexcept;
+
     [[nodiscard]] auto get();
     [[nodiscard]] auto is_done() const noexcept;
 
   private:
-    void free_handle() noexcept;
-
     handle_type m_handle;
   };
 
   template <>
   struct task<void> {
     struct promise_type {
-      int                ref_count = 0;
-      std::exception_ptr exception = {};
+      using handle_type = std::coroutine_handle<promise_type>;
+
+      int                m_ref_count = 0;
+      std::exception_ptr m_exception = nullptr;
+      handle_type        m_nested    = nullptr;
 
       auto initial_suspend() noexcept;
       auto final_suspend() noexcept;
-      auto return_void() noexcept;
       auto get_return_object() noexcept;
       auto unhandled_exception() noexcept;
+      auto return_void() noexcept;
+      auto yield_value(std::default_sentinel_t) noexcept;
     };
 
-    using handle_type = std::coroutine_handle<promise_type>;
+    using handle_type = promise_type::handle_type;
 
     task(task const &) noexcept;
     task(task &&) noexcept;
@@ -78,15 +87,16 @@ namespace laplace::coroutine {
     ~task() noexcept;
 
     [[nodiscard]] auto await_ready() const noexcept;
-    auto await_suspend(std::coroutine_handle<> handle) noexcept;
-    auto await_resume();
+    auto               await_resume();
 
-    void               resume();
+    auto await_suspend(std::coroutine_handle<> ) noexcept;
+    auto await_suspend(handle_type handle) noexcept;
+
+    void resume();
+
     [[nodiscard]] auto is_done() const noexcept;
 
   private:
-    void free_handle() noexcept;
-
     handle_type m_handle;
   };
 }

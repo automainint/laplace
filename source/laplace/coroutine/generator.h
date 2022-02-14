@@ -11,73 +11,52 @@
 #ifndef LAPLACE_COROUTINE_GENERATOR_H
 #define LAPLACE_COROUTINE_GENERATOR_H
 
-#include <coroutine>
-#include <exception>
-#include <iterator>
+#include "iterator.h"
+#include "utils.h"
 
 namespace laplace::coroutine {
-  template <typename return_type_>
+  template <typename type_>
   struct generator {
     struct promise_type {
       using handle_type = std::coroutine_handle<promise_type>;
 
-      int                ref_count = 0;
-      return_type_       value     = {};
-      std::exception_ptr exception = {};
+      type_              m_value     = {};
+      int                m_ref_count = 0;
+      std::exception_ptr m_exception = nullptr;
+      handle_type        m_nested    = nullptr;
 
       auto initial_suspend() noexcept;
       auto final_suspend() noexcept;
-      auto yield_value(return_type_ const &_value) noexcept;
-      auto yield_value(return_type_ &&_value) noexcept;
-      auto return_value(return_type_ const &_value) noexcept;
-      auto return_value(return_type_ &&_value) noexcept;
       auto get_return_object() noexcept;
       auto unhandled_exception() noexcept;
-
-      static void free_handle(handle_type &handle) noexcept;
+      auto return_value(type_ const &value) noexcept;
+      auto return_value(type_ &&value) noexcept;
+      auto yield_value(type_ const &value) noexcept;
+      auto yield_value(type_ &&value) noexcept;
+      auto yield_value(generator<type_> gen) noexcept;
     };
 
     using handle_type = typename promise_type::handle_type;
 
-    struct iterator {
-      iterator(iterator const &) = delete;
-      iterator &operator=(iterator const &) = delete;
-
-      iterator(iterator &&other) noexcept;
-      auto operator=(iterator &&other) noexcept -> iterator &;
-
-      explicit iterator(handle_type handle) noexcept;
-      ~iterator() noexcept;
-
-      auto               operator++() noexcept;
-      [[nodiscard]] auto operator*();
-      [[nodiscard]] auto operator!=(std::default_sentinel_t) noexcept;
-
-    private:
-      handle_type m_handle;
-    };
-
-    generator(generator const &) noexcept;
-    generator(generator &&) noexcept;
-    auto operator=(generator const &) noexcept -> generator &;
-    auto operator=(generator &&) noexcept -> generator &;
+    generator(generator const &other) noexcept;
+    generator(generator &&other) noexcept;
+    auto operator=(generator const &other) noexcept -> generator &;
+    auto operator=(generator &&other) noexcept -> generator &;
 
     explicit generator(handle_type handle) noexcept;
     ~generator() noexcept;
 
-    [[nodiscard]] auto await_ready() const noexcept;
-    auto await_suspend(std::coroutine_handle<> handle) noexcept;
+    [[nodiscard]] auto await_ready() noexcept;
+    auto await_suspend(std::coroutine_handle<>) noexcept;
     auto await_resume();
 
     [[nodiscard]] auto begin() noexcept;
     [[nodiscard]] auto end() noexcept;
 
     [[nodiscard]] auto get();
-    [[nodiscard]] auto is_done() const noexcept;
+    [[nodiscard]] auto is_done() noexcept;
 
   private:
-    void resume() noexcept;
-
     handle_type m_handle;
   };
 }
