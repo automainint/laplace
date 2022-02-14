@@ -16,7 +16,7 @@ namespace laplace::test {
 
   TEST(coroutine, task_return) {
     auto foo = []() -> task<int> { co_return 42; };
-    EXPECT_EQ(foo().get(), 42);
+    EXPECT_EQ(foo().run(), 42);
   }
 
   TEST(coroutine, task_void) {
@@ -53,7 +53,7 @@ namespace laplace::test {
     auto foo = [&]() -> task<int> { co_return 42; };
     auto bar = [&]() -> task<int> { co_return co_await foo(); };
 
-    EXPECT_EQ(bar().get(), 42);
+    EXPECT_EQ(bar().run(), 42);
   }
 
   TEST(coroutine, task_int_await_sentinel) {
@@ -88,12 +88,12 @@ namespace laplace::test {
     auto a = foo();
     auto b = std::move(a);
     auto c = decltype(b) { b };
-    EXPECT_EQ(c.get(), 42);
+    EXPECT_EQ(c.run(), 42);
     EXPECT_TRUE(b.is_done());
     a = foo();
     b = std::move(a);
     c = decltype(b) { b };
-    EXPECT_EQ(c.get(), 42);
+    EXPECT_EQ(c.run(), 42);
     EXPECT_TRUE(b.is_done());
   }
 
@@ -119,7 +119,7 @@ namespace laplace::test {
     };
     int thrown_value = -1;
     try {
-      std::ignore = foo().get();
+      std::ignore = foo().run();
     } catch (int &value) { thrown_value = value; }
     EXPECT_EQ(thrown_value, 3);
   }

@@ -9,5 +9,3 @@
  */
 
 #include "iterator.h"
-
-namespace laplace::coroutine { }

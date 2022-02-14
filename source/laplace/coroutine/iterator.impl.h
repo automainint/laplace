@@ -20,7 +20,7 @@ namespace laplace::coroutine {
 
   template <promise_shared promise_>
   inline iterator<promise_>::iterator(
-      std::coroutine_handle<promise_> &handle) noexcept :
+      std::coroutine_handle<promise_> handle) noexcept :
       m_handle(handle) {
     _acquire_handle(m_handle);
   }

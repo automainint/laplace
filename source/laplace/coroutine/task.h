@@ -47,12 +47,13 @@ namespace laplace::coroutine {
     [[nodiscard]] auto await_ready() const noexcept;
     auto               await_resume();
 
-    auto await_suspend(std::coroutine_handle<> ) noexcept;
+    auto await_suspend(std::coroutine_handle<>) noexcept;
     auto await_suspend(handle_type handle) noexcept;
 
     void resume() noexcept;
 
-    [[nodiscard]] auto get();
+    [[nodiscard]] auto run();
+    [[nodiscard]] auto get() noexcept;
     [[nodiscard]] auto is_done() const noexcept;
 
   private:
@@ -89,7 +90,7 @@ namespace laplace::coroutine {
     [[nodiscard]] auto await_ready() const noexcept;
     auto               await_resume();
 
-    auto await_suspend(std::coroutine_handle<> ) noexcept;
+    auto await_suspend(std::coroutine_handle<>) noexcept;
     auto await_suspend(handle_type handle) noexcept;
 
     void resume();

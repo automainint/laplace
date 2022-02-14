@@ -14,7 +14,7 @@
 namespace laplace::coroutine {
   template <promise_not_shared promise_>
   inline void _acquire_handle(
-      std::coroutine_handle<promise_> handle) noexcept { }
+      std::coroutine_handle<promise_>) noexcept { }
 
   template <promise_shared promise_>
   inline void _acquire_handle(
@@ -25,7 +25,7 @@ namespace laplace::coroutine {
 
   template <promise_not_shared promise_>
   inline void _release_handle(
-      std::coroutine_handle<promise_> handle) noexcept { }
+      std::coroutine_handle<promise_>) noexcept { }
 
   template <promise_shared promise_>
     requires(!promise_nested<promise_>)
@@ -132,6 +132,10 @@ namespace laplace::coroutine {
     _acquire_handle(upper.promise().m_nested);
   }
 
+  template <typename upper_, typename under_>
+    requires(!promise_nested<upper_>)
+  inline void _nest(std::coroutine_handle<upper_>,
+                    std::coroutine_handle<under_>) { }
 }
 
 #endif

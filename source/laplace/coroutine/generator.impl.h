@@ -73,20 +73,21 @@ namespace laplace::coroutine {
   }
 
   template <typename type_>
-  generator<type_>::generator(generator const &other) noexcept :
+  inline generator<type_>::generator(generator const &other) noexcept
+      :
       m_handle(other.m_handle) {
     _acquire_handle(m_handle);
   }
 
   template <typename type_>
-  generator<type_>::generator(generator &&other) noexcept :
+  inline generator<type_>::generator(generator &&other) noexcept :
       m_handle(std::move(other.m_handle)) {
     other.m_handle = nullptr;
   }
 
   template <typename type_>
-  auto generator<type_>::operator=(generator const &other) noexcept
-      -> generator & {
+  inline auto generator<type_>::operator=(
+      generator const &other) noexcept -> generator & {
     _release_handle(m_handle);
     m_handle = other.m_handle;
     _acquire_handle(m_handle);
@@ -94,7 +95,7 @@ namespace laplace::coroutine {
   }
 
   template <typename type_>
-  auto generator<type_>::operator=(generator &&other) noexcept
+  inline auto generator<type_>::operator=(generator &&other) noexcept
       -> generator & {
     _release_handle(m_handle);
     m_handle       = std::move(other.m_handle);
@@ -103,52 +104,57 @@ namespace laplace::coroutine {
   }
 
   template <typename type_>
-  generator<type_>::generator(handle_type handle) noexcept :
+  inline generator<type_>::generator(handle_type handle) noexcept :
       m_handle(handle) {
     _acquire_handle(m_handle);
   }
 
   template <typename type_>
-  generator<type_>::~generator() noexcept {
+  inline generator<type_>::~generator() noexcept {
     _release_handle(m_handle);
   }
 
   template <typename type_>
-  auto generator<type_>::await_ready() noexcept {
+  inline auto generator<type_>::await_ready() noexcept {
     return _is_done(m_handle);
   }
 
   template <typename type_>
-  auto generator<type_>::await_suspend(
+  inline auto generator<type_>::await_suspend(
       std::coroutine_handle<>) noexcept {
     _resume(m_handle);
     return false;
   }
 
   template <typename type_>
-  auto generator<type_>::await_resume() {
+  inline auto generator<type_>::await_resume() {
     return _get_value(m_handle);
   }
 
   template <typename type_>
-  auto generator<type_>::begin() noexcept {
+  inline auto generator<type_>::begin() noexcept {
     _resume(m_handle);
     return iterator<promise_type> { m_handle };
   }
 
   template <typename type_>
-  auto generator<type_>::end() noexcept {
+  inline auto generator<type_>::end() noexcept {
     return std::default_sentinel;
   }
 
   template <typename type_>
-  auto generator<type_>::get() {
+  inline auto generator<type_>::next() {
     _resume(m_handle);
     return _get_value(m_handle);
   }
 
   template <typename type_>
-  auto generator<type_>::is_done() noexcept {
+  inline auto generator<type_>::get() noexcept {
+    return _get_value(m_handle);
+  }
+
+  template <typename type_>
+  inline auto generator<type_>::is_done() noexcept {
     return _is_done(m_handle);
   }
 }

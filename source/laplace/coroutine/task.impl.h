@@ -128,8 +128,13 @@ namespace laplace::coroutine {
   }
 
   template <typename return_type_>
-  inline auto task<return_type_>::get() {
+  inline auto task<return_type_>::run() {
     _resume(m_handle);
+    return _get_value(m_handle);
+  }
+
+  template <typename return_type_>
+  inline auto task<return_type_>::get() noexcept {
     return _get_value(m_handle);
   }
 

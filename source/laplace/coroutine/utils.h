@@ -17,16 +17,14 @@
 
 namespace laplace::coroutine {
   template <promise_not_shared promise_>
-  void _acquire_handle(
-      std::coroutine_handle<promise_> handle) noexcept;
+  void _acquire_handle(std::coroutine_handle<promise_>) noexcept;
 
   template <promise_shared promise_>
   void _acquire_handle(
       std::coroutine_handle<promise_> handle) noexcept;
 
   template <promise_not_shared promise_>
-  void _release_handle(
-      std::coroutine_handle<promise_> handle) noexcept;
+  void _release_handle(std::coroutine_handle<promise_>) noexcept;
 
   template <promise_shared promise_>
     requires(!promise_nested<promise_>)
@@ -70,6 +68,11 @@ namespace laplace::coroutine {
   template <promise_nested upper_, typename under_>
   void _nest(std::coroutine_handle<upper_> upper,
              std::coroutine_handle<under_> under);
+
+  template <typename upper_, typename under_>
+    requires(!promise_nested<upper_>)
+  void _nest(std::coroutine_handle<upper_>,
+             std::coroutine_handle<under_>);
 }
 
 #include "utils.impl.h"

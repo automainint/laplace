@@ -31,12 +31,12 @@ namespace laplace::test {
 
     auto gen = range(1, 6);
 
-    EXPECT_EQ(gen.get(), 1);
-    EXPECT_EQ(gen.get(), 2);
-    EXPECT_EQ(gen.get(), 3);
-    EXPECT_EQ(gen.get(), 4);
-    EXPECT_EQ(gen.get(), 5);
-    EXPECT_EQ(gen.get(), 5);
+    EXPECT_EQ(gen.next(), 1);
+    EXPECT_EQ(gen.next(), 2);
+    EXPECT_EQ(gen.next(), 3);
+    EXPECT_EQ(gen.next(), 4);
+    EXPECT_EQ(gen.next(), 5);
+    EXPECT_EQ(gen.next(), 5);
   }
 
   TEST(coroutine, generator_return) {
@@ -47,13 +47,13 @@ namespace laplace::test {
 
     auto gen = range(1, 6);
 
-    EXPECT_EQ(gen.get(), 1);
-    EXPECT_EQ(gen.get(), 2);
-    EXPECT_EQ(gen.get(), 3);
-    EXPECT_EQ(gen.get(), 4);
-    EXPECT_EQ(gen.get(), 5);
-    EXPECT_EQ(gen.get(), 6);
-    EXPECT_EQ(gen.get(), 6);
+    EXPECT_EQ(gen.next(), 1);
+    EXPECT_EQ(gen.next(), 2);
+    EXPECT_EQ(gen.next(), 3);
+    EXPECT_EQ(gen.next(), 4);
+    EXPECT_EQ(gen.next(), 5);
+    EXPECT_EQ(gen.next(), 6);
+    EXPECT_EQ(gen.next(), 6);
   }
 
   TEST(coroutine, generator_await_1) {
@@ -69,7 +69,7 @@ namespace laplace::test {
       co_return sum;
     };
 
-    EXPECT_EQ(foo().get(), 15);
+    EXPECT_EQ(foo().run(), 15);
   }
 
   TEST(coroutine, generator_await_2) {
@@ -84,9 +84,9 @@ namespace laplace::test {
 
     auto bar = range(2);
 
-    EXPECT_EQ(bar.get(), 2);
-    EXPECT_EQ(bar.get(), 3);
-    EXPECT_EQ(bar.get(), 4);
+    EXPECT_EQ(bar.next(), 2);
+    EXPECT_EQ(bar.next(), 3);
+    EXPECT_EQ(bar.next(), 4);
   }
 
   TEST(coroutine, generator_move) {
@@ -96,16 +96,16 @@ namespace laplace::test {
     };
     auto foo = range(1, 6);
     auto bar = std::move(foo);
-    EXPECT_EQ(bar.get(), 1);
-    EXPECT_EQ(bar.get(), 2);
-    EXPECT_EQ(bar.get(), 3);
-    EXPECT_EQ(bar.get(), 4);
-    EXPECT_EQ(bar.get(), 5);
-    EXPECT_EQ(bar.get(), 0);
+    EXPECT_EQ(bar.next(), 1);
+    EXPECT_EQ(bar.next(), 2);
+    EXPECT_EQ(bar.next(), 3);
+    EXPECT_EQ(bar.next(), 4);
+    EXPECT_EQ(bar.next(), 5);
+    EXPECT_EQ(bar.next(), 0);
     bar = range(3, 5);
-    EXPECT_EQ(bar.get(), 3);
-    EXPECT_EQ(bar.get(), 4);
-    EXPECT_EQ(bar.get(), 0);
+    EXPECT_EQ(bar.next(), 3);
+    EXPECT_EQ(bar.next(), 4);
+    EXPECT_EQ(bar.next(), 0);
   }
 
   TEST(coroutine, generator_copy) {
@@ -115,17 +115,17 @@ namespace laplace::test {
     };
     auto foo = range(1, 6);
     auto bar = decltype(foo) { foo };
-    EXPECT_EQ(foo.get(), 1);
-    EXPECT_EQ(bar.get(), 2);
-    EXPECT_EQ(foo.get(), 3);
-    EXPECT_EQ(bar.get(), 4);
-    EXPECT_EQ(foo.get(), 5);
-    EXPECT_EQ(bar.get(), 0);
+    EXPECT_EQ(foo.next(), 1);
+    EXPECT_EQ(bar.next(), 2);
+    EXPECT_EQ(foo.next(), 3);
+    EXPECT_EQ(bar.next(), 4);
+    EXPECT_EQ(foo.next(), 5);
+    EXPECT_EQ(bar.next(), 0);
     foo = range(3, 5);
     bar = decltype(foo) { foo };
-    EXPECT_EQ(bar.get(), 3);
-    EXPECT_EQ(foo.get(), 4);
-    EXPECT_EQ(bar.get(), 0);
+    EXPECT_EQ(bar.next(), 3);
+    EXPECT_EQ(foo.next(), 4);
+    EXPECT_EQ(bar.next(), 0);
   }
 
   TEST(coroutine, generator_exception) {
@@ -135,7 +135,7 @@ namespace laplace::test {
     };
     int thrown_value = -1;
     try {
-      std::ignore = foo().get();
+      std::ignore = foo().next();
     } catch (int &value) { thrown_value = value; }
     EXPECT_EQ(thrown_value, 2);
   }
@@ -156,17 +156,17 @@ namespace laplace::test {
 
     auto gen = foo(2, 6, 8);
 
-    EXPECT_EQ(gen.get(), 1);
-    EXPECT_EQ(gen.get(), 1);
-    EXPECT_EQ(gen.get(), 1);
-    EXPECT_EQ(gen.get(), 1);
+    EXPECT_EQ(gen.next(), 1);
+    EXPECT_EQ(gen.next(), 1);
+    EXPECT_EQ(gen.next(), 1);
+    EXPECT_EQ(gen.next(), 1);
 
-    EXPECT_EQ(gen.get(), 4);
-    EXPECT_EQ(gen.get(), 5);
-    EXPECT_EQ(gen.get(), 6);
-    EXPECT_EQ(gen.get(), 7);
+    EXPECT_EQ(gen.next(), 4);
+    EXPECT_EQ(gen.next(), 5);
+    EXPECT_EQ(gen.next(), 6);
+    EXPECT_EQ(gen.next(), 7);
 
-    EXPECT_EQ(gen.get(), 9);
-    EXPECT_EQ(gen.get(), 9);
+    EXPECT_EQ(gen.next(), 9);
+    EXPECT_EQ(gen.next(), 9);
   };
 }

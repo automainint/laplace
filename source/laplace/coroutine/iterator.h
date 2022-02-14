@@ -18,12 +18,12 @@ namespace laplace::coroutine {
   template <promise_shared promise_>
   struct iterator {
     iterator(iterator const &) = delete;
-    iterator &operator =(iterator const &) = delete;
-    iterator &operator =(iterator &&) = delete;
+    iterator &operator=(iterator const &) = delete;
+    iterator &operator=(iterator &&) = delete;
 
     iterator(iterator &&other) noexcept;
     explicit iterator(
-        std::coroutine_handle<promise_> &handle) noexcept;
+        std::coroutine_handle<promise_> handle) noexcept;
     ~iterator() noexcept;
 
     void               operator++() noexcept;

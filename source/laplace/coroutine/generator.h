@@ -53,7 +53,8 @@ namespace laplace::coroutine {
     [[nodiscard]] auto begin() noexcept;
     [[nodiscard]] auto end() noexcept;
 
-    [[nodiscard]] auto get();
+    [[nodiscard]] auto next();
+    [[nodiscard]] auto get() noexcept;
     [[nodiscard]] auto is_done() noexcept;
 
   private:
