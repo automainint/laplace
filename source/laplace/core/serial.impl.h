@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_core_serial_impl_h
-#define laplace_core_serial_impl_h
+#ifndef LAPLACE_CORE_SERIAL_IMPL_H
+#define LAPLACE_CORE_SERIAL_IMPL_H
 
 namespace laplace::serial {
   template <sl::whole size_>
@@ -109,18 +109,17 @@ namespace laplace::serial {
   constexpr void write_bytes(
       span_byte                          data,
       std::basic_string_view<char_type_> arg0) noexcept {
-    const auto size = sizeof(char_type_) * arg0.size();
+    auto const size = sizeof(char_type_) * arg0.size();
 
     if (data.size() >= size) {
+      if (size <= 0)
+        return;
       if constexpr (sizeof(char_type_) == 1) {
         std::memcpy(data.data(), arg0.data(), arg0.size());
-
       } else {
-        for (sl::index i = 0; i < arg0.size(); i++) {
+        for (sl::index i = 0; i < arg0.size(); i++)
           wr(data, i * sizeof(char_type_), arg0[i]);
-        }
       }
-
     } else {
       error_(fmt("Invalid size %zd. %zd bytes required.", data.size(),
                  size),
@@ -130,17 +129,17 @@ namespace laplace::serial {
 
   template <trivial elem_type_>
   constexpr void write_bytes(
-      span_byte data, std::span<const elem_type_> arg0) noexcept {
-    const auto size = sizeof(elem_type_) * arg0.size();
+      span_byte data, std::span<elem_type_ const> arg0) noexcept {
+    auto const size = sizeof(elem_type_) * arg0.size();
 
     if (data.size() >= size) {
+      if (size <= 0)
+        return;
       if constexpr (sizeof(elem_type_) == 1) {
         std::memcpy(data.data(), arg0.data(), arg0.size());
-
       } else {
-        for (sl::index i = 0; i < arg0.size(); i++) {
+        for (sl::index i = 0; i < arg0.size(); i++)
           wr(data, i * sizeof(elem_type_), arg0.begin()[i]);
-        }
       }
 
     } else {
@@ -155,14 +154,12 @@ namespace laplace::serial {
                              arg0_trivial_ arg0) noexcept {
     constexpr auto size = sizeof arg0;
 
-    if (data.size() >= size) {
+    if (data.size() >= size)
       wr(data, 0, arg0);
-
-    } else {
+    else
       error_(fmt("Invalid size %zd. %zd bytes required.", data.size(),
                  size),
              __FUNCTION__);
-    }
   }
 
   template <typename arg0_, typename... args_>
@@ -172,17 +169,15 @@ namespace laplace::serial {
 
     write_bytes(data, arg0);
 
-    if (data.size() >= size) {
+    if (data.size() >= size)
       write_bytes(
           span_byte {
               data.begin() +
                   static_cast<decltype(data)::difference_type>(size),
               data.end() },
           args...);
-
-    } else {
+    else
       error_(fmt("Invalid size %zd.", data.size()), __FUNCTION__);
-    }
   }
 
   template <trivial... args_trivial_>

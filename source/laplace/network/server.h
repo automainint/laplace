@@ -11,6 +11,7 @@
 #ifndef LAPLACE_NETWORK_SERVER_H
 #define LAPLACE_NETWORK_SERVER_H
 
+#include "../coroutine/task.h"
 #include "clock.h"
 #include "interface/execution.h"
 #include "interface/protocol.h"
@@ -27,10 +28,10 @@ namespace laplace::network {
     };
 
     struct connect_info {
-      ptr_io           io;
-      std::string_view host_address;
-      uint16_t         host_port;
-      uint16_t         client_port = any_port;
+      ptr_io      io;
+      std::string host_address;
+      uint16_t    host_port;
+      uint16_t    client_port = any_port;
     };
 
     server(server const &) = delete;
@@ -49,11 +50,12 @@ namespace laplace::network {
     void enable_encryption(bool is_enabled) noexcept;
     void set_max_slot_count(sl::whole count) noexcept;
 
-    void listen(std::span<endpoint_info const> endpoints) noexcept;
-    void connect(connect_info info) noexcept;
+    auto listen(std::span<endpoint_info const> endpoints) noexcept
+        -> coroutine::task<>;
+    auto connect(connect_info info) noexcept -> coroutine::task<>;
 
     void queue(span_cbyte seq) noexcept;
-    void tick(sl::time delta_msec) noexcept;
+    void time_elapsed(sl::time delta_msec) noexcept;
 
     [[nodiscard]] auto get_port(sl::index io = 0) const noexcept
         -> uint16_t;
@@ -61,11 +63,28 @@ namespace laplace::network {
     [[nodiscard]] auto is_connected() const noexcept -> bool;
     [[nodiscard]] auto is_quit() const noexcept -> bool;
 
-    inline void listen(endpoint_info const &ep) noexcept {
-      this->listen({ &ep, 1 });
+    inline auto await_listen(
+        std::span<endpoint_info const> endpoints) noexcept
+        -> coroutine::task<> {
+      return _await(this->listen(endpoints));
+    }
+
+    inline auto await_listen(endpoint_info const &ep)
+        -> coroutine::task<> {
+      return await_listen(sl::vector<endpoint_info> { ep });
+    }
+
+    inline auto await_connect(connect_info info)
+        -> coroutine::task<> {
+      return _await(this->connect(info));
     }
 
   private:
+    static inline auto _await(auto awaitable) -> coroutine::task<> {
+      awaitable.resume();
+      return awaitable;
+    }
+
     struct endpoint {
       ptr_io   io;
       ptr_node node;

@@ -48,19 +48,23 @@ namespace laplace::network {
 
   void server::set_max_slot_count(sl::whole count) noexcept { }
 
-  void server::listen(span<endpoint_info const> endpoints) noexcept {
+  auto server::listen(span<endpoint_info const> endpoints) noexcept
+      -> coroutine::task<> {
     for (auto &ep : endpoints)
       m_endpoints.emplace_back<endpoint>(
           { .io = ep.io, .node = ep.io->open(ep.port) });
+    co_yield std::default_sentinel;
+    read_endpoints();
   }
 
-  void server::connect(connect_info info) noexcept { }
+  auto server::connect(connect_info info) noexcept
+      -> coroutine::task<> {
+    co_return;
+  }
 
   void server::queue(span_cbyte seq) noexcept { }
 
-  void server::tick(sl::time delta_msec) noexcept {
-    read_endpoints();
-  }
+  void server::time_elapsed(sl::time delta_msec) noexcept { }
 
   auto server::get_port(sl::index io) const noexcept -> uint16_t {
     if (io < 0 || io >= m_endpoints.size()) {

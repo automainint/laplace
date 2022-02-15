@@ -50,7 +50,19 @@ namespace laplace::network {
       this->set_cipher(std::make_unique<cipher_>());
     }
 
+    [[nodiscard]] static auto wrap(span_cbyte arg0,
+                                   auto... args) noexcept
+        -> sl::vector<span_cbyte>;
+
+    [[nodiscard]] static auto wrap(
+        sl::vector<vbyte> const &reqs) noexcept
+        -> sl::vector<span_cbyte>;
+
   private:
+    static void _append(sl::vector<span_cbyte> &v) noexcept;
+    static void _append(sl::vector<span_cbyte> &v, auto arg0,
+                        auto... args) noexcept;
+
     [[nodiscard]] static auto pack_internal(
         std::span<const span_cbyte> data, uint16_t mark) noexcept
         -> vbyte;
@@ -80,5 +92,7 @@ namespace laplace::network {
     sl::whole m_loss_count = 0;
   };
 }
+
+#include "transfer.impl.h"
 
 #endif

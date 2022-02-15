@@ -6,7 +6,7 @@ target_sources(
       n_udp_ipv4_node.cpp n_slot_pool.cpp
     PUBLIC
       server.h slot_pool.h utils.h udp_ipv4.h pipe.h stats.h
-      slot_state.h random.impl.h udp_ipv4_node.h transfer.h random.h defs.h
-      clock.h)
+      slot_state.h random.impl.h udp_ipv4_node.h transfer.h transfer.impl.h
+      random.h defs.h clock.h)
 add_subdirectory(crypto)
 add_subdirectory(interface)

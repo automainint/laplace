@@ -14,11 +14,11 @@
 #include "../defs.h"
 
 namespace laplace::network {
-  using fn_is_desync     = std::function<bool()>;
-  using fn_is_ready      = std::function<bool()>;
   using fn_actor_reserve = std::function<void(span_cbyte)>;
   using fn_actor_create  = std::function<sl::index()>;
   using fn_actor_remove  = std::function<void(sl::index)>;
+  using fn_is_desync     = std::function<bool()>;
+  using fn_is_ready      = std::function<bool()>;
   using fn_do_seed       = std::function<void(span_cbyte)>;
   using fn_do_loading    = std::function<void(span_cbyte)>;
   using fn_do_apply      = std::function<sl::time(span_cbyte)>;
@@ -27,19 +27,63 @@ namespace laplace::network {
   using fn_do_setup      = std::function<void()>;
   using fn_do_cleanup    = std::function<void()>;
 
+  /*  Execution interface definition.
+   *
+   *  Relay should only implement actor_reserve, actor_create,
+   *  actor_remove.
+   */
   struct execution_interface {
-    fn_is_desync     is_desync;
-    fn_is_ready      is_ready;
+    /*  Reserve identifiers for actors.
+     *
+     *  Required for relay to be able to create new actors without
+     *  actual event execution.
+     */
     fn_actor_reserve actor_reserve;
-    fn_actor_create  actor_create;
-    fn_actor_remove  actor_remove;
-    fn_do_seed       do_seed;
-    fn_do_loading    do_loading;
-    fn_do_apply      do_apply;
-    fn_do_perform    do_perform;
-    fn_do_schedule   do_schedule;
-    fn_do_setup      do_setup;
-    fn_do_cleanup    do_cleanup;
+
+    /*  Returns a new actor identifier.
+     */
+    fn_actor_create actor_create;
+
+    /*  Removes an actor.
+     */
+    fn_actor_remove actor_remove;
+
+    /*  Returns true if there was an error during execution.
+     */
+    fn_is_desync is_desync;
+
+    /*  Returns true if there are no unfinished tasks. Required for
+     *  asynchrony.
+     */
+    fn_is_ready is_ready;
+
+    /*  Seed the random number generator.
+     */
+    fn_do_seed do_seed;
+
+    /*  Perform the loading. Called when execution is started.
+     */
+    fn_do_loading do_loading;
+
+    /*  Apply an event. Returns the event time.
+     */
+    fn_do_apply do_apply;
+
+    /*  Perform an instant event.
+     */
+    fn_do_perform do_perform;
+
+    /*  Schedule the execution.
+     */
+    fn_do_schedule do_schedule;
+
+    /*  Perform the setup. Called when server is started.
+     */
+    fn_do_setup do_setup;
+
+    /*  Perform the cleanup. Called when server is stopped.
+     */
+    fn_do_cleanup do_cleanup;
   };
 
   [[nodiscard]] auto check_execution_interface(

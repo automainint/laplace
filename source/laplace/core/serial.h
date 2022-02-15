@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_core_serial_h
-#define laplace_core_serial_h
+#ifndef LAPLACE_CORE_SERIAL_H
+#define LAPLACE_CORE_SERIAL_H
 
 #include "defs.h"
 #include "string.h"
@@ -47,7 +47,7 @@ namespace laplace::serial {
 
   template <typename elem_type, typename... args_>
   [[nodiscard]] constexpr auto byte_count(
-      std::span<const elem_type> arg0, args_... args) noexcept
+      std::span<elem_type const> arg0, args_... args) noexcept
       -> sl::whole;
 
   template <trivial char_type_>
