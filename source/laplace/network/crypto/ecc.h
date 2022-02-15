@@ -1,6 +1,4 @@
-/*  laplace/network/crypto/ecc.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,30 +8,28 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_crypto_ecc_h
-#define laplace_network_crypto_ecc_h
+#ifndef LAPLACE_NETWORK_CRYPTO_ECC_H
+#define LAPLACE_NETWORK_CRYPTO_ECC_H
 
 #include "basic_cipher.h"
-
-#include <wolfssl/options.h>
+#include "rng.h"
 
 #include <wolfssl/wolfcrypt/ecc.h>
-#include <wolfssl/wolfcrypt/random.h>
 
 namespace laplace::network::crypto {
   class ecc : virtual public basic_cipher {
   public:
     static const sl::whole buffer_size;
 
-    ecc(const sl::whole key_size);
+    ecc(sl::whole key_size);
     ~ecc() override;
 
   protected:
     auto setup_remote_key(span_cbyte key) -> bool override;
 
   private:
+    rng     m_rng;
     bool    m_is_ok   = false;
-    WC_RNG  m_random  = {};
     ecc_key m_private = {};
     ecc_key m_remote  = {};
   };

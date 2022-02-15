@@ -1,6 +1,4 @@
-/*  test/unittests/nc_wolfssl.test.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -71,7 +69,8 @@ namespace laplace::test {
           _n != 0)
         std::cerr << "wc_ecc_set_rng failed (code: " << _n << ").\n";
 
-      if (auto _n = wc_ecc_set_rng(&bob_private, &bob_random); _n != 0)
+      if (auto _n = wc_ecc_set_rng(&bob_private, &bob_random);
+          _n != 0)
         std::cerr << "wc_ecc_set_rng failed (code: " << _n << ").\n";
 #endif
 
@@ -90,17 +89,20 @@ namespace laplace::test {
       }
 
       if (auto _n = wc_ecc_import_x963(alice_public_buffer.data(),
-                                       alice_public_size, &alice_public);
+                                       alice_public_size,
+                                       &alice_public);
           _n != 0)
         std::cerr << "wc_ecc_import_x963 failed (code: " << _n
                   << ").\n";
 
-      if (auto _n = wc_ecc_make_key(&bob_random, key_size, &bob_private);
+      if (auto _n = wc_ecc_make_key(&bob_random, key_size,
+                                    &bob_private);
           _n != 0)
         std::cerr << "wc_ecc_make_key failed (code: " << _n << ").\n";
 
-      if (auto _n = wc_ecc_export_x963(
-              &bob_private, bob_public_buffer.data(), &bob_public_size);
+      if (auto _n = wc_ecc_export_x963(&bob_private,
+                                       bob_public_buffer.data(),
+                                       &bob_public_size);
           _n != 0) {
         bob_public_size = 0;
         std::cerr << "wc_ecc_export_x963 failed (code: " << _n
@@ -170,10 +172,12 @@ namespace laplace::test {
         std::cerr << "wc_RabbitSetKey failed (code: " << _n << ").\n";
 
       if (auto _n = wc_RabbitProcess(&alice, enc, test, 100); _n != 0)
-        std::cerr << "wc_RabbitProcess failed (code: " << _n << ").\n";
+        std::cerr << "wc_RabbitProcess failed (code: " << _n
+                  << ").\n";
 
       if (auto _n = wc_RabbitProcess(&bob, dec, enc, 100); _n != 0)
-        std::cerr << "wc_RabbitProcess failed (code: " << _n << ").\n";
+        std::cerr << "wc_RabbitProcess failed (code: " << _n
+                  << ").\n";
 
       EXPECT_EQ(memcmp(test, dec, 100), 0);
     }

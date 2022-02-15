@@ -12,9 +12,7 @@
 
 namespace laplace::network {
   random::random() noexcept {
-    auto dev = std::random_device {};
-    m_engine.seed(dev());
-    m_seed = m_engine();
+    m_seed = generate<decltype(m_seed)>();
   }
 
   auto random::get_seed() const noexcept -> uint64_t {
@@ -22,10 +20,6 @@ namespace laplace::network {
   }
 
   auto random::generate_token() noexcept -> vbyte {
-    auto token    = vbyte(256);
-    auto get_byte = std::uniform_int_distribution<int>(0, 255);
-    for (auto &byte : token)
-      byte = static_cast<uint8_t>(get_byte(m_engine));
-    return token;
+    return m_rng.generate(256);
   }
 }

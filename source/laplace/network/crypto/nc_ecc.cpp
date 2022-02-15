@@ -1,6 +1,4 @@
-/*  laplace/network/crypto/nc_ecc.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -17,12 +15,7 @@
 namespace laplace::network::crypto {
   const sl::whole ecc::buffer_size = 0x1000;
 
-  ecc::ecc(const sl::whole key_size) {
-    if (auto _n = wc_InitRng(&m_random); _n != 0) {
-      error_(fmt("wc_InitRng failed (code: %d).", _n), __FUNCTION__);
-      return;
-    }
-
+  ecc::ecc(sl::whole const key_size) {
     if (auto _n = wc_ecc_init(&m_private); _n != 0) {
       error_(fmt("wc_ecc_init failed (code: %d).", _n), __FUNCTION__);
       return;
@@ -34,7 +27,8 @@ namespace laplace::network::crypto {
     }
 
 #ifdef ECC_TIMING_RESISTANT
-    if (auto _n = wc_ecc_set_rng(&m_private, &m_random); _n != 0) {
+    if (auto _n = wc_ecc_set_rng(&m_private, &m_rng.generator);
+        _n != 0) {
       error_(fmt("wc_ecc_set_rng failed (code: %d).", _n),
              __FUNCTION__);
       return;
@@ -42,7 +36,7 @@ namespace laplace::network::crypto {
 #endif
 
     if (auto _n = wc_ecc_make_key(
-            &m_random, static_cast<int>(key_size), &m_private);
+            &m_rng.generator, static_cast<int>(key_size), &m_private);
         _n != 0) {
       error_(fmt("wc_ecc_make_key failed (code: %d).", _n),
              __FUNCTION__);
@@ -72,8 +66,6 @@ namespace laplace::network::crypto {
   ecc::~ecc() {
     wc_ecc_free(&m_private);
     wc_ecc_free(&m_remote);
-
-    wc_FreeRng(&m_random);
   }
 
   auto ecc::setup_remote_key(span_cbyte key) -> bool {
