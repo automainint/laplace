@@ -13,9 +13,8 @@
 
 namespace laplace::engine {
   constexpr void basic_impact::set_index(sl::index n) noexcept {
-    if (n >= 0) {
+    if (n >= 0)
       set_order({ eventorder::root + n });
-    }
   }
 
   constexpr void basic_impact::set_order(
@@ -36,9 +35,8 @@ namespace laplace::engine {
   constexpr auto basic_impact::get_index() const noexcept
       -> sl::index {
     const auto n = this->m_order.get_index();
-    if (n < eventorder::root) {
+    if (n < eventorder::root)
       return id_undefined;
-    }
     return n - eventorder::root;
   }
 

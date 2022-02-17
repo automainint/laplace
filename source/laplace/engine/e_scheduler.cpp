@@ -13,7 +13,6 @@
 #include "basic_impact.h"
 #include "world.h"
 #include <mutex>
-#include <sstream>
 
 namespace laplace::engine {
   using std::unique_lock, std::lock, std::adopt_lock, std::jthread,

@@ -15,7 +15,8 @@
 
 namespace laplace::network {
   using std::min, std::max, std::string, std::string_view,
-      crypto::ecc_rabbit, std::span, std::unique_ptr;
+      crypto::ecc_rabbit, std::span, std::unique_ptr,
+      std::default_sentinel;
 
   server::~server() noexcept { }
 
@@ -50,16 +51,35 @@ namespace laplace::network {
 
   auto server::listen(span<endpoint_info const> endpoints) noexcept
       -> coroutine::task<> {
-    for (auto &ep : endpoints)
+    m_is_connected = true;
+
+    for (auto &info : endpoints)
       m_endpoints.emplace_back<endpoint>(
-          { .io = ep.io, .node = ep.io->open(ep.port) });
-    co_yield std::default_sentinel;
-    read_endpoints();
+          { .io = info.io, .node = info.io->open(info.port) });
+
+    while (is_connected()) {
+      co_yield default_sentinel;
+      tick();
+    }
   }
 
-  auto server::connect(connect_info info) noexcept
+  auto server::connect(connect_info const &info) noexcept
       -> coroutine::task<> {
-    co_return;
+    m_is_connected = true;
+
+    m_endpoints.clear();
+    m_endpoints.emplace_back<endpoint>(
+        { .io = info.io, .node = info.io->open(info.client_port) });
+
+    m_remote_address = info.host_address;
+
+    send_session_request(m_endpoints[0], info.host_address,
+                         info.host_port);
+
+    while (is_connected()) {
+      co_yield default_sentinel;
+      tick();
+    }
   }
 
   void server::queue(span_cbyte seq) noexcept { }
@@ -79,11 +99,15 @@ namespace laplace::network {
   }
 
   auto server::is_connected() const noexcept -> bool {
-    return false;
+    return m_is_connected;
   }
 
   auto server::is_quit() const noexcept -> bool {
     return false;
+  }
+
+  void server::tick() noexcept {
+    read_endpoints();
   }
 
   void server::read_endpoints() noexcept {
@@ -110,6 +134,11 @@ namespace laplace::network {
 
     switch (m_proto.get_control_id(req)) {
       case control::session_request: session_open(ep, req); return;
+      case control::session_response:
+        set_remote_endpoint(req);
+        set_remote_key(req);
+        send_request_token(ep);
+        return;
       default:;
     }
   }
@@ -117,12 +146,11 @@ namespace laplace::network {
   void server::session_open(endpoint const &ep,
                             span_cbyte      req) noexcept {
     auto session = ep.io->open(any_port);
-    auto tran    = transfer {};
 
     switch (m_proto.decode_cipher_id(req)) {
       case cipher::rabbit:
-        tran.setup_cipher<ecc_rabbit>();
-        tran.set_remote_key(m_proto.decode_public_key(req));
+        m_tran.setup_cipher<ecc_rabbit>();
+        m_tran.set_remote_key(m_proto.decode_public_key(req));
         break;
       default: return;
     }
@@ -133,8 +161,44 @@ namespace laplace::network {
     auto const address  = ep.node->get_remote_address();
     auto const port     = ep.node->get_remote_port();
     auto const response = m_proto.encode_session_response(
-        session->get_port(), tran.get_public_key());
+        session->get_port(), m_tran.get_public_key());
 
-    auto const n = ep.node->send(address, port, response);
+    auto const n = ep.node->send(
+        address, port, m_tran.encode(transfer::wrap(response)));
+  }
+
+  void server::send_session_request(endpoint const &ep,
+                                    string_view     address,
+                                    uint16_t        port) noexcept {
+    m_tran.setup_cipher<ecc_rabbit>();
+
+    if (!ep.node)
+      return;
+
+    auto const request = m_proto.encode_session_request(
+        cipher::rabbit, m_tran.get_public_key());
+
+    auto const n = ep.node->send(
+        address, port, m_tran.encode(transfer::wrap(request)));
+  }
+
+  void server::set_remote_endpoint(span_cbyte req) noexcept {
+    m_remote_port = m_proto.decode_session_response_port(req);
+  }
+
+  void server::set_remote_key(span_cbyte req) noexcept {
+    m_tran.set_remote_key(m_proto.decode_public_key(req));
+    m_tran.enable_encryption(true);
+  }
+
+  void server::send_request_token(endpoint const &ep) noexcept {
+    if (!ep.node)
+      return;
+
+    auto const request = m_proto.encode(control::request_token);
+
+    auto const n = ep.node->send(
+        m_remote_address, m_remote_port,
+        m_tran.encode(transfer::wrap(request)));
   }
 }

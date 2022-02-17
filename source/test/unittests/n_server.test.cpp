@@ -23,6 +23,12 @@ namespace laplace::test {
    *  be encrypted except for session_request and session_response.
    */
 
+  TEST(network, server_initial_state) {
+    auto alice = server {};
+    EXPECT_FALSE(alice.is_connected());
+    EXPECT_FALSE(alice.is_quit());
+  }
+
   TEST(network, session_request_session_response) {
     /*  Peer answers to session_request with session_response.
      */
@@ -87,6 +93,7 @@ namespace laplace::test {
 
     uint8_t    buf[1024] = {};
     auto const received  = bob->receive(buf);
+    auto const plain     = tran.decode({ buf, buf + received });
 
     EXPECT_EQ(is_allowed_called, 1);
     EXPECT_EQ(get_control_id_called, 1);
@@ -94,9 +101,10 @@ namespace laplace::test {
     EXPECT_EQ(decode_public_key_called, 1);
     EXPECT_EQ(encode_session_response_called, 1);
 
-    EXPECT_TRUE(serial::rd<decltype(id_session_response)>(
-                    { buf, buf + received }, 0) ==
-                id_session_response);
+    EXPECT_EQ(plain.size(), 1);
+    if (!plain.empty())
+      EXPECT_TRUE(serial::rd<decltype(id_session_response)>(
+                      plain[0], 0) == id_session_response);
   }
 
   TEST(network, session_response_request_token) {
@@ -118,17 +126,20 @@ namespace laplace::test {
     auto proto                   = blank_protocol_interface();
     proto.encode_session_request = [&](cipher     cipher_id,
                                        span_cbyte key) -> vbyte {
+      encode_session_request_called++;
       if (cipher_id != cipher::rabbit)
         return {};
       return serial::pack_to_bytes(uint8_t { 1 }, key);
     };
     proto.is_allowed = [&](span_cbyte seq, bool is_exclusive) {
       is_allowed_called++;
-      return !seq.empty() && seq[0] == 2;
+      return serial::rd<decltype(id_session_response)>(seq, 0) ==
+             id_session_response;
     };
     proto.get_control_id = [&](span_cbyte seq) -> control {
       get_control_id_called++;
-      if (!seq.empty() && seq[0] == 2)
+      if (serial::rd<decltype(id_session_response)>(seq, 0) ==
+          id_session_response)
         return control::session_response;
       return control::undefined;
     };
@@ -169,7 +180,6 @@ namespace laplace::test {
     auto plain = tran.decode({ buf, buf + received });
     EXPECT_EQ(plain.size(), 1);
     if (!plain.empty()) {
-      EXPECT_EQ(plain[0].size(), 1);
       EXPECT_EQ(serial::rd<decltype(id_session_request)>(plain[0], 0),
                 id_session_request);
       tran.setup_cipher<ecc_rabbit>();

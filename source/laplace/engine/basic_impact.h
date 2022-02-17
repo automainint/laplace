@@ -79,6 +79,10 @@ namespace laplace::engine {
      */
     constexpr void set_actor(sl::index id) noexcept;
 
+    /*  TODO
+     *  Make `perform` a coroutine. Add coroutine support in
+     *  world and scheduler.
+     */
     virtual void perform(access::world w) const noexcept;
 
     constexpr auto get_index() const noexcept -> sl::index;

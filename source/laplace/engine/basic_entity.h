@@ -161,7 +161,8 @@ namespace laplace::engine {
      */
     void adjust() noexcept;
 
-    /*  Dynamic Entity live loop.
+    /*  TODO
+     *  Make `tick` a coroutine `action`.
      */
     virtual void tick(access::world w) noexcept;
 

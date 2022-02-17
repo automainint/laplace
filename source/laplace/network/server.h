@@ -11,6 +11,8 @@
 #ifndef LAPLACE_NETWORK_SERVER_H
 #define LAPLACE_NETWORK_SERVER_H
 
+#include <utility>
+
 #include "../coroutine/task.h"
 #include "clock.h"
 #include "interface/execution.h"
@@ -52,7 +54,8 @@ namespace laplace::network {
 
     auto listen(std::span<endpoint_info const> endpoints) noexcept
         -> coroutine::task<>;
-    auto connect(connect_info info) noexcept -> coroutine::task<>;
+    auto connect(connect_info const &info) noexcept
+        -> coroutine::task<>;
 
     void queue(span_cbyte seq) noexcept;
     void time_elapsed(sl::time delta_msec) noexcept;
@@ -63,32 +66,21 @@ namespace laplace::network {
     [[nodiscard]] auto is_connected() const noexcept -> bool;
     [[nodiscard]] auto is_quit() const noexcept -> bool;
 
-    inline auto await_listen(
+    auto await_listen(
         std::span<endpoint_info const> endpoints) noexcept
-        -> coroutine::task<> {
-      return _await(this->listen(endpoints));
-    }
-
-    inline auto await_listen(endpoint_info const &ep)
-        -> coroutine::task<> {
-      return await_listen(sl::vector<endpoint_info> { ep });
-    }
-
-    inline auto await_connect(connect_info info)
-        -> coroutine::task<> {
-      return _await(this->connect(info));
-    }
+        -> coroutine::task<>;
+    auto await_listen(endpoint_info const &info) -> coroutine::task<>;
+    auto await_connect(connect_info const &info) -> coroutine::task<>;
 
   private:
-    static inline auto _await(auto awaitable) -> coroutine::task<> {
-      awaitable.resume();
-      return awaitable;
-    }
+    static auto _await(auto awaitable) -> coroutine::task<>;
 
     struct endpoint {
       ptr_io   io;
       ptr_node node;
     };
+
+    void tick() noexcept;
 
     void read_endpoints() noexcept;
     void read_endpoint(endpoint const &ep) noexcept;
@@ -96,13 +88,24 @@ namespace laplace::network {
                           std::span<vbyte const> reqs) noexcept;
     void process_request(endpoint const &ep, span_cbyte req) noexcept;
     void session_open(endpoint const &ep, span_cbyte req) noexcept;
+    void send_session_request(endpoint const  &ep,
+                              std::string_view address,
+                              uint16_t         port) noexcept;
+    void set_remote_endpoint(span_cbyte req) noexcept;
+    void set_remote_key(span_cbyte req) noexcept;
+    void send_request_token(endpoint const &ep) noexcept;
 
     protocol_interface   m_proto;
     sl::vector<endpoint> m_endpoints;
     transfer             m_tran;
+    std::string          m_remote_address;
+    uint16_t             m_remote_port  = any_port;
+    bool                 m_is_connected = false;
   };
 
   using ptr_server = std::shared_ptr<server>;
 }
+
+#include "server.impl.h"
 
 #endif

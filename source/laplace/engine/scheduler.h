@@ -18,6 +18,9 @@
 #include <thread>
 
 namespace laplace::engine {
+  /*  TODO
+   *  Add coroutine support.
+   */
   class scheduler {
   public:
     static sl::whole const overthreading_limit;

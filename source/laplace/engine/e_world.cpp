@@ -334,8 +334,7 @@ namespace laplace::engine {
 
     if (m_index <= m_sync_queue.size()) {
       m_sync_queue.erase(m_sync_queue.begin(),
-                         m_sync_queue.begin() +
-                             static_cast<ptrdiff_t>(m_index));
+                         m_sync_queue.begin() + m_index);
 
       m_index = 0;
     }
@@ -345,9 +344,7 @@ namespace laplace::engine {
     auto _ul = unique_lock(m_lock);
 
     if (m_index <= m_queue.size()) {
-      m_queue.erase(m_queue.begin(),
-                    m_queue.begin() +
-                        static_cast<ptrdiff_t>(m_index));
+      m_queue.erase(m_queue.begin(), m_queue.begin() + m_index);
 
       m_index = 0;
     }
