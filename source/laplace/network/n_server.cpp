@@ -49,6 +49,10 @@ namespace laplace::network {
 
   void server::set_max_slot_count(sl::whole count) noexcept { }
 
+  void server::set_token(span_cbyte token) noexcept {
+    m_session_token.assign(token.begin(), token.end());
+  }
+
   auto server::listen(span<endpoint_info const> endpoints) noexcept
       -> coroutine::task<> {
     m_is_connected = true;
@@ -98,6 +102,10 @@ namespace laplace::network {
     return m_endpoints[io].node->get_port();
   }
 
+  auto server::has_token() const noexcept -> bool {
+    return !m_session_token.empty();
+  }
+
   auto server::is_connected() const noexcept -> bool {
     return m_is_connected;
   }
@@ -108,6 +116,7 @@ namespace laplace::network {
 
   void server::tick() noexcept {
     read_endpoints();
+    read_sessions();
   }
 
   void server::read_endpoints() noexcept {
@@ -133,19 +142,52 @@ namespace laplace::network {
       return;
 
     switch (m_proto.get_control_id(req)) {
-      case control::session_request: session_open(ep, req); return;
+      case control::session_request: session_open(ep, req); break;
       case control::session_response:
         set_remote_endpoint(req);
         set_remote_key(req);
-        send_request_token(ep);
-        return;
+        if (has_token())
+          send_session_token(ep.node);
+        else
+          send_request_token(ep);
+        break;
+      default:;
+    }
+  }
+
+  void server::read_sessions() noexcept {
+    if (!m_session_node)
+      return;
+
+    constexpr sl::whole chunk_size      = 2048;
+    uint8_t             buf[chunk_size] = {};
+
+    auto const received = m_session_node->receive(buf);
+
+    if (received == 0)
+      return;
+
+    auto const reqs = m_tran.decode({ buf, buf + received });
+
+    for (auto &req : reqs) process_session(req);
+  }
+
+  void server::process_session(span_cbyte req) noexcept {
+    if (!m_proto.is_allowed(req, true))
+      return;
+
+    switch (m_proto.get_control_id(req)) {
+      case control::request_token:
+        m_session_token = m_random.generate_token();
+        send_session_token(m_session_node);
+        break;
       default:;
     }
   }
 
   void server::session_open(endpoint const &ep,
                             span_cbyte      req) noexcept {
-    auto session = ep.io->open(any_port);
+    m_session_node = ep.io->open(any_port);
 
     switch (m_proto.decode_cipher_id(req)) {
       case cipher::rabbit:
@@ -158,13 +200,17 @@ namespace laplace::network {
     if (!ep.node)
       return;
 
-    auto const address  = ep.node->get_remote_address();
-    auto const port     = ep.node->get_remote_port();
+    m_remote_address = ep.node->get_remote_address();
+    m_remote_port    = ep.node->get_remote_port();
+
     auto const response = m_proto.encode_session_response(
-        session->get_port(), m_tran.get_public_key());
+        m_session_node->get_port(), m_tran.get_public_key());
 
     auto const n = ep.node->send(
-        address, port, m_tran.encode(transfer::wrap(response)));
+        m_remote_address, m_remote_port,
+        m_tran.encode(transfer::wrap(response)));
+
+    m_tran.enable_encryption(true);
   }
 
   void server::send_session_request(endpoint const &ep,
@@ -200,5 +246,16 @@ namespace laplace::network {
     auto const n = ep.node->send(
         m_remote_address, m_remote_port,
         m_tran.encode(transfer::wrap(request)));
+  }
+
+  void server::send_session_token(ptr_node const &node) noexcept {
+    if (!node)
+      return;
+
+    auto const request = m_proto.encode_session_token(
+        m_session_token);
+
+    auto const n = node->send(m_remote_address, m_remote_port,
+                              m_tran.encode(transfer::wrap(request)));
   }
 }

@@ -13,7 +13,7 @@
 
 namespace laplace::core {
   template <uint64_t begin_, uint64_t end_>
-  constexpr static_shaffle<begin_, end_>::static_shaffle(
+  constexpr static_shuffle<begin_, end_>::static_shuffle(
       uint64_t seed) noexcept {
     auto gen = static_random { seed };
     uint64_t buf[end_ - begin_] = {};
@@ -29,7 +29,7 @@ namespace laplace::core {
   }
 
   template <uint64_t begin_, uint64_t end_>
-  constexpr auto static_shaffle<begin_, end_>::operator[](
+  constexpr auto static_shuffle<begin_, end_>::operator[](
       uint64_t n) const noexcept -> uint64_t {
     if (begin_ + n >= end_)
       return 0;
@@ -37,7 +37,7 @@ namespace laplace::core {
   }
 
   template <uint64_t begin_, uint64_t end_>
-  constexpr auto static_shaffle<begin_, end_>::upper(
+  constexpr auto static_shuffle<begin_, end_>::upper(
       uint64_t n) const noexcept -> uint64_t {
     auto y = uint64_t{};
     for (uint64_t i = 0; i < n && begin_ + i < end_; i++)
@@ -46,8 +46,8 @@ namespace laplace::core {
     return y;
   }
 
-  static_assert(static_shaffle<0, 256>(1)[2] !=
-                static_shaffle<0, 256>(1)[18]);
+  static_assert(static_shuffle<0, 256>(1)[2] !=
+                static_shuffle<0, 256>(1)[18]);
 }
 
 #endif

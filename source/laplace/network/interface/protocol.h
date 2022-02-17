@@ -11,13 +11,13 @@
 #ifndef LAPLACE_NETWORK_INTERFACE_PROTOCOL_H
 #define LAPLACE_NETWORK_INTERFACE_PROTOCOL_H
 
-#include "../../core/static_shaffle.h"
+#include "../../core/static_shuffle.h"
 #include "../defs.h"
 
 namespace laplace::network {
   enum class cipher { undefined, plain, rabbit };
 
-  static constexpr auto _id = core::static_shaffle<0, 64>(3);
+  static constexpr auto _id = core::static_shuffle<0, 64>(3);
 
   enum class control {
     undefined        = _id[0],

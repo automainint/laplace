@@ -11,12 +11,12 @@
 #ifndef LAPLACE_ENGINE_PROTOCOL_IDS_H
 #define LAPLACE_ENGINE_PROTOCOL_IDS_H
 
-#include "../../core/static_shaffle.h"
+#include "../../core/static_shuffle.h"
 
 namespace laplace::engine::protocol::ids {
   enum cipher_id : uint16_t { cipher_plain, cipher_ecc_rabbit };
 
-  static constexpr auto _id = core::static_shaffle<0, 64>(1);
+  static constexpr auto _id = core::static_shuffle<0, 64>(1);
 
   enum command_id : uint16_t {
     undefined = _id[0],

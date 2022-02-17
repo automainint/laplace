@@ -15,18 +15,18 @@
 
 namespace laplace::core {
   template <uint64_t begin_, uint64_t end_>
-  class static_shaffle {
+  class static_shuffle {
   public:
     static_assert(begin_ < end_);
 
-    static_shaffle(static_shaffle const &) noexcept = default;
-    static_shaffle(static_shaffle &&) noexcept      = default;
-    static_shaffle &operator=(static_shaffle const &) noexcept =
+    static_shuffle(static_shuffle const &) noexcept = default;
+    static_shuffle(static_shuffle &&) noexcept      = default;
+    static_shuffle &operator=(static_shuffle const &) noexcept =
         default;
-    static_shaffle &operator=(static_shaffle &&) noexcept = default;
+    static_shuffle &operator=(static_shuffle &&) noexcept = default;
 
-    explicit constexpr static_shaffle(uint64_t seed) noexcept;
-    ~static_shaffle() noexcept = default;
+    explicit constexpr static_shuffle(uint64_t seed) noexcept;
+    ~static_shuffle() noexcept = default;
 
     [[nodiscard]] constexpr auto operator[](uint64_t n) const noexcept
         -> uint64_t;
@@ -39,6 +39,6 @@ namespace laplace::core {
   };
 }
 
-#include "static_shaffle.impl.h"
+#include "static_shuffle.impl.h"
 
 #endif

@@ -51,6 +51,7 @@ namespace laplace::network {
 
     void enable_encryption(bool is_enabled) noexcept;
     void set_max_slot_count(sl::whole count) noexcept;
+    void set_token(span_cbyte token) noexcept;
 
     auto listen(std::span<endpoint_info const> endpoints) noexcept
         -> coroutine::task<>;
@@ -62,6 +63,7 @@ namespace laplace::network {
 
     [[nodiscard]] auto get_port(sl::index io = 0) const noexcept
         -> uint16_t;
+    [[nodiscard]] auto has_token() const noexcept -> bool;
 
     [[nodiscard]] auto is_connected() const noexcept -> bool;
     [[nodiscard]] auto is_quit() const noexcept -> bool;
@@ -87,6 +89,8 @@ namespace laplace::network {
     void process_requests(endpoint const        &ep,
                           std::span<vbyte const> reqs) noexcept;
     void process_request(endpoint const &ep, span_cbyte req) noexcept;
+    void read_sessions() noexcept;
+    void process_session(span_cbyte req) noexcept;
     void session_open(endpoint const &ep, span_cbyte req) noexcept;
     void send_session_request(endpoint const  &ep,
                               std::string_view address,
@@ -94,13 +98,17 @@ namespace laplace::network {
     void set_remote_endpoint(span_cbyte req) noexcept;
     void set_remote_key(span_cbyte req) noexcept;
     void send_request_token(endpoint const &ep) noexcept;
+    void send_session_token(ptr_node const &node) noexcept;
 
     protocol_interface   m_proto;
     sl::vector<endpoint> m_endpoints;
+    random               m_random;
     transfer             m_tran;
-    std::string          m_remote_address;
-    uint16_t             m_remote_port  = any_port;
     bool                 m_is_connected = false;
+    ptr_node             m_session_node;
+    std::string          m_remote_address;
+    uint16_t             m_remote_port = any_port;
+    vbyte                m_session_token;
   };
 
   using ptr_server = std::shared_ptr<server>;

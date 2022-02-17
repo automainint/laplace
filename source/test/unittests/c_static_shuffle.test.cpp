@@ -8,15 +8,15 @@
  *  the MIT License for more details.
  */
 
-#include "../../laplace/core/static_shaffle.h"
+#include "../../laplace/core/static_shuffle.h"
 #include <gtest/gtest.h>
 #include <random>
 
 namespace laplace::test {
-  using core::static_shaffle;
+  using core::static_shuffle;
 
   TEST(core, static_shaffle_constexpr) {
-    constexpr auto x = static_shaffle<0, 256>(1);
+    constexpr auto x = static_shuffle<0, 256>(1);
 
     EXPECT_NE(x[0], x[1]);
     EXPECT_NE(x[0], x[2]);
@@ -40,7 +40,7 @@ namespace laplace::test {
     auto dev = std::random_device {};
 
     for (unsigned k = 0; k < 20; k++) {
-      auto x = static_shaffle<0, 256>(dev());
+      auto x = static_shuffle<0, 256>(dev());
 
       for (unsigned n = 0; n < 100; n++) {
         EXPECT_TRUE(n == 1 || x[n] != x[1]);

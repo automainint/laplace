@@ -109,6 +109,9 @@ namespace laplace::network {
     }());
 
     for (auto message : data) {
+      if (message.empty())
+        continue;
+
       const sl::whole offset = buf.size();
       buf.resize(offset + n_data + message.size());
 

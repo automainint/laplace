@@ -77,6 +77,15 @@ namespace laplace::engine {
 
     [[nodiscard]] auto is_desync() noexcept -> bool;
 
+    /*  TODO
+     *  Sort queue & clean queue order.
+     *  Coroutines support.
+     *
+     *    Use mutual queue for sync & async impacts.
+     *
+     *    Use swap queue for adding new impacts during queue
+     *    execution.
+     */
     void clean_sync_queue() noexcept;
     void clean_async_queue() noexcept;
     void reset_index() noexcept;
