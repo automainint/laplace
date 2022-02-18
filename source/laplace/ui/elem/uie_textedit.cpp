@@ -111,8 +111,8 @@ namespace laplace::ui::elem {
 
   auto textedit::update(ptr_widget const &object,
                         textedit_state state, filter const &f,
-                        input_event const &ev) noexcept
-      -> update_result {
+                        input_event const &ev,
+                        log_handler log) noexcept -> update_result {
 
     auto has_focus = state.has_focus;
 
@@ -154,7 +154,8 @@ namespace laplace::ui::elem {
           if (state.length_limit == 0 ||
               text.size() < state.length_limit)
             if (!utf8::encode(ev.character, text, cursor))
-              error_("Unable to encode UTF-8 string.", __FUNCTION__);
+              log(log_event::error, "Unable to encode UTF-8 string.",
+                  __FUNCTION__);
         }
       }
 
@@ -197,7 +198,7 @@ namespace laplace::ui::elem {
     }
 
     auto const s = update(shared_from_this(), get_textedit_state(),
-                          m_filter, ev);
+                          m_filter, ev, log);
 
     textedit_set_focus(s.has_focus);
     set_text(s.text);

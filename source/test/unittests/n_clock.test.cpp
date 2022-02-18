@@ -33,7 +33,6 @@ namespace laplace::test {
   }
 
   TEST(network, clock_options_invalid) {
-    disable_log();
     auto clo = clock {};
     clo.set_tick_duration(0);
     clo.set_latency(-1);
@@ -42,7 +41,6 @@ namespace laplace::test {
     EXPECT_EQ(clo.get_latency(), clock::default_latency);
     EXPECT_EQ(clo.get_overtake_factor(),
               clock::default_overtake_factor);
-    setup_log({});
   }
 
   TEST(network, clock_time_overflow) {

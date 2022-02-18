@@ -62,9 +62,10 @@ namespace laplace::network {
     return make_unique<pipe_node>(port);
   }
 
-  auto pipe::remote_port_of(uint16_t port) noexcept -> uint16_t & {
+  auto pipe::remote_port_of(uint16_t port, log_handler log) noexcept
+      -> uint16_t & {
     if (port <= 0 || port >= m_nodes.size()) {
-      error_("Invalid port.", __FUNCTION__);
+      log(log_event::error, "Invalid port.", __FUNCTION__);
       static uint16_t invalid = {};
       return invalid;
     }
@@ -72,9 +73,10 @@ namespace laplace::network {
     return m_nodes[port].remote_port;
   }
 
-  auto pipe::buffer_of(uint16_t port) noexcept -> vbyte & {
+  auto pipe::buffer_of(uint16_t port, log_handler log) noexcept
+      -> vbyte & {
     if (port <= 0 || port >= m_nodes.size()) {
-      error_("Invalid port.", __FUNCTION__);
+      log(log_event::error, "Invalid port.", __FUNCTION__);
       static vbyte invalid = {};
       return invalid;
     }

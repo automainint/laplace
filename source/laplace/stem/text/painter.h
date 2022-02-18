@@ -29,19 +29,17 @@ namespace laplace::stem::text {
     static sl::index const default_lcd_char_height;
     static uint64_t const  default_lcd_bits[];
 
-    static constexpr auto default_color = graphics::rgba(
-        250, 240, 255, 255);
+    static constexpr auto default_color = graphics::rgba(250, 240,
+                                                         255, 255);
 
     virtual ~painter() = default;
 
     virtual auto adjust(std::u8string_view text) -> ui::text_area;
 
-    virtual void print(graphics::ref_image img,
-                       sl::index           x,
-                       sl::index           y,
-                       std::u8string_view  text);
+    virtual void print(graphics::ref_image img, sl::index x,
+                       sl::index y, std::u8string_view text);
 
-    static auto get_default() -> ptr_painter;
+    static auto get_default(log_handler log) -> ptr_painter;
 
   private:
     static std::weak_ptr<painter> m_default;

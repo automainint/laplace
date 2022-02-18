@@ -67,7 +67,7 @@ namespace laplace {
   [[nodiscard]] auto to_real(std::u8string_view s) noexcept -> double;
 
   template <typename view_type>
-  [[nodiscard]] auto to_u8string(view_type s) noexcept
+  [[nodiscard]] auto to_u8string(view_type s, log_handler log = get_global_log()) noexcept
       -> std::u8string;
 }
 

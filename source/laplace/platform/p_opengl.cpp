@@ -22,7 +22,8 @@
   if (!a) {                                                     \
     if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a)); \
         !a) {                                                   \
-      error_("Unable to load " #a " function.", __FUNCTION__);  \
+      log(log_event::error, "Unable to load " #a " function.",  \
+          __FUNCTION__);                                        \
       ok = false;                                               \
     }                                                           \
   }
@@ -31,7 +32,8 @@
   if (!a) {                                                     \
     if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a)); \
         !a) {                                                   \
-      error_("Unable to load " #a " function.", __FUNCTION__);  \
+      log(log_event::error, "Unable to load " #a " function.",  \
+          __FUNCTION__);                                        \
       status = false;                                           \
     }                                                           \
   }
@@ -69,7 +71,7 @@ namespace laplace::gl {
     has_extensions_required = !extensions_required.empty();
   }
 
-  auto load_functions() -> bool {
+  auto load_functions(log_handler log) -> bool {
     using platform::gl_get_proc_address;
 
     ok = true;

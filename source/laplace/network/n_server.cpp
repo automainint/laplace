@@ -23,7 +23,8 @@ namespace laplace::network {
   void server::setup_protocol(
       protocol_interface const &interface) noexcept {
     if (!check_protocol_interface(interface)) {
-      error_("Invalid protocol interface.", __FUNCTION__);
+      log(log_event::error, "Invalid protocol interface.",
+          __FUNCTION__);
       return;
     }
 
@@ -33,14 +34,7 @@ namespace laplace::network {
   void server::setup_execution(
       execution_interface const &interface) noexcept {
     if (!check_execution_interface(interface)) {
-      error_("Invalid event interface.", __FUNCTION__);
-      return;
-    }
-  }
-
-  void server::setup_log(log_interface const &interface) noexcept {
-    if (!check_log_interface(interface)) {
-      error_("Invalid log interface.", __FUNCTION__);
+      log(log_event::error, "Invalid event interface.", __FUNCTION__);
       return;
     }
   }
@@ -92,7 +86,7 @@ namespace laplace::network {
 
   auto server::get_port(sl::index io) const noexcept -> uint16_t {
     if (io < 0 || io >= m_endpoints.size()) {
-      error_("Invalid IO index.", __FUNCTION__);
+      log(log_event::error, "Invalid IO index.", __FUNCTION__);
       return any_port;
     }
 
@@ -138,9 +132,6 @@ namespace laplace::network {
 
   void server::process_request(endpoint const &ep,
                                span_cbyte      req) noexcept {
-    if (!m_proto.is_allowed(req, false))
-      return;
-
     switch (m_proto.get_control_id(req)) {
       case control::session_request: session_open(ep, req); break;
       case control::session_response:
@@ -173,7 +164,7 @@ namespace laplace::network {
   }
 
   void server::process_session(span_cbyte req) noexcept {
-    if (!m_proto.is_allowed(req, true))
+    if (!m_proto.is_allowed(req))
       return;
 
     switch (m_proto.get_control_id(req)) {

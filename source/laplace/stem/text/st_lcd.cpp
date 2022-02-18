@@ -1,6 +1,4 @@
-/*  laplace/stem/text/st_lcd.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -12,13 +10,12 @@
 
 #include "lcd.h"
 
-#include "../../core/utils.h"
+#include "../../core/utf8.h"
 
 namespace laplace::stem::text {
   using std::u8string_view, graphics::ref_image, graphics::cref_pixel;
 
-  void lcd::set_size(sl::index char_top,
-                     sl::whole char_width,
+  void lcd::set_size(sl::index char_top, sl::whole char_width,
                      sl::whole char_height) {
 
     m_char_top    = char_top;
@@ -72,9 +69,7 @@ namespace laplace::stem::text {
     return { get_char_top(), width, get_char_height() };
   }
 
-  void lcd::print(ref_image     img,
-                  sl::index     x,
-                  sl::index     y,
+  void lcd::print(ref_image img, sl::index x, sl::index y,
                   u8string_view text) {
     auto code = char32_t {};
 
@@ -113,7 +108,7 @@ namespace laplace::stem::text {
         m_sizes[n].size = i - m_sizes[n].left + 1;
         break;
       }
-    
+
     if (m_sizes[n].size == 0) {
       m_sizes[n].size = m_char_width - m_sizes[n].left;
     }
@@ -133,9 +128,7 @@ namespace laplace::stem::text {
     return ((c - char_first) / 16) * m_char_height;
   }
 
-  auto lcd::get_pixel_index(sl::index x,
-                            sl::index y,
-                            sl::index i,
+  auto lcd::get_pixel_index(sl::index x, sl::index y, sl::index i,
                             sl::index j) const -> sl::index {
     return (y + m_char_height - j - 1) * (m_char_width * 16) +
            (x + i);
@@ -167,10 +160,8 @@ namespace laplace::stem::text {
     return get_char_size(c) * m_scale_x + m_spacing_x;
   }
 
-  void lcd::draw_char(ref_image img,
-                      sl::index x,
-                      sl::index y,
-                      char32_t  c) {
+  void lcd::draw_char(ref_image img, sl::index x, sl::index y,
+                      char32_t c) {
     const auto i0 = get_char_x(c) + get_char_left(c);
     const auto j0 = get_char_y(c);
 
@@ -191,12 +182,8 @@ namespace laplace::stem::text {
     }
   }
 
-  void lcd::draw_dot(ref_image  img,
-                     sl::index  x0,
-                     sl::index  y0,
-                     sl::index  x1,
-                     sl::index  y1,
-                     cref_pixel color) {
+  void lcd::draw_dot(ref_image img, sl::index x0, sl::index y0,
+                     sl::index x1, sl::index y1, cref_pixel color) {
     for (sl::index i = x0; i < x1; i++)
       for (sl::index j = y0; j < y1; j++) {
         img.set_pixel(i, j, color);

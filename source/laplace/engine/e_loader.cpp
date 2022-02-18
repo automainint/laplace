@@ -20,7 +20,7 @@ namespace laplace::engine {
       while (!m_is_done) {
         while (!m_queue.empty()) {
           if (!m_context.decode || !m_context.perform) {
-            error_("Invalid context.", __FUNCTION__);
+            log(log_event::error, "Invalid context.", __FUNCTION__);
             break;
           }
 
@@ -52,8 +52,9 @@ namespace laplace::engine {
         m_thread = jthread(loop);
         break;
       } catch (std::system_error &error) {
-        error_("Unable to create a thread.", __FUNCTION__);
-        error_(error.what(), __FUNCTION__);
+        log(log_event::error, "Unable to create a thread.",
+            __FUNCTION__);
+        log(log_event::error, error.what(), __FUNCTION__);
         std::this_thread::yield();
       }
     }

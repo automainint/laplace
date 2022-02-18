@@ -11,11 +11,13 @@
 #ifndef LAPLACE_NETWORK_STATS_H
 #define LAPLACE_NETWORK_STATS_H
 
-#include "interface/log.h"
+#include "../core/defs.h"
 
 namespace laplace::network {
   class stats {
   public:
+    log_handler log = get_global_log();
+
     stats(stats const &) = delete;
     stats(stats &&)      = default;
     auto operator=(stats const &) -> stats & = delete;
@@ -23,8 +25,6 @@ namespace laplace::network {
 
     stats() = default;
     ~stats() noexcept;
-
-    void set_log_interface(log_interface const &in) noexcept;
 
     void tick() noexcept;
 
@@ -38,8 +38,6 @@ namespace laplace::network {
     [[nodiscard]] auto get_bytes_loss() const noexcept -> sl::whole;
 
   private:
-    log_interface m_log = blank_log_interface();
-
     sl::whole m_bytes_sent     = 0;
     sl::whole m_bytes_received = 0;
     sl::whole m_bytes_loss     = 0;

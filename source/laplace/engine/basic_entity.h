@@ -33,6 +33,8 @@ namespace laplace::engine {
     static sl::time const lock_timeout_msec;
     static sl::time const default_tick_period;
 
+    log_handler log = get_global_log();
+    
     basic_entity(basic_entity const &en) noexcept;
     basic_entity(basic_entity &&en) noexcept;
     auto operator=(basic_entity const &en) noexcept -> basic_entity &;

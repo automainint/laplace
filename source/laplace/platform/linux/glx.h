@@ -15,7 +15,7 @@
 #include "xlib.h"
 
 namespace laplace::linux {
-  auto gl_load_library() noexcept -> bool;
+  auto gl_load_library(log_handler log) noexcept -> bool;
 
   void gl_free_library() noexcept;
 

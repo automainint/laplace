@@ -10,7 +10,7 @@
 
 #include "parser.h"
 
-#include "utils.h"
+#include "string.h"
 #include <cmath>
 #include <cstdarg>
 #include <iostream>
@@ -32,7 +32,7 @@ namespace laplace::core {
     if (!m_buffer_offset.empty()) {
       m_buffer_offset.emplace_back(m_buffer_offset.back());
     } else {
-      error_("No buffered data.", __FUNCTION__);
+      log(log_event::error, "No buffered data.", __FUNCTION__);
     }
   }
 
@@ -51,7 +51,7 @@ namespace laplace::core {
       m_is_eof = m_buffer_offset.back().offset >= m_buffer.size();
 
     } else {
-      error_("No buffered data.", __FUNCTION__);
+      log(log_event::error, "No buffered data.", __FUNCTION__);
     }
   }
 
@@ -86,7 +86,7 @@ namespace laplace::core {
       }
 
     } else {
-      error_("No buffered data.", __FUNCTION__);
+      log(log_event::error, "No buffered data.", __FUNCTION__);
     }
   }
 
@@ -115,7 +115,7 @@ namespace laplace::core {
         }
       }
     } else {
-      error_("No buffered data.", __FUNCTION__);
+      log(log_event::error, "No buffered data.", __FUNCTION__);
     }
 
     return result;
@@ -126,7 +126,7 @@ namespace laplace::core {
         m_buffer_offset.back().offset > 0) {
       m_buffer_offset.back().offset--;
     } else {
-      error_("No buffered data.", __FUNCTION__);
+      log(log_event::error, "No buffered data.", __FUNCTION__);
     }
   }
 
@@ -204,7 +204,7 @@ namespace laplace::core {
         case c_word_str:
         case c_file_path:
         case c_url:
-          error_("Invalid sequence.", __FUNCTION__);
+          log(log_event::error, "Invalid sequence.", __FUNCTION__);
           return true;
       }
 

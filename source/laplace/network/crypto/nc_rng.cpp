@@ -17,7 +17,8 @@ namespace laplace::network::crypto {
 
   rng::rng() noexcept {
     if (auto _n = wc_InitRng(&generator); _n != 0)
-      error_(fmt("wc_InitRng failed (code: %d).", _n), __FUNCTION__);
+      log(log_event::error, fmt("wc_InitRng failed (code: %d).", _n),
+          __FUNCTION__);
   }
 
   rng::rng(rng &&other) noexcept : generator(move(other.generator)) {
@@ -35,8 +36,9 @@ namespace laplace::network::crypto {
     if (auto _n = wc_RNG_GenerateBlock(&generator, block.data(),
                                        block.size());
         _n != 0) {
-      error_(fmt("wc_RNG_GenerateBlock failed (code: %d).", _n),
-             __FUNCTION__);
+      log(log_event::error,
+          fmt("wc_RNG_GenerateBlock failed (code: %d).", _n),
+          __FUNCTION__);
       return {};
     }
 

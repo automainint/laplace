@@ -10,7 +10,7 @@
 
 #include "unival.h"
 
-#include "utils.h"
+#include "string.h"
 #include <algorithm>
 
 namespace laplace::core {

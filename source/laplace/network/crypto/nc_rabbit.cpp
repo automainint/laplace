@@ -22,7 +22,7 @@ namespace laplace::network::crypto {
     const auto key = get_mutual_key();
 
     if (key.size() < key_size) {
-      error_("Invalid key.", __FUNCTION__);
+      log(log_event::error, "Invalid key.", __FUNCTION__);
       return false;
     }
 
@@ -30,7 +30,7 @@ namespace laplace::network::crypto {
                                         key.data() + key_extra);
 
     if (status != 0) {
-      error_("wc_RabbitSetKey failed.", __FUNCTION__);
+      log(log_event::error, "wc_RabbitSetKey failed.", __FUNCTION__);
       return false;
     }
 
@@ -42,7 +42,7 @@ namespace laplace::network::crypto {
 
   auto rabbit::do_encrypt(span_cbyte src, span<uint8_t> dst) -> bool {
     if (dst.size() < src.size()) {
-      error_("Invalid destination.", __FUNCTION__);
+      log(log_event::error, "Invalid destination.", __FUNCTION__);
       return false;
     }
 
@@ -51,7 +51,7 @@ namespace laplace::network::crypto {
         static_cast<uint32_t>(src.size()));
 
     if (status != 0) {
-      error_("wc_RabbitProcess failed.", __FUNCTION__);
+      log(log_event::error, "wc_RabbitProcess failed.", __FUNCTION__);
       return false;
     }
 
@@ -60,7 +60,7 @@ namespace laplace::network::crypto {
 
   auto rabbit::do_decrypt(span_cbyte src, span<uint8_t> dst) -> bool {
     if (dst.size() < src.size()) {
-      error_("Invalid destination.", __FUNCTION__);
+      log(log_event::error, "Invalid destination.", __FUNCTION__);
       return false;
     }
 
@@ -69,7 +69,7 @@ namespace laplace::network::crypto {
         static_cast<uint32_t>(src.size()));
 
     if (status != 0) {
-      error_("wc_RabbitProcess failed.", __FUNCTION__);
+      log(log_event::error, "wc_RabbitProcess failed.", __FUNCTION__);
       return false;
     }
 

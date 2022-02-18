@@ -56,7 +56,8 @@ namespace laplace::engine {
 
   void world::emplace(ptr_entity const &ent, sl::index id) noexcept {
     if (!ent) {
-      error_("Unable to spawn null entity.", __FUNCTION__);
+      log(log_event::error, "Unable to spawn null entity.",
+          __FUNCTION__);
       return;
     }
 
@@ -89,7 +90,8 @@ namespace laplace::engine {
   auto world::spawn(ptr_entity const &ent, sl::index id) noexcept
       -> sl::index {
     if (!ent) {
-      error_("Unable to spawn null entity.", __FUNCTION__);
+      log(log_event::error, "Unable to spawn null entity.",
+          __FUNCTION__);
       return id_undefined;
     }
 
@@ -103,7 +105,7 @@ namespace laplace::engine {
 
     if (m_entities[id]) {
       if (!m_allow_relaxed_spawn) {
-        error_("Id is not free.", __FUNCTION__);
+        log(log_event::error, "Id is not free.", __FUNCTION__);
         locked_desync();
 
         return id_undefined;
@@ -141,7 +143,7 @@ namespace laplace::engine {
         m_entities[id].reset();
       } else {
         if (m_allow_relaxed_spawn) {
-          error_("No entity.", __FUNCTION__);
+          log(log_event::error, "No entity.", __FUNCTION__);
           locked_desync();
         }
       }
@@ -150,7 +152,7 @@ namespace laplace::engine {
         m_next_id = id;
       }
     } else {
-      error_("Invalid entity id.", __FUNCTION__);
+      log(log_event::error, "Invalid entity id.", __FUNCTION__);
       locked_desync();
     }
   }

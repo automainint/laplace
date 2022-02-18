@@ -18,9 +18,11 @@
 namespace laplace::embedded {
   [[nodiscard]] auto scan(std::wstring_view file_name) noexcept
       -> bool;
-  [[nodiscard]] auto exists(std::wstring_view file_name) noexcept
-      -> bool;
-  [[nodiscard]] auto open(std::wstring_view file_name) noexcept
+  [[nodiscard]] auto exists(
+      std::wstring_view file_name,
+      log_handler       log = get_global_log()) noexcept -> bool;
+  [[nodiscard]] auto open(std::wstring_view file_name,
+                          log_handler log = get_global_log()) noexcept
       -> span_cbyte;
 }
 

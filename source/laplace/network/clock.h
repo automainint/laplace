@@ -22,6 +22,8 @@ namespace laplace::network {
     static sl::time const  default_latency;
     static sl::whole const default_overtake_factor;
 
+    log_handler log = get_global_log();
+
     void set_tick_duration(sl::time tick_duration) noexcept;
     void set_latency(sl::time latency) noexcept;
     void set_overtake_factor(sl::whole overtake_factor) noexcept;

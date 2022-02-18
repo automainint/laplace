@@ -15,6 +15,8 @@
 #include <gtest/gtest.h>
 
 namespace laplace::test {
+  using std::string_view;
+
   TEST(platform, opengl_is_ok) {
     EXPECT_FALSE(gl::is_ok());
   }
@@ -28,8 +30,7 @@ namespace laplace::test {
   }
 
   TEST(platform, opengl_load_functions) {
-    disable_log();
-    EXPECT_FALSE(gl::load_functions());
-    setup_log({});
+    auto log = [](log_event, string_view, string_view) {};
+    EXPECT_FALSE(gl::load_functions(log));
   }
 }

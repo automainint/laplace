@@ -12,38 +12,20 @@
 #define laplace_core_log_h
 
 #include "options.h"
-//#include <source_location>
 #include <functional>
 #include <string>
 
 namespace laplace {
-  enum class log_event { message, warning, error, fatal };
+  enum class log_event { verbose, message, warning, error, fatal };
 
-  using fn_log = std::function<void(log_event, std::string_view,
-                                    std::string_view)>;
+  using log_handler =
+      std::function<void(log_event event, std::string_view message,
+                         std::string_view origin)>;
 
-  void disable_log() noexcept;
-  void setup_log(fn_log const &write) noexcept;
+  void setup_global_log(log_handler const &handler) noexcept;
+  auto get_global_log() noexcept -> log_handler;
   void set_verbose(bool is_verbose) noexcept;
   auto is_verbose() noexcept -> bool;
-
-  void log(log_event event, std::string_view message,
-           std::string_view origin) noexcept;
-  void log(log_event event, std::u8string_view message,
-           std::u8string_view origin) noexcept;
-
-  void verb(std::string_view message,
-            std::string_view origin) noexcept;
-  void verb(std::u8string_view message,
-            std::u8string_view origin) noexcept;
-
-  /*  TODO
-   *  Use source_location.
-   */
-  void error_(std::string_view message,
-              std::string_view origin) noexcept;
-  void error_(std::u8string_view message,
-              std::u8string_view origin) noexcept;
 }
 
 #endif

@@ -29,7 +29,7 @@ namespace laplace::stem::ui {
     do {
       if constexpr (!_unsafe) {
         if (!m_render) {
-          error_("No render context.", __FUNCTION__);
+          log(log_event::error, "No render context.", __FUNCTION__);
           break;
         }
       }

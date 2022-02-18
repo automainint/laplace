@@ -29,11 +29,8 @@ namespace laplace::engine::eval::hierarchical_grid {
   auto block_of(vec2z const &position, map_info const &map) noexcept
       -> vec2z {
 
-    if (map.block_size.x() <= 0 || map.block_size.y() <= 0) {
-      error_("Invalid block size.", __FUNCTION__);
+    if (map.block_size.x() <= 0 || map.block_size.y() <= 0)
       return map.no_block;
-    }
-
     if (!grid::contains(map.grid_area, position))
       return map.no_block;
 
@@ -58,24 +55,21 @@ namespace laplace::engine::eval::hierarchical_grid {
     return map.blocks[n];
   }
 
-  auto pivots_of_position(const vec2z &   position,
+  auto pivots_of_position(const vec2z    &position,
                           const map_info &map) noexcept
       -> span<sl::index const> {
 
     return pivots_of(block_of(position, map), map);
   }
 
-  auto generate(vec2z const           block_size,
-                fn_available const    available,
+  auto generate(vec2z const block_size, fn_available const available,
                 intval const          grid_scale,
                 grid::rect_area const grid_area) noexcept
       -> map_info {
 
-    if (block_size.x() <= 0 || block_size.y() <= 0) {
-      error_("Invalid block size.", __FUNCTION__);
+    if (block_size.x() <= 0 || block_size.y() <= 0)
       return {};
-    }
-
+    
     auto map = map_info { .grid_scale   = grid_scale,
                           .grid_area    = grid_area,
                           .block_size   = block_size,
@@ -177,7 +171,7 @@ namespace laplace::engine::eval::hierarchical_grid {
     return map;
   }
 
-  auto nearest_pivot(vec2z const &   position,
+  auto nearest_pivot(vec2z const    &position,
                      map_info const &map) noexcept -> sl::index {
     auto const block  = block_of(position, map);
     auto const pivots = pivots_of(block, map);

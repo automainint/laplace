@@ -17,20 +17,22 @@ namespace laplace::network::crypto {
 
   ecc::ecc(sl::whole const key_size) {
     if (auto _n = wc_ecc_init(&m_private); _n != 0) {
-      error_(fmt("wc_ecc_init failed (code: %d).", _n), __FUNCTION__);
+      log(log_event::error, fmt("wc_ecc_init failed (code: %d).", _n),
+          __FUNCTION__);
       return;
     }
 
     if (auto _n = wc_ecc_init(&m_remote); _n != 0) {
-      error_(fmt("wc_ecc_init failed (code: %d).", _n), __FUNCTION__);
+      log(log_event::error, fmt("wc_ecc_init failed (code: %d).", _n),
+          __FUNCTION__);
       return;
     }
 
 #ifdef ECC_TIMING_RESISTANT
     if (auto _n = wc_ecc_set_rng(&m_private, &m_rng.generator);
         _n != 0) {
-      error_(fmt("wc_ecc_set_rng failed (code: %d).", _n),
-             __FUNCTION__);
+      log(log_event::error,
+          fmt("wc_ecc_set_rng failed (code: %d).", _n), __FUNCTION__);
       return;
     }
 #endif
@@ -38,8 +40,9 @@ namespace laplace::network::crypto {
     if (auto _n = wc_ecc_make_key(
             &m_rng.generator, static_cast<int>(key_size), &m_private);
         _n != 0) {
-      error_(fmt("wc_ecc_make_key failed (code: %d).", _n),
-             __FUNCTION__);
+      log(log_event::error,
+          fmt("wc_ecc_make_key failed (code: %d).", _n),
+          __FUNCTION__);
       return;
     }
 
@@ -48,13 +51,14 @@ namespace laplace::network::crypto {
 
     if (auto _n = wc_ecc_export_x963(&m_private, buf.data(), &size);
         _n != 0) {
-      error_(fmt("wc_ecc_export_x963 failed (code: %d).", _n),
-             __FUNCTION__);
+      log(log_event::error,
+          fmt("wc_ecc_export_x963 failed (code: %d).", _n),
+          __FUNCTION__);
       return;
     }
 
     if (buf.size() < size) {
-      error_("Invalid public key size.", __FUNCTION__);
+      log(log_event::error, "Invalid public key size.", __FUNCTION__);
       return;
     }
 
@@ -75,8 +79,9 @@ namespace laplace::network::crypto {
     if (auto _n = wc_ecc_import_x963(
             key.data(), static_cast<uint32_t>(key.size()), &m_remote);
         _n != 0) {
-      error_(fmt("wc_ecc_import_x963 failed (code: %d).", _n),
-             __FUNCTION__);
+      log(log_event::error,
+          fmt("wc_ecc_import_x963 failed (code: %d).", _n),
+          __FUNCTION__);
       return false;
     }
 
@@ -86,13 +91,14 @@ namespace laplace::network::crypto {
     if (auto _n = wc_ecc_shared_secret(&m_private, &m_remote,
                                        buf.data(), &size);
         _n != 0) {
-      error_(fmt("wc_ecc_shared_secret failed (code: %d).", _n),
-             __FUNCTION__);
+      log(log_event::error,
+          fmt("wc_ecc_shared_secret failed (code: %d).", _n),
+          __FUNCTION__);
       return false;
     }
 
     if (buf.size() < size) {
-      error_("Invalid mutual key size.", __FUNCTION__);
+      log(log_event::error, "Invalid mutual key size.", __FUNCTION__);
       return false;
     }
 

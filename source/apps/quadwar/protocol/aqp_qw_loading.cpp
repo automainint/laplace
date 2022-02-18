@@ -25,7 +25,8 @@ namespace quadwar_app::protocol {
       engine::id_undefined, engine::ptr_impact;
 
   void qw_loading::perform(world w) const noexcept {
-    verb(" :: event  Quadwar/loading", "Quadwar");
+    log_handler log = get_global_log();
+    log(log_event::verbose, " :: event  Quadwar/loading", "Quadwar");
 
     auto r = w.get_entity(w.get_root());
 

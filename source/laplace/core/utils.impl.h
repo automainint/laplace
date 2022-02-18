@@ -13,48 +13,33 @@
 
 namespace laplace::impl {
   constexpr auto as_index_unsigned(unsigned long long const value,
-                                   sl::index const          invalid,
-                                   bool const silent) noexcept
+                                   sl::index const invalid) noexcept
       -> sl::index {
 
     if constexpr (!_unsafe) {
-      if (value == -1) {
+      if (value == -1)
         return invalid;
-      }
-
-      if (value > std::numeric_limits<sl::index>::max()) {
-        if (!silent)
-          error_("Index value overflow.", __FUNCTION__);
+      if (value > std::numeric_limits<sl::index>::max())
         return invalid;
-      }
     }
 
     return static_cast<sl::index>(value);
   }
 
   constexpr auto as_index_signed(signed long long const value,
-                                 sl::index const        invalid,
-                                 bool const silent) noexcept
+                                 sl::index const invalid) noexcept
       -> sl::index {
 
     if constexpr (!_unsafe) {
-      if (value == -1) {
+      if (value == -1)
         return invalid;
-      }
-
       if constexpr (sizeof value > sizeof(sl::index)) {
         if (value < 0 ||
-            value > std::numeric_limits<sl::index>::max()) {
-          if (!silent)
-            error_("Index value overflow.", __FUNCTION__);
+            value > std::numeric_limits<sl::index>::max())
           return invalid;
-        }
       } else {
-        if (value < 0) {
-          if (!silent)
-            error_("Index value overflow.", __FUNCTION__);
+        if (value < 0)
           return invalid;
-        }
       }
     }
 
@@ -64,63 +49,63 @@ namespace laplace::impl {
 
 namespace laplace {
   constexpr auto as_index(unsigned char const value,
-                          sl::index const     invalid,
-                          bool const silent) noexcept -> sl::index {
-    return impl::as_index_unsigned(value, invalid, silent);
+                          sl::index const     invalid) noexcept
+      -> sl::index {
+    return impl::as_index_unsigned(value, invalid);
   }
 
   constexpr auto as_index(unsigned short const value,
-                          sl::index const      invalid,
-                          bool const silent) noexcept -> sl::index {
-    return impl::as_index_unsigned(value, invalid, silent);
+                          sl::index const      invalid) noexcept
+      -> sl::index {
+    return impl::as_index_unsigned(value, invalid);
   }
 
   constexpr auto as_index(unsigned int const value,
-                          sl::index const    invalid,
-                          bool const silent) noexcept -> sl::index {
-    return impl::as_index_unsigned(value, invalid, silent);
+                          sl::index const    invalid) noexcept
+      -> sl::index {
+    return impl::as_index_unsigned(value, invalid);
   }
 
   constexpr auto as_index(unsigned long const value,
-                          sl::index const     invalid,
-                          bool const silent) noexcept -> sl::index {
-    return impl::as_index_unsigned(value, invalid, silent);
+                          sl::index const     invalid) noexcept
+      -> sl::index {
+    return impl::as_index_unsigned(value, invalid);
   }
 
   constexpr auto as_index(unsigned long long const value,
-                          sl::index const          invalid,
-                          bool const silent) noexcept -> sl::index {
-    return impl::as_index_unsigned(value, invalid, silent);
+                          sl::index const          invalid) noexcept
+      -> sl::index {
+    return impl::as_index_unsigned(value, invalid);
   }
 
   constexpr auto as_index(signed char const value,
-                          sl::index const   invalid,
-                          bool const silent) noexcept -> sl::index {
-    return impl::as_index_signed(value, invalid, silent);
+                          sl::index const   invalid) noexcept
+      -> sl::index {
+    return impl::as_index_signed(value, invalid);
   }
 
   constexpr auto as_index(signed short const value,
-                          sl::index const    invalid,
-                          bool const silent) noexcept -> sl::index {
-    return impl::as_index_signed(value, invalid, silent);
+                          sl::index const    invalid) noexcept
+      -> sl::index {
+    return impl::as_index_signed(value, invalid);
   }
 
   constexpr auto as_index(signed int const value,
-                          sl::index const  invalid,
-                          bool const silent) noexcept -> sl::index {
-    return impl::as_index_signed(value, invalid, silent);
+                          sl::index const  invalid) noexcept
+      -> sl::index {
+    return impl::as_index_signed(value, invalid);
   }
 
   constexpr auto as_index(signed long const value,
-                          sl::index const   invalid,
-                          bool const silent) noexcept -> sl::index {
-    return impl::as_index_signed(value, invalid, silent);
+                          sl::index const   invalid) noexcept
+      -> sl::index {
+    return impl::as_index_signed(value, invalid);
   }
 
   constexpr auto as_index(signed long long const value,
-                          sl::index const        invalid,
-                          bool const silent) noexcept -> sl::index {
-    return impl::as_index_signed(value, invalid, silent);
+                          sl::index const        invalid) noexcept
+      -> sl::index {
+    return impl::as_index_signed(value, invalid);
   }
 }
 

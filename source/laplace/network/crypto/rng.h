@@ -19,6 +19,8 @@
 
 namespace laplace::network::crypto {
   struct rng {
+    log_handler log = get_global_log();
+    
     WC_RNG generator = {};
 
     rng(rng const &) = delete;

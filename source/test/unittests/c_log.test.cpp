@@ -16,24 +16,29 @@ namespace laplace::test {
   using std::string_view, std::string, std::u8string_view,
       std::u8string;
 
+  TEST(core, log_verbose) {
+    auto log = get_global_log();
+    log(log_event::verbose, "Log verbose test.", "Test");
+  }
+
   TEST(core, log_message) {
-    log(log_event::message, "ASCII log test.", "Test");
-    log(log_event::message, u8"UTF-8 log test.", u8"Test");
+    auto log = get_global_log();
+    log(log_event::message, "Log message test.", "Test");
   }
 
   TEST(core, log_warning) {
-    log(log_event::warning, "ASCII warning test.", "Test");
-    log(log_event::warning, u8"UTF-8 warning test.", u8"Test");
+    auto log = get_global_log();
+    log(log_event::warning, "Log warning test.", "Test");
   }
 
   TEST(core, log_error) {
-    error_("ASCII error log test.", "Test");
-    error_(u8"UTF-8 error log test.", u8"Test");
+    auto log = get_global_log();
+    log(log_event::error, "Log error test.", "Test");
   }
 
   TEST(core, log_fatal_error) {
-    log(log_event::fatal, "ASCII fatal error log test.", "Test");
-    log(log_event::fatal, u8"UTF-8 fatal error log test.", u8"Test");
+    auto log = get_global_log();
+    log(log_event::fatal, "Log fatal error test.", "Test");
   }
 
   TEST(core, log_is_verbose) {
@@ -49,52 +54,18 @@ namespace laplace::test {
 
   TEST(core, log_setup) {
     if constexpr (_log_enabled) {
-      auto const f = is_verbose();
-
       auto       a = string {};
       auto const b = string { "ascii test" };
-      auto const c = u8string { u8"utf-8 test" };
 
-      setup_log([&](log_event, string_view text, string_view) {
+      setup_global_log([&](log_event, string_view text, string_view) {
         a = text;
       });
 
+      auto log = get_global_log();
       log(log_event::message, b, "");
       EXPECT_EQ(a, b);
-      log(log_event::message, c, u8"");
-      EXPECT_EQ(a, as_ascii_string(c));
 
-      setup_log({});
-      set_verbose(f);
-    }
-  }
-
-  TEST(core, log_set_verbose) {
-    if constexpr (_log_enabled) {
-      auto const f = is_verbose();
-
-      auto       a = string {};
-      auto const b = string { "ascii test" };
-      auto const c = u8string { u8"utf-8 test" };
-
-      setup_log([&](log_event, string_view text, string_view) {
-        a = text;
-      });
-
-      set_verbose(false);
-      verb(b, "");
-      EXPECT_TRUE(a.empty());
-      verb(c, u8"");
-      EXPECT_TRUE(a.empty());
-
-      set_verbose(true);
-      verb(b, "");
-      EXPECT_EQ(a, b);
-      verb(c, u8"");
-      EXPECT_EQ(a, as_ascii_string(c));
-
-      setup_log({});
-      set_verbose(f);
+      setup_global_log({});
     }
   }
 }

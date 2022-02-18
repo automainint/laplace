@@ -29,6 +29,8 @@ namespace laplace::linux {
     static sl::whole const default_frame_height;
     static sl::whole const default_frame_rate;
 
+    log_handler log = get_global_log();
+    
     window(window const &) = delete;
     window(window &&)      = delete;
     auto operator=(window const &) -> window & = delete;
@@ -56,8 +58,7 @@ namespace laplace::linux {
     void set_size(sl::whole, sl::whole) noexcept;
 
     void set_fullscreen_windowed() noexcept;
-    void set_fullscreen_mode(sl::whole,
-                             sl::whole,
+    void set_fullscreen_mode(sl::whole, sl::whole,
                              sl::whole) noexcept;
 
     void set_input(std::shared_ptr<input> in) noexcept;

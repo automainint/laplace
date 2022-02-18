@@ -57,6 +57,8 @@ namespace quadwar_app::ui {
     static std::u8string_view const c_cancel;
     static std::u8string_view const c_continue;
 
+    log_handler log = get_global_log();
+
     mainmenu();
     ~mainmenu();
 

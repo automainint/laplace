@@ -69,22 +69,14 @@ namespace laplace::test {
   }
 
   TEST(core, small_vector_at_fail_1) {
-    disable_log();
-
     auto v = small_vector<int, 80, false> {};
     EXPECT_EQ(v.at(-1), 0);
     EXPECT_EQ(v.at(0), 0);
-
-    setup_log({});
   }
   TEST(core, small_vector_at_fail_2) {
-    disable_log();
-
     auto const v = small_vector<int, 80, false> {};
     EXPECT_EQ(v.at(-1), 0);
     EXPECT_EQ(v.at(0), 0);
-
-    setup_log({});
   }
 
   TEST(core, small_vector_push_back_twice) {
@@ -292,12 +284,8 @@ namespace laplace::test {
   }
 
   TEST(core, small_vector_reserve_fail) {
-    disable_log();
-
     auto v = small_vector<int, 80, false> {};
     v.reserve(-1);
-
-    setup_log({});
   }
 
   TEST(core, small_vector_clear) {
@@ -335,19 +323,13 @@ namespace laplace::test {
   }
 
   TEST(core, small_vector_insert_invalid_1) {
-    disable_log();
-
     auto v = small_vector<int, 80, false> {};
     v.insert(v.begin() - 1, 10);
     v.insert(v.end() + 1, 10);
     EXPECT_EQ(v.size(), 0);
-
-    setup_log({});
   }
 
   TEST(core, small_vector_insert_invalid_2) {
-    disable_log();
-
     auto v = small_vector<int, 80, false> {};
     auto x = small_vector<int, 80, false> {};
     x.push_back(0);
@@ -355,8 +337,6 @@ namespace laplace::test {
     v.insert(v.begin() - 1, x.begin(), x.end());
     v.insert(v.end() + 1, x.begin(), x.end());
     EXPECT_EQ(v.size(), 0);
-
-    setup_log({});
   }
 
   TEST(core, small_vector_emplace) {
@@ -471,13 +451,9 @@ namespace laplace::test {
   }
 
   TEST(core, small_vector_erase_fail) {
-    disable_log();
-
     auto v = small_vector<int, 80, false> { 1, 2, 3, 4, 5 };
     v.erase(v.begin() - 1);
     EXPECT_EQ(v.size(), 5);
-
-    setup_log({});
   }
 
   TEST(core, small_vector_erase_range) {
@@ -490,13 +466,9 @@ namespace laplace::test {
   }
 
   TEST(core, small_vector_erase_range_fail) {
-    disable_log();
-
     auto v = small_vector<int, 80, false> { 1, 2, 3, 4, 5 };
     v.erase(v.begin() + 1, v.begin());
     EXPECT_EQ(v.size(), 5);
-
-    setup_log({});
   }
 
   TEST(core, small_vector_insert_range) {

@@ -1,8 +1,4 @@
-/*  laplace/stem/application.h
- *
- *      Base class for application.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -12,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_stem_application_h
-#define laplace_stem_application_h
+#ifndef LAPLACE_STEM_APPLICATION_H
+#define LAPLACE_STEM_APPLICATION_H
 
 #include "../core/input_handler.h"
 #include "../core/unival.h"
@@ -26,8 +22,9 @@
 namespace laplace::stem {
   class application {
   public:
-    application(int                 argc,
-                char              **argv,
+    log_handler log = get_global_log();
+
+    application(int argc, char **argv,
                 core::unival const &def_cfg) noexcept;
 
     virtual ~application() noexcept;
@@ -65,8 +62,7 @@ namespace laplace::stem {
                                    const char *type) const noexcept
         -> std::wstring;
 
-    [[nodiscard]] static auto open(
-        std::wstring_view file_name) noexcept
+    [[nodiscard]] auto open(std::wstring_view file_name) noexcept
         -> std::unique_ptr<std::istream>;
 
     std::shared_ptr<platform::window>    m_window;

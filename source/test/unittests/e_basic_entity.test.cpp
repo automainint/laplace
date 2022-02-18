@@ -84,15 +84,11 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_dummy) {
-    disable_log();
-
     auto e = basic_entity { basic_entity::dummy };
 
     EXPECT_EQ(e.get_count(), 0);
     EXPECT_EQ(e.index_of(sets::is_dynamic), id_undefined);
     EXPECT_EQ(e.index_of(sets::tick_period), id_undefined);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_dynamic_1) {
@@ -123,16 +119,12 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_init) {
-    disable_log();
-
     auto e = my_entity {};
     e.do_init();
 
     EXPECT_EQ(e.get(e.index_of(sets::debug_value)), 123);
     EXPECT_EQ(e.bytes_get(0), 23);
     EXPECT_EQ(e.vec_get(0), 345);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_set_dynamic) {
@@ -171,8 +163,6 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_get) {
-    disable_log();
-
     auto e = basic_entity { basic_entity::proto };
 
     EXPECT_EQ(e.get(-1), 0);
@@ -181,13 +171,9 @@ namespace laplace::test {
     EXPECT_EQ(e.get_by_id(sets::is_dynamic), 0);
     EXPECT_EQ(e.get_by_id(sets::tick_period),
               basic_entity::default_tick_period);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_set) {
-    disable_log();
-
     auto e = basic_entity { basic_entity::proto };
 
     e.set(-1, 123);
@@ -195,13 +181,9 @@ namespace laplace::test {
     e.set(e.index_of(sets::tick_period), 123);
     e.adjust();
     EXPECT_EQ(e.get_tick_period(), 123);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_apply_delta) {
-    disable_log();
-
     auto e = basic_entity { basic_entity::proto };
 
     e.apply_delta(-1, 123);
@@ -210,8 +192,6 @@ namespace laplace::test {
     auto x = e.get_tick_period();
     e.adjust();
     EXPECT_EQ(e.get_tick_period(), x + 50);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_clock) {
@@ -231,8 +211,6 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_endity_id_of) {
-    disable_log();
-
     auto e = basic_entity { basic_entity::proto };
 
     EXPECT_EQ(e.id_of(e.index_of(sets::is_dynamic)),
@@ -244,13 +222,9 @@ namespace laplace::test {
     EXPECT_EQ(e.index_of(-1), id_undefined);
     EXPECT_EQ(e.id_of(-1), id_undefined);
     EXPECT_EQ(e.id_of(999), id_undefined);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_scale_of) {
-    disable_log();
-
     auto e = basic_entity { basic_entity::proto };
 
     EXPECT_EQ(e.scale_of(e.index_of(sets::is_dynamic)), 1);
@@ -260,13 +234,9 @@ namespace laplace::test {
 
     EXPECT_EQ(e.scale_of(-1), 0);
     EXPECT_EQ(e.scale_of(999), 0);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_desync) {
-    disable_log();
-
     auto e = make_shared<my_entity>();
     auto w = make_shared<world>();
 
@@ -274,8 +244,6 @@ namespace laplace::test {
     EXPECT_FALSE(w->is_desync());
     e->do_desync();
     EXPECT_TRUE(w->is_desync());
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_self_destruct) {
@@ -289,8 +257,6 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_bytes_1) {
-    disable_log();
-
     auto e = basic_entity {};
 
     EXPECT_EQ(e.bytes_get_size(), 0);
@@ -314,8 +280,6 @@ namespace laplace::test {
 
     EXPECT_EQ(e.bytes_get(-1), 0);
     EXPECT_EQ(e.bytes_get(10), 0);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_bytes_2) {
@@ -499,8 +463,6 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_bytes_12) {
-    disable_log();
-
     auto e = basic_entity {};
 
     e.bytes_set(-1, 0);
@@ -518,17 +480,11 @@ namespace laplace::test {
 
     EXPECT_EQ(e.bytes_get(-1), 0);
     EXPECT_EQ(e.bytes_get(100), 0);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_bytes_13) {
-    disable_log();
-
     auto e = basic_entity {};
     e.bytes_resize(-1);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_vec_1) {
@@ -538,8 +494,6 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_2) {
-    disable_log();
-
     auto e = basic_entity {};
     e.vec_resize(1);
     e.vec_set(0, 5);
@@ -548,8 +502,6 @@ namespace laplace::test {
     EXPECT_EQ(e.vec_get(0), 5);
     EXPECT_EQ(e.vec_get(-1), 0);
     EXPECT_EQ(e.vec_get(999), 0);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_vec_3) {
@@ -571,8 +523,6 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_4) {
-    disable_log();
-
     auto e = basic_entity {};
     e.vec_resize(3);
     e.vec_set(0, 1);
@@ -590,13 +540,9 @@ namespace laplace::test {
       EXPECT_EQ(v[1], 2);
     if (v.size() > 2)
       EXPECT_EQ(v[2], 3);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_vec_5) {
-    disable_log();
-
     auto e = basic_entity {};
     e.vec_resize(1);
     e.vec_apply_delta(0, 1);
@@ -608,8 +554,6 @@ namespace laplace::test {
     e.adjust();
 
     EXPECT_EQ(e.vec_get(0), 3);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_vec_6) {
@@ -629,8 +573,6 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_7) {
-    disable_log();
-
     auto e = basic_entity {};
     e.vec_resize(5);
     e.adjust();
@@ -638,8 +580,6 @@ namespace laplace::test {
     intval buf[3] = {};
     e.vec_read(-1, buf);
     e.vec_read(999, buf);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_vec_8) {
@@ -655,16 +595,12 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_9) {
-    disable_log();
-
     auto e = basic_entity {};
     e.vec_resize(5);
     intval buf[3] = { 1, 2, 3 };
     e.vec_write(-1, buf);
     e.vec_write(999, buf);
     e.adjust();
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_vec_10) {
@@ -695,15 +631,11 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_12) {
-    disable_log();
-
     auto e = basic_entity {};
     e.vec_resize(5);
     intval app[3] = { 2, 3, 4 };
     e.vec_write_delta(-1, app);
     e.vec_write_delta(999, app);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_vec_13) {
@@ -722,24 +654,16 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_14) {
-    disable_log();
-
     auto e = basic_entity {};
     e.vec_resize(5);
     intval app[3] = { 2, 3, 4 };
     e.vec_erase_delta(-1, app);
     e.vec_erase_delta(999, app);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_vec_15) {
-    disable_log();
-
     auto e = basic_entity {};
     e.vec_resize(-1);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_vec_add) {
@@ -788,25 +712,17 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_insert_1) {
-    disable_log();
-
     auto         e      = basic_entity {};
     intval const buf[3] = { 1, 2, 3 };
     e.vec_insert(-1, buf);
     EXPECT_EQ(e.vec_get_size(), 0);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_vec_insert_2) {
-    disable_log();
-
     auto         e      = basic_entity {};
     intval const buf[3] = { 1, 2, 3 };
     e.vec_insert(999, buf);
     EXPECT_EQ(e.vec_get_size(), 0);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_vec_insert_3) {
@@ -835,8 +751,6 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_vec_erase_1) {
-    disable_log();
-
     auto         e      = basic_entity {};
     intval const buf[6] = { 1, 2, 3, 4, 5, 6 };
     e.vec_add(buf);
@@ -851,8 +765,6 @@ namespace laplace::test {
     EXPECT_EQ(e.vec_get(3), 4);
     EXPECT_EQ(e.vec_get(4), 5);
     EXPECT_EQ(e.vec_get(5), 6);
-
-    setup_log({});
   }
 
   TEST(engine, basic_entity_vec_erase_2) {
@@ -922,8 +834,6 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_entity_deadlocks) {
-    disable_log();
-
     auto e = my_entity {};
     e.lock();
 
@@ -971,7 +881,5 @@ namespace laplace::test {
     EXPECT_EQ(e.get_tick_period(), 0);
 
     e.unlock();
-
-    setup_log({});
   }
 }

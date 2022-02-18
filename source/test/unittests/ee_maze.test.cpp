@@ -27,9 +27,10 @@ namespace laplace::test {
 
     auto random = random_device {};
 
-    maze::generate({ width, height }, map, [&random]() {
-      return static_cast<uint64_t>(random());
-    });
+    maze::generate(
+        { width, height }, map,
+        [&random]() { return static_cast<uint64_t>(random()); },
+        get_global_log());
 
     auto s = string {};
 

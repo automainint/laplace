@@ -26,8 +26,10 @@ namespace quadwar_app::protocol {
         slot_remove(n, time, id_actor) { }
 
     inline void perform(world w) const noexcept override {
-      verb(fmt(" :: event  Quadwar/slot_remove: %zu", get_actor()),
-           "Quadwar");
+      auto log = get_global_log();
+      log(log_event::verbose,
+          fmt(" :: event  Quadwar/slot_remove: %zu", get_actor()),
+          "Quadwar");
 
       auto r     = w.get_entity(w.get_root());
       auto slots = w.get_entity(object::root::get_slots(r));

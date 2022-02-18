@@ -14,6 +14,6 @@
 #include "../../../laplace/network/server.h"
 #include <gtest/gtest.h>
 
-namespace laplace::network {
+namespace laplace::test {
   TEST(network, client_enter) { }
 }

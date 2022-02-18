@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_core_parser_h
-#define laplace_core_parser_h
+#ifndef LAPLACE_CORE_PARSER_H
+#define LAPLACE_CORE_PARSER_H
 
 #include "slib.h"
 #include <functional>
@@ -18,6 +18,8 @@ namespace laplace::core {
   class parser {
   public:
     using input_stream = std::function<char32_t(void)>;
+
+    log_handler log = get_global_log();
 
     parser(parser &) = delete;
     auto operator=(parser &) -> parser & = delete;
@@ -95,8 +97,7 @@ namespace laplace::core {
     static auto is_url(char32_t c) noexcept -> bool;
     static auto is_hex(char32_t c) noexcept -> bool;
 
-    static auto string_end(char32_t c, const char *p) noexcept
-        -> bool;
+    auto string_end(char32_t c, const char *p) noexcept -> bool;
 
     struct position {
       sl::index line   = 0;

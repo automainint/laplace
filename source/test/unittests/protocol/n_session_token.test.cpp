@@ -12,9 +12,10 @@
 #include "../../../laplace/network/crypto/ecc_rabbit.h"
 #include "../../../laplace/network/pipe.h"
 #include "../../../laplace/network/server.h"
+#include "helpers.test.h"
 #include <gtest/gtest.h>
 
-namespace laplace::network {
+namespace laplace::test {
   using network::server, network::pipe, std::make_shared,
       network::blank_protocol_interface, network::control,
       network::cipher, network::transfer, network::crypto::ecc_rabbit;

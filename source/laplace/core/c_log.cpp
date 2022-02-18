@@ -10,7 +10,6 @@
 
 #include "log.h"
 
-#include "string.h"
 #include <ctime>
 #include <iostream>
 #include <mutex>
@@ -22,9 +21,15 @@ namespace laplace {
       std::string_view, std::u8string_view, std::cout, std::cerr,
       std::flush, std::ostringstream;
 
+  static auto g_log_lock = shared_mutex {};
+  static bool g_verbose  = true;
+
   static auto g_log_default = [](log_event event, string_view message,
-                                 string_view origin) {
+                                 string_view origin) noexcept {
     try {
+      auto _ul = unique_lock(g_log_lock);
+      if (event == log_event::verbose && !g_verbose)
+        return;
       auto ss = ostringstream {};
       if (origin.empty())
         switch (event) {
@@ -57,26 +62,33 @@ namespace laplace {
           0)
         ss << buf;
       ss << '\n';
-      if (event == log_event::message)
+      if (event == log_event::message || event == log_event::verbose)
         cout << ss.str() << flush;
       else
         cerr << ss.str() << flush;
-    } catch (...) { }
+    } catch (std::exception &error) {
+      std::cerr << "[ Log Error ] " << error.what() << '\n'
+                << std::flush;
+    } catch (...) {
+      std::cerr << "[ Log Error ] Unknown exception!" << std::flush;
+    }
   };
 
-  static bool g_verbose  = true;
-  static auto g_log_lock = shared_mutex {};
-  static auto g_log      = fn_log { g_log_default };
+  static auto g_log = log_handler { g_log_default };
 
   void disable_log() noexcept {
-    setup_log([](log_event, string_view, string_view) {});
+    setup_global_log([](log_event, string_view, string_view) {});
   }
 
-  void setup_log(fn_log const &write) noexcept {
+  void setup_global_log(log_handler const &write) noexcept {
     if constexpr (_log_enabled) {
       auto _ul = unique_lock(g_log_lock);
       g_log    = write ? write : g_log_default;
     }
+  }
+
+  auto get_global_log() noexcept -> log_handler {
+    return g_log;
   }
 
   void set_verbose(bool is_verbose) noexcept {
@@ -92,47 +104,6 @@ namespace laplace {
       return g_verbose;
     } else {
       return false;
-    }
-  }
-
-  void log(log_event event, string_view message,
-           string_view origin) noexcept {
-    if constexpr (_log_enabled) {
-      auto _ul = unique_lock(g_log_lock);
-      g_log(event, message, origin);
-    }
-  }
-
-  void log(log_event event, u8string_view message,
-           u8string_view origin) noexcept {
-    if constexpr (_log_enabled) {
-      log(event, as_ascii_string(message), as_ascii_string(origin));
-    }
-  }
-
-  void verb(string_view message, string_view origin) noexcept {
-    if constexpr (_log_enabled) {
-      if (is_verbose())
-        log(log_event::message, message, origin);
-    }
-  }
-
-  void verb(u8string_view message, u8string_view origin) noexcept {
-    if constexpr (_log_enabled) {
-      if (is_verbose())
-        log(log_event::message, message, origin);
-    }
-  }
-
-  void error_(string_view message, string_view origin) noexcept {
-    if constexpr (_log_enabled) {
-      log(log_event::error, message, origin);
-    }
-  }
-
-  void error_(u8string_view message, u8string_view origin) noexcept {
-    if constexpr (_log_enabled) {
-      log(log_event::error, message, origin);
     }
   }
 }

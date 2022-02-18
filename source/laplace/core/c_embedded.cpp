@@ -26,7 +26,7 @@ namespace laplace::embedded {
   extern vector<wstring>         aliases;
   extern vector<vector<uint8_t>> bytes;
 
-  void init() noexcept {
+  void init(log_handler log) noexcept {
     if (is_ready)
       return;
 
@@ -45,7 +45,7 @@ namespace laplace::embedded {
     auto sorted_bytes   = vector<vector<uint8_t>>(size);
 
     if (bytes.size() != size) {
-      error_("Invalid embedded data.", __FUNCTION__);
+      log(log_event::error, "Invalid embedded data.", __FUNCTION__);
       bytes.resize(size);
     }
 
@@ -66,19 +66,21 @@ namespace laplace::embedded {
     return !file_name.empty() && file_name[0] == L':';
   }
 
-  auto exists(wstring_view file_name) noexcept -> bool {
+  auto exists(wstring_view file_name, log_handler log) noexcept
+      -> bool {
     auto _sl = shared_lock(g_lock);
 
-    init();
+    init(log);
 
     auto i = lower_bound(aliases.begin(), aliases.end(), file_name);
     return i != aliases.end() && *i == file_name;
   }
 
-  auto open(wstring_view file_name) noexcept -> span_cbyte {
+  auto open(wstring_view file_name, log_handler log) noexcept
+      -> span_cbyte {
     auto _ul = unique_lock(g_lock);
 
-    init();
+    init(log);
 
     auto i = lower_bound(aliases.begin(), aliases.end(), file_name);
 

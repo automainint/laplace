@@ -26,10 +26,10 @@ namespace laplace::stem::text {
 
     virtual auto adjust(std::u8string_view text) -> ui::text_area;
 
-    virtual void render(
-        sl::index x, sl::index y, std::u8string_view text);
+    virtual void render(sl::index x, sl::index y,
+                        std::u8string_view text);
 
-    static auto get_default() -> ptr_renderer;
+    static auto get_default(log_handler log) -> ptr_renderer;
 
   private:
     static std::weak_ptr<renderer> m_default;

@@ -26,6 +26,8 @@ namespace laplace::engine {
     using fn_queue    = std::function<void(ptr_impact)>;
     using fn_decode   = std::function<ptr_impact(span_cbyte)>;
 
+    log_handler log = get_global_log();
+    
     solver() noexcept  = default;
     ~solver() noexcept = default;
 

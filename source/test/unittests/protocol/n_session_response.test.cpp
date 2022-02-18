@@ -12,9 +12,10 @@
 #include "../../../laplace/network/crypto/ecc_rabbit.h"
 #include "../../../laplace/network/pipe.h"
 #include "../../../laplace/network/server.h"
+#include "helpers.test.h"
 #include <gtest/gtest.h>
 
-namespace laplace::network {
+namespace laplace::test {
   using network::server, network::pipe, std::make_shared,
       network::blank_protocol_interface, network::control,
       network::cipher, network::transfer, network::crypto::ecc_rabbit;
@@ -33,7 +34,6 @@ namespace laplace::network {
     uint8_t const id_session_response = 2;
     uint8_t const id_request_token    = 3;
 
-    int is_allowed_called                   = 0;
     int get_control_id_called               = 0;
     int decode_session_response_port_called = 0;
     int decode_public_key_called            = 0;
@@ -47,11 +47,6 @@ namespace laplace::network {
       if (cipher_id != cipher::rabbit)
         return {};
       return serial::pack_to_bytes(id_session_request, key);
-    };
-    proto.is_allowed = [&](span_cbyte seq, bool is_exclusive) {
-      is_allowed_called++;
-      return serial::rd<decltype(id_session_response)>(seq, 0) ==
-             id_session_response;
     };
     proto.get_control_id = [&](span_cbyte seq) -> control {
       get_control_id_called++;
@@ -89,47 +84,40 @@ namespace laplace::network {
                                        .host_port    = 1,
                                        .client_port  = 2 });
 
-    uint8_t buf[1024] = {};
-    auto    received  = sl::whole {};
-    auto    tran      = transfer {};
+    auto tran = transfer {};
 
-    received   = alice->receive(buf);
-    auto plain = tran.decode({ buf, buf + received });
-    EXPECT_EQ(plain.size(), 1);
-    if (!plain.empty()) {
-      EXPECT_EQ(serial::rd<decltype(id_session_request)>(plain[0], 0),
-                id_session_request);
+    auto received = _receive(alice, tran);
+    EXPECT_EQ(received.size(), 1);
+    if (!received.empty()) {
+      EXPECT_EQ(
+          serial::rd<decltype(id_session_request)>(received[0], 0),
+          id_session_request);
       tran.setup_cipher<ecc_rabbit>();
-      if (plain[0].size() > sizeof id_session_request)
+      if (received[0].size() > sizeof id_session_request)
         tran.set_remote_key(
-            { plain[0].begin() + sizeof id_session_request,
-              plain[0].end() });
+            { received[0].begin() + sizeof id_session_request,
+              received[0].end() });
     }
 
-    auto const packed = tran.encode(transfer::wrap(
-        serial::pack_to_bytes(id_session_response, uint16_t { 3 },
-                              tran.get_public_key())));
-
-    auto const sent = alice->send("", 2, packed);
-    EXPECT_EQ(sent, packed.size());
+    EXPECT_TRUE(_send(alice, 2, tran, id_session_response,
+                      uint16_t { 3 }, tran.get_public_key()));
 
     alice = io->open(3);
 
     session.resume();
 
-    received = alice->receive(buf);
-
     tran.enable_encryption(true);
-    plain = tran.decode({ buf, buf + received });
-    EXPECT_EQ(plain.size(), 1);
-    if (!plain.empty()) {
-      EXPECT_EQ(plain[0].size(), 1);
-      EXPECT_EQ(serial::rd<decltype(id_request_token)>(plain[0], 0),
-                id_request_token);
+    received = _receive(alice, tran);
+
+    EXPECT_EQ(received.size(), 1);
+    if (!received.empty()) {
+      EXPECT_EQ(received[0].size(), 1);
+      EXPECT_EQ(
+          serial::rd<decltype(id_request_token)>(received[0], 0),
+          id_request_token);
     }
 
     EXPECT_EQ(encode_session_request_called, 1);
-    EXPECT_EQ(is_allowed_called, 1);
     EXPECT_EQ(get_control_id_called, 1);
     EXPECT_EQ(decode_session_response_port_called, 1);
     EXPECT_EQ(decode_public_key_called, 1);
@@ -150,7 +138,6 @@ namespace laplace::network {
     uint8_t const id_session_response = 2;
     uint8_t const id_session_token    = 3;
 
-    int is_allowed_called                   = 0;
     int get_control_id_called               = 0;
     int decode_session_response_port_called = 0;
     int decode_public_key_called            = 0;
@@ -164,11 +151,6 @@ namespace laplace::network {
       if (cipher_id != cipher::rabbit)
         return {};
       return serial::pack_to_bytes(id_session_request, key);
-    };
-    proto.is_allowed = [&](span_cbyte seq, bool is_exclusive) {
-      is_allowed_called++;
-      return serial::rd<decltype(id_session_response)>(seq, 0) ==
-             id_session_response;
     };
     proto.get_control_id = [&](span_cbyte seq) -> control {
       get_control_id_called++;
@@ -207,28 +189,23 @@ namespace laplace::network {
                                        .host_port    = 1,
                                        .client_port  = 2 });
 
-    uint8_t buf[1024] = {};
-    auto    tran      = transfer {};
+    auto tran = transfer {};
 
-    auto received = alice->receive(buf);
-    auto plain    = tran.decode({ buf, buf + received });
-    EXPECT_EQ(plain.size(), 1);
-    if (!plain.empty()) {
-      EXPECT_EQ(serial::rd<decltype(id_session_request)>(plain[0], 0),
-                id_session_request);
+    auto received = _receive(alice, tran);
+    EXPECT_EQ(received.size(), 1);
+    if (!received.empty()) {
+      EXPECT_EQ(
+          serial::rd<decltype(id_session_request)>(received[0], 0),
+          id_session_request);
       tran.setup_cipher<ecc_rabbit>();
-      if (plain[0].size() > sizeof id_session_request)
+      if (received[0].size() > sizeof id_session_request)
         tran.set_remote_key(
-            { plain[0].begin() + sizeof id_session_request,
-              plain[0].end() });
+            { received[0].begin() + sizeof id_session_request,
+              received[0].end() });
     }
 
-    auto const packed = tran.encode(transfer::wrap(
-        serial::pack_to_bytes(id_session_response, uint16_t { 3 },
-                              tran.get_public_key())));
-
-    auto const sent = alice->send("", 2, packed);
-    EXPECT_EQ(sent, packed.size());
+    EXPECT_TRUE(_send(alice, 2, tran, id_session_response,
+                      uint16_t { 3 }, tran.get_public_key()));
 
     alice = io->open(3);
 
@@ -236,23 +213,22 @@ namespace laplace::network {
 
     tran.enable_encryption(true);
 
-    received = alice->receive(buf);
-    plain    = tran.decode({ buf, buf + received });
-    EXPECT_EQ(plain.size(), 1);
-    if (!plain.empty()) {
-      EXPECT_GT(plain[0].size(), sizeof id_session_token);
-      EXPECT_EQ(serial::rd<decltype(id_session_token)>(plain[0], 0),
-                id_session_token);
-      if (plain[0].size() > sizeof id_session_token) {
-        auto received_token = vbyte {
-          plain[0].begin() + sizeof id_session_token, plain[0].end()
-        };
+    received = _receive(alice, tran);
+    EXPECT_EQ(received.size(), 1);
+    if (!received.empty()) {
+      EXPECT_GT(received[0].size(), sizeof id_session_token);
+      EXPECT_EQ(
+          serial::rd<decltype(id_session_token)>(received[0], 0),
+          id_session_token);
+      if (received[0].size() > sizeof id_session_token) {
+        auto received_token = vbyte { received[0].begin() +
+                                          sizeof id_session_token,
+                                      received[0].end() };
         EXPECT_EQ(token, received_token);
       }
     }
 
     EXPECT_EQ(encode_session_request_called, 1);
-    EXPECT_EQ(is_allowed_called, 1);
     EXPECT_EQ(get_control_id_called, 1);
     EXPECT_EQ(decode_session_response_port_called, 1);
     EXPECT_EQ(decode_public_key_called, 1);

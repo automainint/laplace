@@ -185,10 +185,8 @@ namespace laplace {
       const_iterator position, const elem_ &value) noexcept {
 
     if constexpr (!unsafe_) {
-      if (position < m_values || position > m_values + m_size) {
-        error_("Invalid position.", __FUNCTION__);
+      if (position < m_values || position > m_values + m_size)
         return;
-      }
     }
 
     reserve(m_size + 1);
@@ -208,15 +206,10 @@ namespace laplace {
       const_iterator position, auto begin, auto end) noexcept {
 
     if constexpr (!unsafe_) {
-      if (position < m_values || position > m_values + m_size) {
-        error_("Invalid position.", __FUNCTION__);
+      if (position < m_values || position > m_values + m_size)
         return;
-      }
-
-      if (end < begin) {
-        error_("Invalid range.", __FUNCTION__);
+      if (end < begin)
         return;
-      }
     }
 
     auto const p = position - m_values;
@@ -247,10 +240,8 @@ namespace laplace {
       const_iterator position, auto &&...args) noexcept {
 
     if constexpr (!unsafe_) {
-      if (position < m_values || position > m_values + m_size) {
-        error_("Invalid position.", __FUNCTION__);
+      if (position < m_values || position > m_values + m_size)
         return;
-      }
     }
 
     reserve(m_size + 1);
@@ -281,10 +272,8 @@ namespace laplace {
   inline void small_vector<elem_, small_size_, unsafe_>::erase(
       const_iterator position) noexcept {
     if constexpr (!unsafe_) {
-      if (position < m_values || position >= m_values + m_size) {
-        error_("Invalid position.", __FUNCTION__);
+      if (position < m_values || position >= m_values + m_size)
         return;
-      }
     }
 
     auto const p = position - m_values;
@@ -298,11 +287,8 @@ namespace laplace {
       const_iterator begin, const_iterator end) noexcept {
 
     if constexpr (!unsafe_) {
-      if (end < begin || begin < m_values ||
-          end >= m_values + m_size) {
-        error_("Invalid range.", __FUNCTION__);
+      if (end < begin || begin < m_values || end >= m_values + m_size)
         return;
-      }
     }
 
     auto const p = begin - m_values;
@@ -319,10 +305,8 @@ namespace laplace {
       const ptrdiff_t size) {
 
     if constexpr (!unsafe_) {
-      if (size < 0) {
-        error_("Invalid size.", __FUNCTION__);
+      if (size < 0)
         return;
-      }
     }
 
     if (size < m_capacity) {
@@ -369,7 +353,6 @@ namespace laplace {
     if constexpr (!unsafe_) {
       if (n < 0 || n >= m_size) {
         static auto x = elem_ {};
-        error_("Out of range.", __FUNCTION__);
         return x;
       }
     }
@@ -384,7 +367,6 @@ namespace laplace {
     if constexpr (!unsafe_) {
       if (n < 0 || n >= m_size) {
         static auto const x = elem_ {};
-        error_("Out of range.", __FUNCTION__);
         return x;
       }
     }
@@ -517,10 +499,8 @@ namespace laplace {
 
     auto *p = new (std::nothrow) char[count * sizeof(elem_)];
 
-    if (p == nullptr) {
-      error_("Out of memory.", __FUNCTION__);
+    if (p == nullptr)
       return nullptr;
-    }
 
     return reinterpret_cast<elem_ *>(p);
   }
@@ -530,10 +510,8 @@ namespace laplace {
       elem_ *p) noexcept {
 
     if constexpr (!unsafe_) {
-      if (p == nullptr) {
-        error_("Invalid pointer.", __FUNCTION__);
+      if (p == nullptr)
         return;
-      }
     }
 
     delete[] reinterpret_cast<char *>(p);
@@ -544,10 +522,8 @@ namespace laplace {
       auto const *begin, auto const *end) {
 
     if constexpr (!unsafe_) {
-      if (end < begin) {
-        error_("Invalid range.", __FUNCTION__);
+      if (end < begin)
         return;
-      }
     }
 
     m_capacity = std::bit_ceil(static_cast<size_t>(end - begin));

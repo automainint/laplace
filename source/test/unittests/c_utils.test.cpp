@@ -38,7 +38,7 @@ namespace laplace::test {
 
       EXPECT_EQ(as_index(a), 0x1020304050607080ull);
       EXPECT_EQ(as_index(b), 0x2030405060708090ull);
-      EXPECT_EQ(as_index(c, -1, true), -1);
+      EXPECT_EQ(as_index(c, -1), -1);
     }
 
     if constexpr (sizeof(sl::index) == 4) {
@@ -48,15 +48,15 @@ namespace laplace::test {
 
       EXPECT_EQ(as_index(a), 0x10203040u);
       EXPECT_EQ(as_index(b), 0x20304050u);
-      EXPECT_EQ(as_index(c, -1, true), -1);
+      EXPECT_EQ(as_index(c, -1), -1);
     }
   }
 
   TEST(core, utils_index_signed) {
-    EXPECT_EQ(as_index(int64_t { -10 }, -1, true), -1);
+    EXPECT_EQ(as_index(int64_t { -10 }, -1), -1);
 
     if constexpr (sizeof(sl::index) == 4) {
-      EXPECT_EQ(as_index(int64_t { 0x1000000000 }, -1, true), -1);
+      EXPECT_EQ(as_index(int64_t { 0x1000000000 }, -1), -1);
     }
   }
 }

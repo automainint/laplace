@@ -25,13 +25,11 @@ namespace laplace::network::crypto {
   protected:
     [[nodiscard]] virtual auto do_encrypt(span_cbyte         src,
                                           std::span<uint8_t> dst)
-        -> bool;
-
+        -> bool = 0;
     [[nodiscard]] virtual auto do_decrypt(span_cbyte         src,
                                           std::span<uint8_t> dst)
-        -> bool;
-
-    [[nodiscard]] virtual auto rewind_decryption() -> bool;
+        -> bool                                            = 0;
+    [[nodiscard]] virtual auto rewind_decryption() -> bool = 0;
 
     [[nodiscard]] virtual auto pass_decryption(sl::index offset)
         -> bool;

@@ -24,16 +24,15 @@ namespace laplace::stem::text {
     return { 0, 0, 0 };
   }
 
-  void painter::print(graphics::ref_image img,
-                      sl::index           x,
-                      sl::index           y,
-                      u8string_view       text) { }
+  void painter::print(graphics::ref_image img, sl::index x,
+                      sl::index y, u8string_view text) { }
 
-  auto painter::get_default() -> ptr_painter {
+  auto painter::get_default(log_handler log) -> ptr_painter {
     auto p = m_default.lock();
 
     if (!p) {
-      verb("Init default LCD font.", "Stem/Text/Painter");
+      log(log_event::verbose, "Init default LCD font.",
+          "Stem/Text/Painter");
 
       auto lcd_font = make_shared<lcd>();
 

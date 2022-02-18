@@ -22,15 +22,10 @@ namespace laplace::engine::eval::grid {
 
     auto const count = size.x() * size.y();
 
-    if (count > dst.size()) {
-      error_("Invalid destination size.", __FUNCTION__);
+    if (count > dst.size())
       return;
-    }
-
-    if (count > src.size()) {
-      error_("Invalid source size.", __FUNCTION__);
+    if (count > src.size())
       return;
-    }
 
     for (sl::index i = 0; i < count; i++) {
       dst[i] = merge_op(dst[i], src[i]);
@@ -42,15 +37,10 @@ namespace laplace::engine::eval::grid {
              span<int8_t const> const src,
              op const                 merge_op) noexcept {
 
-    if (dst_size.x() * dst_size.y() > dst.size()) {
-      error_("Invalid destination size.", __FUNCTION__);
+    if (dst_size.x() * dst_size.y() > dst.size())
       return;
-    }
-
-    if (src_size.x() * src_size.y() > src.size()) {
-      error_("Invalid source size.", __FUNCTION__);
+    if (src_size.x() * src_size.y() > src.size())
       return;
-    }
 
     for (sl::index y = 0; y < src_size.y(); y++) {
       for (sl::index x = 0; x < src_size.x(); x++) {
@@ -151,10 +141,8 @@ namespace laplace::engine::eval::grid {
                std::span<int8_t const> const map) noexcept
       -> rect_area {
     if constexpr (!_unsafe) {
-      if (size.x() * size.y() < map.size()) {
-        error_("Invalid size.", __FUNCTION__);
+      if (size.x() * size.y() < map.size())
         return {};
-      }
     }
 
     return rect_area { .map    = map,
@@ -175,10 +163,8 @@ namespace laplace::engine::eval::grid {
 
     if constexpr (!_unsafe) {
       if (i < 0 || i > area.map.size() || j < 0 ||
-          j > area.map.size() || j < i) {
-        error_("Invalid bounds.", __FUNCTION__);
+          j > area.map.size() || j < i)
         return {};
-      }
     }
 
     return rect_area { .map    = span { area.map.begin() + i,
@@ -477,30 +463,16 @@ namespace laplace::engine::eval::grid {
                 vec2z const              center,
                 span<int8_t const> const footprint) noexcept {
 
-    if (size.x() < 0 || size.y() < 0) {
-      error_("Invalid map size.", __FUNCTION__);
+    if (size.x() < 0 || size.y() < 0)
       return;
-    }
-
-    if (fp_size.x() < 0 || fp_size.y() < 0) {
-      error_("Invalid footprint size.", __FUNCTION__);
+    if (fp_size.x() < 0 || fp_size.y() < 0)
       return;
-    }
-
-    if (src.size() != size.x() * size.y()) {
-      error_("Invalid source.", __FUNCTION__);
+    if (src.size() != size.x() * size.y())
       return;
-    }
-
-    if (dst.size() != size.x() * size.y()) {
-      error_("Invalid destination.", __FUNCTION__);
+    if (dst.size() != size.x() * size.y())
       return;
-    }
-
-    if (footprint.size() != fp_size.x() * fp_size.y()) {
-      error_("Invalid footprint.", __FUNCTION__);
+    if (footprint.size() != fp_size.x() * fp_size.y())
       return;
-    }
 
     for (sl::index j = 0; j < size.y(); j++)
       for (sl::index i = 0; i < size.x(); i++) {
@@ -532,15 +504,10 @@ namespace laplace::engine::eval::grid {
                function<bool(int8_t)> const condition) noexcept
       -> vec2z {
 
-    if (size.x() <= 0 || size.y() <= 0) {
-      error_("Invalid size.", __FUNCTION__);
+    if (size.x() <= 0 || size.y() <= 0)
       return {};
-    }
-
-    if (!condition) {
-      error_("Invalid condition.", __FUNCTION__);
+    if (!condition)
       return {};
-    }
 
     auto const x0 = max<sl::index>(0,
                                    min(position.x(), size.x() - 1));

@@ -47,7 +47,7 @@ namespace laplace::engine {
 
   auto solver::apply(span_cbyte event) noexcept -> sl::time {
     if (event.empty()) {
-      error_("No event.", __FUNCTION__);
+      log(log_event::error, "No event.", __FUNCTION__);
       return time_undefined;
     }
 
@@ -57,7 +57,8 @@ namespace laplace::engine {
       event_time = m_time;
 
     if (event_time < m_time) {
-      error_("Invalid time. Event ignored.", __FUNCTION__);
+      log(log_event::error, "Invalid time. Event ignored.",
+          __FUNCTION__);
       return time_undefined;
     }
 
@@ -126,7 +127,7 @@ namespace laplace::engine {
   void solver::schedule(sl::time delta) noexcept {
     if (delta <= 0) {
       if (delta < 0)
-        error_("Invalid time.", __FUNCTION__);
+        log(log_event::error, "Invalid time.", __FUNCTION__);
       return;
     }
 

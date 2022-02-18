@@ -102,10 +102,8 @@ namespace laplace::engine {
     const auto n     = static_cast<intval>(value);
 
     if constexpr (sizeof value != sizeof n) {
-      if (static_cast<decltype(value)>(n) != value) {
-        error_("32-bit integer value overflow.", __FUNCTION__);
+      if (static_cast<decltype(value)>(n) != value)
         return -1;
-      }
     }
 
     return n;

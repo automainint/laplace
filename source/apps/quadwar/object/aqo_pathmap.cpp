@@ -56,21 +56,14 @@ namespace quadwar_app::object {
     return id;
   }
 
-  void pathmap::set_tiles(
-      entity                        en,
-      const sl::whole               width,
-      const sl::whole               height,
-      const std::span<const int8_t> tiles) {
+  void pathmap::set_tiles(entity en, const sl::whole width,
+                          const sl::whole               height,
+                          const std::span<const int8_t> tiles) {
 
-    if (width < 0 || height < 0) {
-      error_("Invalid size.", __FUNCTION__);
+    if (width < 0 || height < 0)
       return;
-    }
-
-    if (tiles.size() != width * height) {
-      error_("Invalid tiles.", __FUNCTION__);
+    if (tiles.size() != width * height)
       return;
-    }
 
     en.bytes_resize(tiles.size());
     en.bytes_write(0, tiles);
@@ -100,33 +93,19 @@ namespace quadwar_app::object {
   }
 
   auto pathmap::check_move(
-      entity                   en,
-      const vec2z              position,
-      const vec2z              size,
-      const span<const int8_t> footprint,
-      const vec2z              new_position,
+      entity en, const vec2z position, const vec2z size,
+      const span<const int8_t> footprint, const vec2z new_position,
       const vec2z              new_size,
       const span<const int8_t> new_footprint) noexcept -> bool {
 
-    if (size.x() <= 0 || size.y() <= 0) {
-      error_("Invalid size.", __FUNCTION__);
+    if (size.x() <= 0 || size.y() <= 0)
       return false;
-    }
-
-    if (new_size.x() <= 0 || new_size.y() <= 0) {
-      error_("Invalid new size.", __FUNCTION__);
+    if (new_size.x() <= 0 || new_size.y() <= 0)
       return false;
-    }
-
-    if (size.x() * size.y() != footprint.size()) {
-      error_("Invalid footprint.", __FUNCTION__);
+    if (size.x() * size.y() != footprint.size())
       return false;
-    }
-
-    if (new_size.x() * new_size.y() != new_footprint.size()) {
-      error_("Invalid new footprint.", __FUNCTION__);
+    if (new_size.x() * new_size.y() != new_footprint.size())
       return false;
-    }
 
     const auto width  = en.get(n_width);
     const auto height = en.get(n_height);
@@ -174,21 +153,13 @@ namespace quadwar_app::object {
     return true;
   }
 
-  void pathmap::add(
-      entity                   en,
-      const vec2z              position,
-      const vec2z              size,
-      const span<const int8_t> footprint) noexcept {
+  void pathmap::add(entity en, const vec2z position, const vec2z size,
+                    const span<const int8_t> footprint) noexcept {
 
-    if (size.x() <= 0 || size.y() <= 0) {
-      error_("Invalid size.", __FUNCTION__);
+    if (size.x() <= 0 || size.y() <= 0)
       return;
-    }
-
-    if (size.x() * size.y() != footprint.size()) {
-      error_("Invalid footprint.", __FUNCTION__);
+    if (size.x() * size.y() != footprint.size())
       return;
-    }
 
     const auto width  = en.get(n_width);
     const auto height = en.get(n_height);
@@ -201,10 +172,8 @@ namespace quadwar_app::object {
     const auto x1 = position.x() + size.x() - fp_center.x();
     const auto y1 = position.y() + size.y() - fp_center.y();
 
-    if (x0 < 0 || y0 < 0 || x1 >= width || y1 >= height) {
-      error_("Invalid position.", __FUNCTION__);
+    if (x0 < 0 || y0 < 0 || x1 >= width || y1 >= height)
       return;
-    }
 
     for (sl::index j = 0; j < size.y(); j++) {
       en.bytes_write_delta(
@@ -215,20 +184,14 @@ namespace quadwar_app::object {
   }
 
   void pathmap::subtract(
-      entity                        en,
-      const engine::vec2z           position,
+      entity en, const engine::vec2z position,
       const engine::vec2z           size,
       const std::span<const int8_t> footprint) noexcept {
 
-    if (size.x() <= 0 || size.y() <= 0) {
-      error_("Invalid size.", __FUNCTION__);
+    if (size.x() <= 0 || size.y() <= 0)
       return;
-    }
-
-    if (size.x() * size.y() != footprint.size()) {
-      error_("Invalid footprint.", __FUNCTION__);
+    if (size.x() * size.y() != footprint.size())
       return;
-    }
 
     const auto width  = en.get(n_width);
     const auto height = en.get(n_height);
@@ -241,10 +204,8 @@ namespace quadwar_app::object {
     const auto x1 = position.x() + size.x() - fp_center.x();
     const auto y1 = position.y() + size.y() - fp_center.y();
 
-    if (x0 < 0 || y0 < 0 || x1 >= width || y1 >= height) {
-      error_("Invalid position.", __FUNCTION__);
+    if (x0 < 0 || y0 < 0 || x1 >= width || y1 >= height)
       return;
-    }
 
     for (sl::index j = 0; j < size.y(); j++) {
       en.bytes_erase_delta(
@@ -255,33 +216,26 @@ namespace quadwar_app::object {
   }
 
   auto pathmap::find_empty(
-      entity                   en,
-      const vec2z              position,
-      const vec2z              size,
+      entity en, const vec2z position, const vec2z size,
       const span<const int8_t> footprint) noexcept -> vec2z {
 
-    if (size.x() <= 0 || size.y() <= 0) {
-      error_("Invalid size.", __FUNCTION__);
+    if (size.x() <= 0 || size.y() <= 0)
       return {};
-    }
-
-    if (size.x() * size.y() != footprint.size()) {
-      error_("Invalid footprint.", __FUNCTION__);
+    if (size.x() * size.y() != footprint.size())
       return {};
-    }
 
     const auto width  = en.get(n_width);
     const auto height = en.get(n_height);
 
     const auto delta = vec2z { spawn_distance, spawn_distance };
 
-    const auto area = adjust_rect(
-        position - delta, position + delta, { width, height });
+    const auto area = adjust_rect(position - delta, position + delta,
+                                  { width, height });
 
     const auto area_size = area.max - area.min;
 
-    const auto area_src =
-        [&en, &width, &area, &area_size]() -> sl::vector<int8_t> {
+    const auto area_src = [&en, &width, &area,
+                           &area_size]() -> sl::vector<int8_t> {
       auto v = sl::vector<int8_t>(area_size.x() * area_size.y());
 
       for (sl::index j = 0; j < area_size.y(); j++) {
@@ -296,13 +250,13 @@ namespace quadwar_app::object {
 
     const auto fp_center = size / sl::index(2);
 
-    const auto area_dst =
-        [&size, &fp_center, &footprint, &area, &area_size,
-         &area_src]() -> sl::vector<int8_t> {
+    const auto area_dst = [&size, &fp_center, &footprint, &area,
+                           &area_size,
+                           &area_src]() -> sl::vector<int8_t> {
       auto v = sl::vector<int8_t>(area_src.size());
 
-      grid::convolve(
-          area_size, v, area_src, size, fp_center, footprint);
+      grid::convolve(area_size, v, area_src, size, fp_center,
+                     footprint);
 
       return v;
     }();
@@ -311,19 +265,14 @@ namespace quadwar_app::object {
            grid::nearest(position - area.min, area_size, area_dst);
   }
 
-  auto pathmap::adjust_rect(
-      const vec2z min, const vec2z max, const vec2z bounds) noexcept
+  auto pathmap::adjust_rect(const vec2z min, const vec2z max,
+                            const vec2z bounds) noexcept
       -> adjust_rect_result {
 
-    if (bounds.x() < 0 || bounds.y() < 0) {
-      error_("Invalid bounds.", __FUNCTION__);
+    if (bounds.x() < 0 || bounds.y() < 0)
       return {};
-    }
-
-    if (min.x() > max.x() || min.y() > max.y()) {
-      error_("Invalid rect.", __FUNCTION__);
+    if (min.x() > max.x() || min.y() > max.y())
       return {};
-    }
 
     auto res = adjust_rect_result { .min = min, .max = max };
 

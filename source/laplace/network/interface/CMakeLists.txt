@@ -1,6 +1,6 @@
 target_sources(
   ${LAPLACE_OBJ}
     PRIVATE
-      ni_log.cpp ni_protocol.cpp ni_execution.cpp
+      ni_protocol.cpp ni_execution.cpp
     PUBLIC
-      execution.h log.h protocol.h io.h)
+      execution.h protocol.h io.h)

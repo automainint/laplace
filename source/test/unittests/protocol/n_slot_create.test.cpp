@@ -14,6 +14,6 @@
 #include "../../../laplace/network/server.h"
 #include <gtest/gtest.h>
 
-namespace laplace::network {
+namespace laplace::test {
   TEST(network, slot_create) { }
 }

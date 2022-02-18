@@ -424,7 +424,7 @@ namespace laplace::ui {
       for (sl::index i = 0; i < childs.size(); i++)
         m_childs[childs[i]]->set_rect(rects[i]);
     } else {
-      error_("Invalid layout.", __FUNCTION__);
+      log(log_event::error, "Invalid layout.", __FUNCTION__);
     }
   }
 

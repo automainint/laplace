@@ -25,7 +25,7 @@ namespace laplace::test {
     auto src = unival {};
     auto ss  = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -39,7 +39,7 @@ namespace laplace::test {
     auto src = unival { true };
     auto ss  = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -53,7 +53,7 @@ namespace laplace::test {
     auto src = unival { false };
     auto ss  = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -67,7 +67,7 @@ namespace laplace::test {
     auto src = unival { 100 };
     auto ss  = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -81,7 +81,7 @@ namespace laplace::test {
     auto src = unival { 0x8000000000000000 };
     auto ss  = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -95,7 +95,7 @@ namespace laplace::test {
     auto src = unival { 3.1415 };
     auto ss  = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -109,7 +109,7 @@ namespace laplace::test {
     auto src = unival { 0.0000001 };
     auto ss  = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -123,7 +123,7 @@ namespace laplace::test {
     auto src = unival { 1e100 };
     auto ss  = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -137,7 +137,7 @@ namespace laplace::test {
     auto src = unival { u8"Foo bar" };
     auto ss  = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -151,7 +151,7 @@ namespace laplace::test {
     auto src = unival { vbyte { 1, 2, 3, 4, 5 } };
     auto ss  = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -167,7 +167,7 @@ namespace laplace::test {
                                              false, true } };
     auto ss  = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -181,7 +181,7 @@ namespace laplace::test {
     auto src = unival { sl::vector<unival> { 1, 2, 3, 4, 5 } };
     auto ss  = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -198,7 +198,7 @@ namespace laplace::test {
 
     auto ss = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -216,7 +216,7 @@ namespace laplace::test {
 
     auto ss = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };
@@ -235,7 +235,7 @@ namespace laplace::test {
 
     auto ss = ostringstream {};
 
-    auto success = encode(wrap(ss), src);
+    auto success = encode(wrap(ss), src, get_global_log());
 
     auto s   = ss.str();
     auto in  = istringstream { s };

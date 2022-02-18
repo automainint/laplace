@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_world_h
-#define laplace_engine_world_h
+#ifndef LAPLACE_ENGINE_WORLD_H
+#define LAPLACE_ENGINE_WORLD_H
 
 #include "../platform/thread.h"
 #include "basic_entity.h"
@@ -20,11 +20,17 @@
 #include <shared_mutex>
 
 namespace laplace::engine {
+  /*  TODO
+   *  Rename `world` to `execution`.
+   *  Break dependency from `scheduler`.
+   */
   class world : public std::enable_shared_from_this<world> {
   public:
     static bool const     default_allow_relaxed_spawn;
     static uint64_t const default_seed;
 
+    log_handler log = get_global_log();
+    
     world(world const &) = delete;
     auto operator=(world const &) -> world & = delete;
 

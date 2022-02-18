@@ -57,7 +57,7 @@ namespace laplace::network {
   using fn_set_event_time = std::function<void(span_byte, sl::time)>;
   using fn_set_event_actor =
       std::function<void(span_byte, sl::index)>;
-  using fn_is_allowed = std::function<bool(span_cbyte, bool)>;
+  using fn_is_allowed = std::function<bool(span_cbyte)>;
   using fn_alter_slot_create_flag =
       std::function<void(span_byte, sl::index)>;
   using fn_get_control_id = std::function<control(span_cbyte)>;

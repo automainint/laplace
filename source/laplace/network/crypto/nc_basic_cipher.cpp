@@ -43,16 +43,6 @@ namespace laplace::network::crypto {
     return m_loss_count;
   }
 
-  auto basic_cipher::setup_remote_key(span_cbyte key) -> bool {
-    error_("Not implemented.", __FUNCTION__);
-    return false;
-  }
-
-  auto basic_cipher::setup() -> bool {
-    error_("Not implemented.", __FUNCTION__);
-    return false;
-  }
-
   void basic_cipher::set_ready(bool is_ready) noexcept {
     m_is_ready = is_ready;
   }
@@ -71,7 +61,7 @@ namespace laplace::network::crypto {
 
   void basic_cipher::add_bytes_lost(sl::whole count) noexcept {
     if (count < 0) {
-      error_("Invalid byte count.", __FUNCTION__);
+      log(log_event::error, "Invalid byte count.", __FUNCTION__);
       return;
     }
 

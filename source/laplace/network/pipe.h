@@ -23,6 +23,8 @@ namespace laplace::network {
       vbyte    buffer;
     };
 
+    log_handler log = get_global_log();
+
     pipe_node(pipe_node const &)     = delete;
     pipe_node(pipe_node &&) noexcept = default;
     pipe_node &operator=(pipe_node const &) = delete;
@@ -71,9 +73,11 @@ namespace laplace::network {
     [[nodiscard]] auto open(uint16_t port) noexcept
         -> std::unique_ptr<node> override;
 
-    [[nodiscard]] static auto remote_port_of(uint16_t port) noexcept
+    [[nodiscard]] static auto remote_port_of(
+        uint16_t port, log_handler log = get_global_log()) noexcept
         -> uint16_t &;
-    [[nodiscard]] static auto buffer_of(uint16_t port) noexcept
+    [[nodiscard]] static auto buffer_of(
+        uint16_t port, log_handler log = get_global_log()) noexcept
         -> vbyte &;
 
   private:

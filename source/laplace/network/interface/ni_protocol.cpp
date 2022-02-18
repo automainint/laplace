@@ -38,7 +38,7 @@ namespace laplace::network {
       .set_event_index = [](span_byte, sl::index) {},
       .set_event_time  = [](span_byte, sl::index) {},
       .set_event_actor = [](span_byte, sl::index) {},
-      .is_allowed      = [](span_cbyte, bool) { return false; },
+      .is_allowed      = [](span_cbyte) { return false; },
       .alter_slot_create_flag = [](span_byte, sl::index) {},
       .get_control_id         = [](span_cbyte) -> control {
         return control::undefined;

@@ -1,6 +1,4 @@
-/*  laplace/ui/frame.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_stem_ui_frame_h
-#define laplace_stem_ui_frame_h
+#ifndef LAPLACE_STEM_UI_FRAME_H
+#define LAPLACE_STEM_UI_FRAME_H
 
 #include "../../graphics/flat/framebuffer.h"
 #include "../../render/context.h"
@@ -20,6 +18,8 @@
 namespace laplace::stem::ui {
   class frame final : public laplace::ui::basic_widget {
   public:
+    log_handler log = get_global_log();
+    
     frame(frame const &) = delete;
     frame(frame &&)      = delete;
     auto operator=(frame const &) = delete;

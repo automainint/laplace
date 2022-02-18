@@ -7,4 +7,6 @@ target_sources(
       n_server_heartbeat.test.cpp n_server_seed.test.cpp n_server_pause.test.cpp
       n_slot_remove.test.cpp n_session_response.test.cpp n_server_quit.test.cpp
       n_server_loading.test.cpp n_server_action.test.cpp n_server_clock.test.cpp
-      n_server_reserve.test.cpp n_client_enter.test.cpp n_client_leave.test.cpp)
+      n_server_reserve.test.cpp n_client_enter.test.cpp n_client_leave.test.cpp
+    PUBLIC
+      helpers.test.h)

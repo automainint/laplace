@@ -24,7 +24,6 @@ namespace laplace::test {
   }
 
   TEST(engine, solver_no_event) {
-    disable_log();
     auto sol             = solver {};
     bool event_performed = false;
     sol.on_decode(
@@ -35,7 +34,6 @@ namespace laplace::test {
     EXPECT_FALSE(event_performed);
     EXPECT_EQ(sol.get_time(), 1);
     EXPECT_EQ(sol.get_position(), 0);
-    setup_log({});
   }
 
   TEST(engine, solver_one_event) {
@@ -54,7 +52,6 @@ namespace laplace::test {
   }
 
   TEST(engine, solver_invalid_event_time) {
-    disable_log();
     auto sol          = solver {};
     bool event_queued = false;
     sol.on_decode(
@@ -68,7 +65,6 @@ namespace laplace::test {
     EXPECT_FALSE(event_queued);
     EXPECT_EQ(sol.get_time(), 2);
     EXPECT_EQ(sol.get_position(), 0);
-    setup_log({});
   }
 
   TEST(engine, solver_future_event) {
@@ -123,7 +119,6 @@ namespace laplace::test {
   }
 
   TEST(engine, solver_schedule_invalid_time) {
-    disable_log();
     auto sol          = solver {};
     auto time_elapsed = sl::time {};
     sol.on_schedule([&](sl::time delta) { time_elapsed += delta; });
@@ -136,7 +131,6 @@ namespace laplace::test {
     sol.schedule(0);
     EXPECT_EQ(time_elapsed, 1);
     EXPECT_EQ(sol.get_time(), 1);
-    setup_log({});
   }
 
   TEST(engine, solver_seed) {

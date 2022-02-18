@@ -1,6 +1,4 @@
-/*  laplace/graphics/g_program.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -151,7 +149,7 @@ namespace laplace::graphics {
     string info_log(static_cast<size_t>(length), '\0');
     glGetProgramInfoLog(m_id, length, &length, &info_log[0]);
     info_log.resize(static_cast<size_t>(length));
-    verb(info_log, "Graphics/Program");
+    log(log_event::verbose, info_log, "Graphics/Program");
   }
 
   void program::log_shader(uint32_t shader) {
@@ -160,6 +158,6 @@ namespace laplace::graphics {
     string info_log(static_cast<size_t>(length), '\0');
     glGetShaderInfoLog(shader, length, &length, &info_log[0]);
     info_log.resize(static_cast<size_t>(length));
-    verb(info_log, "Graphics/Program");
+    log(log_event::verbose, info_log, "Graphics/Program");
   }
 }

@@ -349,7 +349,7 @@ namespace laplace::linux {
   }
 
   void window::init() noexcept {
-    if (!gl_load_library())
+    if (!gl_load_library(log))
       return;
 
     windows.emplace_back(this);
@@ -359,7 +359,7 @@ namespace laplace::linux {
     m_display = XOpenDisplay(nullptr);
 
     if (m_display == nullptr) {
-      error_("XOpenDisplay failed.", __FUNCTION__);
+      log(log_event::error, "XOpenDisplay failed.", __FUNCTION__);
       return;
     }
 
@@ -371,7 +371,7 @@ namespace laplace::linux {
     auto *visual = glXChooseVisual(m_display, 0, attributes);
 
     if (visual == nullptr) {
-      error_("glXChooseVisual failed.", __FUNCTION__);
+      log(log_event::error, "glXChooseVisual failed.", __FUNCTION__);
       return;
     }
 
@@ -395,7 +395,7 @@ namespace laplace::linux {
     m_context = glXCreateContext(m_display, visual, nullptr, 1);
 
     if (m_context == nullptr) {
-      error_("glXCreateContext failed.", __FUNCTION__);
+      log(log_event::error, "glXCreateContext failed.", __FUNCTION__);
       XDestroyWindow(m_display, m_handle);
       return;
     }

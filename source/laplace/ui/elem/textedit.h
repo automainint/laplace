@@ -31,6 +31,8 @@ namespace laplace::ui::elem {
       sl::index     selection = 0;
     };
 
+    log_handler log = get_global_log();
+
     textedit(textedit const &) noexcept = default;
     textedit(textedit &&) noexcept      = default;
     auto operator=(textedit const &) noexcept -> textedit & = default;
@@ -66,8 +68,8 @@ namespace laplace::ui::elem {
 
     [[nodiscard]] static auto update(
         ptr_widget const &object, textedit_state state,
-        filter const &f, core::input_event const &ev) noexcept
-        -> update_result;
+        filter const &f, core::input_event const &ev,
+        log_handler log = get_global_log()) noexcept -> update_result;
 
   private:
     void textedit_set_focus(bool has_focus) noexcept;

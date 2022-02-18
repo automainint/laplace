@@ -28,6 +28,8 @@ namespace laplace::engine {
       fn_decode  decode;
       fn_perform perform;
     };
+    
+    log_handler log = get_global_log();
 
     loader() noexcept;
     ~loader() noexcept;

@@ -28,7 +28,7 @@ namespace laplace::stem::text {
     auto e = FT_Init_FreeType(&m_library);
 
     if (e) {
-      error_("FT_Init_FreeType failed.", __FUNCTION__);
+      log(log_event::error, "FT_Init_FreeType failed.", __FUNCTION__);
       m_library = nullptr;
     }
   }
@@ -44,11 +44,11 @@ namespace laplace::stem::text {
     FT_Face face = nullptr;
 
     if (m_library) {
-      auto e = FT_New_Face(
-          m_library, file_name, static_cast<FT_Long>(n), &face);
+      auto e = FT_New_Face(m_library, file_name,
+                           static_cast<FT_Long>(n), &face);
 
       if (e) {
-        error_("FT_New_Face failed.", __FUNCTION__);
+        log(log_event::error, "FT_New_Face failed.", __FUNCTION__);
         face = nullptr;
       }
     }
@@ -56,17 +56,19 @@ namespace laplace::stem::text {
     return face;
   }
 
-  auto ttf_library::new_memory_face(
-      const uint8_t *bytes, sl::whole size, sl::index n) -> FT_Face {
+  auto ttf_library::new_memory_face(const uint8_t *bytes,
+                                    sl::whole size, sl::index n)
+      -> FT_Face {
     FT_Face face = nullptr;
 
     if (m_library) {
-      auto e = FT_New_Memory_Face(
-          m_library, bytes, static_cast<FT_Long>(size),
-          static_cast<FT_Long>(n), &face);
+      auto e = FT_New_Memory_Face(m_library, bytes,
+                                  static_cast<FT_Long>(size),
+                                  static_cast<FT_Long>(n), &face);
 
       if (e) {
-        error_("FT_New_Memory_Face failed.", __FUNCTION__);
+        log(log_event::error, "FT_New_Memory_Face failed.",
+            __FUNCTION__);
         face = nullptr;
       }
     }
@@ -121,7 +123,7 @@ namespace laplace::stem::text {
       auto in = ifstream(fs::path(file_name));
 
       if (!in) {
-        error_("Can't open file.", __FUNCTION__);
+        log(log_event::error, "Can't open file.", __FUNCTION__);
         return;
       }
 
@@ -158,19 +160,20 @@ namespace laplace::stem::text {
           static_cast<FT_F26Dot6>(height * 64), 300, 300);
 
       if (e) {
-        error_("FT_Set_Char_Size failed.", __FUNCTION__);
+        log(log_event::error, "FT_Set_Char_Size failed.",
+            __FUNCTION__);
       }
     }
   }
 
   void ttf::set_pixel_sizes(sl::whole width, sl::whole height) {
     if (m_face) {
-      auto e = FT_Set_Pixel_Sizes(
-          m_face, static_cast<FT_UInt>(width),
-          static_cast<FT_UInt>(height));
+      auto e = FT_Set_Pixel_Sizes(m_face, static_cast<FT_UInt>(width),
+                                  static_cast<FT_UInt>(height));
 
       if (e) {
-        error_("FT_Set_Pixel_Sizes failed.", __FUNCTION__);
+        log(log_event::error, "FT_Set_Pixel_Sizes failed.",
+            __FUNCTION__);
       }
     }
   }

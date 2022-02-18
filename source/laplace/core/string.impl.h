@@ -19,8 +19,6 @@ namespace laplace {
       return 10 + (x - 'a');
     if (x >= 'A' && x <= 'F')
       return 10 + (x - 'A');
-
-    error_("No HEX digit.", __FUNCTION__);
     return {};
   }
 
@@ -29,8 +27,6 @@ namespace laplace {
       return static_cast<char>('0' + x);
     if (x >= 10 && x < 16)
       return static_cast<char>('a' + (x - 10));
-
-    error_("No HEX digit.", __FUNCTION__);
     return '\0';
   }
 
@@ -43,13 +39,15 @@ namespace laplace {
   }
 
   template <typename view_type>
-  inline auto to_u8string(view_type s) noexcept -> std::u8string {
+  inline auto to_u8string(view_type s, log_handler log) noexcept
+      -> std::u8string {
     auto result = std::u8string {};
     auto offset = sl::index {};
 
     for (auto &c : s)
       if (!utf8::encode(c, result, offset)) {
-        error_("Unable to encode UTF-8 string.", __FUNCTION__);
+        log(log_event::error, "Unable to encode UTF-8 string.",
+            __FUNCTION__);
         break;
       }
 
@@ -57,14 +55,16 @@ namespace laplace {
   }
 
   template <>
-  inline auto to_u8string<>(std::string_view s) noexcept
+  inline auto to_u8string<>(std::string_view s,
+                            log_handler      log) noexcept
       -> std::u8string {
     return std::u8string(reinterpret_cast<char8_t const *>(s.data()),
                          s.size());
   }
 
   template <>
-  inline auto to_u8string<>(std::u8string_view s) noexcept
+  inline auto to_u8string<>(std::u8string_view s,
+                            log_handler        log) noexcept
       -> std::u8string {
     return std::u8string(s.begin(), s.end());
   }

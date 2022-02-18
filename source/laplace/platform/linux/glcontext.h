@@ -18,6 +18,8 @@
 namespace laplace::linux {
   class glcontext {
   public:
+    log_handler log = get_global_log();
+    
     glcontext(glcontext const &) = delete;
     glcontext(glcontext &&)      = delete;
     auto operator=(glcontext const &) -> glcontext & = delete;

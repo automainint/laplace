@@ -1,6 +1,4 @@
-/*  laplace/ui/text/wrap.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_stem_text_wrap_h
-#define laplace_stem_text_wrap_h
+#ifndef LAPLACE_STEM_TEXT_WRAP_H
+#define LAPLACE_STEM_TEXT_WRAP_H
 
 #include "../../graphics/texture.h"
 #include "../../render/context.h"
@@ -23,6 +21,8 @@ namespace laplace::stem::text {
    */
   class wrap final : public renderer {
   public:
+    log_handler log = get_global_log();
+    
     wrap(ptr_painter paint);
     ~wrap() override = default;
 
@@ -30,8 +30,7 @@ namespace laplace::stem::text {
 
     auto adjust(std::u8string_view text) -> ui::text_area final;
 
-    void render(sl::index          x,
-                sl::index          y,
+    void render(sl::index x, sl::index y,
                 std::u8string_view text) final;
 
   private:

@@ -34,8 +34,8 @@ namespace laplace::format::binary {
   }
 
   [[nodiscard]] auto decode(fn_read read) noexcept -> pack_type;
-  [[nodiscard]] auto encode(fn_write        write,
-                            const_pack_type data) noexcept -> bool;
+  [[nodiscard]] auto encode(fn_write write, const_pack_type data,
+                            log_handler log) noexcept -> bool;
 }
 
 #endif

@@ -12,12 +12,14 @@
 #include "../../../laplace/network/crypto/ecc_rabbit.h"
 #include "../../../laplace/network/pipe.h"
 #include "../../../laplace/network/server.h"
+#include "helpers.test.h"
 #include <gtest/gtest.h>
 
-namespace laplace::network {
+namespace laplace::test {
   using network::server, network::pipe, std::make_shared,
       network::blank_protocol_interface, network::control,
-      network::cipher, network::transfer, network::crypto::ecc_rabbit;
+      network::cipher, network::transfer, network::crypto::ecc_rabbit,
+      network::any_port;
 
   TEST(network, request_token_session_token) {
     /*  Peer answers to request_token with session_token.
@@ -42,12 +44,10 @@ namespace laplace::network {
     int encode_session_token_called    = 0;
 
     auto proto       = blank_protocol_interface();
-    proto.is_allowed = [&](span_cbyte seq, bool is_exclusive) {
+    proto.is_allowed = [&](span_cbyte seq) {
       is_allowed_called++;
-      return serial::rd<decltype(id_session_request)>(seq, 0) ==
-                 id_session_request ||
-             serial::rd<decltype(id_request_token)>(seq, 0) ==
-                 id_request_token;
+      return serial::rd<decltype(id_request_token)>(seq, 0) ==
+             id_request_token;
     };
     proto.get_control_id = [&](span_cbyte seq) -> control {
       get_control_id_called++;
@@ -89,51 +89,40 @@ namespace laplace::network {
 
     auto tran = transfer {};
     tran.setup_cipher<ecc_rabbit>();
-    auto key = tran.get_public_key();
 
-    auto packed = tran.encode(transfer::wrap(
-        serial::pack_to_bytes(id_session_request, key)));
-    auto sent   = bob->send("", alice.get_port(), packed);
-    EXPECT_EQ(sent, packed.size());
+    EXPECT_TRUE(_send(bob, alice.get_port(), tran, id_session_request,
+                      tran.get_public_key()));
 
     session.resume();
 
-    uint8_t buf[1024] = {};
-    auto    received  = bob->receive(buf);
-    auto    plain     = tran.decode({ buf, buf + received });
-
     auto alice_port = any_port;
-
-    EXPECT_EQ(plain.size(), 1);
-    if (!plain.empty()) {
+    auto received   = _receive(bob, tran);
+    EXPECT_EQ(received.size(), 1);
+    if (!received.empty()) {
       EXPECT_TRUE(serial::rd<decltype(id_session_response)>(
-                      plain[0], 0) == id_session_response);
+                      received[0], 0) == id_session_response);
       alice_port = serial::rd<decltype(alice_port)>(
-          plain[0], sizeof id_session_response);
-      if (plain[0].size() >
+          received[0], sizeof id_session_response);
+      if (received[0].size() >
           sizeof id_session_response + sizeof alice_port)
         tran.set_remote_key(span_cbyte {
-            plain[0].begin() + sizeof id_session_response +
+            received[0].begin() + sizeof id_session_response +
                 sizeof alice_port,
-            plain[0].end() });
+            received[0].end() });
     }
 
     tran.enable_encryption(true);
 
-    packed = tran.encode(
-        transfer::wrap(serial::pack_to_bytes(id_request_token)));
-    sent = bob->send("", alice_port, packed);
-    EXPECT_EQ(sent, packed.size());
+    EXPECT_TRUE(_send(bob, alice_port, tran, id_request_token));
 
     session.resume();
 
-    received = bob->receive(buf);
-    plain    = tran.decode({ buf, buf + received });
-    EXPECT_EQ(plain.size(), 1);
-    if (!plain.empty())
-      EXPECT_GT(plain[0].size(), sizeof id_session_token);
+    received = _receive(bob, tran);
+    EXPECT_EQ(received.size(), 1);
+    if (!received.empty())
+      EXPECT_GT(received[0].size(), sizeof id_session_token);
 
-    EXPECT_EQ(is_allowed_called, 2);
+    EXPECT_EQ(is_allowed_called, 1);
     EXPECT_EQ(get_control_id_called, 2);
     EXPECT_EQ(decode_cipher_id_called, 1);
     EXPECT_EQ(decode_public_key_called, 1);

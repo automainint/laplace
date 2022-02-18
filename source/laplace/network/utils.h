@@ -17,8 +17,9 @@
 namespace laplace::network {
   [[nodiscard]] auto clamp_chunk(sl::whole size) noexcept -> int;
 
-  [[nodiscard]] auto to_string(::sockaddr const &a) noexcept
-      -> std::string;
+  [[nodiscard]] auto to_string(
+      ::sockaddr const &a,
+      log_handler log = get_global_log()) noexcept -> std::string;
 }
 
 #endif

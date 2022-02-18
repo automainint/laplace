@@ -21,7 +21,7 @@ namespace laplace::network {
     sl::vector<vbyte> events;
   };
 
-  struct slot_state {
+  struct session_state {
     std::string address;
     uint16_t    port = any_port;
     vbyte       token;

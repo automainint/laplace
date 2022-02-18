@@ -25,10 +25,13 @@ namespace laplace::stem::ui {
   public:
     static const graphics::vec4 default_colors[];
 
+    log_handler log = get_global_log();
+
     graphics::vec4 colors[8];
 
-    explicit context_impl(text::ptr_renderer font =
-                              text::renderer::get_default()) noexcept;
+    explicit context_impl(
+        text::ptr_renderer font =
+            text::renderer::get_default(get_global_log())) noexcept;
 
     void set_font(text::ptr_renderer font) noexcept;
 

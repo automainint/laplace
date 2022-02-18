@@ -65,9 +65,8 @@ namespace laplace::network::crypto {
 
     while (n < bytes.size()) {
       auto const offset = as_index(rd<uint64_t>(bytes, n + n_offset),
-                                   -1, true);
-      auto const size = as_index(rd<uint64_t>(bytes, n + n_size), -1,
-                                 true);
+                                   -1);
+      auto const size = as_index(rd<uint64_t>(bytes, n + n_size), -1);
 
       if (offset >= 0 && size >= 0 &&
           scan({ bytes.begin() + n, bytes.end() })) {
@@ -107,23 +106,6 @@ namespace laplace::network::crypto {
     }
 
     return buf;
-  }
-
-  auto stream_cipher::do_encrypt(span_cbyte src, span<uint8_t> dst)
-      -> bool {
-    error_("Not implemented.", __FUNCTION__);
-    return false;
-  }
-
-  auto stream_cipher::do_decrypt(span_cbyte src, span<uint8_t> dst)
-      -> bool {
-    error_("Not implemented.", __FUNCTION__);
-    return false;
-  }
-
-  auto stream_cipher::rewind_decryption() -> bool {
-    error_("Not implemented.", __FUNCTION__);
-    return false;
   }
 
   auto stream_cipher::pass_decryption(sl::index offset) -> bool {

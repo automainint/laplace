@@ -1,6 +1,4 @@
-/*  laplace/engine/eval/maze.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_eval_maze_h
-#define laplace_engine_eval_maze_h
+#ifndef LAPLACE_ENGINE_EVAL_MAZE_H
+#define LAPLACE_ENGINE_EVAL_MAZE_H
 
 #include "../defs.h"
 
@@ -21,16 +19,13 @@ namespace laplace::engine::eval::maze {
 
   using fn_random = std::function<uint64_t()>;
 
-  void generate(vec2z const             size,
-                std::span<int8_t> const map,
-                fn_random const         random);
+  void generate(vec2z size, std::span<int8_t> map, fn_random random,
+                log_handler log) noexcept;
 
-  void stretch(vec2z const                   dst_size,
-               std::span<int8_t> const       dst,
-               vec2z const                   src_size,
-               std::span<const int8_t> const src,
-               sl::index const               tunnel_size,
-               sl::index const               gate_size) noexcept;
+  void stretch(vec2z dst_size, std::span<int8_t> dst, vec2z src_size,
+               std::span<const int8_t> src,
+               sl::index const tunnel_size, sl::index gate_size,
+               log_handler log) noexcept;
 }
 
 #endif

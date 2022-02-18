@@ -30,7 +30,7 @@ namespace laplace::network {
     if (m_cipher)
       m_cipher->set_remote_key(key);
     else
-      error_("No cipher.", __FUNCTION__);
+      log(log_event::error, "No cipher.", __FUNCTION__);
   }
 
   void transfer::enable_encryption(bool is_enabled) noexcept {
@@ -173,7 +173,8 @@ namespace laplace::network {
         check_sum({ data.data() + n_data,
                     static_cast<span_cbyte::size_type>(size) })) {
       if (m_verbose)
-        verb("Wrong check sum.", "Network/Transfer");
+        log(log_event::verbose, "Wrong check sum.",
+            "Network/Transfer");
       return 0;
     }
 

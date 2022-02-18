@@ -27,7 +27,9 @@ namespace laplace::ui {
 
     using ptr_widget  = std::shared_ptr<basic_widget>;
     using vptr_widget = sl::vector<ptr_widget>;
-    
+
+    log_handler log = get_global_log();
+
     basic_widget() noexcept                     = default;
     basic_widget(basic_widget const &) noexcept = default;
     basic_widget(basic_widget &&) noexcept      = default;
@@ -128,7 +130,7 @@ namespace laplace::ui {
 
     bool m_expired        = true;
     bool m_expired_childs = true;
-    
+
     layout    m_layout;
     sl::index m_level = 0;
     rect      m_rect;

@@ -19,8 +19,10 @@
 namespace quadwar_app::protocol {
   using qw_launch =
       event_handler<server_launch, decltype([](world w) {
-                      verb(" :: event  Quadwar/server_launch",
-                           "Quadwar");
+                      auto log = get_global_log();
+                      log(log_event::verbose,
+                          " :: event  Quadwar/server_launch",
+                          "Quadwar");
 
                       object::root::launch(
                           w.get_entity(w.get_root()));

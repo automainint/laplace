@@ -10,8 +10,9 @@
 
 #include "application.h"
 
+#include "../core/bytestream.h"
 #include "../core/embedded.h"
-#include "../core/utils.h"
+#include "../core/string.h"
 #include "../graphics/utils.h"
 #include "config.h"
 #include "ui/context.h"
@@ -33,12 +34,12 @@ namespace laplace::stem {
 
   application::application(int argc, char **argv,
                            unival const &def_cfg) noexcept {
-    m_config     = load(argc, argv, def_cfg);
+    m_config     = load(argc, argv, def_cfg, log);
     m_frame_time = steady_clock::now();
   }
 
   application::~application() noexcept {
-    config::save(m_config);
+    config::save(m_config, log);
   }
 
   auto application::run() noexcept -> int {
@@ -52,7 +53,7 @@ namespace laplace::stem {
     m_gl     = make_shared<glcontext>(m_window);
 
     if (!gl::is_ok()) {
-      error_("Initialization failed.", __FUNCTION__);
+      log(log_event::error, "Initialization failed.", __FUNCTION__);
       return 0;
     }
 
@@ -271,8 +272,9 @@ namespace laplace::stem {
 
   auto application::open(wstring_view file_name) noexcept
       -> unique_ptr<istream> {
-    verb(fmt("Load: '%s'", to_string(file_name).c_str()),
-         "Stem/Application");
+    log(log_event::verbose,
+        fmt("Load: '%s'", to_string(file_name).c_str()),
+        "Stem/Application");
 
     if (embedded::scan(file_name))
       return make_unique<ibytestream>(embedded::open(file_name));

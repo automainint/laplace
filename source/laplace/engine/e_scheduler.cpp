@@ -10,6 +10,7 @@
 
 #include "scheduler.h"
 
+#include "../core/string.h"
 #include "basic_impact.h"
 #include "world.h"
 #include <mutex>
@@ -91,8 +92,9 @@ namespace laplace::engine {
         try {
           t.join();
         } catch (std::system_error &error) {
-          error_("Unable to join a thread.", __FUNCTION__);
-          error_(error.what(), __FUNCTION__);
+          log(log_event::error, "Unable to join a thread.",
+              __FUNCTION__);
+          log(log_event::error, error.what(), __FUNCTION__);
         }
       }
 
@@ -108,8 +110,9 @@ namespace laplace::engine {
           t = jthread([this] { this->tick_thread(); });
           break;
         } catch (std::system_error &error) {
-          error_("Unable to create a thread.", __FUNCTION__);
-          error_(error.what(), __FUNCTION__);
+          log(log_event::error, "Unable to create a thread.",
+              __FUNCTION__);
+          log(log_event::error, error.what(), __FUNCTION__);
           std::this_thread::yield();
         }
       }

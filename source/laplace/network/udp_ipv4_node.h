@@ -17,6 +17,8 @@
 namespace laplace::network {
   class udp_ipv4_node : public io_interface::node {
   public:
+    log_handler log = get_global_log();
+    
     udp_ipv4_node() noexcept;
     explicit udp_ipv4_node(uint16_t port) noexcept;
 

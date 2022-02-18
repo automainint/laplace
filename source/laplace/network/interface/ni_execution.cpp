@@ -16,7 +16,7 @@ namespace laplace::network {
     return in.actor_reserve && in.actor_create && in.actor_remove &&
            in.is_desync && in.is_ready && in.do_seed &&
            in.do_loading && in.do_apply && in.do_perform &&
-           in.do_schedule && in.do_setup && in.do_cleanup;
+           in.do_schedule;
   }
 
   auto blank_execution_interface() noexcept -> execution_interface {
@@ -29,8 +29,6 @@ namespace laplace::network {
              .do_loading = [](span_cbyte) {},
              .do_apply   = [](span_cbyte) -> sl::time { return 0; },
              .do_perform  = [](span_cbyte) {},
-             .do_schedule = [](sl::time) {},
-             .do_setup    = []() {},
-             .do_cleanup  = []() {} };
+             .do_schedule = [](sl::time) {} };
   }
 }

@@ -17,7 +17,7 @@ namespace laplace::network {
 
   void clock::set_tick_duration(sl::time tick_duration) noexcept {
     if (tick_duration <= 0) {
-      error_("Invalid tick duration.", __FUNCTION__);
+      log(log_event::error, "Invalid tick duration.", __FUNCTION__);
       return;
     }
 
@@ -26,7 +26,7 @@ namespace laplace::network {
 
   void clock::set_latency(sl::time latency) noexcept {
     if (latency < 0) {
-      error_("Invalid latency.", __FUNCTION__);
+      log(log_event::error, "Invalid latency.", __FUNCTION__);
       return;
     }
 
@@ -36,7 +36,7 @@ namespace laplace::network {
   void clock::set_overtake_factor(
       sl::whole overtake_factor) noexcept {
     if (overtake_factor <= 0) {
-      error_("Invalid overtake factor.", __FUNCTION__);
+      log(log_event::error, "Invalid overtake factor.", __FUNCTION__);
       return;
     }
 

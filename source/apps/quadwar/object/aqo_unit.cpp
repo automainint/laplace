@@ -97,20 +97,13 @@ namespace quadwar_app::object {
 
     auto locs = landscape::get_start_locs(land);
 
-    if (!land.exist()) {
-      error_("No landscape.", __FUNCTION__);
+    if (!land.exist())
       return {};
-    }
 
     auto player_count = slots.vec_get_size();
 
-    if (locs.size() < player_count) {
-      if (locs.empty())
-        error_("No start locations.", __FUNCTION__);
-      else
-        error_("Invalid start locations.", __FUNCTION__);
+    if (locs.size() < player_count)
       return {};
-    }
 
     ids.reserve(unit_count * player_count);
 
@@ -151,17 +144,13 @@ namespace quadwar_app::object {
   }
 
   void unit::place_footprint(world w, sl::index id_unit) {
-    if (pathmap::resolution == 0) {
-      error_("Invalid pathmap resolution.", __FUNCTION__);
+    if (pathmap::resolution == 0)
       return;
-    }
 
     const auto scale = sets::scale_real / pathmap::resolution;
 
-    if (scale == 0) {
-      error_("Invalid scale.", __FUNCTION__);
+    if (scale == 0)
       return;
-    }
 
     auto r    = w.get_entity(w.get_root());
     auto u    = w.get_entity(id_unit);
@@ -248,10 +237,8 @@ namespace quadwar_app::object {
   }
 
   void unit::do_search(entity map) noexcept {
-    if (pathmap::resolution == 0) {
-      error_("Invalid pathmap resolution.", __FUNCTION__);
+    if (pathmap::resolution == 0)
       return;
-    }
 
     const auto scale = sets::scale_real / pathmap::resolution;
 
@@ -360,11 +347,9 @@ namespace quadwar_app::object {
       return;
     }
 
-    if (pathmap::resolution == 0) {
-      error_("Invalid pathmap resolution.", __FUNCTION__);
+    if (pathmap::resolution == 0)
       return;
-    }
-
+    
     const auto scale = sets::scale_real / pathmap::resolution;
 
     auto delta = get(n_movement_speed);

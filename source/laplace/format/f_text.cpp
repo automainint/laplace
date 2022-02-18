@@ -11,7 +11,7 @@
 #include "text.h"
 
 #include "../core/parser.h"
-#include "../core/utils.h"
+#include "../core/string.h"
 #include <iomanip>
 #include <numeric>
 #include <sstream>
@@ -23,20 +23,14 @@ namespace laplace::format::text {
       std::u8string_view;
 
   static auto is_id_string(string_view s) noexcept -> bool {
-    if (s.empty()) {
+    if (s.empty())
       return false;
-    }
-
-    if (s[0] >= '0' && s[0] <= '9') {
+    if (s[0] >= '0' && s[0] <= '9')
       return false;
-    }
-
     for (auto c : s)
       if (c != '_' && (c < 'a' || c > 'z') && (c < 'A' || c > 'Z') &&
-          (c < '0' || c > '9')) {
+          (c < '0' || c > '9'))
         return false;
-      }
-
     return true;
   }
 
@@ -44,10 +38,8 @@ namespace laplace::format::text {
     auto result = string { "\"" };
 
     for (sl::index i = 0; i < s.size(); i++) {
-      if (s[i] == '\\' || s[i] == '"') {
+      if (s[i] == '\\' || s[i] == '"')
         result.append("\\");
-      }
-
       result.append(1, s[i]);
     }
 
@@ -58,12 +50,9 @@ namespace laplace::format::text {
 
   static auto unwrap_string(u8string_view s) noexcept -> u8string {
     auto result = u8string {};
-
     for (sl::index i = 0; i < s.size(); i++)
-      if (s[i] != '\\' || ++i < s.size()) {
+      if (s[i] != '\\' || ++i < s.size())
         result.append(1, s[i]);
-      }
-
     return result;
   }
 

@@ -24,32 +24,26 @@ namespace laplace::test {
   }
 
   TEST(engine, loader_invalid_context_1) {
-    disable_log();
     auto l = loader {};
     l.add_task({});
     sleep_for(milliseconds { 10 });
     EXPECT_TRUE(l.is_ready());
-    setup_log({});
   }
 
   TEST(engine, loader_invalid_context_2) {
-    disable_log();
     auto l = loader {};
     l.on_decode([](span_cbyte) -> ptr_prime_impact { return {}; });
     l.add_task({});
     sleep_for(milliseconds { 10 });
     EXPECT_TRUE(l.is_ready());
-    setup_log({});
   }
 
   TEST(engine, loader_invalid_context_3) {
-    disable_log();
     auto l = loader {};
     l.on_perform([](ptr_prime_impact const &) {});
     l.add_task({});
     sleep_for(milliseconds { 10 });
     EXPECT_TRUE(l.is_ready());
-    setup_log({});
   }
 
   TEST(engine, loader_invalid_task) {

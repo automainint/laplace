@@ -1,6 +1,4 @@
-/*  laplace/stem/config.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_stem_config_h
-#define laplace_stem_config_h
+#ifndef LAPLACE_STEM_CONFIG_H
+#define LAPLACE_STEM_CONFIG_H
 
 #include "../core/unival.h"
 
@@ -103,14 +101,13 @@ namespace laplace::stem::config {
 
   auto get_default() -> core::unival;
 
-  auto parse_cmdline(const char *args) -> std::pair<int, char **>;
+  auto parse_cmdline(const char *args, log_handler log)
+      -> std::pair<int, char **>;
 
-  auto load(int                 argc,
-            char **             argv,
-            core::unival const &def_cfg = get_default())
-      -> core::unival;
+  auto load(int argc, char **argv, core::unival const &def_cfg,
+            log_handler log) -> core::unival;
 
-  void save(core::unival const &cfg);
+  void save(core::unival const &cfg, log_handler log);
 }
 
 #endif

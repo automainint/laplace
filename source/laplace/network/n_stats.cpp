@@ -14,25 +14,19 @@
 
 namespace laplace::network {
   stats::~stats() noexcept {
-    m_log.print(fmt("Total bytes sent:      %d", (int) m_total_sent));
-    m_log.print(
-        fmt("Total bytes received:  %d", (int) m_total_received));
+    log(log_event::verbose,
+        fmt("Total bytes sent:      %d", (int) m_total_sent),
+        "Network/Stats");
+    log(log_event::verbose,
+        fmt("Total bytes received:  %d", (int) m_total_received),
+        "Network/Stats");
 
-    if (m_total_received > 0) {
-      m_log.print(
+    if (m_total_received > 0)
+      log(log_event::verbose,
           fmt("Corruption:  %d bytes (%d%%)", (int) m_total_loss,
               (int) (m_total_loss * 100 + m_total_received / 2) /
-                  m_total_received));
-    }
-  }
-
-  void stats::set_log_interface(log_interface const &in) noexcept {
-    if (!check_log_interface(in)) {
-      error_("Invalid log interface.", __FUNCTION__);
-      return;
-    }
-
-    m_log = in;
+                  m_total_received),
+          "Network/Stats");
   }
 
   void stats::tick() noexcept {
@@ -68,5 +62,4 @@ namespace laplace::network {
   auto stats::get_bytes_loss() const noexcept -> sl::whole {
     return m_bytes_loss;
   }
-
 }

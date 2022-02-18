@@ -1,6 +1,4 @@
-/*  laplace/stem/text/st_wrap.cpp
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -11,8 +9,6 @@
  */
 
 #include "wrap.h"
-
-#include "../../ui/rect.h"
 
 namespace laplace::stem::text {
   using sprite_vertex = render::context::sprite_vertex;
@@ -33,15 +29,15 @@ namespace laplace::stem::text {
   void wrap::render(sl::index x, sl::index y, u8string_view text) {
     if constexpr (!_unsafe) {
       if (!m_paint) {
-        error_("No painter.", __FUNCTION__);
+        log(log_event::error, "No painter.", __FUNCTION__);
         return;
       }
       if (!m_tex) {
-        error_("No texture.", __FUNCTION__);
+        log(log_event::error, "No texture.", __FUNCTION__);
         return;
       }
       if (!m_render) {
-        error_("No render context.", __FUNCTION__);
+        log(log_event::error, "No render context.", __FUNCTION__);
         return;
       }
     }

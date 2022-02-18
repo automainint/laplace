@@ -24,6 +24,8 @@
 namespace laplace::stem::text {
   class ttf_library {
   public:
+    log_handler log = get_global_log();
+
     ttf_library();
     ~ttf_library();
 
@@ -43,6 +45,8 @@ namespace laplace::stem::text {
     /*  Global Library instance.
      */
     static std::weak_ptr<ttf_library> library;
+
+    log_handler log = get_global_log();
 
     ttf();
     ~ttf();

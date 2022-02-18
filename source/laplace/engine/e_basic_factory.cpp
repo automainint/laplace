@@ -20,11 +20,11 @@ namespace laplace::engine {
       core::parser;
 
   auto basic_factory::parse(string_view command) const -> vbyte {
-    return parse_native(id_by_name_native, command);
+    return parse_native(id_by_name_native, command, log);
   }
 
   auto basic_factory::print(span_cbyte seq) const -> string {
-    return print_native(name_by_id_native, seq);
+    return print_native(name_by_id_native, seq, log);
   }
 
   auto basic_factory::decode(span_cbyte seq) const
@@ -176,10 +176,11 @@ namespace laplace::engine {
   }
 
   auto basic_factory::parse_native(fn_id_by_name const &id_by_name,
-                                   string_view command) -> vbyte {
+                                   string_view          command,
+                                   log_handler log) -> vbyte {
 
     if (!id_by_name) {
-      error_("No id-by-name function.", __FUNCTION__);
+      log(log_event::error, "No id-by-name function.", __FUNCTION__);
       return {};
     }
 
@@ -191,17 +192,19 @@ namespace laplace::engine {
     auto col = in.get_column();
 
     if (!in.parse(" %s ", &u8_id)) {
-      error_(fmt("Invalid syntax. Id expected (%line %dz, col %dz).",
-                 lin, col),
-             __FUNCTION__);
+      log(log_event::error,
+          fmt("Invalid syntax. Id expected (%line %dz, col %dz).",
+              lin, col),
+          __FUNCTION__);
       return {};
     }
 
     auto const id = id_by_name(to_string(u8_id));
 
     if (id == ids::undefined) {
-      error_(fmt("Unknown command (line %dz, col %dz).", lin, col),
-             __FUNCTION__);
+      log(log_event::error,
+          fmt("Unknown command (line %dz, col %dz).", lin, col),
+          __FUNCTION__);
       return {};
     }
 
@@ -215,7 +218,7 @@ namespace laplace::engine {
 
     while (in.parse(" %X ", &x)) {
       if (x != (x & 0xff)) {
-        error_(
+        log(log_event::error,
             fmt("Invalid syntax. Byte expected (line %dz, col %dz).",
                 lin, col),
             __FUNCTION__);
@@ -226,9 +229,10 @@ namespace laplace::engine {
     }
 
     if (!in.is_eof()) {
-      error_(fmt("Invalid syntax. EOF expected (line %dz, col %dz).",
-                 in.get_line(), in.get_column()),
-             __FUNCTION__);
+      log(log_event::error,
+          fmt("Invalid syntax. EOF expected (line %dz, col %dz).",
+              in.get_line(), in.get_column()),
+          __FUNCTION__);
       return {};
     }
 
@@ -236,10 +240,11 @@ namespace laplace::engine {
   }
 
   auto basic_factory::print_native(fn_name_by_id const &name_by_id,
-                                   span_cbyte seq) -> string {
+                                   span_cbyte seq, log_handler log)
+      -> string {
 
     if (!name_by_id) {
-      error_("No name-by-id function.", __FUNCTION__);
+      log(log_event::error, "No name-by-id function.", __FUNCTION__);
       return {};
     }
 
@@ -250,7 +255,7 @@ namespace laplace::engine {
 
     if (seq.size() < 2) {
       if (!seq.empty())
-        error_("Invalid data.", __FUNCTION__);
+        log(log_event::error, "Invalid data.", __FUNCTION__);
       return {};
     }
 
@@ -259,7 +264,7 @@ namespace laplace::engine {
     s = name_by_id(id);
 
     if (s.empty()) {
-      error_("Invalid id.", __FUNCTION__);
+      log(log_event::error, "Invalid id.", __FUNCTION__);
       return {};
     }
 

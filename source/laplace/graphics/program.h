@@ -1,8 +1,4 @@
-/*  laplace/graphics/program.h
- *
- *    GLSL program.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -12,10 +8,11 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_graphics_program_h
-#define laplace_graphics_program_h
+#ifndef LAPLACE_GRAPHICS_PROGRAM_H
+#define LAPLACE_GRAPHICS_PROGRAM_H
 
 #include "../core/defs.h"
+#include "../core/log.h"
 #include <sstream>
 
 namespace laplace::graphics {
@@ -24,6 +21,8 @@ namespace laplace::graphics {
     using ref_program  = program &;
     using cref_program = const program &;
 
+    log_handler log = get_global_log();
+    
     program();
     ~program();
 

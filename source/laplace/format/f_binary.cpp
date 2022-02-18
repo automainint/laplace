@@ -437,11 +437,11 @@ namespace laplace::format::binary {
     return write(v) == v.size();
   }
 
-  static auto write_bitfield(fn_write      write,
-                             unival const &value) noexcept -> bool {
+  static auto write_bitfield(fn_write write, unival const &value,
+                             log_handler log) noexcept -> bool {
 
     if (!value.is_vector()) {
-      error_("Invalid value type.", __FUNCTION__);
+      log(log_event::error, "Invalid value type.", __FUNCTION__);
       return false;
     }
 
@@ -455,7 +455,7 @@ namespace laplace::format::binary {
     for (i = 0, n = 0; i < size; n++) {
       for (k = 0; k < 8 && i < size; k++, i++) {
         if (!value[i].is_boolean()) {
-          error_("Invalid value.", __FUNCTION__);
+          log(log_event::error, "Invalid value.", __FUNCTION__);
           return false;
         }
 
@@ -473,28 +473,25 @@ namespace laplace::format::binary {
     return write(v) == v.size();
   }
 
-  static auto writedown(fn_write write, unival const &data) noexcept
-      -> bool;
+  static auto writedown(fn_write write, unival const &data,
+                        log_handler log) noexcept -> bool;
 
-  static auto write_vector(fn_write      write,
-                           unival const &value) noexcept -> bool {
+  static auto write_vector(fn_write write, unival const &value,
+                           log_handler log) noexcept -> bool {
     auto is_bitfield = [](unival const &value) -> bool {
       for (sl::index i = 0; i < value.get_size(); i++)
-        if (!value[i].is_boolean()) {
+        if (!value[i].is_boolean())
           return false;
-        }
-
       return true;
     };
 
     if (!value.is_vector()) {
-      error_("Invalid value.", __FUNCTION__);
+      log(log_event::error, "Invalid value.", __FUNCTION__);
       return false;
     }
 
-    if (is_bitfield(value)) {
-      return write_bitfield(write, value);
-    }
+    if (is_bitfield(value))
+      return write_bitfield(write, value, log);
 
     auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::vector);
@@ -504,7 +501,7 @@ namespace laplace::format::binary {
       return false;
 
     for (sl::index i = 0; i < value.get_size(); i++) {
-      if (!writedown(write, value[i]))
+      if (!writedown(write, value[i], log))
         return false;
     }
 
@@ -512,10 +509,11 @@ namespace laplace::format::binary {
   }
 
   static auto write_compact_composite(fn_write      write,
-                                      unival const &value) noexcept
+                                      unival const &value,
+                                      log_handler   log) noexcept
       -> bool {
     if (!value.is_composite()) {
-      error_("Invalid value.", __FUNCTION__);
+      log(log_event::error, "Invalid value.", __FUNCTION__);
       return false;
     }
 
@@ -532,7 +530,7 @@ namespace laplace::format::binary {
       auto &key = value.get_key(i);
 
       if (!key.is_integer()) {
-        error_("Invalid value.", __FUNCTION__);
+        log(log_event::error, "Invalid value.", __FUNCTION__);
         return false;
       }
 
@@ -540,7 +538,7 @@ namespace laplace::format::binary {
 
       if (write(v) != v.size())
         return false;
-      if (!writedown(write, value[key]))
+      if (!writedown(write, value[key], log))
         return false;
     }
 
@@ -548,7 +546,8 @@ namespace laplace::format::binary {
   }
 
   static auto write_packed_composite(fn_write      write,
-                                     unival const &value) noexcept
+                                     unival const &value,
+                                     log_handler   log) noexcept
       -> bool {
     auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::packed_composite);
@@ -561,7 +560,7 @@ namespace laplace::format::binary {
       auto &key = value.get_key(i);
 
       if (!key.is_string()) {
-        error_("Invalid key type.", __FUNCTION__);
+        log(log_event::error, "Invalid key type.", __FUNCTION__);
         return false;
       }
 
@@ -569,7 +568,7 @@ namespace laplace::format::binary {
                            key.get_string());
 
       if (j == dictionary.end() || *j != key.get_string()) {
-        error_("Invalid key.", __FUNCTION__);
+        log(log_event::error, "Invalid key.", __FUNCTION__);
         return false;
       }
 
@@ -578,22 +577,22 @@ namespace laplace::format::binary {
 
       if (write(v) != v.size())
         return false;
-      if (!writedown(write, value.by_index(i)))
+      if (!writedown(write, value.by_index(i), log))
         return false;
     }
 
     return true;
   }
 
-  static auto write_composite(fn_write      write,
-                              unival const &value) noexcept -> bool {
+  static auto write_composite(fn_write write, unival const &value,
+                              log_handler log) noexcept -> bool {
     if (!value.is_composite()) {
-      error_("Invalid value.", __FUNCTION__);
+      log(log_event::error, "Invalid value.", __FUNCTION__);
       return false;
     }
 
     if (is_packable(value))
-      return write_packed_composite(write, value);
+      return write_packed_composite(write, value, log);
 
     auto is_compact = [](unival const &value) -> bool {
       for (sl::index i = 0; i < value.get_size(); i++) {
@@ -605,7 +604,7 @@ namespace laplace::format::binary {
     };
 
     if (is_compact(value))
-      return write_compact_composite(write, value);
+      return write_compact_composite(write, value, log);
 
     auto v = vbyte(9);
     wr<uint8_t>(v, 0, ids::composite);
@@ -615,17 +614,17 @@ namespace laplace::format::binary {
       return false;
 
     for (sl::index i = 0; i < value.get_size(); i++) {
-      if (!writedown(write, value.get_key(i)))
+      if (!writedown(write, value.get_key(i), log))
         return false;
-      if (!writedown(write, value.by_index(i)))
+      if (!writedown(write, value.by_index(i), log))
         return false;
     }
 
     return true;
   }
 
-  static auto writedown(fn_write write, unival const &data) noexcept
-      -> bool {
+  static auto writedown(fn_write write, unival const &data,
+                        log_handler log) noexcept -> bool {
     if (data.is_empty())
       return write_empty(write);
     if (data.is_boolean())
@@ -642,18 +641,19 @@ namespace laplace::format::binary {
       return write_bytes(write, data.get_bytes());
 
     if (data.is_vector())
-      return write_vector(write, data);
+      return write_vector(write, data, log);
     if (data.is_composite())
-      return write_composite(write, data);
+      return write_composite(write, data, log);
 
     return false;
   }
 
-  auto encode(fn_write write, const_pack_type data) noexcept -> bool {
+  auto encode(fn_write write, const_pack_type data,
+              log_handler log) noexcept -> bool {
     if (write) {
       auto v = vbyte(8);
       wr<uint64_t>(v, 0, magic_plain);
-      return write(v) == 8 && writedown(write, data);
+      return write(v) == 8 && writedown(write, data, log);
     }
 
     return false;

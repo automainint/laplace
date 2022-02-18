@@ -11,15 +11,15 @@
 #ifndef LAPLACE_NETWORK_SLOT_POOL_H
 #define LAPLACE_NETWORK_SLOT_POOL_H
 
-#include "interface/log.h"
-#include "slot_state.h"
+#include "session_state.h"
 
 namespace laplace::network {
-  class slot_pool {
+  class session_pool {
   public:
     enum find_tag { find_default, add_if_not_found };
 
-    void set_log_interface(log_interface const &lin) noexcept;
+    log_handler log = get_global_log();
+
     void set_max_count(sl::whole count) noexcept;
 
     void clear() noexcept;
@@ -41,14 +41,13 @@ namespace laplace::network {
     [[nodiscard]] auto is_full() const noexcept -> bool;
 
     [[nodiscard]] auto operator[](sl::index slot) noexcept
-        -> slot_state &;
+        -> session_state &;
     [[nodiscard]] auto operator[](sl::index slot) const noexcept
-        -> slot_state const &;
+        -> session_state const &;
 
   private:
-    log_interface          m_log       = blank_log_interface();
-    sl::whole              m_max_count = slot_count_unlimited;
-    sl::vector<slot_state> m_slots;
+    sl::whole                 m_max_count = slot_count_unlimited;
+    sl::vector<session_state> m_slots;
   };
 }
 

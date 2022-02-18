@@ -53,9 +53,9 @@ namespace quadwar_app::object {
     auto map = sl::vector<int8_t>(cols * rows);
     auto uni = std::uniform_int_distribution<uint64_t> {};
 
-    maze::generate({ cols, rows }, map, [&w, &uni]() {
-      return w.random(uni);
-    });
+    maze::generate(
+        { cols, rows }, map, [&w, &uni]() { return w.random(uni); },
+        get_global_log());
 
     for (const auto &p : start_locs) {
       const auto x = (p.x() * cols) / width;
@@ -75,7 +75,7 @@ namespace quadwar_app::object {
     auto big = sl::vector<int8_t>(width * height);
 
     maze::stretch({ width, height }, big, { cols, rows }, map,
-                  tunnel_size, gate_size);
+                  tunnel_size, gate_size, get_global_log());
 
     return big;
   }
@@ -163,7 +163,8 @@ namespace quadwar_app::object {
   }
 
   void landscape::create_maze(world w, sl::index width,
-                              sl::index height, sl::index player_count) {
+                              sl::index height,
+                              sl::index player_count) {
 
     auto r    = w.get_entity(w.get_root());
     auto land = std::make_shared<object::landscape>();
@@ -190,7 +191,8 @@ namespace quadwar_app::object {
       land->vec_init(i * 2 + 1, locs[i].y());
     }
 
-    object::root::set_landscape(r, w.spawn(land, engine::id_undefined));
+    object::root::set_landscape(r,
+                                w.spawn(land, engine::id_undefined));
 
     r.adjust();
   }

@@ -29,8 +29,6 @@ namespace laplace::test {
   }
 
   TEST(core, input_handler_wheel_state) {
-    disable_log();
-
     auto wheel = input_event { .key = keys::key_wheel, .delta = 123 };
     auto key   = input_event { .key = keys::key_space, .delta = 123 };
 
@@ -45,7 +43,5 @@ namespace laplace::test {
     }
 
     EXPECT_EQ(get_wheel_delta(wheel), 123);
-
-    setup_log({});
   }
 }

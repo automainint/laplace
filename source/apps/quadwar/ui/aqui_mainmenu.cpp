@@ -133,7 +133,7 @@ namespace quadwar_app::ui {
       m_info->set_text(c_join_game);
 
       const auto addr = as_ascii_string(m_j_server_ip->get_text());
-      const auto host = session::get_host_address(addr);
+      const auto host = session::get_host_address(addr, log);
 
       m_j_server_ip->set_text(as_u8string(host));
     });

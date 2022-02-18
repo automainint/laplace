@@ -24,8 +24,6 @@ namespace laplace::network {
   using fn_do_apply      = std::function<sl::time(span_cbyte)>;
   using fn_do_perform    = std::function<void(span_cbyte)>;
   using fn_do_schedule   = std::function<void(sl::time)>;
-  using fn_do_setup      = std::function<void()>;
-  using fn_do_cleanup    = std::function<void()>;
 
   /*  Execution interface definition.
    *
@@ -76,14 +74,6 @@ namespace laplace::network {
     /*  Schedule the execution.
      */
     fn_do_schedule do_schedule;
-
-    /*  Perform the setup. Called when server is started.
-     */
-    fn_do_setup do_setup;
-
-    /*  Perform the cleanup. Called when server is stopped.
-     */
-    fn_do_cleanup do_cleanup;
   };
 
   [[nodiscard]] auto check_execution_interface(

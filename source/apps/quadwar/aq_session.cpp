@@ -101,7 +101,8 @@ namespace quadwar_app {
           m_on_done();
 
       } else {
-        verb("Trying to reconnect...", "Quadwar/Session");
+        log(log_event::verbose, "Trying to reconnect...",
+            "Quadwar/Session");
 
         m_server->reconnect();
 
@@ -214,8 +215,8 @@ namespace quadwar_app {
     m_lobby.set_start_enabled(false);
   }
 
-  auto session::get_host_address(string_view default_address)
-      -> string {
+  auto session::get_host_address(string_view default_address,
+                                 log_handler log) -> string {
 
     auto f = ifstream(session::host_info_file);
     if (!f)
@@ -227,7 +228,8 @@ namespace quadwar_app {
     if (!f)
       return string { default_address };
 
-    verb(fmt("Host port found: %hu", port), "Quadwar/Session");
+    log(log_event::verbose, fmt("Host port found: %hu", port),
+        "Quadwar/Session");
     return fmt("127.0.0.1:%hu", port);
   }
 

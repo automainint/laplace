@@ -36,7 +36,7 @@ namespace laplace::stem::ui {
     adjust_text = [this](u8string_view text) -> text_area {
       if constexpr (!_unsafe) {
         if (!m_font) {
-          error_("No text renderer.", __FUNCTION__);
+          log(log_event::error, "No text renderer.", __FUNCTION__);
           return {};
         }
       }
@@ -47,7 +47,7 @@ namespace laplace::stem::ui {
     render_text = [this](rect r, std::u8string_view text) noexcept {
       if constexpr (!_unsafe) {
         if (!m_font) {
-          error_("No text renderer.", __FUNCTION__);
+          log(log_event::error, "No text renderer.", __FUNCTION__);
           return;
         }
       }
@@ -83,7 +83,7 @@ namespace laplace::stem::ui {
   void context_impl::_render_panel(panel_state state) noexcept {
     if constexpr (!_unsafe) {
       if (!m_render) {
-        error_("No render context.", __FUNCTION__);
+        log(log_event::error, "No render context.", __FUNCTION__);
         return;
       }
     }
@@ -94,7 +94,7 @@ namespace laplace::stem::ui {
   void context_impl::_render_button(button_state state) noexcept {
     if constexpr (!_unsafe) {
       if (!m_render) {
-        error_("No render context.", __FUNCTION__);
+        log(log_event::error, "No render context.", __FUNCTION__);
         return;
       }
     }
@@ -118,7 +118,7 @@ namespace laplace::stem::ui {
       textbutton_state state) noexcept {
     if constexpr (!_unsafe) {
       if (!m_font) {
-        error_("No text renderer.", __FUNCTION__);
+        log(log_event::error, "No text renderer.", __FUNCTION__);
         return;
       }
     }
@@ -139,7 +139,7 @@ namespace laplace::stem::ui {
   void context_impl::_render_textedit(textedit_state state) noexcept {
     if constexpr (!_unsafe) {
       if (!m_font) {
-        error_("No text renderer.", __FUNCTION__);
+        log(log_event::error, "No text renderer.", __FUNCTION__);
         return;
       }
     }
@@ -181,7 +181,7 @@ namespace laplace::stem::ui {
                                    vec4 const color) noexcept {
     if constexpr (!_unsafe) {
       if (!m_render) {
-        error_("No render context.", __FUNCTION__);
+        log(log_event::error, "No render context.", __FUNCTION__);
         return;
       }
     }

@@ -11,6 +11,7 @@
 #ifndef quadwar_session_h
 #define quadwar_session_h
 
+#include "../../laplace/core/log.h"
 #include "../../laplace/stem/server.h"
 #include "protocol/ids.h"
 #include "qw_factory.h"
@@ -30,6 +31,8 @@ namespace quadwar_app {
     static sl::whole const thread_count;
     static float const     sense_move;
     static float const     sense_scale;
+
+    log_handler log = get_global_log();
 
     session();
     ~session();
@@ -55,7 +58,7 @@ namespace quadwar_app {
     void join();
 
     [[nodiscard]] static auto get_host_address(
-        std::string_view default_address) -> std::string;
+        std::string_view default_address, log_handler log) -> std::string;
 
   private:
     void update_control(sl::time                 delta_msec,

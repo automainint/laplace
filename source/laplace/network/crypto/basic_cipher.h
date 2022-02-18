@@ -16,6 +16,8 @@
 namespace laplace::network::crypto {
   class basic_cipher {
   public:
+    log_handler log = get_global_log();
+
     basic_cipher(const basic_cipher &) = delete;
     basic_cipher(basic_cipher &&)      = delete;
     auto operator=(const basic_cipher &) -> basic_cipher & = delete;
@@ -38,8 +40,8 @@ namespace laplace::network::crypto {
 
   protected:
     [[nodiscard]] virtual auto setup_remote_key(span_cbyte key)
-        -> bool;
-    [[nodiscard]] virtual auto setup() -> bool;
+        -> bool                                = 0;
+    [[nodiscard]] virtual auto setup() -> bool = 0;
 
     void set_ready(bool is_ready) noexcept;
 

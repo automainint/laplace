@@ -14,10 +14,8 @@
 namespace laplace::core {
   constexpr auto is_key_down(input_event const &ev) noexcept -> bool {
     if constexpr (!_unsafe) {
-      if (ev.key == keys::key_wheel) {
-        error_("Not key event.", __FUNCTION__);
+      if (ev.key == keys::key_wheel)
         return false;
-      }
     }
 
     return ev.delta > 0;
@@ -25,10 +23,8 @@ namespace laplace::core {
 
   constexpr auto is_key_up(input_event const &ev) noexcept -> bool {
     if constexpr (!_unsafe) {
-      if (ev.key == keys::key_wheel) {
-        error_("Not key event.", __FUNCTION__);
+      if (ev.key == keys::key_wheel)
         return false;
-      }
     }
 
     return ev.delta < 0;
@@ -37,10 +33,8 @@ namespace laplace::core {
   constexpr auto get_wheel_delta(input_event const &ev) noexcept
       -> sl::index {
     if constexpr (!_unsafe) {
-      if (ev.key != keys::key_wheel) {
-        error_("Not wheel event.", __FUNCTION__);
+      if (ev.key != keys::key_wheel)
         return 0;
-      }
     }
 
     return ev.delta;

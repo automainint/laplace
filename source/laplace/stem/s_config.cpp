@@ -11,6 +11,7 @@
 #include "config.h"
 
 #include "../core/embedded.h"
+#include "../core/string.h"
 #include "../core/utils.h"
 #include "../format/text.h"
 #include "../format/utils.h"
@@ -56,7 +57,8 @@ namespace laplace::stem::config {
   static char *g_argv[argv_size]                        = { nullptr };
   static char  g_argv_data[argv_size][argv_string_size] = { 0 };
 
-  auto parse_cmdline(const char *args) -> pair<int, char **> {
+  auto parse_cmdline(const char *args, log_handler log)
+      -> pair<int, char **> {
     if (args == nullptr)
       return { g_argc, g_argv };
 
@@ -81,14 +83,16 @@ namespace laplace::stem::config {
       }
 
       if (g_argc >= argv_size) {
-        error_("Too many command line arguments.", __FUNCTION__);
+        log(log_event::error, "Too many command line arguments.",
+            __FUNCTION__);
         break;
       }
 
       const auto size = j - i;
 
       if (size >= argv_string_size) {
-        error_("Too long command line argument.", __FUNCTION__);
+        log(log_event::error, "Too long command line argument.",
+            __FUNCTION__);
         break;
       }
 
@@ -149,7 +153,8 @@ namespace laplace::stem::config {
     return 3;
   }
 
-  auto process_tag(char **arg, char **end, unival &cfg) -> char ** {
+  auto process_tag(char **arg, char **end, unival &cfg,
+                   log_handler log) -> char ** {
     if (arg && *arg && arg < end) {
       auto tag = *arg;
 
@@ -211,18 +216,19 @@ namespace laplace::stem::config {
     return nullptr;
   }
 
-  auto load(int argc, char **argv, unival const &def_cfg) -> unival {
+  auto load(int argc, char **argv, unival const &def_cfg,
+            log_handler log) -> unival {
     auto cfg = unival { def_cfg };
 
     auto arg = argv + 1;
     auto end = argv + argc;
 
-    while (arg) { arg = process_tag(arg, end, cfg); }
+    while (arg) { arg = process_tag(arg, end, cfg, log); }
 
     return cfg;
   }
 
-  void save(unival const &cfg) {
+  void save(unival const &cfg, log_handler log) {
     if (!cfg.has(k_file))
       return;
 
@@ -235,8 +241,9 @@ namespace laplace::stem::config {
     auto w   = wrap(out);
 
     if (!text::encode(w, cfg))
-      error_(fmt("Unable to save config file '%s'.",
-                 to_string(file_name).c_str()),
-             __FUNCTION__);
+      log(log_event::error,
+          fmt("Unable to save config file '%s'.",
+              to_string(file_name).c_str()),
+          __FUNCTION__);
   }
 }

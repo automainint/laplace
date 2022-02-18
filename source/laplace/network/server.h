@@ -11,15 +11,14 @@
 #ifndef LAPLACE_NETWORK_SERVER_H
 #define LAPLACE_NETWORK_SERVER_H
 
-#include <utility>
-
 #include "../coroutine/task.h"
 #include "clock.h"
 #include "interface/execution.h"
 #include "interface/protocol.h"
 #include "random.h"
-#include "slot_pool.h"
+#include "session_pool.h"
 #include "stats.h"
+#include <utility>
 
 namespace laplace::network {
   class server {
@@ -36,6 +35,8 @@ namespace laplace::network {
       uint16_t    client_port = any_port;
     };
 
+    log_handler log = get_global_log();
+
     server(server const &) = delete;
     server(server &&)      = delete;
     server &operator=(server const &) = delete;
@@ -47,7 +48,6 @@ namespace laplace::network {
     void setup_protocol(protocol_interface const &interface) noexcept;
     void setup_execution(
         execution_interface const &interface) noexcept;
-    void setup_log(log_interface const &interface) noexcept;
 
     void enable_encryption(bool is_enabled) noexcept;
     void set_max_slot_count(sl::whole count) noexcept;

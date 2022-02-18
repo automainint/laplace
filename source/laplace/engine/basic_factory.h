@@ -21,6 +21,8 @@ namespace laplace::engine {
     using fn_name_by_id = std::function<std::string(uint16_t)>;
     using fn_id_by_name = std::function<uint16_t(std::string_view)>;
 
+    log_handler log = get_global_log();
+
     basic_factory()          = default;
     virtual ~basic_factory() = default;
 
@@ -38,10 +40,12 @@ namespace laplace::engine {
     static auto name_by_id_native(uint16_t id) -> std::string;
 
     static auto parse_native(fn_id_by_name const &id_by_name,
-                             std::string_view     command) -> vbyte;
+                             std::string_view     command,
+                             log_handler          log) -> vbyte;
 
     static auto print_native(fn_name_by_id const &name_by_id,
-                             span_cbyte           seq) -> std::string;
+                             span_cbyte seq, log_handler log)
+        -> std::string;
 
     static auto decode_native(span_cbyte seq) -> ptr_prime_impact;
 

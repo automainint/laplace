@@ -21,6 +21,8 @@ namespace laplace::network::crypto {
   public:
     static const sl::whole buffer_size;
 
+    log_handler log = get_global_log();
+
     ecc(sl::whole key_size);
     ~ecc() override;
 

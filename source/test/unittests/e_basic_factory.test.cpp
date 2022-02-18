@@ -100,11 +100,9 @@ namespace laplace::test {
   }
 
   TEST(engine, basic_factory_parse) {
-    disable_log();
-
     auto const fac = basic_factory {};
 
-    EXPECT_TRUE(fac.parse_native({}, "").empty());
+    EXPECT_TRUE(fac.parse_native({}, "", get_global_log()).empty());
     EXPECT_TRUE(fac.parse(" ").empty());
     EXPECT_TRUE(fac.parse("__undefined__").empty());
     EXPECT_TRUE(fac.parse("session-request 99999").empty());
@@ -114,43 +112,29 @@ namespace laplace::test {
     serial::wr<uint16_t>(foo, 0, ids::session_request);
 
     EXPECT_EQ(fac.parse("session-request 10 20 30"), foo);
-
-    setup_log({});
   }
 
   TEST(engine, basic_factory_print_1) {
-    disable_log();
-
     auto const fac = basic_factory {};
 
-    EXPECT_TRUE(fac.print_native({}, {}).empty());
+    EXPECT_TRUE(fac.print_native({}, {}, get_global_log()).empty());
     EXPECT_TRUE(fac.print({}).empty());
-
-    setup_log({});
   }
 
   TEST(engine, basic_factory_print_2) {
-    disable_log();
-
     auto const fac = basic_factory {};
     auto       seq = vbyte(1);
 
     EXPECT_TRUE(fac.print(seq).empty());
-
-    setup_log({});
   }
 
   TEST(engine, basic_factory_print_3) {
-    disable_log();
-
     auto const fac = basic_factory {};
 
     auto seq = vbyte(2);
     serial::wr<uint16_t>(seq, 0, 9999);
 
     EXPECT_TRUE(fac.print(seq).empty());
-
-    setup_log({});
   }
 
   TEST(engine, basic_factory_print_4) {

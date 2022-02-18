@@ -23,15 +23,14 @@ namespace laplace::stem::text {
     return {};
   }
 
-  void renderer::render(sl::index     x,
-                        sl::index     y,
+  void renderer::render(sl::index x, sl::index y,
                         u8string_view text) { }
 
-  auto renderer::get_default() -> ptr_renderer {
+  auto renderer::get_default(log_handler log) -> ptr_renderer {
     auto p = m_default.lock();
 
     if (!p) {
-      p         = make_shared<wrap>(painter::get_default());
+      p         = make_shared<wrap>(painter::get_default(log));
       m_default = p;
     }
 

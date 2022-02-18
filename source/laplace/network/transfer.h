@@ -16,6 +16,8 @@
 namespace laplace::network {
   class transfer {
   public:
+    log_handler log = get_global_log();
+    
     void set_verbose(bool is_verbose) noexcept;
     void set_cipher(
         std::unique_ptr<crypto::basic_cipher> cipher) noexcept;

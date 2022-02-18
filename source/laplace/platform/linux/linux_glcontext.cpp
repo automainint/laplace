@@ -19,8 +19,9 @@ namespace laplace::linux {
     if (!gl_is_loaded())
       return;
 
-    if (!gl::load_functions())
-      error_("OpenGL initialization failed.", __FUNCTION__);
+    if (!gl::load_functions(log))
+      log(log_event::error, "OpenGL initialization failed.",
+          __FUNCTION__);
   }
 
   void glcontext::swap_buffers() noexcept {

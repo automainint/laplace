@@ -20,7 +20,8 @@ namespace laplace::network {
         max<sl::whole>(0, min(size, max_chunk_size)));
   }
 
-  auto to_string(::sockaddr const &a) noexcept -> string {
+  auto to_string(::sockaddr const &a, log_handler log) noexcept
+      -> string {
     char buf[64] = {};
 
     if (a.sa_family == AF_INET) {
@@ -30,7 +31,7 @@ namespace laplace::network {
       auto const &ip6 = reinterpret_cast<::sockaddr_in6 const &>(a);
       ::inet_ntop(AF_INET6, &ip6.sin6_addr, buf, sizeof buf);
     } else {
-      error_("Unknown address family.", __FUNCTION__);
+      log(log_event::error, "Unknown address family.", __FUNCTION__);
       buf[0] = '\0';
     }
 

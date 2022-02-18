@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,18 +10,18 @@
 
 #include "color.h"
 
-#include "../core/log.h"
 #include <cmath>
 #include <numeric>
 
 namespace laplace::graphics {
   using std::numeric_limits, std::min, std::max;
 
-  void rgb_to_hsl(float const *rgb, float *hsl) noexcept {
+  void rgb_to_hsl(float const *rgb, float *hsl,
+                  log_handler log) noexcept {
     constexpr auto feps = numeric_limits<float>::epsilon();
 
     if (rgb == nullptr || hsl == nullptr) {
-      error_("Invalid arguments.", __FUNCTION__);
+      log(log_event::error, "Invalid arguments.", __FUNCTION__);
       return;
     }
 
@@ -54,9 +54,10 @@ namespace laplace::graphics {
     hsl[2] = lightness;
   }
 
-  void hsl_to_rgb(float const *hsl, float *rgb) noexcept {
+  void hsl_to_rgb(float const *hsl, float *rgb,
+                  log_handler log) noexcept {
     if (rgb == nullptr || hsl == nullptr) {
-      error_("Invalid arguments.", __FUNCTION__);
+      log(log_event::error, "Invalid arguments.", __FUNCTION__);
       return;
     }
 
@@ -84,9 +85,10 @@ namespace laplace::graphics {
     return max(0.f, min(static_cast<float>(x) / 255.f, 1.f));
   }
 
-  void convert_rgb(float const *f_rgb, uint8_t *u8_rgb) noexcept {
+  void convert_rgb(float const *f_rgb, uint8_t *u8_rgb,
+                   log_handler log) noexcept {
     if (f_rgb == nullptr || u8_rgb == nullptr) {
-      error_("Invalid arguments.", __FUNCTION__);
+      log(log_event::error, "Invalid arguments.", __FUNCTION__);
       return;
     }
 
@@ -95,9 +97,10 @@ namespace laplace::graphics {
     u8_rgb[2] = convert_color_channel(f_rgb[2]);
   }
 
-  void convert_rgb(uint8_t const *u8_rgb, float *f_rgb) noexcept {
+  void convert_rgb(uint8_t const *u8_rgb, float *f_rgb,
+                   log_handler log) noexcept {
     if (f_rgb == nullptr || u8_rgb == nullptr) {
-      error_("Invalid arguments.", __FUNCTION__);
+      log(log_event::error, "Invalid arguments.", __FUNCTION__);
       return;
     }
 
@@ -106,9 +109,10 @@ namespace laplace::graphics {
     f_rgb[2] = convert_color_channel(u8_rgb[2]);
   }
 
-  void convert_rgba(float const *f_rgba, uint8_t *u8_rgba) noexcept {
+  void convert_rgba(float const *f_rgba, uint8_t *u8_rgba,
+                    log_handler log) noexcept {
     if (f_rgba == nullptr || u8_rgba == nullptr) {
-      error_("Invalid arguments.", __FUNCTION__);
+      log(log_event::error, "Invalid arguments.", __FUNCTION__);
       return;
     }
 
@@ -118,9 +122,10 @@ namespace laplace::graphics {
     u8_rgba[3] = convert_color_channel(f_rgba[3]);
   }
 
-  void convert_rgba(uint8_t const *u8_rgba, float *f_rgba) noexcept {
+  void convert_rgba(uint8_t const *u8_rgba, float *f_rgba,
+                    log_handler log) noexcept {
     if (f_rgba == nullptr || u8_rgba == nullptr) {
-      error_("Invalid arguments.", __FUNCTION__);
+      log(log_event::error, "Invalid arguments.", __FUNCTION__);
       return;
     }
 

@@ -20,12 +20,16 @@
 namespace laplace::engine {
   /*  TODO
    *  Add coroutine support.
+   *  Break dependency from `world`.
+   *  Add unit tests.
    */
   class scheduler {
   public:
     static sl::whole const overthreading_limit;
     static sl::whole const concurrency_limit;
 
+    log_handler log = get_global_log();
+    
     scheduler(scheduler const &) = delete;
     scheduler(scheduler &&)      = delete;
     auto operator=(scheduler const &) -> scheduler & = delete;

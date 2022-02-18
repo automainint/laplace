@@ -18,7 +18,8 @@
 
 #define LOAD(a)                                                   \
   if (a = reinterpret_cast<pfn_##a>(dlsym(gl_library, #a)); !a) { \
-    error_(fmt("Unable to load %s function.", #a), __FUNCTION__); \
+    log(log_event::error, fmt("Unable to load %s function.", #a), \
+        __FUNCTION__);                                            \
     status = false;                                               \
   }
 
@@ -35,7 +36,7 @@ namespace laplace::linux {
   pfn_glXMakeCurrent    glXMakeCurrent    = nullptr;
   pfn_glXDestroyContext glXDestroyContext = nullptr;
 
-  auto gl_load_library() noexcept -> bool {
+  auto gl_load_library(log_handler log) noexcept -> bool {
     gl_ref_count++;
 
     if (gl_library != nullptr)
@@ -44,7 +45,7 @@ namespace laplace::linux {
     gl_library = dlopen(opengl_path, RTLD_LAZY);
 
     if (gl_library == nullptr) {
-      error_("dlopen failed.", __FUNCTION__);
+      log(log_event::error, "dlopen failed.", __FUNCTION__);
       return false;
     }
 

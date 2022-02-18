@@ -20,8 +20,8 @@ namespace laplace::test {
     float       dst_hsl[3] = {};
     float       dst_rgb[3] = {};
 
-    rgb_to_hsl(src_rgb, dst_hsl);
-    hsl_to_rgb(dst_hsl, dst_rgb);
+    rgb_to_hsl(src_rgb, dst_hsl, get_global_log());
+    hsl_to_rgb(dst_hsl, dst_rgb, get_global_log());
 
     EXPECT_FLOAT_EQ(src_rgb[0], dst_rgb[0]);
     EXPECT_FLOAT_EQ(src_rgb[1], dst_rgb[1]);
@@ -33,8 +33,8 @@ namespace laplace::test {
     float       dst_rgb[3] = {};
     float       dst_hsl[3] = {};
 
-    hsl_to_rgb(src_hsl, dst_rgb);
-    rgb_to_hsl(dst_rgb, dst_hsl);
+    hsl_to_rgb(src_hsl, dst_rgb, get_global_log());
+    rgb_to_hsl(dst_rgb, dst_hsl, get_global_log());
 
     EXPECT_FLOAT_EQ(src_hsl[0], dst_hsl[0]);
     EXPECT_FLOAT_EQ(src_hsl[1], dst_hsl[1]);
@@ -45,7 +45,7 @@ namespace laplace::test {
     float   src[3] = { .0f, .5f, 1.f };
     uint8_t dst[3] = {};
 
-    convert_rgb(src, dst);
+    convert_rgb(src, dst, get_global_log());
 
     EXPECT_EQ(dst[0], 0);
     EXPECT_EQ(dst[1], 128);
@@ -56,7 +56,7 @@ namespace laplace::test {
     uint8_t src[3] = { 0, 128, 255 };
     float   dst[3] = {};
 
-    convert_rgb(src, dst);
+    convert_rgb(src, dst, get_global_log());
 
     EXPECT_FLOAT_EQ(dst[0], .0f);
     EXPECT_FLOAT_EQ(dst[1], 128.f / 255);
@@ -67,7 +67,7 @@ namespace laplace::test {
     float   src[4] = { .0f, .5f, 1.f, 1.f };
     uint8_t dst[4] = {};
 
-    convert_rgba(src, dst);
+    convert_rgba(src, dst, get_global_log());
 
     EXPECT_EQ(dst[0], 0);
     EXPECT_EQ(dst[1], 128);
@@ -79,7 +79,7 @@ namespace laplace::test {
     uint8_t src[4] = { 0, 128, 255, 255 };
     float   dst[4] = {};
 
-    convert_rgba(src, dst);
+    convert_rgba(src, dst, get_global_log());
 
     EXPECT_FLOAT_EQ(dst[0], .0f);
     EXPECT_FLOAT_EQ(dst[1], 128.f / 255);
