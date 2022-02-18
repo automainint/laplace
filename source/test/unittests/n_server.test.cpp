@@ -28,5 +28,6 @@ namespace laplace::test {
     EXPECT_FALSE(alice.has_token());
     EXPECT_FALSE(alice.is_connected());
     EXPECT_FALSE(alice.is_quit());
+    EXPECT_EQ(alice.get_token().size(), 0);
   }
 }

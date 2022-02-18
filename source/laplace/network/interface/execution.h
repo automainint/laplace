@@ -17,13 +17,13 @@ namespace laplace::network {
   using fn_actor_reserve = std::function<void(span_cbyte)>;
   using fn_actor_create  = std::function<sl::index()>;
   using fn_actor_remove  = std::function<void(sl::index)>;
-  using fn_is_desync     = std::function<bool()>;
-  using fn_is_ready      = std::function<bool()>;
+  using fn_do_perform    = std::function<void(span_cbyte)>;
   using fn_do_seed       = std::function<void(span_cbyte)>;
   using fn_do_loading    = std::function<void(span_cbyte)>;
   using fn_do_apply      = std::function<sl::time(span_cbyte)>;
-  using fn_do_perform    = std::function<void(span_cbyte)>;
   using fn_do_schedule   = std::function<void(sl::time)>;
+  using fn_is_desync     = std::function<bool()>;
+  using fn_is_ready      = std::function<bool()>;
 
   /*  Execution interface definition.
    *
@@ -46,15 +46,10 @@ namespace laplace::network {
      */
     fn_actor_remove actor_remove;
 
-    /*  Returns true if there was an error during execution.
+    /*  Perform an instant event.
      */
-    fn_is_desync is_desync;
-
-    /*  Returns true if there are no unfinished tasks. Required for
-     *  asynchrony.
-     */
-    fn_is_ready is_ready;
-
+    fn_do_perform do_perform;
+    
     /*  Seed the random number generator.
      */
     fn_do_seed do_seed;
@@ -67,13 +62,18 @@ namespace laplace::network {
      */
     fn_do_apply do_apply;
 
-    /*  Perform an instant event.
-     */
-    fn_do_perform do_perform;
-
     /*  Schedule the execution.
      */
     fn_do_schedule do_schedule;
+
+    /*  Returns true if there was an error during execution.
+     */
+    fn_is_desync is_desync;
+    
+    /*  Returns true if there are no unfinished tasks. Required for
+     *  asynchrony.
+     */
+    fn_is_ready is_ready;
   };
 
   [[nodiscard]] auto check_execution_interface(

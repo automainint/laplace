@@ -96,6 +96,10 @@ namespace laplace::network {
     return m_endpoints[io].node->get_port();
   }
 
+  auto server::get_token() const noexcept -> span_cbyte {
+    return m_session_token;
+  }
+
   auto server::has_token() const noexcept -> bool {
     return !m_session_token.empty();
   }
@@ -133,14 +137,19 @@ namespace laplace::network {
   void server::process_request(endpoint const &ep,
                                span_cbyte      req) noexcept {
     switch (m_proto.get_control_id(req)) {
-      case control::session_request: session_open(ep, req); break;
+      case control::session_request:
+        session_open(ep);
+        setup_cipher(req);
+        send_session_response(ep.node);
+        break;
       case control::session_response:
+        session_open(ep);
         set_remote_endpoint(req);
         set_remote_key(req);
         if (has_token())
-          send_session_token(ep.node);
+          send_session_token(m_session_node);
         else
-          send_request_token(ep);
+          send_request_token(m_session_node);
         break;
       default:;
     }
@@ -172,42 +181,38 @@ namespace laplace::network {
         m_session_token = m_random.generate_token();
         send_session_token(m_session_node);
         break;
+      case control::session_token:
+        set_token(m_proto.decode_session_token(req));
+        break;
       default:;
     }
   }
 
-  void server::session_open(endpoint const &ep,
-                            span_cbyte      req) noexcept {
+  void server::session_open(endpoint const &ep) noexcept {
     m_session_node = ep.io->open(any_port);
-
-    switch (m_proto.decode_cipher_id(req)) {
-      case cipher::rabbit:
-        m_tran.setup_cipher<ecc_rabbit>();
-        m_tran.set_remote_key(m_proto.decode_public_key(req));
-        break;
-      default: return;
-    }
 
     if (!ep.node)
       return;
 
     m_remote_address = ep.node->get_remote_address();
     m_remote_port    = ep.node->get_remote_port();
+  }
 
-    auto const response = m_proto.encode_session_response(
-        m_session_node->get_port(), m_tran.get_public_key());
-
-    auto const n = ep.node->send(
-        m_remote_address, m_remote_port,
-        m_tran.encode(transfer::wrap(response)));
-
-    m_tran.enable_encryption(true);
+  void server::setup_cipher(span_cbyte req) {
+    switch (m_proto.decode_cipher_id(req)) {
+      case cipher::rabbit:
+        m_tran.setup_cipher<ecc_rabbit>();
+        m_tran.set_remote_key(m_proto.decode_public_key(req));
+        break;
+      default: break;
+    }
   }
 
   void server::send_session_request(endpoint const &ep,
                                     string_view     address,
                                     uint16_t        port) noexcept {
     m_tran.setup_cipher<ecc_rabbit>();
+    m_tran.enable_encryption(false);
 
     if (!ep.node)
       return;
@@ -228,15 +233,28 @@ namespace laplace::network {
     m_tran.enable_encryption(true);
   }
 
-  void server::send_request_token(endpoint const &ep) noexcept {
-    if (!ep.node)
+  void server::send_session_response(ptr_node const &node) noexcept {
+    if (!node)
+      return;
+
+    auto const response = m_proto.encode_session_response(
+        m_session_node->get_port(), m_tran.get_public_key());
+
+    auto const n = node->send(
+        m_remote_address, m_remote_port,
+        m_tran.encode(transfer::wrap(response)));
+
+    m_tran.enable_encryption(true);
+  }
+
+  void server::send_request_token(ptr_node const &node) noexcept {
+    if (!node)
       return;
 
     auto const request = m_proto.encode(control::request_token);
 
-    auto const n = ep.node->send(
-        m_remote_address, m_remote_port,
-        m_tran.encode(transfer::wrap(request)));
+    auto const n = node->send(m_remote_address, m_remote_port,
+                              m_tran.encode(transfer::wrap(request)));
   }
 
   void server::send_session_token(ptr_node const &node) noexcept {

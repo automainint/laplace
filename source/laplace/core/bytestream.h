@@ -1,8 +1,4 @@
-/*  laplace/core/bytestream.h
- *
- *      Byte stream wrapper for std::istream.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -12,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_core_bytestream_h
-#define laplace_core_bytestream_h
+#ifndef LAPLACE_CORE_BYTESTREAM_H
+#define LAPLACE_CORE_BYTESTREAM_H
 
 #include "defs.h"
 #include <sstream>
@@ -24,23 +20,18 @@ namespace laplace {
     bytestreambuf(span_cbyte bytes) noexcept {
       auto p = const_cast<char *>(
           reinterpret_cast<char const *>(bytes.data()));
-
       this->setg(p, p, p + bytes.size());
     }
 
   protected:
-    auto seekoff(off_type                off,
-                 std::ios_base::seekdir  dir,
+    auto seekoff(off_type off, std::ios_base::seekdir dir,
                  std::ios_base::openmode which) -> pos_type override {
-
-      if (dir == std::ios_base::cur) {
+      if (dir == std::ios_base::cur)
         gbump(static_cast<int>(off));
-      } else if (dir == std::ios_base::end) {
+      else if (dir == std::ios_base::end)
         setg(eback(), egptr() + off, egptr());
-      } else if (dir == std::ios_base::beg) {
+      else if (dir == std::ios_base::beg)
         setg(eback(), eback() + off, egptr());
-      }
-
       return gptr() - eback();
     }
 
@@ -52,7 +43,7 @@ namespace laplace {
     }
   };
 
-  /*  span<const uint8_t> wrapper for std::istream.
+  /*  span<uint8_t const> wrapper for std::istream.
    */
   class ibytestream final : private bytestreambuf,
                             public std::istream {

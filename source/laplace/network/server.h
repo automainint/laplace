@@ -63,6 +63,7 @@ namespace laplace::network {
 
     [[nodiscard]] auto get_port(sl::index io = 0) const noexcept
         -> uint16_t;
+    [[nodiscard]] auto get_token() const noexcept -> span_cbyte;
     [[nodiscard]] auto has_token() const noexcept -> bool;
 
     [[nodiscard]] auto is_connected() const noexcept -> bool;
@@ -91,13 +92,15 @@ namespace laplace::network {
     void process_request(endpoint const &ep, span_cbyte req) noexcept;
     void read_sessions() noexcept;
     void process_session(span_cbyte req) noexcept;
-    void session_open(endpoint const &ep, span_cbyte req) noexcept;
+    void session_open(endpoint const &ep) noexcept;
+    void setup_cipher(span_cbyte req);
     void send_session_request(endpoint const  &ep,
                               std::string_view address,
                               uint16_t         port) noexcept;
     void set_remote_endpoint(span_cbyte req) noexcept;
     void set_remote_key(span_cbyte req) noexcept;
-    void send_request_token(endpoint const &ep) noexcept;
+    void send_session_response(ptr_node const &node) noexcept;
+    void send_request_token(ptr_node const &node) noexcept;
     void send_session_token(ptr_node const &node) noexcept;
 
     protocol_interface   m_proto;

@@ -14,21 +14,21 @@ namespace laplace::network {
   auto check_execution_interface(
       execution_interface const &in) noexcept -> bool {
     return in.actor_reserve && in.actor_create && in.actor_remove &&
-           in.is_desync && in.is_ready && in.do_seed &&
-           in.do_loading && in.do_apply && in.do_perform &&
-           in.do_schedule;
+           in.do_perform && in.do_seed && in.do_loading &&
+           in.do_apply && in.do_schedule && in.is_desync &&
+           in.is_ready;
   }
 
   auto blank_execution_interface() noexcept -> execution_interface {
     return { .actor_reserve = [](span_cbyte) {},
              .actor_create  = []() -> sl::index { return -1; },
              .actor_remove = [](sl::index) {},
-             .is_desync    = []() -> bool { return false; },
-             .is_ready = []() -> bool { return true; },
-             .do_seed    = [](span_cbyte) {},
-             .do_loading = [](span_cbyte) {},
-             .do_apply   = [](span_cbyte) -> sl::time { return 0; },
-             .do_perform  = [](span_cbyte) {},
-             .do_schedule = [](sl::time) {} };
+             .do_perform   = [](span_cbyte) {},
+             .do_seed      = [](span_cbyte) {},
+             .do_loading   = [](span_cbyte) {},
+             .do_apply     = [](span_cbyte) -> sl::time { return 0; },
+             .do_schedule = [](sl::time) {},
+             .is_desync   = []() -> bool { return false; },
+             .is_ready = []() -> bool { return true; } };
   }
 }
