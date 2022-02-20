@@ -24,7 +24,7 @@ namespace laplace::network {
       -> sl::vector<span_cbyte> {
     auto v = sl::vector<span_cbyte> {};
     v.reserve(reqs.size());
-    for (auto req : reqs) v.emplace_back(req);
+    for (auto &req : reqs) v.emplace_back(req);
     return v;
   }
 

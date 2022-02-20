@@ -33,7 +33,7 @@ namespace laplace::test {
     auto io = make_shared<pipe>();
 
     auto alice = server {};
-    _setup_mock_protocol(alice);
+    _setup_mock(alice);
     alice.enable_encryption(true);
 
     auto session = alice.await_listen({ .io = io, .port = 1 });

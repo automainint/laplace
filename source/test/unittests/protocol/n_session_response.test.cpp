@@ -19,13 +19,14 @@ namespace laplace::test {
   using network::server, network::pipe, std::make_shared,
       network::transfer, network::crypto::ecc_rabbit;
 
-  TEST(network, session_response_request_token) {
-    /*  Peer answers to session_response with request_token if it has
-     *  no token.
+  TEST(network, session_response_client_enter_request_token) {
+    /*  Peer answers to session_response with client_enter and
+     *  request_token if he has no token.
      *
      *    Bob                   Alice
      *  session_request   ->
      *                    <-  session_response
+     *  client_enter
      *  request_token     ->
      */
 
@@ -34,7 +35,7 @@ namespace laplace::test {
     auto alice = io->open(1);
 
     auto bob = server {};
-    _setup_mock_protocol(bob);
+    _setup_mock(bob);
     bob.enable_encryption(true);
 
     auto session = bob.await_connect({ .io           = io,
@@ -67,15 +68,12 @@ namespace laplace::test {
     tran.enable_encryption(true);
     received = _receive(alice, tran);
 
-    EXPECT_EQ(received.size(), 1);
-    if (!received.empty()) {
-      EXPECT_EQ(received[0].size(), 1);
-      EXPECT_TRUE(_is(received[0], id_request_token));
-    }
+    EXPECT_TRUE(_in(received, id_client_enter));
+    EXPECT_TRUE(_in(received, id_request_token));
   }
 
   TEST(network, session_response_session_token) {
-    /*  Peer answers to session_response with session_token if it has
+    /*  Peer answers to session_response with session_token if he has
      *  a token.
      *
      *    Bob                   Alice
@@ -89,7 +87,7 @@ namespace laplace::test {
     auto alice = io->open(1);
 
     auto bob = server {};
-    _setup_mock_protocol(bob);
+    _setup_mock(bob);
     bob.enable_encryption(true);
 
     auto token = network::random {}.generate_token();

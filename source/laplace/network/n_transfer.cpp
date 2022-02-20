@@ -87,10 +87,8 @@ namespace laplace::network {
 
     for (sl::whole i = 0; i < data.size(); i += sizeof sum) {
       auto part = uint64_t {};
-
       memcpy(&part, data.data() + i,
              min(sizeof part, data.size() - i));
-
       sum ^= part;
     }
 

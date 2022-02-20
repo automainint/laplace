@@ -12,8 +12,60 @@
 #include "../../../laplace/network/crypto/ecc_rabbit.h"
 #include "../../../laplace/network/pipe.h"
 #include "../../../laplace/network/server.h"
+#include "helpers.test.h"
 #include <gtest/gtest.h>
 
 namespace laplace::test {
-  TEST(network, client_enter) { }
+  using network::server, network::pipe, std::make_shared,
+      network::transfer, network::crypto::ecc_rabbit,
+      network::any_port, network::id_undefined;
+
+  TEST(network, client_enter_host) {
+    /*  Host creates a new actor when receiving client_enter.
+     *
+     *    Bob                   Alice
+     *  session_request   ->
+     *                    <-  session_response
+     *  client_enter      ->
+     */
+
+    auto io = make_shared<pipe>();
+
+    auto alice = server {};
+    _setup_mock(alice);
+    alice.enable_encryption(true);
+
+    auto session = alice.await_listen({ .io = io, .port = 1 });
+
+    auto bob = io->open(2);
+
+    auto tran = transfer {};
+    tran.setup_cipher<ecc_rabbit>();
+
+    EXPECT_TRUE(_send(bob, 1, tran, id_session_request,
+                      tran.get_public_key()));
+
+    session.resume();
+
+    auto alice_port = any_port;
+
+    auto received = _receive(bob, tran);
+    EXPECT_EQ(received.size(), 1);
+    if (!received.empty()) {
+      EXPECT_TRUE(_is(received[0], id_session_response));
+      alice_port = _get_port(received[0]);
+      tran.set_remote_key(_get_public_key(received[0]));
+    }
+
+    tran.enable_encryption(true);
+
+    EXPECT_TRUE(_send(bob, alice_port, tran, id_client_enter));
+
+    session.resume();
+
+    auto actors = alice.get_actors();
+    EXPECT_EQ(actors.size(), 1);
+    if (!actors.empty())
+      EXPECT_EQ(alice.session_of(actors[0]).port, 2);
+  }
 }

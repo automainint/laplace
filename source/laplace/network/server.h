@@ -25,7 +25,14 @@ namespace laplace::network {
   public:
     struct endpoint_info {
       ptr_io   io;
-      uint16_t port;
+      uint16_t port = any_port;
+    };
+
+    struct session_info {
+      ptr_io      io;
+      std::string address;
+      uint16_t    port = any_port;
+      vbyte       token;
     };
 
     struct connect_info {
@@ -61,6 +68,11 @@ namespace laplace::network {
     void queue(span_cbyte seq) noexcept;
     void time_elapsed(sl::time delta_msec) noexcept;
 
+    [[nodiscard]] auto session_of(sl::index actor_id) const noexcept
+        -> session_info;
+
+    [[nodiscard]] auto get_actors() const noexcept
+        -> sl::vector<sl::index>;
     [[nodiscard]] auto get_port(sl::index io = 0) const noexcept
         -> uint16_t;
     [[nodiscard]] auto get_token() const noexcept -> span_cbyte;
@@ -102,16 +114,23 @@ namespace laplace::network {
     void send_session_response(ptr_node const &node) noexcept;
     void send_request_token(ptr_node const &node) noexcept;
     void send_session_token(ptr_node const &node) noexcept;
+    void send_client_enter(ptr_node const &node) noexcept;
 
-    protocol_interface   m_proto;
+    void create_actor() noexcept;
+
+    protocol_interface   m_proto = blank_protocol_interface();
+    execution_interface  m_exe   = blank_execution_interface();
     sl::vector<endpoint> m_endpoints;
     random               m_random;
     transfer             m_tran;
     bool                 m_is_connected = false;
+    ptr_io               m_session_io;
     ptr_node             m_session_node;
+    transfer             m_session_tran;
     std::string          m_remote_address;
     uint16_t             m_remote_port = any_port;
     vbyte                m_session_token;
+    sl::index            m_actor = id_undefined;
   };
 
   using ptr_server = std::shared_ptr<server>;

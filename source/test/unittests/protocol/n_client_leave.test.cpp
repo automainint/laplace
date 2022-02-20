@@ -15,5 +15,30 @@
 #include <gtest/gtest.h>
 
 namespace laplace::test {
-  TEST(network, client_leave) { }
+  using network::server, network::pipe, std::make_shared,
+      network::transfer, network::crypto::ecc_rabbit,
+      network::any_port, network::id_undefined;
+
+  TEST(network, client_leave_host) {
+    /*  Host removes an actor when receiving client_leave.
+     *
+     *    Bob                   Alice
+     *  session_request   ->
+     *                    <-  session_response
+     *  client_enter
+     *  client_leave      ->
+     */
+  }
+
+  TEST(network, client_leave_client) {
+    /*  Client sends client_leave before exit.
+     *
+     *    Bob                   Alice
+     *  session_request   ->
+     *                    <-  session_response
+     *  client_enter
+     *  client_leave      ->
+     *  (exit)
+     */
+  }
 }

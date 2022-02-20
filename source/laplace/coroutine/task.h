@@ -23,7 +23,7 @@ namespace laplace::coroutine {
       type_              m_value     = {};
       int                m_ref_count = 0;
       std::exception_ptr m_exception = nullptr;
-      handle_type        m_nested    = nullptr;
+      handle_type        m_pending   = nullptr;
 
       auto initial_suspend() noexcept;
       auto final_suspend() noexcept;
@@ -67,7 +67,7 @@ namespace laplace::coroutine {
 
       int                m_ref_count = 0;
       std::exception_ptr m_exception = nullptr;
-      handle_type        m_nested    = nullptr;
+      handle_type        m_pending   = nullptr;
 
       auto initial_suspend() noexcept;
       auto final_suspend() noexcept;

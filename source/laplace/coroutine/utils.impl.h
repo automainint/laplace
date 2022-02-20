@@ -45,7 +45,7 @@ namespace laplace::coroutine {
       return;
     if (--handle.promise().m_ref_count != 0)
       return;
-    _release_handle(handle.promise().m_nested);
+    _release_handle(handle.promise().m_pending);
     handle.destroy();
   }
 
@@ -76,11 +76,11 @@ namespace laplace::coroutine {
       -> bool {
     if (!handle || handle.done())
       return false;
-    if (handle.promise().m_nested) {
-      if (_resume(handle.promise().m_nested))
+    if (handle.promise().m_pending) {
+      if (_resume(handle.promise().m_pending))
         return true;
-      _release_handle(handle.promise().m_nested);
-      handle.promise().m_nested = nullptr;
+      _release_handle(handle.promise().m_pending);
+      handle.promise().m_pending = nullptr;
     }
     handle.resume();
     if (handle.promise().m_exception)
@@ -109,8 +109,8 @@ namespace laplace::coroutine {
   inline auto _get_value(std::coroutine_handle<promise_> handle) {
     if (!handle)
       return decltype(handle.promise().m_value) {};
-    if (handle.promise().m_nested)
-      return _get_value(handle.promise().m_nested);
+    if (handle.promise().m_pending)
+      return _get_value(handle.promise().m_pending);
     if (handle.promise().m_exception)
       std::rethrow_exception(handle.promise().m_exception);
     return std::move(handle.promise().m_value);
@@ -127,9 +127,9 @@ namespace laplace::coroutine {
   template <promise_nested upper_, typename under_>
   inline void _nest(std::coroutine_handle<upper_> upper,
                     std::coroutine_handle<under_> under) {
-    _release_handle(upper.promise().m_nested);
-    upper.promise().m_nested = under;
-    _acquire_handle(upper.promise().m_nested);
+    _release_handle(upper.promise().m_pending);
+    upper.promise().m_pending = under;
+    _acquire_handle(upper.promise().m_pending);
   }
 
   template <typename upper_, typename under_>
