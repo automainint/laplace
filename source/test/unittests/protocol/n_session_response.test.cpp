@@ -20,13 +20,12 @@ namespace laplace::test {
       network::transfer, network::crypto::ecc_rabbit;
 
   TEST(network, session_response_client_enter_request_token) {
-    /*  Peer answers to session_response with client_enter and
-     *  request_token if he has no token.
+    /*  Peer answers to session_response with request_token if he has
+     *  no token.
      *
      *    Bob                   Alice
      *  session_request   ->
      *                    <-  session_response
-     *  client_enter
      *  request_token     ->
      */
 
@@ -68,7 +67,6 @@ namespace laplace::test {
     tran.enable_encryption(true);
     received = _receive(alice, tran);
 
-    EXPECT_TRUE(_in(received, id_client_enter));
     EXPECT_TRUE(_in(received, id_request_token));
   }
 
