@@ -104,18 +104,22 @@ namespace laplace::engine {
 
     m_threads.resize(count);
 
-    for (auto &t : m_threads)
+    for (auto thread_index = 0; thread_index < m_threads.size();) {
       for (int i = 0; i < 4; i++) {
         try {
-          t = jthread([this] { this->tick_thread(); });
+          m_threads[thread_index] = jthread(
+              [this] { this->tick_thread(); });
+          thread_index++;
           break;
         } catch (std::system_error &error) {
-          log(log_event::error, "Unable to create a thread.",
+          log(log_event::fatal, "Unable to create a thread.",
               __FUNCTION__);
-          log(log_event::error, error.what(), __FUNCTION__);
+          log(log_event::fatal, error.what(), __FUNCTION__);
+          m_threads.resize(m_threads.size() - 1);
           std::this_thread::yield();
         }
       }
+    }
   }
 
   void scheduler::set_done() noexcept {

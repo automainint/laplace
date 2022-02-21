@@ -19,12 +19,13 @@ namespace laplace::test {
   /*  Mock networking protocol.
    */
 
-  constexpr uint8_t id_session_request  = 1;
-  constexpr uint8_t id_session_response = 2;
-  constexpr uint8_t id_session_token    = 3;
-  constexpr uint8_t id_request_token    = 4;
-  constexpr uint8_t id_client_enter     = 5;
-  constexpr uint8_t id_client_leave     = 6;
+  static constexpr uint8_t id_session_request  = 1;
+  static constexpr uint8_t id_session_response = 2;
+  static constexpr uint8_t id_session_token    = 3;
+  static constexpr uint8_t id_request_token    = 4;
+  static constexpr uint8_t id_client_enter     = 5;
+  static constexpr uint8_t id_client_leave     = 6;
+  static constexpr uint8_t id_server_quit      = 7;
 
   [[nodiscard]] inline auto _is(span_cbyte seq, uint8_t id) noexcept
       -> bool {
@@ -79,7 +80,8 @@ namespace laplace::test {
     proto.is_allowed = [&](span_cbyte seq) {
       return _is(seq, id_request_token) ||
              _is(seq, id_session_token) ||
-             _is(seq, id_client_enter) || _is(seq, id_client_leave);
+             _is(seq, id_client_enter) || _is(seq, id_client_leave) ||
+             _is(seq, id_server_quit);
     };
     proto.get_control_id = [&](span_cbyte seq) -> network::control {
       if (_is(seq, id_session_request))
@@ -94,6 +96,8 @@ namespace laplace::test {
         return network::control::client_enter;
       if (_is(seq, id_client_leave))
         return network::control::client_leave;
+      if (_is(seq, id_server_quit))
+        return network::control::server_quit;
       return network::control::undefined;
     };
     proto.decode_cipher_id = [&](span_cbyte seq) -> network::cipher {
@@ -128,6 +132,8 @@ namespace laplace::test {
           return serial::pack_to_bytes(id_client_enter);
         case network::control::client_leave:
           return serial::pack_to_bytes(id_client_leave);
+        case network::control::server_quit:
+          return serial::pack_to_bytes(id_server_quit);
         default:;
       }
       return {};

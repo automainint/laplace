@@ -1,8 +1,4 @@
-/*  laplace/engine/eval/integral.h
- *
- *      Integral deterministic math features.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -12,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_eval_integral_h
-#define laplace_engine_eval_integral_h
+#ifndef LAPLACE_ENGINE_EVAL_INTEGRAL_H
+#define LAPLACE_ENGINE_EVAL_INTEGRAL_H
 
 #include "../defs.h"
 

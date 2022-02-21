@@ -77,7 +77,7 @@ namespace laplace {
   static auto g_log = log_handler { g_log_default };
 
   void disable_log() noexcept {
-    setup_global_log([](log_event, string_view, string_view) {});
+    setup_global_log(get_blank_log());
   }
 
   void setup_global_log(log_handler const &write) noexcept {
@@ -89,6 +89,10 @@ namespace laplace {
 
   auto get_global_log() noexcept -> log_handler {
     return g_log;
+  }
+
+  auto get_blank_log() noexcept -> log_handler {
+    return [](log_event, string_view, string_view) noexcept {};
   }
 
   void set_verbose(bool is_verbose) noexcept {

@@ -90,6 +90,7 @@ namespace laplace::network {
       -> coroutine::task<> {
     stop();
     m_is_connected = true;
+    m_is_master    = true;
 
     for (auto &info : endpoints)
       m_endpoints.emplace_back<endpoint>(
@@ -105,6 +106,7 @@ namespace laplace::network {
       -> coroutine::task<> {
     stop();
     m_is_connected = true;
+    m_is_master    = false;
 
     m_endpoints.clear();
     m_endpoints.emplace_back<endpoint>(
@@ -356,6 +358,17 @@ namespace laplace::network {
         m_session_tran.encode(transfer::wrap(request)));
   }
 
+  void server::send_server_quit(ptr_node const &node) noexcept {
+    if (!node)
+      return;
+
+    auto const request = m_proto.encode(control::server_quit);
+
+    auto const n = node->send(
+        m_remote_address, m_remote_port,
+        m_session_tran.encode(transfer::wrap(request)));
+  }
+
   void server::create_actor() noexcept {
     m_actor = m_exe.actor_create();
   }
@@ -372,7 +385,10 @@ namespace laplace::network {
     if (!is_connected())
       return;
 
-    send_client_leave(m_session_node);
+    if (m_is_master)
+      send_server_quit(m_session_node);
+    else
+      send_client_leave(m_session_node);
 
     m_is_connected = false;
   }

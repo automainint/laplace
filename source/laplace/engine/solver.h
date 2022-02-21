@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_solver_h
-#define laplace_engine_solver_h
+#ifndef LAPLACE_ENGINE_SOLVER_H
+#define LAPLACE_ENGINE_SOLVER_H
 
 #include "basic_impact.h"
 
@@ -27,7 +27,7 @@ namespace laplace::engine {
     using fn_decode   = std::function<ptr_impact(span_cbyte)>;
 
     log_handler log = get_global_log();
-    
+
     solver() noexcept  = default;
     ~solver() noexcept = default;
 

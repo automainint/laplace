@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_core_log_h
-#define laplace_core_log_h
+#ifndef LAPLACE_CORE_LOG_H
+#define LAPLACE_CORE_LOG_H
 
 #include "options.h"
 #include <functional>
@@ -24,6 +24,7 @@ namespace laplace {
 
   void setup_global_log(log_handler const &handler) noexcept;
   auto get_global_log() noexcept -> log_handler;
+  auto get_blank_log() noexcept -> log_handler;
   void set_verbose(bool is_verbose) noexcept;
   auto is_verbose() noexcept -> bool;
 }

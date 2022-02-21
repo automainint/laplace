@@ -28,8 +28,14 @@ namespace laplace::engine {
       fn_decode  decode;
       fn_perform perform;
     };
-    
+
     log_handler log = get_global_log();
+
+    loader(loader const &) = delete;
+    loader &operator=(loader const &) = delete;
+
+    loader(loader &&other) noexcept;
+    auto operator=(loader &&other) noexcept -> loader &;
 
     loader() noexcept;
     ~loader() noexcept;
@@ -48,8 +54,12 @@ namespace laplace::engine {
     [[nodiscard]] auto get_progress() noexcept -> sl::index;
 
   private:
-    void done() noexcept;
-
+    void _init() noexcept;
+    void _queue(span_cbyte task) noexcept;
+    void _perform(span_cbyte task, auto &_ul) noexcept;
+    void _loop() noexcept;
+    void _done() noexcept;
+    
     std::mutex              m_lock;
     std::condition_variable m_sync;
     std::jthread            m_thread;

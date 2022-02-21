@@ -53,7 +53,8 @@ namespace laplace::stem {
     m_gl     = make_shared<glcontext>(m_window);
 
     if (!gl::is_ok()) {
-      log(log_event::error, "Initialization failed.", __FUNCTION__);
+      log(log_event::fatal, "OpenGL initialization failed.",
+          __FUNCTION__);
       return 0;
     }
 

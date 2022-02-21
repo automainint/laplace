@@ -22,7 +22,7 @@
   if (!a) {                                                     \
     if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a)); \
         !a) {                                                   \
-      log(log_event::error, "Unable to load " #a " function.",  \
+      log(log_event::fatal, "Unable to load " #a " function.",  \
           __FUNCTION__);                                        \
       ok = false;                                               \
     }                                                           \
@@ -32,7 +32,7 @@
   if (!a) {                                                     \
     if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a)); \
         !a) {                                                   \
-      log(log_event::error, "Unable to load " #a " function.",  \
+      log(log_event::fatal, "Unable to load " #a " function.",  \
           __FUNCTION__);                                        \
       status = false;                                           \
     }                                                           \
@@ -43,12 +43,14 @@
 #define LAPLACE_GL_BEGIN_EX() \
   { status = true; }
 
-#define LAPLACE_GL_END_EX(x)                                 \
-  {                                                          \
-    auto i = find(extensions.begin(), extensions.end(), #x); \
-    if (i != extensions.end()) {                             \
-      extensions.erase(i);                                   \
-    }                                                        \
+#define LAPLACE_GL_END_EX(x)                                        \
+  {                                                                 \
+    auto i = lower_bound(extensions.begin(), extensions.end(), #x); \
+    if (!status) {                                                  \
+      if (i != extensions.end() && *i == #x)                        \
+        extensions.erase(i);                                        \
+      ok = false;                                                   \
+    }                                                               \
   }
 
 namespace laplace::gl {
@@ -84,9 +86,6 @@ namespace laplace::gl {
     auto status = true;
 
 #include "../.generated/gl/loads.impl.h"
-
-    if (has_extensions_required && !status)
-      ok = false;
 
     return ok;
   }

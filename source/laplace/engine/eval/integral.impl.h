@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -12,31 +12,31 @@
  *  enough.
  */
 
-#ifndef laplace_engine_eval_integral_impl_h
-#define laplace_engine_eval_integral_impl_h
+#ifndef LAPLACE_ENGINE_EVAL_INTEGRAL_IMPL_H
+#define LAPLACE_ENGINE_EVAL_INTEGRAL_IMPL_H
 
 #include "arithmetic.impl.h"
 
 namespace laplace::engine::eval::impl {
-  constexpr intval _constant_scale = 0x10000000;
+  static constexpr intval _constant_scale = 0x10000000;
 
-  constexpr sl::whole _sin_table_size  = 0x200;
-  constexpr intval    _sin_table_scale = 0x100;
-  constexpr intval    _sin_iterations  = 10;
+  static constexpr sl::whole _sin_table_size  = 0x200;
+  static constexpr intval    _sin_table_scale = 0x100;
+  static constexpr intval    _sin_iterations  = 10;
 
-  constexpr sl::whole _exp_table_size  = 0x200;
-  constexpr intval    _exp_table_scale = 0x100;
-  constexpr intval    _exp_table_max   = 8;
-  constexpr intval    _exp_iterations  = 10;
+  static constexpr sl::whole _exp_table_size  = 0x200;
+  static constexpr intval    _exp_table_scale = 0x100;
+  static constexpr intval    _exp_table_max   = 8;
+  static constexpr intval    _exp_iterations  = 10;
 
-  constexpr sl::whole _log_table_size  = 0x800;
-  constexpr intval    _log_table_scale = 0x400;
-  constexpr intval    _log_table_max   = 32;
-  constexpr intval    _log_iterations  = 55;
+  static constexpr sl::whole _log_table_size  = 0x800;
+  static constexpr intval    _log_table_scale = 0x400;
+  static constexpr intval    _log_table_max   = 32;
+  static constexpr intval    _log_iterations  = 55;
 
-  constexpr sl::whole _sqrt_table_size  = 0x1600;
-  constexpr intval    _sqrt_table_scale = 0x200;
-  constexpr intval    _sqrt_table_max   = 64;
+  static constexpr sl::whole _sqrt_table_size  = 0x1600;
+  static constexpr intval    _sqrt_table_scale = 0x200;
+  static constexpr intval    _sqrt_table_max   = 64;
 
   constexpr auto constant_scale() noexcept -> intval {
     return _constant_scale;

@@ -1,6 +1,4 @@
-/*  laplace/network/crypto/rabbit.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_network_crypto_rabbit_h
-#define laplace_network_crypto_rabbit_h
+#ifndef LAPLACE_NETWORK_CRYPTO_RABBIT_H
+#define LAPLACE_NETWORK_CRYPTO_RABBIT_H
 
 #include "stream_cipher.h"
 
