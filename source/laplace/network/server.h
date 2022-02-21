@@ -117,6 +117,7 @@ namespace laplace::network {
     void send_client_enter(ptr_node const &node) noexcept;
 
     void create_actor() noexcept;
+    void remove_actor() noexcept;
 
     protocol_interface   m_proto = blank_protocol_interface();
     execution_interface  m_exe   = blank_execution_interface();

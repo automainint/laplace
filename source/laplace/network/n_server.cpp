@@ -206,6 +206,7 @@ namespace laplace::network {
         set_token(m_proto.decode_session_token(req));
         break;
       case control::client_enter: create_actor(); break;
+      case control::client_leave: remove_actor(); break;
       default:;
     }
   }
@@ -306,5 +307,13 @@ namespace laplace::network {
 
   void server::create_actor() noexcept {
     m_actor = m_exe.actor_create();
+  }
+
+  void server::remove_actor() noexcept {
+    if (m_actor == id_undefined)
+      return;
+    
+    m_exe.actor_remove(m_actor);
+    m_actor = id_undefined;
   }
 }

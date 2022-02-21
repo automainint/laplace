@@ -29,10 +29,15 @@ namespace laplace::test {
      *  client_enter      ->
      */
 
+    auto actor_create_called = 0;
+
     auto io = make_shared<pipe>();
 
     auto alice = server {};
-    _setup_mock(alice);
+    _setup_mock(alice, { .actor_create = [&]() -> sl::index {
+                  actor_create_called++;
+                  return 1;
+                } });
     alice.enable_encryption(true);
 
     auto session = alice.await_listen({ .io = io, .port = 1 });
@@ -64,6 +69,7 @@ namespace laplace::test {
     session.resume();
 
     auto actors = alice.get_actors();
+    EXPECT_EQ(actor_create_called, 1);
     EXPECT_EQ(actors.size(), 1);
     if (!actors.empty())
       EXPECT_EQ(alice.session_of(actors[0]).port, 2);

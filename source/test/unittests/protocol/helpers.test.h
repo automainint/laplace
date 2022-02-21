@@ -24,6 +24,7 @@ namespace laplace::test {
   constexpr uint8_t id_session_token    = 3;
   constexpr uint8_t id_request_token    = 4;
   constexpr uint8_t id_client_enter     = 5;
+  constexpr uint8_t id_client_leave     = 6;
 
   [[nodiscard]] inline auto _is(span_cbyte seq, uint8_t id) noexcept
       -> bool {
@@ -66,11 +67,19 @@ namespace laplace::test {
     return {};
   }
 
-  inline void _setup_mock(network::server &peer) noexcept {
+  struct _mock_callbacks {
+    network::fn_actor_create actor_create =
+        [n = 0]() mutable -> sl::index { return n++; };
+    network::fn_actor_remove actor_remove = [](sl::index) {};
+  };
+
+  inline void _setup_mock(network::server &peer,
+                          _mock_callbacks  callbacks = {}) noexcept {
     auto proto       = network::blank_protocol_interface();
     proto.is_allowed = [&](span_cbyte seq) {
       return _is(seq, id_request_token) ||
-             _is(seq, id_session_token) || _is(seq, id_client_enter);
+             _is(seq, id_session_token) ||
+             _is(seq, id_client_enter) || _is(seq, id_client_leave);
     };
     proto.get_control_id = [&](span_cbyte seq) -> network::control {
       if (_is(seq, id_session_request))
@@ -83,6 +92,8 @@ namespace laplace::test {
         return network::control::request_token;
       if (_is(seq, id_client_enter))
         return network::control::client_enter;
+      if (_is(seq, id_client_leave))
+        return network::control::client_leave;
       return network::control::undefined;
     };
     proto.decode_cipher_id = [&](span_cbyte seq) -> network::cipher {
@@ -115,6 +126,8 @@ namespace laplace::test {
           return serial::pack_to_bytes(id_request_token);
         case network::control::client_enter:
           return serial::pack_to_bytes(id_client_enter);
+        case network::control::client_leave:
+          return serial::pack_to_bytes(id_client_leave);
         default:;
       }
       return {};
@@ -122,7 +135,8 @@ namespace laplace::test {
     peer.setup_protocol(proto);
 
     auto exe         = network::blank_execution_interface();
-    exe.actor_create = [n = 0]() mutable -> sl::index { return n++; };
+    exe.actor_create = callbacks.actor_create;
+    exe.actor_remove = callbacks.actor_remove;
     peer.setup_execution(exe);
   }
 
