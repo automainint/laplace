@@ -20,7 +20,7 @@ namespace laplace::network {
     random(random const &)          = delete;
     random(random &&other) noexcept = default;
     random &operator=(random const &) = delete;
-    random &operator=(random &&) = delete;
+    random &operator=(random &&) noexcept = default;
 
     random() noexcept;
     ~random() = default;

@@ -20,20 +20,23 @@
 namespace laplace::network::crypto {
   struct rng {
     log_handler log = get_global_log();
-    
+
     WC_RNG generator = {};
 
     rng(rng const &) = delete;
     rng &operator=(rng const &) = delete;
-    rng &operator=(rng &&) = delete;
+
+    rng(rng &&other) noexcept;
+    auto operator=(rng &&other) noexcept -> rng &;
 
     rng() noexcept;
-    rng(rng &&other) noexcept;
     ~rng() noexcept;
 
     [[nodiscard]] auto generate(sl::whole size) noexcept -> vbyte;
 
   private:
+    void _free() noexcept;
+
     bool m_removed = false;
   };
 }

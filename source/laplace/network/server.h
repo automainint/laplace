@@ -45,9 +45,10 @@ namespace laplace::network {
     log_handler log = get_global_log();
 
     server(server const &) = delete;
-    server(server &&)      = delete;
     server &operator=(server const &) = delete;
-    server &operator=(server &&) = delete;
+
+    server(server &&other) noexcept;
+    auto operator=(server &&other) noexcept -> server &;
 
     server() noexcept = default;
     ~server() noexcept;
@@ -115,9 +116,12 @@ namespace laplace::network {
     void send_request_token(ptr_node const &node) noexcept;
     void send_session_token(ptr_node const &node) noexcept;
     void send_client_enter(ptr_node const &node) noexcept;
+    void send_client_leave(ptr_node const &node) noexcept;
 
     void create_actor() noexcept;
     void remove_actor() noexcept;
+
+    void stop() noexcept;
 
     protocol_interface   m_proto = blank_protocol_interface();
     execution_interface  m_exe   = blank_execution_interface();

@@ -15,9 +15,47 @@
 namespace laplace::network {
   using std::min, std::max, std::string, std::string_view,
       crypto::ecc_rabbit, std::span, std::unique_ptr,
-      std::default_sentinel;
+      std::default_sentinel, std::move;
 
-  server::~server() noexcept { }
+  server::server(server &&other) noexcept :
+      m_proto(move(other.m_proto)), m_exe(move(other.m_exe)),
+      m_endpoints(move(other.m_endpoints)),
+      m_random(move(other.m_random)), m_tran(move(other.m_tran)),
+      m_is_connected(other.m_is_connected),
+      m_session_io(move(other.m_session_io)),
+      m_session_node(move(other.m_session_node)),
+      m_session_tran(move(other.m_session_tran)),
+      m_remote_address(move(other.m_remote_address)),
+      m_remote_port(other.m_remote_port),
+      m_session_token(move(other.m_session_token)),
+      m_actor(move(other.m_actor)) {
+    other.m_is_connected = false;
+  }
+
+  auto server::operator=(server &&other) noexcept -> server & {
+    stop();
+
+    m_proto          = move(other.m_proto);
+    m_exe            = move(other.m_exe);
+    m_endpoints      = move(other.m_endpoints);
+    m_random         = move(other.m_random);
+    m_tran           = move(other.m_tran);
+    m_is_connected   = other.m_is_connected;
+    m_session_io     = move(other.m_session_io);
+    m_session_node   = move(other.m_session_node);
+    m_session_tran   = move(other.m_session_tran);
+    m_remote_address = move(other.m_remote_address);
+    m_remote_port    = other.m_remote_port;
+    m_session_token  = move(other.m_session_token);
+    m_actor          = other.m_actor;
+
+    other.m_is_connected = false;
+    return *this;
+  }
+
+  server::~server() noexcept {
+    stop();
+  }
 
   void server::setup_protocol(
       protocol_interface const &interface) noexcept {
@@ -50,6 +88,7 @@ namespace laplace::network {
 
   auto server::listen(span<endpoint_info const> endpoints) noexcept
       -> coroutine::task<> {
+    stop();
     m_is_connected = true;
 
     for (auto &info : endpoints)
@@ -64,6 +103,7 @@ namespace laplace::network {
 
   auto server::connect(connect_info const &info) noexcept
       -> coroutine::task<> {
+    stop();
     m_is_connected = true;
 
     m_endpoints.clear();
@@ -305,6 +345,17 @@ namespace laplace::network {
         m_session_tran.encode(transfer::wrap(request)));
   }
 
+  void server::send_client_leave(ptr_node const &node) noexcept {
+    if (!node)
+      return;
+
+    auto const request = m_proto.encode(control::client_leave);
+
+    auto const n = node->send(
+        m_remote_address, m_remote_port,
+        m_session_tran.encode(transfer::wrap(request)));
+  }
+
   void server::create_actor() noexcept {
     m_actor = m_exe.actor_create();
   }
@@ -312,8 +363,17 @@ namespace laplace::network {
   void server::remove_actor() noexcept {
     if (m_actor == id_undefined)
       return;
-    
+
     m_exe.actor_remove(m_actor);
     m_actor = id_undefined;
+  }
+
+  void server::stop() noexcept {
+    if (!is_connected())
+      return;
+
+    send_client_leave(m_session_node);
+
+    m_is_connected = false;
   }
 }

@@ -15,19 +15,27 @@
 namespace laplace::network::crypto {
   using std::move;
 
+  rng::rng(rng &&other) noexcept :
+      generator(move(other.generator)), m_removed(other.m_removed) {
+    other.m_removed = true;
+  }
+
+  auto rng::operator=(rng &&other) noexcept -> rng & {
+    _free();
+    generator       = move(other.generator);
+    m_removed       = other.m_removed;
+    other.m_removed = true;
+    return *this;
+  }
+
   rng::rng() noexcept {
     if (auto _n = wc_InitRng(&generator); _n != 0)
       log(log_event::error, fmt("wc_InitRng failed (code: %d).", _n),
           __FUNCTION__);
   }
 
-  rng::rng(rng &&other) noexcept : generator(move(other.generator)) {
-    other.m_removed = true;
-  }
-
   rng::~rng() noexcept {
-    if (!m_removed)
-      wc_FreeRng(&generator);
+    _free();
   }
 
   auto rng::generate(sl::whole size) noexcept -> vbyte {
@@ -43,5 +51,13 @@ namespace laplace::network::crypto {
     }
 
     return block;
+  }
+
+  void rng::_free() noexcept {
+    if (m_removed)
+      return;
+
+    wc_FreeRng(&generator);
+    m_removed = true;
   }
 }

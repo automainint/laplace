@@ -121,8 +121,10 @@ namespace laplace::network {
   void pipe::free(uint16_t port) noexcept {
     auto _ul = unique_lock(m_sync);
 
-    if (port > 0 && port < m_nodes.size())
+    if (port > 0 && port < m_nodes.size()) {
+      m_nodes[port].buffer.clear();
       m_nodes[port].available = true;
+    }
   }
 
   auto pipe::receive(uint16_t port, span_byte buf) noexcept
