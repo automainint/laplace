@@ -18,6 +18,26 @@
 
 #include "../.generated/gl/funcs.impl.h"
 
+#define LAPLACE_FEATURE_GL_VERSION_1_0
+#define LAPLACE_FEATURE_GL_VERSION_1_1
+#define LAPLACE_FEATURE_GL_VERSION_1_2
+#define LAPLACE_FEATURE_GL_VERSION_1_3
+#define LAPLACE_FEATURE_GL_VERSION_1_4
+#define LAPLACE_FEATURE_GL_VERSION_1_5
+#define LAPLACE_FEATURE_GL_VERSION_2_0
+#define LAPLACE_FEATURE_GL_VERSION_2_1
+#define LAPLACE_FEATURE_GL_VERSION_3_0
+#define LAPLACE_FEATURE_GL_VERSION_3_1
+#define LAPLACE_FEATURE_GL_VERSION_3_2
+#define LAPLACE_FEATURE_GL_VERSION_3_3
+#define LAPLACE_FEATURE_GL_VERSION_4_0
+#define LAPLACE_FEATURE_GL_VERSION_4_1
+#define LAPLACE_FEATURE_GL_VERSION_4_2
+#define LAPLACE_FEATURE_GL_VERSION_4_3
+#define LAPLACE_FEATURE_GL_VERSION_4_4
+#define LAPLACE_FEATURE_GL_VERSION_4_5
+#define LAPLACE_FEATURE_GL_VERSION_4_6
+
 #define LAPLACE_GL_LOAD(a)                                      \
   if (!a) {                                                     \
     if (a = reinterpret_cast<pfn_##a>(gl_get_proc_address(#a)); \

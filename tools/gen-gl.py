@@ -139,23 +139,7 @@ def main():
               args.append([ type_full, aname.text ])
             else:
               args.append([ type_full, '' ])
-        funcs.append([ name, proto_full, args, 0 ])
-
-  for i, f in enumerate(funcs):
-    if funcs[i][3] == 0:
-      funcs[i][3] = -1
-
-  for feat in root:
-    if feat.tag == 'feature' and feat.get('api') == 'gl':
-      for req in feat:
-        if req.tag == 'require':
-          for cmd in req:
-            if cmd.tag == 'command':
-              fname = cmd.get('name')
-              for i, f in enumerate(funcs):
-                if f[0] == fname and f[3] == -1:
-                  funcs[i][3] = 0
-                  break
+        funcs.append([ name, proto_full, args, 0, '' ])
 
   for child in root:
     if child.tag == 'extensions':
@@ -166,7 +150,7 @@ def main():
           for cmd in req.findall('command'):
             fname = cmd.get('name')
             for i, f in enumerate(funcs):
-              if f[0] == fname and f[3] != -1:
+              if f[0] == fname:
                 funcs[i][3] += 1
                 cmds.append(i)
                 break
@@ -284,15 +268,26 @@ def main():
   out = open(os.path.join(folder, 'loads.impl.h'), 'w')
 
   out.write('/*  Generated with the Laplace OpenGL interface tool.\n */\n\n')
-  out.write('#ifndef LAPLACE_GL_HAS\n#  define LAPLACE_GL_HAS(x) false\n#endif\n\n')
-  out.write('#ifndef LAPLACE_GL_LOAD\n#  define LAPLACE_GL_LOAD(x) { }\n#endif\n\n')
-  out.write('#ifndef LAPLACE_GL_LOAD_EX\n#  define LAPLACE_GL_LOAD(x) { }\n#endif\n\n')
-  out.write('#ifndef LAPLACE_GL_BEGIN_EX\n#  define LAPLACE_GL_BEGIN_EX() { }\n#endif\n\n')
-  out.write('#ifndef LAPLACE_GL_END_EX\n#  define LAPLACE_GL_END_EX(x) { }\n#endif\n\n')
 
-  for f in funcs:
-    if f[3] == 0:
-      out.write('LAPLACE_GL_LOAD(' + f[0] + ');\n')
+  for feat in root:
+    if feat.tag == 'feature':
+      out.write('//#define LAPLACE_FEATURE_' + feat.get('name') + '\n');
+  out.write('\n');
+
+  for feat in root:
+    if feat.tag != 'feature':
+      continue
+    api = feat.get('api')
+    names = list()
+    for req in feat:
+      if req.tag == 'require':
+        for cmd in req:
+          if cmd.tag == 'command':
+            names.append(cmd.get('name'))
+    out.write('#ifdef LAPLACE_FEATURE_' + feat.get('name') + '\n');
+    for f in names:
+      out.write('  LAPLACE_GL_LOAD(' + f + ');\n')
+    out.write('#endif\n\n');
 
   for ex in extensions:
     ex_fns = list()
