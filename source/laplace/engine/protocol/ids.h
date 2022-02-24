@@ -73,7 +73,11 @@ namespace laplace::engine::protocol::ids {
      */
     server_heartbeat = _id[9],
 
-    /*  Reserve entity ids.
+    /*  Indexed control commands.
+     *
+     *  Server commands.
+     *
+     *  Reserve entity ids.
      *
      *  uint16_t    id
      *  uint64_t    index
@@ -81,11 +85,7 @@ namespace laplace::engine::protocol::ids {
      */
     server_reserve = _id[10],
 
-    /*  Indexed control commands
-     *
-     *  Server commands.
-     *
-     *  uint16_t    id
+    /*  uint16_t    id
      *  uint64_t    index
      */
     server_init = _id[11],

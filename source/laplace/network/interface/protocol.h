@@ -21,6 +21,9 @@ namespace laplace::network {
 
   enum class control {
     undefined        = _id[0],
+
+    /*  Unindexed.
+     */
     request_events   = _id[1],
     request_token    = _id[2],
     session_request  = _id[3],
@@ -29,6 +32,9 @@ namespace laplace::network {
     ping_request     = _id[6],
     ping_response    = _id[7],
     server_heartbeat = _id[8],
+
+    /*  Indexed.
+     */
     server_reserve   = _id[9],
     server_init      = _id[10],
     server_quit      = _id[11],
@@ -40,6 +46,9 @@ namespace laplace::network {
     client_enter     = _id[17],
     client_leave     = _id[18],
     client_ready     = _id[19],
+
+    /*  Timed.
+     */
     slot_create      = _id[20],
     slot_remove      = _id[21]
   };

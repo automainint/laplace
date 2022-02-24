@@ -118,6 +118,7 @@ namespace laplace::network {
     void send_client_enter(ptr_node const &node) noexcept;
     void send_client_leave(ptr_node const &node) noexcept;
     void send_server_quit(ptr_node const &node) noexcept;
+    void send_events(ptr_node const &node) noexcept;
 
     void create_actor() noexcept;
     void remove_actor() noexcept;

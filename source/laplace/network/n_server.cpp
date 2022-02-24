@@ -247,7 +247,10 @@ namespace laplace::network {
       case control::session_token:
         set_token(m_proto.decode_session_token(req));
         break;
-      case control::client_enter: create_actor(); break;
+      case control::client_enter:
+        create_actor();
+        send_events(m_session_node);
+        break;
       case control::client_leave: remove_actor(); break;
       default:;
     }
@@ -363,6 +366,17 @@ namespace laplace::network {
       return;
 
     auto const request = m_proto.encode(control::server_quit);
+
+    auto const n = node->send(
+        m_remote_address, m_remote_port,
+        m_session_tran.encode(transfer::wrap(request)));
+  }
+
+  void server::send_events(ptr_node const &node) noexcept {
+    if (!node)
+      return;
+
+    auto const request = m_proto.encode_server_clock(10);
 
     auto const n = node->send(
         m_remote_address, m_remote_port,

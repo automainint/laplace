@@ -19,21 +19,42 @@ namespace laplace::test {
   /*  Mock networking protocol.
    */
 
-  static constexpr uint8_t id_session_request  = 1;
-  static constexpr uint8_t id_session_response = 2;
-  static constexpr uint8_t id_session_token    = 3;
-  static constexpr uint8_t id_request_token    = 4;
-  static constexpr uint8_t id_client_enter     = 5;
-  static constexpr uint8_t id_client_leave     = 6;
-  static constexpr uint8_t id_server_quit      = 7;
+  using id_type = uint8_t;
 
-  [[nodiscard]] inline auto _is(span_cbyte seq, uint8_t id) noexcept
+  static constexpr id_type id_session_request  = 1;
+  static constexpr id_type id_session_response = 2;
+  static constexpr id_type id_session_token    = 3;
+  static constexpr id_type id_request_token    = 4;
+
+  static constexpr id_type id_server_clock = 5;
+  static constexpr id_type id_server_quit  = 6;
+  static constexpr id_type id_client_enter = 7;
+  static constexpr id_type id_client_leave = 8;
+
+  static constexpr sl::index n_id    = 0;
+  static constexpr sl::index n_index = sizeof(id_type);
+  static constexpr sl::index n_time  = sizeof(id_type) +
+                                      sizeof(sl::index);
+
+  static constexpr sl::index n_clock_time = n_time;
+
+  [[nodiscard]] inline auto _id_of(span_cbyte seq) -> id_type {
+    return serial::rd<id_type>(seq, 0);
+  }
+
+  [[nodiscard]] inline auto _index_of(span_cbyte seq) -> sl::index {
+    if (_id_of(seq) < id_server_clock)
+      return network::index_undefined;
+    return serial::rd<sl::index>(seq, n_index);
+  }
+
+  [[nodiscard]] inline auto _is(span_cbyte seq, id_type id) noexcept
       -> bool {
-    return serial::rd<uint8_t>(seq, 0) == id;
+    return serial::rd<id_type>(seq, 0) == id;
   }
 
   [[nodiscard]] inline auto _in(std::span<vbyte> seqs,
-                                uint8_t id) noexcept -> bool {
+                                id_type id) noexcept -> bool {
     for (auto &seq : seqs)
       if (_is(seq, id))
         return true;
@@ -81,7 +102,7 @@ namespace laplace::test {
       return _is(seq, id_request_token) ||
              _is(seq, id_session_token) ||
              _is(seq, id_client_enter) || _is(seq, id_client_leave) ||
-             _is(seq, id_server_quit);
+             _is(seq, id_server_quit) || _is(seq, id_server_clock);
     };
     proto.get_control_id = [&](span_cbyte seq) -> network::control {
       if (_is(seq, id_session_request))
@@ -98,6 +119,8 @@ namespace laplace::test {
         return network::control::client_leave;
       if (_is(seq, id_server_quit))
         return network::control::server_quit;
+      if (_is(seq, id_server_clock))
+        return network::control::server_clock;
       return network::control::undefined;
     };
     proto.decode_cipher_id = [&](span_cbyte seq) -> network::cipher {
@@ -110,6 +133,9 @@ namespace laplace::test {
     };
     proto.decode_session_token = [&](span_cbyte seq) -> span_cbyte {
       return _get_session_token(seq);
+    };
+    proto.decode_server_clock = [&](span_cbyte seq) -> sl::time {
+      return serial::rd<uint64_t>(seq, n_clock_time);
     };
     proto.encode_session_request = [&](network::cipher cipher_id,
                                        span_cbyte      key) -> vbyte {
@@ -124,16 +150,20 @@ namespace laplace::test {
     proto.encode_session_token = [&](span_cbyte token) -> vbyte {
       return serial::pack_to_bytes(id_session_token, token);
     };
+    proto.encode_server_clock = [&](sl::time tick_duration) -> vbyte {
+      return serial::pack_to_bytes(id_server_clock, sl::index {},
+                                   tick_duration);
+    };
     proto.encode = [&](network::control control_id) -> vbyte {
       switch (control_id) {
         case network::control::request_token:
           return serial::pack_to_bytes(id_request_token);
         case network::control::client_enter:
-          return serial::pack_to_bytes(id_client_enter);
+          return serial::pack_to_bytes(id_client_enter, sl::index {});
         case network::control::client_leave:
-          return serial::pack_to_bytes(id_client_leave);
+          return serial::pack_to_bytes(id_client_leave, sl::index {});
         case network::control::server_quit:
-          return serial::pack_to_bytes(id_server_quit);
+          return serial::pack_to_bytes(id_server_quit, sl::index {});
         default:;
       }
       return {};
@@ -165,7 +195,7 @@ namespace laplace::test {
   [[nodiscard]] inline auto _receive(network::ptr_node &node,
                                      network::transfer &tran) noexcept
       -> sl::vector<vbyte> {
-    static uint8_t buf[1024] = {};
+    static id_type buf[1024] = {};
     return tran.decode({ buf, buf + node->receive(buf) });
   }
 }

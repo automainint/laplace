@@ -142,10 +142,11 @@ namespace laplace::test {
     auto bob_token = vbyte {};
 
     received = _receive(bob, tran);
-    EXPECT_EQ(received.size(), 1);
-    if (!received.empty()) {
-      EXPECT_TRUE(_is(received[0], id_session_token));
-      auto span_token = _get_session_token(received[0]);
+    EXPECT_TRUE(_in(received, id_session_token));
+    for (auto &req : received) {
+      if (!_is(req, id_session_token))
+        continue;
+      auto span_token = _get_session_token(req);
       bob_token = vbyte { span_token.begin(), span_token.end() };
     }
 
