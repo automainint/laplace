@@ -42,6 +42,8 @@ namespace laplace::network {
       uint16_t    client_port = any_port;
     };
 
+    static sl::time const default_tick_duration;
+
     log_handler log = get_global_log();
 
     server(server const &) = delete;
@@ -60,6 +62,7 @@ namespace laplace::network {
     void enable_encryption(bool is_enabled) noexcept;
     void set_max_slot_count(sl::whole count) noexcept;
     void set_token(span_cbyte token) noexcept;
+    void set_tick_duration(sl::time tick_duration) noexcept;
 
     auto listen(std::span<endpoint_info const> endpoints) noexcept
         -> coroutine::task<>;
@@ -78,6 +81,7 @@ namespace laplace::network {
         -> uint16_t;
     [[nodiscard]] auto get_token() const noexcept -> span_cbyte;
     [[nodiscard]] auto has_token() const noexcept -> bool;
+    [[nodiscard]] auto get_tick_duration() const noexcept -> sl::time;
 
     [[nodiscard]] auto is_connected() const noexcept -> bool;
     [[nodiscard]] auto is_quit() const noexcept -> bool;
@@ -118,6 +122,7 @@ namespace laplace::network {
     void send_client_enter(ptr_node const &node) noexcept;
     void send_client_leave(ptr_node const &node) noexcept;
     void send_server_quit(ptr_node const &node) noexcept;
+    void send_clock(ptr_node const &node) noexcept;
     void send_events(ptr_node const &node) noexcept;
 
     void create_actor() noexcept;
@@ -130,11 +135,14 @@ namespace laplace::network {
     sl::vector<endpoint> m_endpoints;
     random               m_random;
     transfer             m_tran;
-    bool                 m_is_connected = false;
-    bool                 m_is_master    = false;
+    bool                 m_is_connected     = false;
+    bool                 m_is_master        = false;
+    bool                 m_is_clock_changed = false;
+    sl::time             m_tick_duration    = default_tick_duration;
     ptr_io               m_session_io;
     ptr_node             m_session_node;
     transfer             m_session_tran;
+    sl::index            m_session_index = 0;
     std::string          m_remote_address;
     uint16_t             m_remote_port = any_port;
     vbyte                m_session_token;

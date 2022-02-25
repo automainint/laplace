@@ -89,6 +89,11 @@ namespace laplace::test {
     return {};
   }
 
+  [[nodiscard]] inline auto _get_clock_time(span_cbyte seq) noexcept
+      -> sl::time {
+    return serial::rd<sl::time>(seq, n_clock_time);
+  }
+
   struct _mock_callbacks {
     network::fn_actor_create actor_create =
         [n = 0]() mutable -> sl::index { return n++; };

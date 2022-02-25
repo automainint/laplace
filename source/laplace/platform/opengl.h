@@ -20,13 +20,14 @@
 namespace laplace::gl {
   using ptr_function = void(LAPLACE_GL_API *)();
 
-  auto is_ok() -> bool;
+  auto is_ok() noexcept -> bool;
 
-  void require_extensions(std::vector<std::string_view> extensions);
+  void require_extensions(
+      std::vector<std::string_view> extensions) noexcept;
 
-  auto load_functions(log_handler log) -> bool;
+  auto load_functions(log_handler log) noexcept -> bool;
 
-  auto has_extension(std::string_view extension) -> bool;
+  auto has_extension(std::string_view extension) noexcept -> bool;
 }
 
 #endif

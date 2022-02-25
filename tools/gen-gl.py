@@ -9,11 +9,11 @@ def main():
   def update_repo():
     if os.path.exists(gl_folder):
       os.chdir(gl_folder)
-      os.system('git pull --ff-only')
+      os.system('git pull --quiet --depth 1 --ff-only')
       os.chdir('..')
     else:
       url = 'https://github.com/KhronosGroup/OpenGL-Registry'
-      os.system('git clone ' + url + ' ' + gl_folder)
+      os.system('git clone --quiet --depth 1 ' + url + ' ' + gl_folder)
 
   def adjust_typedef(text):
     if text != None:
@@ -286,7 +286,7 @@ def main():
             names.append(cmd.get('name'))
     out.write('#ifdef LAPLACE_FEATURE_' + feat.get('name') + '\n');
     for f in names:
-      out.write('  LAPLACE_GL_LOAD(' + f + ');\n')
+      out.write('  ok = ok && load(' + f + ', "' + f + '", log);\n')
     out.write('#endif\n\n');
 
   for ex in extensions:
@@ -295,11 +295,11 @@ def main():
       if funcs[n][3] == 1:
         ex_fns.append(funcs[n][0])
     if len(ex_fns) > 0:
-      out.write('\nif (LAPLACE_GL_HAS(' + ex[0] + ')) {\n')
-      out.write('  LAPLACE_GL_BEGIN_EX();\n')
+      out.write('\nif (has_extension("' + ex[0] + '")) {\n')
+      out.write('  bool status = true;\n')
       for f in ex_fns:
-        out.write('  LAPLACE_GL_LOAD_EX(' + f + ');\n')
-      out.write('  LAPLACE_GL_END_EX(' + ex[0] + ')\n')
+        out.write('  status = status && load(' + f + ', "' + f + '", log);\n')
+      out.write('  save_extension("' + ex[0] + '", status);\n');
       out.write('}\n')
 
   # Custom dictionary utility
@@ -362,14 +362,14 @@ def main():
     reqs = ''
     for name in ex[0]:
       if len(reqs) > 0:
-        reqs += ' && '
-      reqs += 'LAPLACE_GL_HAS(' + name + ')'
+        reqs += ' || '
+      reqs += 'has_extension("' + name + '")'
     out.write('\nif (' + reqs + ') {\n')
-    out.write('  LAPLACE_GL_BEGIN_EX();\n')
+    out.write('  bool status = true;\n')
     for f in ex[1]:
-      out.write('  LAPLACE_GL_LOAD_EX(' + f + ');\n')
+      out.write('  status = status && load(' + f + ', "' + f + '", log);\n')
     for name in ex[0]:
-      out.write('  LAPLACE_GL_END_EX(' + name + ')\n')
+      out.write('  save_extension("' + name + '", status);\n');
     out.write('}\n')
 
 if __name__ == '__main__':

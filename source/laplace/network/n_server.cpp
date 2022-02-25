@@ -17,6 +17,8 @@ namespace laplace::network {
       crypto::ecc_rabbit, std::span, std::unique_ptr,
       std::default_sentinel, std::move;
 
+  sl::time const server::default_tick_duration = 10;
+
   server::server(server &&other) noexcept :
       m_proto(move(other.m_proto)), m_exe(move(other.m_exe)),
       m_endpoints(move(other.m_endpoints)),
@@ -84,6 +86,11 @@ namespace laplace::network {
 
   void server::set_token(span_cbyte token) noexcept {
     m_session_token.assign(token.begin(), token.end());
+  }
+
+  void server::set_tick_duration(sl::time tick_duration) noexcept {
+    m_tick_duration    = tick_duration;
+    m_is_clock_changed = is_connected();
   }
 
   auto server::listen(span<endpoint_info const> endpoints) noexcept
@@ -165,6 +172,10 @@ namespace laplace::network {
     return !m_session_token.empty();
   }
 
+  auto server::get_tick_duration() const noexcept -> sl::time {
+    return m_tick_duration;
+  }
+
   auto server::is_connected() const noexcept -> bool {
     return m_is_connected;
   }
@@ -176,6 +187,9 @@ namespace laplace::network {
   void server::tick() noexcept {
     read_endpoints();
     read_sessions();
+
+    if (m_is_clock_changed)
+      send_clock(m_session_node);
   }
 
   void server::read_endpoints() noexcept {
@@ -372,15 +386,23 @@ namespace laplace::network {
         m_session_tran.encode(transfer::wrap(request)));
   }
 
-  void server::send_events(ptr_node const &node) noexcept {
+  void server::send_clock(ptr_node const &node) noexcept {
     if (!node)
       return;
 
-    auto const request = m_proto.encode_server_clock(10);
+    auto request = m_proto.encode_server_clock(get_tick_duration());
+
+    m_proto.set_event_index(request, m_session_index++);
 
     auto const n = node->send(
         m_remote_address, m_remote_port,
         m_session_tran.encode(transfer::wrap(request)));
+
+    m_is_clock_changed = false;
+  }
+
+  void server::send_events(ptr_node const &node) noexcept {
+    send_clock(node);
   }
 
   void server::create_actor() noexcept {
