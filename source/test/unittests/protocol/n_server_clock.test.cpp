@@ -157,4 +157,63 @@ namespace laplace::test {
       EXPECT_EQ(_get_clock_time(req), 25);
     }
   }
+
+  TEST(network, server_clock_client) {
+    /*  Client sets tick duration after he receives server_clock.
+     *
+     *    Bob                   Alice
+     *  session_request   ->
+     *                    <-  session_response
+     *  client_enter      ->
+     *                    <-  server_clock
+     */
+
+    auto io = make_shared<pipe>();
+
+    auto alice = io->open(1);
+
+    auto bob = server {};
+    _setup_mock(bob);
+    bob.enable_encryption(true);
+
+    auto session = bob.await_connect({ .io           = io,
+                                       .host_address = "",
+                                       .host_port    = 1,
+                                       .client_port  = 2 });
+
+    auto tran = transfer {};
+
+    auto received = _receive(alice, tran);
+    EXPECT_EQ(received.size(), 1);
+    if (!received.empty()) {
+      EXPECT_EQ(
+          serial::rd<decltype(id_session_request)>(received[0], 0),
+          id_session_request);
+      tran.setup_cipher<ecc_rabbit>();
+      if (received[0].size() > sizeof id_session_request)
+        tran.set_remote_key(
+            { received[0].begin() + sizeof id_session_request,
+              received[0].end() });
+    }
+
+    EXPECT_TRUE(_send(alice, 2, tran, id_session_response,
+                      uint16_t { 3 }, tran.get_public_key()));
+
+    alice = io->open(3);
+
+    session.resume();
+
+    tran.enable_encryption(true);
+    received = _receive(alice, tran);
+
+    EXPECT_TRUE(_in(received, id_client_enter));
+
+    EXPECT_TRUE(_send(alice, alice->get_remote_port(), tran,
+                      id_server_clock, sl::index { 0 },
+                      sl::time { 25 }));
+
+    session.resume();
+
+    EXPECT_EQ(bob.get_tick_duration(), 25);
+  }
 }

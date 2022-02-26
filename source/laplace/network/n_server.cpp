@@ -90,7 +90,7 @@ namespace laplace::network {
 
   void server::set_tick_duration(sl::time tick_duration) noexcept {
     m_tick_duration    = tick_duration;
-    m_is_clock_changed = is_connected();
+    m_is_clock_changed = m_is_master && is_connected();
   }
 
   auto server::listen(span<endpoint_info const> endpoints) noexcept
@@ -266,6 +266,9 @@ namespace laplace::network {
         send_events(m_session_node);
         break;
       case control::client_leave: remove_actor(); break;
+      case control::server_clock:
+        set_tick_duration(m_proto.decode_server_clock(req));
+        break;
       default:;
     }
   }
