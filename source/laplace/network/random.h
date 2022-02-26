@@ -25,6 +25,7 @@ namespace laplace::network {
     random() noexcept;
     ~random() = default;
 
+    void               set_seed(uint64_t seed) noexcept;
     [[nodiscard]] auto get_seed() const noexcept -> uint64_t;
 
     [[nodiscard]] auto generate_token() noexcept -> vbyte;

@@ -93,6 +93,16 @@ namespace laplace::network {
     m_is_clock_changed = m_is_master && is_connected();
   }
 
+  void server::set_random_seed(uint64_t seed) noexcept {
+    if (is_connected()) {
+      log(log_event::warning, "Random seed ignored!",
+          "Network/Server");
+      return;
+    }
+
+    m_random_seed = seed;
+  }
+
   auto server::listen(span<endpoint_info const> endpoints) noexcept
       -> coroutine::task<> {
     stop();
@@ -174,6 +184,10 @@ namespace laplace::network {
 
   auto server::get_tick_duration() const noexcept -> sl::time {
     return m_tick_duration;
+  }
+
+  auto server::get_random_seed() const noexcept -> uint64_t {
+    return m_random_seed;
   }
 
   auto server::is_connected() const noexcept -> bool {
@@ -268,6 +282,9 @@ namespace laplace::network {
       case control::client_leave: remove_actor(); break;
       case control::server_clock:
         set_tick_duration(m_proto.decode_server_clock(req));
+        break;
+      case control::server_seed:
+        m_random_seed = m_proto.decode_server_seed(req);
         break;
       default:;
     }
@@ -404,8 +421,36 @@ namespace laplace::network {
     m_is_clock_changed = false;
   }
 
+  void server::send_seed(ptr_node const &node) noexcept {
+    if (!node)
+      return;
+
+    auto request = m_proto.encode_server_seed(get_random_seed());
+
+    m_proto.set_event_index(request, m_session_index++);
+
+    auto const n = node->send(
+        m_remote_address, m_remote_port,
+        m_session_tran.encode(transfer::wrap(request)));
+  }
+
+  void server::send_init(ptr_node const &node) noexcept {
+    if (!node)
+      return;
+
+    auto request = m_proto.encode(control::server_init);
+
+    m_proto.set_event_index(request, m_session_index++);
+
+    auto const n = node->send(
+        m_remote_address, m_remote_port,
+        m_session_tran.encode(transfer::wrap(request)));
+  }
+
   void server::send_events(ptr_node const &node) noexcept {
     send_clock(node);
+    send_seed(node);
+    send_init(node);
   }
 
   void server::create_actor() noexcept {

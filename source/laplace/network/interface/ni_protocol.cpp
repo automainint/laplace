@@ -22,6 +22,7 @@ namespace laplace::network {
            in.decode_public_key && in.decode_session_response_port &&
            in.decode_session_token && in.decode_ping_response &&
            in.decode_server_heartbeat && in.decode_server_clock &&
+           in.decode_server_seed &&
 
            in.encode_request_events && in.encode_session_request &&
            in.encode_session_response && in.encode_session_token &&
@@ -34,7 +35,7 @@ namespace laplace::network {
     return {
       .get_request_events_limit = []() -> sl::whole { return 0; },
       .get_event_index = [](span_cbyte) -> sl::index { return -1; },
-      .get_event_time = [](span_cbyte) -> sl::time { return -1; },
+      .get_event_time  = [](span_cbyte) -> sl::time { return -1; },
       .set_event_index = [](span_byte, sl::index) {},
       .set_event_time  = [](span_byte, sl::index) {},
       .set_event_actor = [](span_byte, sl::index) {},
@@ -65,6 +66,7 @@ namespace laplace::network {
         return {};
       },
       .decode_server_clock = [](span_cbyte) -> sl::time { return 1; },
+      .decode_server_seed  = [](span_cbyte) -> uint64_t { return 0; },
 
       .encode_request_events =
           [](std::span<sl::index const>) -> vbyte { return {}; },
@@ -75,14 +77,14 @@ namespace laplace::network {
         return {};
       },
       .encode_session_token = [](span_cbyte) -> vbyte { return {}; },
-      .encode_ping_request = [](sl::time) -> vbyte { return {}; },
+      .encode_ping_request  = [](sl::time) -> vbyte { return {}; },
       .encode_ping_response = [](span_cbyte) -> vbyte { return {}; },
       .encode_server_heartbeat = [](heartbeat) -> vbyte {
         return {};
       },
       .encode_server_clock = [](sl::time) -> vbyte { return {}; },
-      .encode_server_seed = [](uint64_t) -> vbyte { return {}; },
-      .encode = [](control) -> vbyte { return {}; }
+      .encode_server_seed  = [](uint64_t) -> vbyte { return {}; },
+      .encode              = [](control) -> vbyte { return {}; }
     };
   }
 }

@@ -8,10 +8,8 @@
  *  the MIT License for more details.
  */
 
-#include "../../../laplace/core/serial.h"
 #include "../../../laplace/network/crypto/ecc_rabbit.h"
 #include "../../../laplace/network/pipe.h"
-#include "../../../laplace/network/server.h"
 #include "helpers.test.h"
 #include <gtest/gtest.h>
 

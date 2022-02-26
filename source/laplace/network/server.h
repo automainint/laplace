@@ -63,6 +63,7 @@ namespace laplace::network {
     void set_max_slot_count(sl::whole count) noexcept;
     void set_token(span_cbyte token) noexcept;
     void set_tick_duration(sl::time tick_duration) noexcept;
+    void set_random_seed(uint64_t seed) noexcept;
 
     auto listen(std::span<endpoint_info const> endpoints) noexcept
         -> coroutine::task<>;
@@ -82,6 +83,7 @@ namespace laplace::network {
     [[nodiscard]] auto get_token() const noexcept -> span_cbyte;
     [[nodiscard]] auto has_token() const noexcept -> bool;
     [[nodiscard]] auto get_tick_duration() const noexcept -> sl::time;
+    [[nodiscard]] auto get_random_seed() const noexcept -> uint64_t;
 
     [[nodiscard]] auto is_connected() const noexcept -> bool;
     [[nodiscard]] auto is_quit() const noexcept -> bool;
@@ -123,6 +125,8 @@ namespace laplace::network {
     void send_client_leave(ptr_node const &node) noexcept;
     void send_server_quit(ptr_node const &node) noexcept;
     void send_clock(ptr_node const &node) noexcept;
+    void send_seed(ptr_node const &node) noexcept;
+    void send_init(ptr_node const &node) noexcept;
     void send_events(ptr_node const &node) noexcept;
 
     void create_actor() noexcept;
@@ -139,6 +143,7 @@ namespace laplace::network {
     bool                 m_is_master        = false;
     bool                 m_is_clock_changed = false;
     sl::time             m_tick_duration    = default_tick_duration;
+    uint64_t             m_random_seed      = 0;
     ptr_io               m_session_io;
     ptr_node             m_session_node;
     transfer             m_session_tran;

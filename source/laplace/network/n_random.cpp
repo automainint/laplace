@@ -15,6 +15,10 @@ namespace laplace::network {
     m_seed = generate<decltype(m_seed)>();
   }
 
+  void random::set_seed(uint64_t seed) noexcept {
+    m_seed = seed;
+  }
+
   auto random::get_seed() const noexcept -> uint64_t {
     return m_seed;
   }

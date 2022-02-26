@@ -20,7 +20,7 @@ namespace laplace::network {
   static constexpr auto _id = core::static_shuffle<0, 64>(3);
 
   enum class control {
-    undefined        = _id[0],
+    undefined = _id[0],
 
     /*  Unindexed.
      */
@@ -35,22 +35,22 @@ namespace laplace::network {
 
     /*  Indexed.
      */
-    server_reserve   = _id[9],
-    server_init      = _id[10],
-    server_quit      = _id[11],
-    server_clock     = _id[12],
-    server_seed      = _id[13],
-    server_action    = _id[14],
-    server_pause     = _id[15],
-    server_loading   = _id[16],
-    client_enter     = _id[17],
-    client_leave     = _id[18],
-    client_ready     = _id[19],
+    server_reserve = _id[9],
+    server_init    = _id[10],
+    server_quit    = _id[11],
+    server_clock   = _id[12],
+    server_seed    = _id[13],
+    server_action  = _id[14],
+    server_pause   = _id[15],
+    server_loading = _id[16],
+    client_enter   = _id[17],
+    client_leave   = _id[18],
+    client_ready   = _id[19],
 
     /*  Timed.
      */
-    slot_create      = _id[20],
-    slot_remove      = _id[21]
+    slot_create = _id[20],
+    slot_remove = _id[21]
   };
 
   struct heartbeat {
@@ -83,6 +83,7 @@ namespace laplace::network {
   using fn_decode_server_heartbeat =
       std::function<heartbeat(span_cbyte)>;
   using fn_decode_server_clock = std::function<sl::time(span_cbyte)>;
+  using fn_decode_server_seed  = std::function<uint64_t(span_cbyte)>;
 
   using fn_encode_request_events =
       std::function<vbyte(std::span<sl::index const>)>;
@@ -117,6 +118,7 @@ namespace laplace::network {
     fn_decode_ping_response         decode_ping_response;
     fn_decode_server_heartbeat      decode_server_heartbeat;
     fn_decode_server_clock          decode_server_clock;
+    fn_decode_server_seed           decode_server_seed;
 
     fn_encode_request_events   encode_request_events;
     fn_encode_session_request  encode_session_request;

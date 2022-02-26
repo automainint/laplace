@@ -13,7 +13,8 @@
 
 #include "../../../laplace/core/serial.h"
 #include "../../../laplace/network/interface/io.h"
-#include "../../../laplace/network/transfer.h"
+#include "../../../laplace/network/interface/protocol.h"
+#include "../../../laplace/network/server.h"
 
 namespace laplace::test {
   /*  Mock networking protocol.
@@ -27,16 +28,18 @@ namespace laplace::test {
   static constexpr id_type id_request_token    = 4;
 
   static constexpr id_type id_server_clock = 5;
-  static constexpr id_type id_server_quit  = 6;
-  static constexpr id_type id_client_enter = 7;
-  static constexpr id_type id_client_leave = 8;
+  static constexpr id_type id_server_seed  = 6;
+  static constexpr id_type id_server_init  = 7;
+  static constexpr id_type id_server_quit  = 8;
+  static constexpr id_type id_client_enter = 9;
+  static constexpr id_type id_client_leave = 10;
 
   static constexpr sl::index n_id    = 0;
   static constexpr sl::index n_index = sizeof(id_type);
-  static constexpr sl::index n_time  = sizeof(id_type) +
-                                      sizeof(sl::index);
+  static constexpr sl::index n_time  = n_index + sizeof(sl::index);
 
   static constexpr sl::index n_clock_time = n_time;
+  static constexpr sl::index n_seed       = n_time;
 
   [[nodiscard]] inline auto _id_of(span_cbyte seq) -> id_type {
     return serial::rd<id_type>(seq, 0);
@@ -94,6 +97,11 @@ namespace laplace::test {
     return serial::rd<sl::time>(seq, n_clock_time);
   }
 
+  [[nodiscard]] inline auto _get_seed(span_cbyte seq) noexcept
+      -> uint64_t {
+    return serial::rd<uint64_t>(seq, n_seed);
+  }
+
   struct _mock_callbacks {
     network::fn_actor_create actor_create =
         [n = 0]() mutable -> sl::index { return n++; };
@@ -107,7 +115,8 @@ namespace laplace::test {
       return _is(seq, id_request_token) ||
              _is(seq, id_session_token) ||
              _is(seq, id_client_enter) || _is(seq, id_client_leave) ||
-             _is(seq, id_server_quit) || _is(seq, id_server_clock);
+             _is(seq, id_server_clock) || _is(seq, id_server_seed) ||
+             _is(seq, id_server_init) || _is(seq, id_server_quit);
     };
     proto.get_control_id = [&](span_cbyte seq) -> network::control {
       if (_is(seq, id_session_request))
@@ -122,10 +131,14 @@ namespace laplace::test {
         return network::control::client_enter;
       if (_is(seq, id_client_leave))
         return network::control::client_leave;
-      if (_is(seq, id_server_quit))
-        return network::control::server_quit;
       if (_is(seq, id_server_clock))
         return network::control::server_clock;
+      if (_is(seq, id_server_seed))
+        return network::control::server_seed;
+      if (_is(seq, id_server_init))
+        return network::control::server_init;
+      if (_is(seq, id_server_quit))
+        return network::control::server_quit;
       return network::control::undefined;
     };
     proto.decode_cipher_id = [&](span_cbyte seq) -> network::cipher {
@@ -141,6 +154,9 @@ namespace laplace::test {
     };
     proto.decode_server_clock = [&](span_cbyte seq) -> sl::time {
       return serial::rd<uint64_t>(seq, n_clock_time);
+    };
+    proto.decode_server_seed = [&](span_cbyte seq) -> uint64_t {
+      return serial::rd<uint64_t>(seq, n_seed);
     };
     proto.encode_session_request = [&](network::cipher cipher_id,
                                        span_cbyte      key) -> vbyte {
@@ -159,6 +175,10 @@ namespace laplace::test {
       return serial::pack_to_bytes(id_server_clock, sl::index {},
                                    tick_duration);
     };
+    proto.encode_server_seed = [&](uint64_t seed) -> vbyte {
+      return serial::pack_to_bytes(id_server_seed, sl::index {},
+                                   seed);
+    };
     proto.encode = [&](network::control control_id) -> vbyte {
       switch (control_id) {
         case network::control::request_token:
@@ -167,6 +187,8 @@ namespace laplace::test {
           return serial::pack_to_bytes(id_client_enter, sl::index {});
         case network::control::client_leave:
           return serial::pack_to_bytes(id_client_leave, sl::index {});
+        case network::control::server_init:
+          return serial::pack_to_bytes(id_server_init, sl::index {});
         case network::control::server_quit:
           return serial::pack_to_bytes(id_server_quit, sl::index {});
         default:;
