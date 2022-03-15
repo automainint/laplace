@@ -23,10 +23,10 @@ namespace laplace {
                          std::string_view origin)>;
 
   void setup_global_log(log_handler const &handler) noexcept;
-  auto get_global_log() noexcept -> log_handler;
-  auto get_blank_log() noexcept -> log_handler;
-  void set_verbose(bool is_verbose) noexcept;
-  auto is_verbose() noexcept -> bool;
+  [[nodiscard]] auto get_global_log() noexcept -> log_handler;
+  [[nodiscard]] auto get_blank_log() noexcept -> log_handler;
+  void               set_verbose(bool is_verbose) noexcept;
+  [[nodiscard]] auto is_verbose() noexcept -> bool;
 }
 
 #endif

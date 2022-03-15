@@ -272,6 +272,9 @@ namespace laplace::network {
         m_session_token = m_random.generate_token();
         send_session_token(m_session_node);
         break;
+      case control::ping_request:
+        send_ping(m_session_node, req);
+        break;
       case control::session_token:
         set_token(m_proto.decode_session_token(req));
         break;
@@ -451,6 +454,18 @@ namespace laplace::network {
     send_clock(node);
     send_seed(node);
     send_init(node);
+  }
+
+  void server::send_ping(ptr_node const &node,
+                         span_cbyte      req) noexcept {
+    if (!node)
+      return;
+
+    auto response = m_proto.encode_ping_response(req);
+
+    auto const n = node->send(
+        m_remote_address, m_remote_port,
+        m_session_tran.encode(transfer::wrap(response)));
   }
 
   void server::create_actor() noexcept {

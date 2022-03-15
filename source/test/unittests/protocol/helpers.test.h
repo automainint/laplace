@@ -22,22 +22,26 @@ namespace laplace::test {
 
   using id_type = uint8_t;
 
-  static constexpr id_type id_session_request  = 1;
-  static constexpr id_type id_session_response = 2;
-  static constexpr id_type id_session_token    = 3;
-  static constexpr id_type id_request_token    = 4;
-
-  static constexpr id_type id_server_clock = 5;
-  static constexpr id_type id_server_seed  = 6;
-  static constexpr id_type id_server_init  = 7;
-  static constexpr id_type id_server_quit  = 8;
-  static constexpr id_type id_client_enter = 9;
-  static constexpr id_type id_client_leave = 10;
+  enum _ids : id_type {
+    id_request_token = 1,
+    id_session_request,
+    id_session_response,
+    id_session_token,
+    id_ping_request,
+    id_ping_response,
+    id_server_clock,
+    id_server_seed,
+    id_server_init,
+    id_server_quit,
+    id_client_enter,
+    id_client_leave
+  };
 
   static constexpr sl::index n_id    = 0;
   static constexpr sl::index n_index = sizeof(id_type);
   static constexpr sl::index n_time  = n_index + sizeof(sl::index);
 
+  static constexpr sl::index n_ping_time  = n_index;
   static constexpr sl::index n_clock_time = n_time;
   static constexpr sl::index n_seed       = n_time;
 
@@ -102,6 +106,11 @@ namespace laplace::test {
     return serial::rd<uint64_t>(seq, n_seed);
   }
 
+  [[nodiscard]] inline auto _get_ping_time(span_cbyte seq) noexcept
+      -> sl::time {
+    return serial::rd<sl::time>(seq, n_ping_time);
+  }
+
   struct _mock_callbacks {
     network::fn_actor_create actor_create =
         [n = 0]() mutable -> sl::index { return n++; };
@@ -114,19 +123,25 @@ namespace laplace::test {
     proto.is_allowed = [&](span_cbyte seq) {
       return _is(seq, id_request_token) ||
              _is(seq, id_session_token) ||
+             _is(seq, id_ping_request) ||
+             _is(seq, id_ping_response) ||
              _is(seq, id_client_enter) || _is(seq, id_client_leave) ||
              _is(seq, id_server_clock) || _is(seq, id_server_seed) ||
              _is(seq, id_server_init) || _is(seq, id_server_quit);
     };
     proto.get_control_id = [&](span_cbyte seq) -> network::control {
+      if (_is(seq, id_request_token))
+        return network::control::request_token;
       if (_is(seq, id_session_request))
         return network::control::session_request;
       if (_is(seq, id_session_response))
         return network::control::session_response;
       if (_is(seq, id_session_token))
         return network::control::session_token;
-      if (_is(seq, id_request_token))
-        return network::control::request_token;
+      if (_is(seq, id_ping_request))
+        return network::control::ping_request;
+      if (_is(seq, id_ping_response))
+        return network::control::ping_response;
       if (_is(seq, id_client_enter))
         return network::control::client_enter;
       if (_is(seq, id_client_leave))
@@ -152,6 +167,9 @@ namespace laplace::test {
     proto.decode_session_token = [&](span_cbyte seq) -> span_cbyte {
       return _get_session_token(seq);
     };
+    proto.decode_ping_response = [&](span_cbyte seq) -> sl::time {
+      return _get_ping_time(seq);
+    };
     proto.decode_server_clock = [&](span_cbyte seq) -> sl::time {
       return serial::rd<uint64_t>(seq, n_clock_time);
     };
@@ -170,6 +188,13 @@ namespace laplace::test {
     };
     proto.encode_session_token = [&](span_cbyte token) -> vbyte {
       return serial::pack_to_bytes(id_session_token, token);
+    };
+    proto.encode_ping_request = [&](sl::time ping_time) -> vbyte {
+      return serial::pack_to_bytes(id_ping_request, ping_time);
+    };
+    proto.encode_ping_response = [&](span_cbyte seq) -> vbyte {
+      return serial::pack_to_bytes(id_ping_response,
+                                   _get_ping_time(seq));
     };
     proto.encode_server_clock = [&](sl::time tick_duration) -> vbyte {
       return serial::pack_to_bytes(id_server_clock, sl::index {},

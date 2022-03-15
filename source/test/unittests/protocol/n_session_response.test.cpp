@@ -47,14 +47,9 @@ namespace laplace::test {
     auto received = _receive(alice, tran);
     EXPECT_EQ(received.size(), 1);
     if (!received.empty()) {
-      EXPECT_EQ(
-          serial::rd<decltype(id_session_request)>(received[0], 0),
-          id_session_request);
+      EXPECT_TRUE(_is(received[0], id_session_request));
       tran.setup_cipher<ecc_rabbit>();
-      if (received[0].size() > sizeof id_session_request)
-        tran.set_remote_key(
-            { received[0].begin() + sizeof id_session_request,
-              received[0].end() });
+      tran.set_remote_key(_get_public_key(received[0]));
     }
 
     EXPECT_TRUE(_send(alice, 2, tran, id_session_response,
