@@ -34,6 +34,7 @@ namespace laplace::test {
 
   TEST(network, clock_options_invalid) {
     auto clo = clock {};
+    clo.log  = get_blank_log();
     clo.set_tick_duration(0);
     clo.set_latency(-1);
     clo.set_overtake_factor(0);

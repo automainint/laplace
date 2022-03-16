@@ -16,8 +16,7 @@
 namespace laplace::test {
   using network::server, network::pipe, std::make_shared,
       network::transfer, network::crypto::ecc_rabbit,
-      network::any_port, network::id_undefined,
-      network::index_undefined;
+      network::any_port, network::index_undefined;
 
   TEST(network, server_clock_host_1) {
     /*  Host answers to client_enter with server_clock.
@@ -29,15 +28,10 @@ namespace laplace::test {
      *                    <-  server_clock
      */
 
-    auto actor_create_called = 0;
-
     auto io = make_shared<pipe>();
 
     auto alice = server {};
-    _setup_mock(alice, { .actor_create = [&]() -> sl::index {
-                  actor_create_called++;
-                  return 1;
-                } });
+    _setup_mock(alice);
     alice.enable_encryption(true);
     alice.set_tick_duration(15);
 
@@ -91,15 +85,10 @@ namespace laplace::test {
      *                    <-  server_clock
      */
 
-    auto actor_create_called = 0;
-
     auto io = make_shared<pipe>();
 
     auto alice = server {};
-    _setup_mock(alice, { .actor_create = [&]() -> sl::index {
-                  actor_create_called++;
-                  return 1;
-                } });
+    _setup_mock(alice);
     alice.enable_encryption(true);
     alice.set_tick_duration(15);
 

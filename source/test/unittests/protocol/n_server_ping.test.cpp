@@ -18,7 +18,7 @@
 namespace laplace::test {
   using network::server, network::pipe, std::make_shared,
       network::transfer, network::crypto::ecc_rabbit,
-      network::any_port, network::id_undefined;
+      network::any_port;
 
   TEST(network, server_ping_host) {
     /*  Peer answers to ping_request with ping_response.

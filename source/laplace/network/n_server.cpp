@@ -30,7 +30,7 @@ namespace laplace::network {
       m_remote_address(move(other.m_remote_address)),
       m_remote_port(other.m_remote_port),
       m_session_token(move(other.m_session_token)),
-      m_actor(move(other.m_actor)) {
+      m_actor(other.m_actor) {
     other.m_is_connected = false;
   }
 
@@ -281,6 +281,7 @@ namespace laplace::network {
       case control::client_enter:
         create_actor();
         send_events(m_session_node);
+        send_slot_create(m_session_node);
         break;
       case control::client_leave: remove_actor(); break;
       case control::server_clock:
@@ -466,6 +467,20 @@ namespace laplace::network {
     auto const n = node->send(
         m_remote_address, m_remote_port,
         m_session_tran.encode(transfer::wrap(response)));
+  }
+
+  void server::send_slot_create(ptr_node const &node) noexcept {
+    if (!node)
+      return;
+
+    auto request = m_proto.encode(control::slot_create);
+    m_proto.set_event_index(request, m_session_index++);
+    m_proto.set_event_actor(request, m_actor);
+    m_proto.alter_slot_create_flag(request, m_actor);
+
+    auto const n = node->send(
+        m_remote_address, m_remote_port,
+        m_session_tran.encode(transfer::wrap(request)));
   }
 
   void server::create_actor() noexcept {

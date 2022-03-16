@@ -157,10 +157,6 @@ def main():
         if len(cmds) > 0:
           extensions.append([ name, cmds ])
 
-  # glNamedBufferPageCommitmentARB
-  # glVertexWeighthNV
-  # glVertexWeighthvNV
-
   enums_buf = enums
   enums = list()
   enums64 = list()

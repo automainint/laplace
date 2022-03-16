@@ -34,16 +34,21 @@ namespace laplace::test {
     id_server_init,
     id_server_quit,
     id_client_enter,
-    id_client_leave
+    id_client_leave,
+    id_slot_create,
+    id_slot_remove
   };
 
   static constexpr sl::index n_id    = 0;
   static constexpr sl::index n_index = sizeof(id_type);
   static constexpr sl::index n_time  = n_index + sizeof(sl::index);
+  static constexpr sl::index n_actor = n_time + sizeof(sl::time);
 
-  static constexpr sl::index n_ping_time  = n_index;
-  static constexpr sl::index n_clock_time = n_time;
-  static constexpr sl::index n_seed       = n_time;
+  static constexpr sl::index n_ping_time     = n_index;
+  static constexpr sl::index n_clock_time    = n_time;
+  static constexpr sl::index n_seed          = n_time;
+  static constexpr sl::index n_slot_is_local = n_actor +
+                                               sizeof(sl::index);
 
   [[nodiscard]] inline auto _id_of(span_cbyte seq) -> id_type {
     return serial::rd<id_type>(seq, 0);
@@ -53,6 +58,18 @@ namespace laplace::test {
     if (_id_of(seq) < id_server_clock)
       return network::index_undefined;
     return serial::rd<sl::index>(seq, n_index);
+  }
+
+  [[nodiscard]] inline auto _time_of(span_cbyte seq) -> sl::time {
+    if (_id_of(seq) < id_slot_create)
+      return network::time_undefined;
+    return serial::rd<sl::time>(seq, n_time);
+  }
+
+  [[nodiscard]] inline auto _actor_of(span_cbyte seq) -> sl::index {
+    if (_id_of(seq) < id_slot_create)
+      return network::id_undefined;
+    return serial::rd<sl::index>(seq, n_actor);
   }
 
   [[nodiscard]] inline auto _is(span_cbyte seq, id_type id) noexcept
@@ -111,14 +128,19 @@ namespace laplace::test {
     return serial::rd<sl::time>(seq, n_ping_time);
   }
 
+  [[nodiscard]] inline auto _slot_is_local(span_cbyte seq) noexcept {
+    return serial::rd<uint8_t>(seq, n_slot_is_local) == 1;
+  }
+
   struct _mock_callbacks {
     network::fn_actor_create actor_create =
         [n = 0]() mutable -> sl::index { return n++; };
     network::fn_actor_remove actor_remove = [](sl::index) {};
   };
 
-  inline void _setup_mock(network::server &peer,
-                          _mock_callbacks  callbacks = {}) noexcept {
+  inline void _setup_mock(
+      network::server       &peer,
+      _mock_callbacks const &callbacks = {}) noexcept {
     auto proto       = network::blank_protocol_interface();
     proto.is_allowed = [&](span_cbyte seq) {
       return _is(seq, id_request_token) ||
@@ -127,7 +149,8 @@ namespace laplace::test {
              _is(seq, id_ping_response) ||
              _is(seq, id_client_enter) || _is(seq, id_client_leave) ||
              _is(seq, id_server_clock) || _is(seq, id_server_seed) ||
-             _is(seq, id_server_init) || _is(seq, id_server_quit);
+             _is(seq, id_server_init) || _is(seq, id_server_quit) ||
+             _is(seq, id_slot_create) || _is(seq, id_slot_remove);
     };
     proto.get_control_id = [&](span_cbyte seq) -> network::control {
       if (_is(seq, id_request_token))
@@ -154,7 +177,25 @@ namespace laplace::test {
         return network::control::server_init;
       if (_is(seq, id_server_quit))
         return network::control::server_quit;
+      if (_is(seq, id_slot_create))
+        return network::control::slot_create;
+      if (_is(seq, id_slot_remove))
+        return network::control::slot_remove;
       return network::control::undefined;
+    };
+    proto.set_event_index = [&](span_byte seq, sl::index n) {
+      serial::wr(seq, n_index, n);
+    };
+    proto.set_event_time = [&](span_byte seq, sl::time event_time) {
+      serial::wr(seq, n_time, event_time);
+    };
+    proto.set_event_actor = [&](span_byte seq, sl::index id) {
+      serial::wr(seq, n_actor, id);
+    };
+    proto.alter_slot_create_flag = [&](span_byte seq,
+                                       sl::index id_actor) {
+      serial::wr<uint8_t>(seq, n_slot_is_local,
+                          _actor_of(seq) == id_actor ? 1 : 0);
     };
     proto.decode_cipher_id = [&](span_cbyte seq) -> network::cipher {
       return network::cipher::rabbit;
@@ -216,6 +257,13 @@ namespace laplace::test {
           return serial::pack_to_bytes(id_server_init, sl::index {});
         case network::control::server_quit:
           return serial::pack_to_bytes(id_server_quit, sl::index {});
+        case network::control::slot_create:
+          return serial::pack_to_bytes(id_slot_create, sl::index {},
+                                       sl::time {}, sl::index {},
+                                       uint8_t {});
+        case network::control::slot_remove:
+          return serial::pack_to_bytes(id_slot_remove, sl::index {},
+                                       sl::time {}, sl::index {});
         default:;
       }
       return {};

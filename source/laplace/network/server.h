@@ -129,6 +129,7 @@ namespace laplace::network {
     void send_init(ptr_node const &node) noexcept;
     void send_events(ptr_node const &node) noexcept;
     void send_ping(ptr_node const &node, span_cbyte req) noexcept;
+    void send_slot_create(ptr_node const &node) noexcept;
 
     void create_actor() noexcept;
     void remove_actor() noexcept;

@@ -60,6 +60,7 @@ namespace laplace::test {
 
   TEST(network, session_pool_find) {
     auto pool = session_pool {};
+    pool.log  = get_blank_log();
     pool.add("127.0.0.1", 1);
     EXPECT_EQ(pool.find("127.0.0.1", 1), 0);
     EXPECT_EQ(pool.find("127.0.0.1", 2), network::index_undefined);
@@ -69,6 +70,7 @@ namespace laplace::test {
 
   TEST(network, session_pool_is_full) {
     auto pool = session_pool {};
+    pool.log  = get_blank_log();
     pool.set_max_count(1);
     pool.add("127.0.0.1", 1);
     std::ignore = pool.find("127.0.0.1", 2,
