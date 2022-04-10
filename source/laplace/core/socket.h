@@ -1,6 +1,4 @@
-/*  laplace/core/socket.h
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -10,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_core_socket_h
-#define laplace_core_socket_h
+#ifndef LAPLACE_CORE_SOCKET_H
+#define LAPLACE_CORE_SOCKET_H
 
 #if !defined(LAPLACE_POSIX_SOCKETS) && \
     (defined(_WIN32) || defined(_WINDOWS))
@@ -22,6 +20,7 @@
 
 #  undef min
 #  undef max
+#  undef interface
 
 using socket_t  = SOCKET;
 using socklen_t = int;

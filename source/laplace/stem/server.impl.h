@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_stem_server_impl_h
-#define laplace_stem_server_impl_h
+#ifndef LAPLACE_STEM_SERVER_IMPL_H
+#define LAPLACE_STEM_SERVER_IMPL_H
 
 namespace laplace::stem {
   template <typename factory>

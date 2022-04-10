@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_stem_server_h
-#define laplace_stem_server_h
+#ifndef LAPLACE_STEM_SERVER_H
+#define LAPLACE_STEM_SERVER_H
 
 #include "../engine/world.h"
 #include "../network/server.h"

@@ -3,10 +3,10 @@ cmake_minimum_required(VERSION 3.16)
 # Project version policy.
 set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 
-# Allow to set up the options for the dependencies.
+# Allow to set up options for dependencies.
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
-# Allow to specify the MSVC runtime library for the dependencies.
+# Allow to specify the MSVC runtime library for dependencies.
 set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
 
 if(NOT DEFINED CMAKE_BUILD_PARALLEL_LEVEL)
