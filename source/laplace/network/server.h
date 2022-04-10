@@ -109,6 +109,9 @@ namespace laplace::network {
     void process_requests(endpoint const        &ep,
                           std::span<vbyte const> reqs) noexcept;
     void process_request(endpoint const &ep, span_cbyte req) noexcept;
+    void process_control(span_cbyte req, control control_id) noexcept;
+    void process_event(span_cbyte req) noexcept;
+    void perform_event(span_cbyte req) noexcept;
     void read_sessions() noexcept;
     void process_session(span_cbyte req) noexcept;
     void session_open(endpoint const &ep) noexcept;

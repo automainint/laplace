@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_prime_impact_impl_h
-#define laplace_engine_prime_impact_impl_h
+#ifndef LAPLACE_ENGINE_PRIME_IMPACT_IMPL_H
+#define LAPLACE_ENGINE_PRIME_IMPACT_IMPL_H
 
 namespace laplace::engine {
   inline auto prime_impact::encode() const -> vbyte {

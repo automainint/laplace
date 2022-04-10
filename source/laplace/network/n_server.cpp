@@ -246,28 +246,9 @@ namespace laplace::network {
     }
   }
 
-  void server::read_sessions() noexcept {
-    if (!m_session_node)
-      return;
-
-    constexpr sl::whole chunk_size      = 2048;
-    uint8_t             buf[chunk_size] = {};
-
-    auto const received = m_session_node->receive(buf);
-
-    if (received == 0)
-      return;
-
-    auto const reqs = m_session_tran.decode({ buf, buf + received });
-
-    for (auto &req : reqs) process_session(req);
-  }
-
-  void server::process_session(span_cbyte req) noexcept {
-    if (!m_proto.is_allowed(req))
-      return;
-
-    switch (m_proto.get_control_id(req)) {
+  void server::process_control(span_cbyte req,
+                               control    control_id) noexcept {
+    switch (control_id) {
       case control::request_token:
         m_session_token = m_random.generate_token();
         send_session_token(m_session_node);
@@ -292,6 +273,44 @@ namespace laplace::network {
         break;
       default:;
     }
+  }
+
+  void server::process_event(span_cbyte req) noexcept {
+    if (m_proto.get_event_time(req) == time_undefined)
+      perform_event(req);
+  }
+
+  void server::perform_event(span_cbyte req) noexcept {
+    m_exe.do_perform(req);
+  }
+
+  void server::read_sessions() noexcept {
+    if (!m_session_node)
+      return;
+
+    constexpr sl::whole chunk_size      = 2048;
+    uint8_t             buf[chunk_size] = {};
+
+    auto const received = m_session_node->receive(buf);
+
+    if (received == 0)
+      return;
+
+    auto const reqs = m_session_tran.decode({ buf, buf + received });
+
+    for (auto &req : reqs) process_session(req);
+  }
+
+  void server::process_session(span_cbyte req) noexcept {
+    if (!m_proto.is_allowed(req))
+      return;
+
+    auto const control_id = m_proto.get_control_id(req);
+
+    if (control_id == control::undefined)
+      process_event(req);
+    else
+      process_control(req, control_id);
   }
 
   void server::session_open(endpoint const &ep) noexcept {

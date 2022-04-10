@@ -47,7 +47,7 @@ namespace laplace::network {
     client_leave   = _id[18],
     client_ready   = _id[19],
 
-    /*  Timed.
+    /*  Timed events. Should not be returned by get_control_id.
      */
     slot_create = _id[20],
     slot_remove = _id[21]

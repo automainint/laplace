@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_eventorder_impl_h
-#define laplace_engine_eventorder_impl_h
+#ifndef LAPLACE_ENGINE_EVENTORDER_IMPL_H
+#define LAPLACE_ENGINE_EVENTORDER_IMPL_H
 
 namespace laplace::engine {
   constexpr eventorder::eventorder(sl::index n) : m_size(1) {

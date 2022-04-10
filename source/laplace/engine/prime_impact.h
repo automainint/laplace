@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_prime_impact_h
-#define laplace_engine_prime_impact_h
+#ifndef LAPLACE_ENGINE_PRIME_IMPACT_H
+#define LAPLACE_ENGINE_PRIME_IMPACT_H
 
 #include "../core/serial.h"
 #include "basic_impact.h"

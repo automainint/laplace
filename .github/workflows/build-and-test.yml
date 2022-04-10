@@ -21,6 +21,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up CMake 3.18
         uses: jwlawson/actions-setup-cmake@v1.8
         with:

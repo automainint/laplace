@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_basic_factory_impl_h
-#define laplace_engine_basic_factory_impl_h
+#ifndef LAPLACE_ENGINE_BASIC_FACTORY_IMPL_H
+#define LAPLACE_ENGINE_BASIC_FACTORY_IMPL_H
 
 namespace laplace::engine {
   template <typename impact_type_>

@@ -136,6 +136,7 @@ namespace laplace::test {
     network::fn_actor_create actor_create =
         [n = 0]() mutable -> sl::index { return n++; };
     network::fn_actor_remove actor_remove = [](sl::index) {};
+    network::fn_do_perform   do_perform   = [](span_cbyte) {};
   };
 
   inline void _setup_mock(
@@ -177,10 +178,6 @@ namespace laplace::test {
         return network::control::server_init;
       if (_is(seq, id_server_quit))
         return network::control::server_quit;
-      if (_is(seq, id_slot_create))
-        return network::control::slot_create;
-      if (_is(seq, id_slot_remove))
-        return network::control::slot_remove;
       return network::control::undefined;
     };
     proto.set_event_index = [&](span_byte seq, sl::index n) {
@@ -273,6 +270,7 @@ namespace laplace::test {
     auto exe         = network::blank_execution_interface();
     exe.actor_create = callbacks.actor_create;
     exe.actor_remove = callbacks.actor_remove;
+    exe.do_perform   = callbacks.do_perform;
     peer.setup_execution(exe);
   }
 

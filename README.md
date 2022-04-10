@@ -84,10 +84,10 @@ Add `source` to the project and build manually.
 
 If you change the source code files structure, use `tools/gen-cmake.py` to generate `CMakeLists.txt` files.
 
-[build-badge]:    https://github.com/automainint/laplace/actions/workflows/build-and-test.yml/badge.svg?branch=stable
+[build-badge]:    https://github.com/automainint/laplace/actions/workflows/build-and-test.yml/badge.svg?branch=dev
 [build-link]:     https://github.com/automainint/laplace/actions/workflows/build-and-test.yml
-[codecov-badge]:  https://codecov.io/gh/automainint/laplace/branch/stable/graph/badge.svg?token=HJF3BUA46B
-[codecov-link]:   https://codecov.io/gh/automainint/laplace/branch/stable
+[codecov-badge]:  https://codecov.io/gh/automainint/laplace/branch/dev/graph/badge.svg?token=HJF3BUA46B
+[codecov-link]:   https://codecov.io/gh/automainint/laplace/branch/dev
 
 [laplace-link]:          https://github.com/automainint/laplace
 [msvc-link]:             https://visualstudio.microsoft.com/vs/features/cplusplus

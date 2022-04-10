@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_basic_entity_predef_h
-#define laplace_engine_basic_entity_predef_h
+#ifndef LAPLACE_ENGINE_BASIC_ENTITY_PREDEF_H
+#define LAPLACE_ENGINE_BASIC_ENTITY_PREDEF_H
 
 #include <memory>
 #include <vector>

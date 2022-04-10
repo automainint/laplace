@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_basic_entity_impl_h
-#define laplace_engine_basic_entity_impl_h
+#ifndef LAPLACE_ENGINE_BASIC_ENTITY_IMPL_H
+#define LAPLACE_ENGINE_BASIC_ENTITY_IMPL_H
 
 namespace laplace::engine {
   inline auto basic_entity::get_by_id(sl::index id) noexcept

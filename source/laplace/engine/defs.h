@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_defs_h
-#define laplace_engine_defs_h
+#ifndef LAPLACE_ENGINE_DEFS_H
+#define LAPLACE_ENGINE_DEFS_H
 
 #include "../core/defs.h"
 #include "../math/matrix.h"

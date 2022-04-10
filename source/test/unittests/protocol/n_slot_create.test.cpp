@@ -18,9 +18,10 @@
 namespace laplace::test {
   using network::server, network::pipe, std::make_shared,
       network::transfer, network::crypto::ecc_rabbit,
-      network::any_port, network::id_undefined;
+      network::any_port, network::id_undefined,
+      network::time_undefined;
 
-  TEST(network, slot_create_host) {
+  TEST(network, slot_create_host_1) {
     /*  Host sends slot_create when he creates an actor.
      *
      *    Bob                   Alice
@@ -35,7 +36,6 @@ namespace laplace::test {
     auto alice = server {};
     _setup_mock(alice);
     alice.enable_encryption(true);
-    alice.set_tick_duration(15);
 
     auto session = alice.await_listen({ .io = io, .port = 1 });
 
@@ -81,7 +81,8 @@ namespace laplace::test {
   }
 
   TEST(network, slot_create_client) {
-    /*  Peer creates a new actor when receiving slot_create.
+    /*  Peer creates a new actor when receiving slot_create by
+     *  performing slot_create event.
      *
      *    Bob                   Alice
      *  session_request   ->
@@ -89,9 +90,82 @@ namespace laplace::test {
      *                        slot_create (local)
      *                    <-  slot_create (remote)
      */
+
+    sl::index const actor_bob   = 1;
+    sl::index const actor_other = 2;
+
+    int  actor_bob_created   = 0;
+    int  actor_other_created = 0;
+    bool actor_bob_local     = false;
+    bool actor_other_local   = false;
+
+    auto do_perform = [&](span_cbyte req) {
+      if (!_is(req, id_slot_create))
+        return;
+
+      auto const actor = _actor_of(req);
+
+      switch (actor) {
+        case actor_bob:
+          actor_bob_created++;
+          actor_bob_local = _slot_is_local(req);
+          break;
+        case actor_other:
+          actor_other_created++;
+          actor_other_local = _slot_is_local(req);
+          break;
+      }
+    };
+
+    auto io = make_shared<pipe>();
+
+    auto alice = io->open(1);
+
+    auto bob = server {};
+    _setup_mock(bob, { .do_perform = do_perform });
+    bob.enable_encryption(true);
+
+    auto session = bob.await_connect({ .io           = io,
+                                       .host_address = "",
+                                       .host_port    = 1,
+                                       .client_port  = 2 });
+
+    auto tran = transfer {};
+
+    auto received = _receive(alice, tran);
+    EXPECT_EQ(received.size(), 1);
+    if (!received.empty()) {
+      EXPECT_TRUE(_is(received[0], id_session_request));
+      tran.setup_cipher<ecc_rabbit>();
+      tran.set_remote_key(_get_public_key(received[0]));
+    }
+
+    EXPECT_TRUE(_send(alice, 2, tran, id_session_response,
+                      uint16_t { 3 }, tran.get_public_key()));
+
+    alice = io->open(3);
+
+    session.resume();
+
+    tran.enable_encryption(true);
+    std::ignore = _receive(alice, tran);
+
+    EXPECT_TRUE(_send(alice, alice->get_remote_port(), tran,
+                      id_slot_create, sl::index { 0 }, time_undefined,
+                      actor_bob, uint8_t { 1 }));
+    EXPECT_TRUE(_send(alice, alice->get_remote_port(), tran,
+                      id_slot_create, sl::index { 1 }, time_undefined,
+                      actor_other, uint8_t { 0 }));
+
+    session.resume();
+
+    EXPECT_EQ(actor_bob_created, 1);
+    EXPECT_EQ(actor_other_created, 1);
+    EXPECT_TRUE(actor_bob_local);
+    EXPECT_FALSE(actor_other_local);
   }
 
-  TEST(network, slot_create_remote) {
+  TEST(network, slot_create_host_2) {
     /*  Host sends slot_create when he creates an actor. 2 actors.
      *
      *    Bob                   Alice

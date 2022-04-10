@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_helper_h
-#define laplace_engine_helper_h
+#ifndef LAPLACE_ENGINE_HELPER_H
+#define LAPLACE_ENGINE_HELPER_H
 
 #include "access/entity.h"
 #include "access/world.h"

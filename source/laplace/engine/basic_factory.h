@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_basic_factory_h
-#define laplace_engine_basic_factory_h
+#ifndef LAPLACE_ENGINE_BASIC_FACTORY_H
+#define LAPLACE_ENGINE_BASIC_FACTORY_H
 
 #include "prime_impact.h"
 

@@ -12,8 +12,8 @@
  *  Allows sorting tree-structured events.
  */
 
-#ifndef laplace_engine_eventorder_h
-#define laplace_engine_eventorder_h
+#ifndef LAPLACE_ENGINE_EVENTORDER_H
+#define LAPLACE_ENGINE_EVENTORDER_H
 
 #include "../core/defs.h"
 

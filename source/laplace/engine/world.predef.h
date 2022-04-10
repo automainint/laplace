@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_engine_world_predef_h
-#define laplace_engine_world_predef_h
+#ifndef LAPLACE_ENGINE_WORLD_PREDEF_H
+#define LAPLACE_ENGINE_WORLD_PREDEF_H
 
 #include "../core/defs.h"
 #include "basic_entity.predef.h"
