@@ -56,7 +56,7 @@ namespace laplace::coroutine {
   template <typename promise_>
   concept promise_nested = promise_shared<promise_> &&
       requires(promise_ promise) {
-    promise.m_nested;
+    promise.m_pending;
   };
 }
 

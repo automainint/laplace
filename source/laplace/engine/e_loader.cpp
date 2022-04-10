@@ -117,11 +117,14 @@ namespace laplace::engine {
     }
 
     auto decoded = m_context.decode(task);
-    auto perform = m_context.perform;
 
-    _ul.unlock();
-    perform(decoded);
-    _ul.lock();
+    if (decoded) {
+      auto perform = m_context.perform;
+
+      _ul.unlock();
+      perform(decoded);
+      _ul.lock();
+    }
 
     m_progress++;
   }
