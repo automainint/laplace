@@ -1,4 +1,4 @@
-/*  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2022 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -8,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef quadwar_session_h
-#define quadwar_session_h
+#ifndef QUADWAR_SESSION_H
+#define QUADWAR_SESSION_H
 
 #include "../../laplace/core/log.h"
 #include "../../laplace/stem/server.h"
@@ -58,7 +58,8 @@ namespace quadwar_app {
     void join();
 
     [[nodiscard]] static auto get_host_address(
-        std::string_view default_address, log_handler log) -> std::string;
+        std::string_view default_address, log_handler log)
+        -> std::string;
 
   private:
     void update_control(sl::time                 delta_msec,

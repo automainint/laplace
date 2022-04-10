@@ -8,6 +8,9 @@
  *  the MIT License for more details.
  */
 
+#define _CRT_DECLARE_NONSTDC_NAMES 0
+#define NOMINMAX
+
 #include "session.h"
 
 #include "../../laplace/engine/protocol/basic_event.h"
