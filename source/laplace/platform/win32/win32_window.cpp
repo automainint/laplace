@@ -339,7 +339,8 @@ namespace laplace::win32 {
     load_icon(wcex.hIcon, wcex.hIconSm);
 
     if (!RegisterClassExW(&wcex)) {
-      error_("RegisterClassEx failed.", __FUNCTION__);
+      get_global_log()(log_event::error, "RegisterClassEx failed.",
+                       __FUNCTION__);
       return false;
     }
 
@@ -364,7 +365,8 @@ namespace laplace::win32 {
       SetWindowLongPtr(m_handle, GWLP_USERDATA,
                        reinterpret_cast<LONG_PTR>(this));
     } else {
-      error_("CreateWindowEx failed.", __FUNCTION__);
+      get_global_log()(log_event::error, "CreateWindowEx failed.",
+                       __FUNCTION__);
     }
   }
 
@@ -427,8 +429,9 @@ namespace laplace::win32 {
         }
 
       if (!mode_found) {
-        error_("No required display settings available.",
-               __FUNCTION__);
+        get_global_log()(log_event::error,
+                         "No required display settings available.",
+                         __FUNCTION__);
         return;
       }
 
@@ -437,14 +440,18 @@ namespace laplace::win32 {
 
       if (ChangeDisplaySettingsW(&mode, CDS_FULLSCREEN) !=
           DISP_CHANGE_SUCCESSFUL) {
-        error_("ChangeDisplaySettings failed.", __FUNCTION__);
+        get_global_log()(log_event::error,
+                         "ChangeDisplaySettings failed.",
+                         __FUNCTION__);
       }
     } else {
       /*  Reset to default settings.
        */
       if (ChangeDisplaySettingsW(nullptr, 0) !=
           DISP_CHANGE_SUCCESSFUL) {
-        error_("ChangeDisplaySettings failed.", __FUNCTION__);
+        get_global_log()(log_event::error,
+                         "ChangeDisplaySettings failed.",
+                         __FUNCTION__);
       }
     }
   }
@@ -551,10 +558,9 @@ namespace laplace::win32 {
     return 0;
   }
 
-  auto CALLBACK window::window_proc(HWND   window_handle,
-                                    UINT   message,
-                                    WPARAM wparam,
-                                    LPARAM lparam) -> LRESULT {
+  auto CALLBACK window::window_proc(HWND window_handle, UINT message,
+                                    WPARAM wparam, LPARAM lparam)
+      -> LRESULT {
     if (message != WM_CREATE) {
       window *w = reinterpret_cast<window *>(
           GetWindowLongPtr(window_handle, GWLP_USERDATA));

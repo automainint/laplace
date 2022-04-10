@@ -42,12 +42,14 @@ namespace laplace::win32 {
 
   glcontext::glcontext(shared_ptr<window> win) {
     if (!gl_load_library()) {
-      error_("Unable to load OpenGL library.", __FUNCTION__);
+      get_global_log()(log_event::error,
+                       "Unable to load OpenGL library.",
+                       __FUNCTION__);
       return;
     }
 
     if (!win) {
-      error_("No window.", __FUNCTION__);
+      get_global_log()(log_event::error, "No window.", __FUNCTION__);
       return;
     }
 
@@ -65,7 +67,8 @@ namespace laplace::win32 {
     m_hDC = GetDC(win->get_native_handle());
 
     if (!m_hDC) {
-      error_("GetDC failed.", __FUNCTION__);
+      get_global_log()(log_event::error, "GetDC failed.",
+                       __FUNCTION__);
       cleanup();
       return;
     }
@@ -73,7 +76,8 @@ namespace laplace::win32 {
     auto pf = ChoosePixelFormat(m_hDC, &pfd);
 
     if (!SetPixelFormat(m_hDC, pf, &pfd)) {
-      error_("SetPixelFormat failed.", __FUNCTION__);
+      get_global_log()(log_event::error, "SetPixelFormat failed.",
+                       __FUNCTION__);
       cleanup();
       return;
     }
@@ -81,13 +85,15 @@ namespace laplace::win32 {
     m_hRC = wglCreateContext(m_hDC);
 
     if (!m_hRC) {
-      error_("wglCreateContext failed.", __FUNCTION__);
+      get_global_log()(log_event::error, "wglCreateContext failed.",
+                       __FUNCTION__);
       cleanup();
       return;
     }
 
     if (!wglMakeCurrent(m_hDC, m_hRC)) {
-      error_("wglMakeCurrent failed.", __FUNCTION__);
+      get_global_log()(log_event::error, "wglMakeCurrent failed.",
+                       __FUNCTION__);
       cleanup();
       return;
     }
@@ -117,7 +123,9 @@ namespace laplace::win32 {
       auto hRC = wglCreateContextAttribsARB(m_hDC, nullptr, attrs);
 
       if (hRC == nullptr) {
-        error_("wglCreateContextAttribsARB failed.", __FUNCTION__);
+        get_global_log()(log_event::error,
+                         "wglCreateContextAttribsARB failed.",
+                         __FUNCTION__);
         cleanup();
         return;
       }
@@ -128,14 +136,16 @@ namespace laplace::win32 {
       m_hRC = hRC;
 
       if (!wglMakeCurrent(m_hDC, m_hRC)) {
-        error_("wglMakeCurrent failed.", __FUNCTION__);
+        get_global_log()(log_event::error, "wglMakeCurrent failed.",
+                         __FUNCTION__);
         cleanup();
         return;
       }
     }
 
     if (!gl::load_functions()) {
-      error_("OpenGL initialization failed.", __FUNCTION__);
+      get_global_log()(log_event::error,
+                       "OpenGL initialization failed.", __FUNCTION__);
       cleanup();
       return;
     }

@@ -111,8 +111,7 @@ namespace laplace::win32 {
                                : m_mouse.delta_y;
   }
 
-  void input::set_window_rect(sl::index x,
-                              sl::index y,
+  void input::set_window_rect(sl::index x, sl::index y,
                               sl::whole width,
                               sl::whole height) noexcept {
 
@@ -167,7 +166,9 @@ namespace laplace::win32 {
 
       if (!RegisterRawInputDevices(rid, sizeof rid / sizeof *rid,
                                    sizeof(RAWINPUTDEVICE))) {
-        error_("RegisterRawInputDevices failed.", __FUNCTION__);
+        get_global_log()(log_event::error,
+                         "RegisterRawInputDevices failed.",
+                         __FUNCTION__);
       }
     }
   }
@@ -193,7 +194,8 @@ namespace laplace::win32 {
       } else if (raw.header.dwType == RIM_TYPEMOUSE) {
         process_mouse(&raw.data.mouse);
       } else {
-        error_("Unknown input type.", __FUNCTION__);
+        get_global_log()(log_event::error, "Unknown input type.",
+                         __FUNCTION__);
       }
     }
   }

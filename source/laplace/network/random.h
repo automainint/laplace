@@ -22,6 +22,8 @@ namespace laplace::network {
     random &operator=(random const &) = delete;
     random &operator=(random &&) noexcept = default;
 
+    log_handler log = get_global_log();
+
     random() noexcept;
     ~random() = default;
 

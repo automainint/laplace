@@ -18,9 +18,10 @@ namespace laplace::network {
   }
 
   template <typename type_>
-  inline auto random::generate(type_ begin, type_ end) noexcept -> type_ {
+  inline auto random::generate(type_ begin, type_ end) noexcept
+      -> type_ {
     if (end <= begin) {
-      error_("Invalid range.", __FUNCTION__);
+      log(log_event::error, "Invalid range.", __FUNCTION__);
       return {};
     }
 

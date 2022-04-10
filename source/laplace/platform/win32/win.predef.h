@@ -1,8 +1,4 @@
-/*  laplace/platform/win32/win.predef.h
- *
- *      Win32 minimum declarations.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -12,8 +8,8 @@
  *  the MIT License for more details.
  */
 
-#ifndef laplace_windows_header
-#define laplace_windows_header
+#ifndef LAPLACE_WINDOWS_HEADER
+#define LAPLACE_WINDOWS_HEADER
 
 #include <cstdint>
 

@@ -1,8 +1,4 @@
-/*  laplace/platform/win32/win32_wgl.cpp
- *
- *      WGL functions loading from OpenGL DLL.
- *
- *  Copyright (c) 2021 Mitya Selivanov
+/*  Copyright (c) 2021 Mitya Selivanov
  *
  *  This file is part of the Laplace project.
  *
@@ -13,7 +9,7 @@
  */
 
 #define WIN32_LEAN_AND_MEAN
-#define laplace_windows_header
+#define LAPLACE_WINDOWS_HEADER
 #include <windows.h>
 
 #undef min
@@ -21,6 +17,7 @@
 
 #include "wgl.h"
 
+#include "../../core/string.h"
 #include "../../core/utils.h"
 #include "../gldef.h"
 #include <iostream>
@@ -133,7 +130,9 @@ namespace laplace::win32 {
           gl_get_proc_address("glGetIntegerv"));
 
       if (!gl::glGetIntegerv) {
-        error_("Unable to get glGetIntegerv function.", __FUNCTION__);
+        get_global_log()(log_event::error,
+                         "Unable to get glGetIntegerv function.",
+                         __FUNCTION__);
         status = false;
       }
     }
@@ -143,7 +142,9 @@ namespace laplace::win32 {
           gl_get_proc_address("glGetStringi"));
 
       if (!gl::glGetStringi) {
-        error_("Unable to get glGetStringi function.", __FUNCTION__);
+        get_global_log()(log_event::error,
+                         "Unable to get glGetStringi function.",
+                         __FUNCTION__);
         status = false;
       }
     }
@@ -175,8 +176,10 @@ namespace laplace::win32 {
               gl_get_proc_address("wglCreateContextAttribsARB"));
 
       if (!wglCreateContextAttribsARB) {
-        error_("Unable to get wglCreateContextAttribsARB function.",
-               __FUNCTION__);
+        get_global_log()(
+            log_event::error,
+            "Unable to get wglCreateContextAttribsARB function.",
+            __FUNCTION__);
         status = false;
       }
     }
