@@ -35,7 +35,7 @@ jobs:
       - name: Install gcovr
         if: runner.os != 'Windows'
         run: |
-          python3 -m pip install gcovr
+          python3 -m pip install gcovr==5.0
 
       - name: Install OpenCppCoverage
         if: runner.os == 'Windows'
