@@ -25,9 +25,10 @@
 #define LOAD(a)                                                      \
   if (a = reinterpret_cast<pfn_##a>(GetProcAddress(opengl_dll, #a)); \
       !a) {                                                          \
-    error_(fmt("Unable to get %s function from %s.", #a,             \
-               to_string(opengl_path).c_str()),                      \
-           __FUNCTION__);                                            \
+    get_global_log()(log_event::error,                               \
+                     fmt("Unable to get %s function from %s.", #a,   \
+                         to_string(opengl_path).c_str()),            \
+                     __FUNCTION__);                                  \
     status = false;                                                  \
   }
 
@@ -71,7 +72,8 @@ namespace laplace::win32 {
     }
 
     if (opengl_dll = LoadLibraryW(opengl_path); !opengl_dll) {
-      error_(
+      get_global_log()(
+          log_event::error,
           fmt("Unable to load OpenGL dynamic-link library from %s.",
               to_string(opengl_path).c_str()),
           __FUNCTION__);

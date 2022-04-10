@@ -143,7 +143,7 @@ namespace laplace::win32 {
       }
     }
 
-    if (!gl::load_functions()) {
+    if (!gl::load_functions(get_global_log())) {
       get_global_log()(log_event::error,
                        "OpenGL initialization failed.", __FUNCTION__);
       cleanup();

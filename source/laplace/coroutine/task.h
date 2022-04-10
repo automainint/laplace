@@ -29,8 +29,8 @@ namespace laplace::coroutine {
       auto final_suspend() noexcept;
       auto get_return_object() noexcept;
       auto unhandled_exception() noexcept;
-      auto return_value(type_ const &_value) noexcept;
-      auto return_value(type_ &&_value) noexcept;
+      void return_value(type_ const &_value) noexcept;
+      void return_value(type_ &&_value) noexcept;
       auto yield_value(std::default_sentinel_t) noexcept;
     };
 
@@ -73,7 +73,7 @@ namespace laplace::coroutine {
       auto final_suspend() noexcept;
       auto get_return_object() noexcept;
       auto unhandled_exception() noexcept;
-      auto return_void() noexcept;
+      void return_void() noexcept;
       auto yield_value(std::default_sentinel_t) noexcept;
     };
 

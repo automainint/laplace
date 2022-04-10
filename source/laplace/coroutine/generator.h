@@ -29,8 +29,8 @@ namespace laplace::coroutine {
       auto final_suspend() noexcept;
       auto get_return_object() noexcept;
       auto unhandled_exception() noexcept;
-      auto return_value(type_ const &value) noexcept;
-      auto return_value(type_ &&value) noexcept;
+      void return_value(type_ const &value) noexcept;
+      void return_value(type_ &&value) noexcept;
       auto yield_value(type_ const &value) noexcept;
       auto yield_value(type_ &&value) noexcept;
       auto yield_value(generator<type_> gen) noexcept;

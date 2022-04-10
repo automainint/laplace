@@ -37,17 +37,15 @@ namespace laplace::coroutine {
   }
 
   template <typename type_>
-  inline auto generator<type_>::promise_type::return_value(
+  inline void generator<type_>::promise_type::return_value(
       type_ const &value) noexcept {
     m_value = value;
-    return std::suspend_always {};
   }
 
   template <typename type_>
-  inline auto generator<type_>::promise_type::return_value(
+  inline void generator<type_>::promise_type::return_value(
       type_ &&value) noexcept {
     m_value = std::move(value);
-    return std::suspend_always {};
   }
 
   template <typename type_>

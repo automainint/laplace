@@ -42,7 +42,8 @@ namespace laplace {
     auto data    = WSAData {};
 
     if (WSAStartup(version, &data) != ERROR_SUCCESS) {
-      error_("WSAStartup failed.", __FUNCTION__);
+      get_global_log()(log_event::error, "WSAStartup failed.",
+                       __FUNCTION__);
       m_is_ok = false;
     }
   }

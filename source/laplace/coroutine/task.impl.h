@@ -37,17 +37,15 @@ namespace laplace::coroutine {
   }
 
   template <typename return_type_>
-  inline auto task<return_type_>::promise_type::return_value(
+  inline void task<return_type_>::promise_type::return_value(
       return_type_ const &_value) noexcept {
     m_value = _value;
-    return std::suspend_always {};
   }
 
   template <typename return_type_>
-  inline auto task<return_type_>::promise_type::return_value(
+  inline void task<return_type_>::promise_type::return_value(
       return_type_ &&_value) noexcept {
     m_value = std::move(_value);
-    return std::suspend_always {};
   }
 
   template <typename return_type_>
@@ -160,9 +158,7 @@ namespace laplace::coroutine {
     m_exception = std::current_exception();
   }
 
-  inline auto task<void>::promise_type::return_void() noexcept {
-    return std::suspend_always {};
-  }
+  inline void task<void>::promise_type::return_void() noexcept { }
 
   inline auto task<void>::promise_type::yield_value(
       std::default_sentinel_t) noexcept {
