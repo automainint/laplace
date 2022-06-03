@@ -13,7 +13,7 @@ env:
   BUILD_TYPE: Debug
 
 jobs:
-  build_and_test:
+  build:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-2019 ]
@@ -31,7 +31,7 @@ jobs:
       - name: Install GCC 11
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get install gcc-11 g++-11
+          sudo apt install gcc-11 g++-11
 
       - name: Install gcovr
         if: runner.os != 'Windows'
@@ -48,7 +48,7 @@ jobs:
       - name: Build with GCC 11
         if: runner.os != 'Windows'
         run: |
-          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D LAPLACE_ENABLE_TESTING=ON -D LAPLACE_ENABLE_COVERAGE=ON -D LAPLACE_VERBOSE=ON -B build -S .
+          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -B build -S .
           cmake --build build --config $BUILD_TYPE
         env:
           CC: gcc-11
@@ -58,7 +58,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D LAPLACE_ENABLE_TESTING=ON -D LAPLACE_ENABLE_COVERAGE=ON -D LAPLACE_VERBOSE=ON -B build -S .
+          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -B build -S .
           cmake --build build --config $BUILD_TYPE
 
       - name: Run tests & generate coverage on Linux
@@ -89,3 +89,48 @@ jobs:
           flags: ${{ runner.os }}
           name: ${{ runner.os }} build
           fail_ci_if_error: false
+
+  integration:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-2019 ]
+        name: [ fetch_content, find_package ]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up CMake 3.18
+        uses: jwlawson/actions-setup-cmake@v1.8
+        with:
+          cmake-version: 3.18
+
+      - name: Install GCC 11
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt install gcc-11 g++-11
+
+      - name: Build with GCC 11
+        if: runner.os != 'Windows'
+        run: |
+          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -B build -S .
+          cmake --build build --config $BUILD_TYPE
+        working-directory: ./source/test/integration/${{ matrix.name }}
+        env:
+          CC: gcc-11
+          CXX: g++-11
+
+      - name: Build with Visual Studio
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -B build -S .
+          cmake --build build --config $BUILD_TYPE
+        working-directory: ./source/test/integration/${{ matrix.name }}
+
+      - name: Run
+        shell: bash
+        run:
+          ctest -V -C $BUILD_TYPE
+        working-directory: ./source/test/integration/${{ matrix.name }}/build

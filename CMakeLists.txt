@@ -1,112 +1,131 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Project version policy.
-set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
+option(LAPLACE_ENABLE_TESTING "Enable testing" ON)
 
-# Allow to set up options for dependencies.
-set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-
-# Allow to specify the MSVC runtime library for dependencies.
-set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
+set(LAPLACE_PROJECT laplace)
+set(LAPLACE_LIBRARY laplace)
+set(LAPLACE_TEST laplace-test)
+set(LAPLACE_UNITTESTS laplace-unittests)
+set(LAPLACE_TARGETS laplace-targets)
 
 if(NOT DEFINED CMAKE_BUILD_PARALLEL_LEVEL)
   set(CMAKE_BUILD_PARALLEL_LEVEL 3)
 endif()
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+project(
+  ${LAPLACE_PROJECT}
+  VERSION 0.1.1
+  DESCRIPTION "Lockstep framework"
+  LANGUAGES CXX)
 
-include(cmake/options.cmake)
+add_library(${LAPLACE_LIBRARY} STATIC)
+add_library(${LAPLACE_PROJECT}::${LAPLACE_LIBRARY} ALIAS ${LAPLACE_LIBRARY})
+target_include_directories(
+  ${LAPLACE_LIBRARY} INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source>)
+target_compile_features(${LAPLACE_LIBRARY} PUBLIC cxx_std_20)
 
-project(${LAPLACE_PROJECT}
-        VERSION 0.1.1
-        DESCRIPTION "A game engine focused on RTS."
-        LANGUAGES CXX)
+enable_testing()
 
-include(cmake/fetch-deps.cmake)
+if(LAPLACE_ENABLE_TESTING)
+  include(FetchContent)
 
-if(LAPLACE_ENABLE_OBJ OR LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
-  include(cmake/codegen.cmake)
-  include(cmake/build.cmake)
+  FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG v2.13.9)
 
-  add_library(${LAPLACE_OBJ} OBJECT)
-  add_library(${QUADWAR_OBJ} OBJECT)
-  add_subdirectory(source)
+  FetchContent_MakeAvailable(Catch2)
+
+  add_executable(${LAPLACE_TEST})
 
   target_link_libraries(
-    ${LAPLACE_OBJ}
-    PUBLIC
-    ${LAPLACE_BUILD}
-    ${LAPLACE_DEPENDENCIES})
+    ${LAPLACE_TEST}
+    PRIVATE
+    ${LAPLACE_LIBRARY} Catch2::Catch2)
+
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(
+      ${LAPLACE_TEST} PRIVATE
+      #-fsanitize=undefined,address
+      --coverage -O0 -g)
+    target_link_options(
+      ${LAPLACE_TEST} PRIVATE
+      #-fsanitize=undefined,address
+      --coverage)
+  endif()
+
+  if(MSVC)
+    target_compile_options(${LAPLACE_TEST} PRIVATE /Od)
+  endif()
+
+  add_test(
+    NAME ${LAPLACE_UNITTESTS}
+    COMMAND ${LAPLACE_TEST})
+
+  set_tests_properties(
+    ${LAPLACE_UNITTESTS}
+    PROPERTIES
+    TIMEOUT "15")
 endif()
 
-if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_LIB)
-  target_link_libraries(${QUADWAR_OBJ}
-                        PUBLIC
-                        ${LAPLACE_BUILD}
-                        ${LAPLACE_OBJ})
+add_subdirectory(source)
 
-  if(LAPLACE_ENABLE_LIB)
-    if(LAPLACE_ENABLE_SHARED)
-      add_library(${LAPLACE_LIB} SHARED)
+include(GNUInstallDirs)
 
-      if(MSVC)
-        set_target_properties(${LAPLACE_LIB}
-                              PROPERTIES
-                              WINDOWS_EXPORT_ALL_SYMBOLS ON)
-      endif()
-    else()
-      add_library(${LAPLACE_LIB} STATIC)
-    endif()
+file(
+  GLOB_RECURSE headers_
+  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/source/laplace
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/laplace/*.h)
 
-    target_include_directories(${LAPLACE_LIB}
-                               PUBLIC
-                               "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+foreach(path_ ${headers_})
+  get_filename_component(dir_ "${path_}" DIRECTORY)
 
-    target_link_libraries(${LAPLACE_LIB}
-                          PUBLIC
-                          ${LAPLACE_BUILD}
-                          ${LAPLACE_OBJ})
-  endif()
+  install(
+    FILES ${CMAKE_CURRENT_SOURCE_DIR}/source/laplace/${path_}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/laplace/${dir_})
+endforeach()
 
-  if(LAPLACE_ENABLE_EXE OR LAPLACE_ENABLE_TESTING OR LAPLACE_ENABLE_COVERAGE)
-    add_executable(${QUADWAR_EXE})
+unset(headers_)
+unset(path_)
+unset(dir_)
 
-    target_link_libraries(${QUADWAR_EXE}
-                          ${LAPLACE_BUILD}
-                          ${QUADWAR_OBJ}
-                          ${LAPLACE_OBJ})
+install(
+  TARGETS ${LAPLACE_LIBRARY}
+  EXPORT ${LAPLACE_TARGETS}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-    if(MSVC)
-      target_link_options(${QUADWAR_EXE} PRIVATE "/SUBSYSTEM:CONSOLE")
-    endif()
-  endif()
+install(
+  EXPORT ${LAPLACE_TARGETS}
+  FILE ${LAPLACE_TARGETS}.cmake
+  NAMESPACE ${PROJECT_NAME}::
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
-  if(LAPLACE_ENABLE_TESTING OR LAPLACE_ENABLE_COVERAGE)
-    enable_testing()
+export(
+  EXPORT ${LAPLACE_TARGETS}
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/${LAPLACE_TARGETS}.cmake"
+  NAMESPACE ${PROJECT_NAME}::)
 
-    macro(laplace_add_test name)
-      add_test(
-        NAME ${LAPLACE_UNITTESTS}-${name}
-        COMMAND ${QUADWAR_EXE} --tests --gtest_filter=${name}.*)
+include(CMakePackageConfigHelpers)
 
-      set_tests_properties(${LAPLACE_UNITTESTS}-${name}
-                           PROPERTIES
-                           TIMEOUT "15")
-    endmacro()
+string(TOLOWER ${PROJECT_NAME} project_lower_)
 
-    laplace_add_test(core)
-    laplace_add_test(coroutine)
-    laplace_add_test(math)
-    laplace_add_test(engine)
-    laplace_add_test(network)
-    laplace_add_test(format)
-    laplace_add_test(ui)
-    laplace_add_test(platform)
-    laplace_add_test(graphics)
-    laplace_add_test(render)
-    laplace_add_test(stem)
-  endif()
-endif()
+configure_package_config_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/${project_lower_}-config.cmake"
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
-include(cmake/package.cmake)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${project_lower_}-config-version.cmake"
+  VERSION "${PROJECT_VERSION}"
+  COMPATIBILITY AnyNewerVersion)
+
+install(
+  FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/${project_lower_}-config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${project_lower_}-config-version.cmake"
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
+unset(project_lower_)
