@@ -15,7 +15,7 @@ endif()
 project(
   ${LAPLACE_PROJECT}
   VERSION 0.1.1
-  DESCRIPTION "Lockstep framework"
+  DESCRIPTION "Deterministic lockstep framework"
   LANGUAGES CXX)
 
 add_library(${LAPLACE_LIBRARY} STATIC)
@@ -24,6 +24,10 @@ target_include_directories(
   ${LAPLACE_LIBRARY} INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source>)
 target_compile_features(${LAPLACE_LIBRARY} PUBLIC cxx_std_20)
+
+find_package(Threads REQUIRED)
+
+target_link_libraries(${LAPLACE_LIBRARY} PUBLIC Threads::Threads)
 
 enable_testing()
 

@@ -1,4 +1,5 @@
 target_sources(
   ${LAPLACE_TEST}
     PRIVATE
-      main.test.cpp)
+      entity.test.cpp impact.test.cpp controller.test.cpp
+      execution.test.cpp main.test.cpp)

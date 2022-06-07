@@ -27,4 +27,5 @@ Checks: >
   -*-private-member-variables-in-classes,
   -*-simplify-boolean-expr,
   -*-qualified-auto,
-  -*-prefer-member-initializer
+  -*-prefer-member-initializer,
+  -*-runtime-int
