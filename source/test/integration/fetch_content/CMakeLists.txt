@@ -5,11 +5,11 @@ project(${NAME} CXX)
 include(FetchContent)
 FetchContent_Declare(
   laplace
-  GIT_REPOSITORY https://github.com/automainint/unival.git
+  GIT_REPOSITORY https://github.com/automainint/laplace.git
   GIT_TAG redesign-lockstep-engine-only
   CMAKE_ARGS
   -D LAPLACE_ENABLE_TESTING=OFF)
-FetchContent_MakeAvailable(unival)
+FetchContent_MakeAvailable(laplace)
 
 add_executable(${NAME})
 target_sources(${NAME} PRIVATE main.cpp)
