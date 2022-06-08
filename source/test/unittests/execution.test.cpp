@@ -37,10 +37,4 @@ namespace laplace::test {
                 .set_thread_count(0)
                 .is_error());
   }
-
-  TEST_CASE("Can spawn static entity", "[execution]") { }
-
-  TEST_CASE("Can spawn dynamic entity", "[execution]") { }
-
-  TEST_CASE("Can queue impact", "[execution]") { }
 }

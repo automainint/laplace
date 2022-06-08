@@ -12,8 +12,8 @@ namespace laplace {
       std::unique_lock, std::shared_lock, std::thread, std::min,
       std::max;
 
-  const signed long long execution::default_thread_count = 3;
-  const signed long long execution::overthreading_limit  = 8;
+  const ptrdiff_t execution::default_thread_count = 3;
+  const ptrdiff_t execution::overthreading_limit  = 8;
 
   execution::execution() noexcept {
     _init_threads(default_thread_count);
@@ -51,20 +51,19 @@ namespace laplace {
     return m_is_error;
   }
 
-  auto execution::get_thread_count() const noexcept
-      -> signed long long {
+  auto execution::get_thread_count() const noexcept -> ptrdiff_t {
     return static_cast<signed long long>(m_threads.size());
   }
 
   auto execution::set_thread_count(
-      signed long long thread_count) const noexcept -> execution {
+      ptrdiff_t thread_count) const noexcept -> execution {
     if (is_error())
       return *this;
     if (thread_count < 0)
       return _error();
     if (thread_count >
-        overthreading_limit * max<decltype(overthreading_limit)>(
-                                  1, thread::hardware_concurrency()))
+        overthreading_limit *
+            max<ptrdiff_t>(1, thread::hardware_concurrency()))
       return _error();
 
     auto exe = execution {};
@@ -94,9 +93,9 @@ namespace laplace {
 
       _set_done(false);
 
-      m_threads.resize(
-          min(thread_count,
-              thread::hardware_concurrency() * overthreading_limit));
+      m_threads.resize(min<ptrdiff_t>(thread_count,
+                                      thread::hardware_concurrency() *
+                                          overthreading_limit));
 
       for (auto &thread : m_threads)
         thread = jthread { [&]() {
