@@ -4,7 +4,4 @@ include("${CMAKE_CURRENT_LIST_DIR}/@LAPLACE_TARGETS@.cmake")
 
 include(CMakeFindDependencyMacro)
 find_dependency(Threads)
-
-if(NOT @LAPLACE_ENABLE_FETCH@)
-  find_dependency(coro)
-endif()
+find_dependency(coro)
