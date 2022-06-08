@@ -1,7 +1,7 @@
 @PACKAGE_INIT@
 
-include("${CMAKE_CURRENT_LIST_DIR}/@LAPLACE_TARGETS@.cmake")
-
 include(CMakeFindDependencyMacro)
 find_dependency(Threads)
 find_dependency(coro)
+
+include("${CMAKE_CURRENT_LIST_DIR}/@LAPLACE_TARGETS@.cmake")
