@@ -5,14 +5,6 @@ project(${NAME}-root)
 include(ExternalProject)
 
 ExternalProject_Add(
-  coro
-  GIT_REPOSITORY  https://github.com/automainint/coro.git
-  GIT_TAG         dev
-  CMAKE_ARGS
-  -D CMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install
-  -D CORO_ENABLE_TESTING=OFF)
-
-ExternalProject_Add(
   laplace
   GIT_REPOSITORY  https://github.com/automainint/laplace.git
   GIT_TAG         redesign-lockstep-engine-only
@@ -26,7 +18,6 @@ ExternalProject_Add(
   CMAKE_ARGS
   -D CMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install)
 
-ExternalProject_Add_StepDependencies(laplace build coro)
 ExternalProject_Add_StepDependencies(${NAME} build laplace)
 
 include(GNUInstallDirs)

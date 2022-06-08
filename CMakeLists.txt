@@ -36,6 +36,8 @@ if(LAPLACE_ENABLE_FETCH)
     GIT_REPOSITORY https://github.com/automainint/coro.git
     GIT_TAG dev)
 
+  set(CORO_ENABLE_TESTING OFF)
+
   FetchContent_MakeAvailable(coro)
   
   if(LAPLACE_ENABLE_TESTING)
