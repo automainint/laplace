@@ -249,6 +249,26 @@ namespace laplace::test {
     REQUIRE(buf.get(id, 0, -1) == 100);
   }
 
+  TEST_CASE("Buffer add delta concurrency harder") {
+    auto buf = buffer {};
+    auto id  = buf.allocate(1);
+
+    auto pool = vector<thread> {};
+    for (int i = 0; i < 1000; i++)
+      pool.emplace_back(thread { [&]() {
+        for (int j = 0; j < 100; j++) {
+          std::ignore = buf.add(id, 0, 1);
+          std::ignore = buf.add(id, 0, -1);
+        }
+        std::ignore = buf.add(id, 0, 1);
+      } });
+    for (auto &t : pool) t.join();
+
+    buf.adjust();
+
+    REQUIRE(buf.get(id, 0, -1) == 1000);
+  }
+
   TEST_CASE("Buffer adjust concurrency") {
     auto buf = buffer {}.set_chunk_size(10);
     auto id  = buf.allocate(10000);
@@ -256,6 +276,22 @@ namespace laplace::test {
 
     auto pool = vector<thread> {};
     for (int i = 0; i < 1000; i++)
+      pool.emplace_back(
+          thread { [&]() { std::ignore = buf.adjust_chunk(); } });
+    for (auto &t : pool) t.join();
+
+    for (int i = 0; i < 10000; i++) {
+      REQUIRE(buf.get(id, i, -1) == i);
+    }
+  }
+
+  TEST_CASE("Buffer adjust concurrency harder") {
+    auto buf = buffer {}.set_chunk_size(1);
+    auto id  = buf.allocate(10000);
+    for (int i = 0; i < 10000; i++) std::ignore = buf.set(id, i, i);
+
+    auto pool = vector<thread> {};
+    for (int i = 0; i < 10000; i++)
       pool.emplace_back(
           thread { [&]() { std::ignore = buf.adjust_chunk(); } });
     for (auto &t : pool) t.join();
