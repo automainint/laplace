@@ -3,6 +3,7 @@ Checks: >
   -llvmlibc-*,
   -fuchsia-*,
   -altera-*,
+  -*-identifier-length,
   -*-avoid-underscore-in-googletest-name,
   -*-avoid-c-arrays,
   -*-braces-around-statements,

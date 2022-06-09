@@ -6,6 +6,7 @@
 
 #include "options.h"
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -15,6 +16,14 @@ namespace laplace {
   class basic_buffer {
   public:
     static ptrdiff_t const default_chunk_size;
+
+    basic_buffer() noexcept = default;
+    basic_buffer(basic_buffer const &buf) noexcept;
+    basic_buffer(basic_buffer &&) noexcept = default;
+    ~basic_buffer() noexcept               = default;
+    auto operator=(basic_buffer const &buf) noexcept -> basic_buffer &;
+    auto operator=(basic_buffer &&) noexcept
+        -> basic_buffer & = default;
 
     [[nodiscard]] auto is_error() const noexcept -> bool;
 
@@ -31,25 +40,33 @@ namespace laplace {
                            int_ fail) const noexcept -> int_;
     [[nodiscard]] auto set(ptrdiff_t block, ptrdiff_t index,
                            int_ value) noexcept -> bool;
-    [[nodiscard]] auto add_delta(ptrdiff_t block, ptrdiff_t index,
-                                 int_ delta) noexcept -> bool;
+    [[nodiscard]] auto add(ptrdiff_t block, ptrdiff_t index,
+                           int_ delta) noexcept -> bool;
 
     void               adjust() noexcept;
     [[nodiscard]] auto adjust_chunk() noexcept -> bool;
+    void               adjust_done() noexcept;
 
   private:
     [[nodiscard]] auto _error() const noexcept -> basic_buffer<int_>;
 
     struct row {
-      bool      empty  = true;
-      ptrdiff_t offset = 0;
-      int_      value  = 0;
-      int_      delta  = 0;
+      bool              empty  = true;
+      ptrdiff_t         offset = 0;
+      int_              value  = 0;
+      std::atomic<int_> delta  = 0;
+
+      row() noexcept = default;
+      row(row const &r) noexcept;
+      row(row &&) noexcept = default;
+      ~row() noexcept      = default;
+      auto operator=(row const &r) noexcept -> row &;
+      auto operator=(row &&) noexcept -> row & = default;
     };
 
     bool                   m_is_error   = false;
     ptrdiff_t              m_chunk_size = default_chunk_size;
-    ptrdiff_t              m_next_chunk = 0;
+    std::atomic<ptrdiff_t> m_next_chunk = 0;
     std::vector<ptrdiff_t> m_blocks;
     std::vector<row>       m_values;
   };

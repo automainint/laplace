@@ -10,7 +10,26 @@
 #include <stdexcept>
 
 namespace laplace {
-  using std::bad_alloc, std::numeric_limits;
+  using std::bad_alloc, std::numeric_limits,
+      std::memory_order_relaxed, std::min;
+
+  template <typename int_>
+  basic_buffer<int_>::basic_buffer(basic_buffer const &buf) noexcept :
+      m_is_error(buf.m_is_error), m_chunk_size(buf.m_chunk_size),
+      m_next_chunk(buf.m_next_chunk.load(memory_order_relaxed)),
+      m_blocks(buf.m_blocks), m_values(buf.m_values) { }
+
+  template <typename int_>
+  auto basic_buffer<int_>::operator=(basic_buffer const &buf) noexcept
+      -> basic_buffer & {
+    m_is_error   = buf.m_is_error;
+    m_chunk_size = buf.m_chunk_size;
+    m_next_chunk.store(buf.m_next_chunk.load(memory_order_relaxed),
+                       memory_order_relaxed);
+    m_blocks = buf.m_blocks;
+    m_values = buf.m_values;
+    return *this;
+  }
 
   template <typename int_>
   ptrdiff_t const basic_buffer<int_>::default_chunk_size =
@@ -125,13 +144,14 @@ namespace laplace {
     auto const offset = m_blocks[block] + index;
     if (offset < 0 || offset >= m_values.size())
       return false;
-    m_values[offset].delta += value - m_values[offset].value;
+    m_values[offset].delta.fetch_add(value - m_values[offset].value,
+                                     memory_order_relaxed);
     return true;
   }
 
   template <typename int_>
-  auto basic_buffer<int_>::add_delta(ptrdiff_t block, ptrdiff_t index,
-                                     int_ delta) noexcept -> bool {
+  auto basic_buffer<int_>::add(ptrdiff_t block, ptrdiff_t index,
+                               int_ delta) noexcept -> bool {
     if (is_error())
       return false;
     if (block < 0 || block >= m_blocks.size())
@@ -139,7 +159,7 @@ namespace laplace {
     auto const offset = m_blocks[block] + index;
     if (offset < 0 || offset >= m_values.size())
       return false;
-    m_values[offset].delta += delta;
+    m_values[offset].delta.fetch_add(delta, memory_order_relaxed);
     return true;
   }
 
@@ -149,8 +169,8 @@ namespace laplace {
       return;
 
     for (auto &v : m_values) {
-      v.value += v.delta;
-      v.delta = 0;
+      v.value += v.delta.load(memory_order_relaxed);
+      v.delta.store(0, memory_order_relaxed);
     }
   }
 
@@ -159,18 +179,26 @@ namespace laplace {
     if (is_error())
       return false;
 
-    const auto begin   = m_next_chunk;
-    const auto end     = m_next_chunk + m_chunk_size;
-    const bool is_done = end >= m_values.size();
-
-    m_next_chunk = is_done ? 0 : end;
+    const auto begin   = m_next_chunk.fetch_add(m_chunk_size,
+                                                memory_order_relaxed);
+    const auto end     = min<ptrdiff_t>(begin + m_chunk_size,
+                                    m_values.size());
+    const bool is_done = end == m_values.size();
 
     for (auto i = begin; i < end; ++i) {
-      m_values[i].value += m_values[i].delta;
-      m_values[i].delta = 0;
+      m_values[i].value += m_values[i].delta.exchange(
+          0, memory_order_relaxed);
     }
 
     return !is_done;
+  }
+
+  template <typename int_>
+  void basic_buffer<int_>::adjust_done() noexcept {
+    if (is_error())
+      return;
+
+    m_next_chunk.store(0, memory_order_relaxed);
   }
 
   template <typename int_>
@@ -179,6 +207,22 @@ namespace laplace {
     auto result       = basic_buffer<int_> {};
     result.m_is_error = true;
     return result;
+  }
+
+  template <typename int_>
+  basic_buffer<int_>::row::row(row const &r) noexcept :
+      empty(r.empty), offset(r.offset), value(r.value),
+      delta(r.delta.load(std::memory_order_relaxed)) { }
+
+  template <typename int_>
+  auto basic_buffer<int_>::row::operator=(row const &r) noexcept
+      -> row & {
+    empty  = r.empty;
+    offset = r.offset;
+    value  = r.value;
+    delta.store(r.delta.load(std::memory_order_relaxed),
+                memory_order_relaxed);
+    return *this;
   }
 }
 
