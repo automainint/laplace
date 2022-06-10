@@ -5,6 +5,7 @@
 #define LAPLACE_ENTITY_IMPL_H
 
 #include <algorithm>
+#include <iterator>
 
 namespace laplace {
   inline auto entity::is_error() const noexcept -> bool {
