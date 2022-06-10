@@ -2,5 +2,3 @@
  */
 
 #include "entity.h"
-
-namespace laplace { }

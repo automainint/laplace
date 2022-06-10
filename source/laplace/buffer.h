@@ -5,14 +5,26 @@
 #define LAPLACE_BUFFER_H
 
 #include "options.h"
-
 #include <atomic>
-#include <cstddef>
+#include <concepts>
 #include <cstdint>
 #include <vector>
 
 namespace laplace {
   template <typename int_>
+  concept atomic_integer =
+      requires(int_ val, int_ hlp) {
+        val.store(hlp.load(std::memory_order_relaxed),
+                  std::memory_order_relaxed);
+        val.load(std::memory_order_relaxed);
+        val.fetch_add(hlp.load(std::memory_order_relaxed),
+                      std::memory_order_relaxed);
+        val.exchange(hlp.load(std::memory_order_relaxed),
+                     std::memory_order_relaxed);
+      };
+
+  template <typename int_,
+            atomic_integer atomic_int_ = std::atomic<int_>>
   class basic_buffer {
   public:
     static ptrdiff_t const default_chunk_size;
@@ -21,14 +33,15 @@ namespace laplace {
     basic_buffer(basic_buffer const &buf) noexcept;
     basic_buffer(basic_buffer &&) noexcept = default;
     ~basic_buffer() noexcept               = default;
-    auto operator=(basic_buffer const &buf) noexcept -> basic_buffer &;
+    auto operator=(basic_buffer const &buf) noexcept
+        -> basic_buffer &;
     auto operator=(basic_buffer &&) noexcept
         -> basic_buffer & = default;
 
     [[nodiscard]] auto is_error() const noexcept -> bool;
 
     [[nodiscard]] auto set_chunk_size(ptrdiff_t size) const noexcept
-        -> basic_buffer<int_>;
+        -> basic_buffer<int_, atomic_int_>;
     [[nodiscard]] auto get_chunk_size() const noexcept -> ptrdiff_t;
 
     [[nodiscard]] auto get_size() const noexcept -> ptrdiff_t;
@@ -43,18 +56,18 @@ namespace laplace {
     [[nodiscard]] auto add(ptrdiff_t block, ptrdiff_t index,
                            int_ delta) noexcept -> bool;
 
-    void               adjust() noexcept;
-    [[nodiscard]] auto adjust_chunk() noexcept -> bool;
+    [[nodiscard]] auto adjust() noexcept -> bool;
     void               adjust_done() noexcept;
 
   private:
-    [[nodiscard]] auto _error() const noexcept -> basic_buffer<int_>;
+    [[nodiscard]] auto _error() const noexcept
+        -> basic_buffer<int_, atomic_int_>;
 
     struct row {
-      bool              empty  = true;
-      ptrdiff_t         offset = 0;
-      int_              value  = 0;
-      std::atomic<int_> delta  = 0;
+      bool        empty  = true;
+      ptrdiff_t   offset = 0;
+      int_        value  = 0;
+      atomic_int_ delta  = 0;
 
       row() noexcept = default;
       row(row const &r) noexcept;

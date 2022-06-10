@@ -1,11 +1,11 @@
 /*  Copyright (c) 2022 Mitya Selivanov
  */
 
-#include "../../laplace/impact.h"
+#include "../../laplace/action.h"
 #include <catch2/catch.hpp>
 
 namespace laplace::test {
-  TEST_CASE("Create impact") {
-    std::ignore = impact {};
+  TEST_CASE("Create action") {
+    std::ignore = action {};
   }
 }
