@@ -4,6 +4,8 @@
 #include "../../laplace/action.h"
 #include <catch2/catch.hpp>
 
+#include <iostream>
+
 namespace laplace::test {
   TEST_CASE("Create action") {
     REQUIRE(!action {}.is_error());
@@ -25,11 +27,11 @@ namespace laplace::test {
   }
 
   TEST_CASE("Action run default") {
-    auto run    = action {}.run();
-    std::ignore = run.begin();
+    auto run = action {}.run();
+    run.resume();
     REQUIRE(run.is_done());
   }
-
+  
   TEST_CASE("Action setup and run") {
     bool called = false;
 
@@ -39,7 +41,7 @@ namespace laplace::test {
                      co_return;
                    })
                    .run();
-    std::ignore = run.begin();
+    run.resume();
 
     REQUIRE(called);
   }
@@ -61,7 +63,7 @@ namespace laplace::test {
                      co_return;
                    })
                    .run();
-    std::ignore = run.begin();
+    run.resume();
 
     REQUIRE(!called);
   }
@@ -76,7 +78,7 @@ namespace laplace::test {
                    })
                    .set_tick_duration(-1)
                    .run();
-    std::ignore = run.begin();
+    run.resume();
 
     REQUIRE(!called);
   }

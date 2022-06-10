@@ -39,7 +39,7 @@ if(LAPLACE_ENABLE_FETCH)
   set(CORO_ENABLE_TESTING OFF)
 
   FetchContent_MakeAvailable(coro)
-  
+
   if(LAPLACE_ENABLE_TESTING)
     FetchContent_Declare(
       Catch2
@@ -70,17 +70,15 @@ if(LAPLACE_ENABLE_TESTING)
 
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(
-      ${LAPLACE_TEST} PRIVATE
-      #-fsanitize=undefined,address
+      ${LAPLACE_LIBRARY} PUBLIC
+      -fsanitize=undefined#,address
       --coverage -O0 -g)
     target_link_options(
-      ${LAPLACE_TEST} PRIVATE
-      #-fsanitize=undefined,address
+      ${LAPLACE_LIBRARY} PUBLIC
+      -fsanitize=undefined#,address
       --coverage)
-  endif()
-
-  if(MSVC)
-    target_compile_options(${LAPLACE_TEST} PRIVATE /Od)
+  elseif(MSVC)
+    target_compile_options(${LAPLACE_LIBRARY} PUBLIC /Od)
   endif()
 
   add_test(
@@ -91,6 +89,12 @@ if(LAPLACE_ENABLE_TESTING)
     ${LAPLACE_UNITTESTS}
     PROPERTIES
     TIMEOUT "15")
+else()
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${LAPLACE_LIBRARY} PUBLIC -O3)
+  elseif(MSVC)
+    target_compile_options(${LAPLACE_LIBRARY} PUBLIC /O2)
+  endif()
 endif()
 
 add_subdirectory(source)

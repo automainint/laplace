@@ -24,7 +24,7 @@ namespace laplace {
   }
 
   execution::execution(execution &&exe) noexcept {
-    _assign(exe);
+    _assign(std::move(exe));
   }
 
   execution::~execution() noexcept {
@@ -43,7 +43,7 @@ namespace laplace {
 
   auto execution::operator=(execution &&exe) noexcept -> execution & {
     _cleanup();
-    _assign(exe);
+    _assign(std::move(exe));
     return *this;
   }
 

@@ -9,6 +9,21 @@ namespace laplace::test {
     REQUIRE(!execution {}.is_error());
   }
 
+  TEST_CASE("Execution copy") {
+    auto foo = execution {};
+    auto bar = execution {};
+    foo      = bar;
+    REQUIRE(!foo.is_error());
+  }
+
+  TEST_CASE("Execution move") {
+    auto foo = execution {};
+    auto bar = execution {};
+    foo      = std::move(bar);
+    REQUIRE(!foo.is_error());
+    REQUIRE(bar.is_error());
+  }
+
   TEST_CASE("Execution get thread count") {
     REQUIRE(execution {}.get_thread_count() ==
             execution::default_thread_count);
