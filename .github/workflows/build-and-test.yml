@@ -45,14 +45,14 @@ jobs:
           choco install opencppcoverage
           echo "C:/Program Files/OpenCppCoverage" >> $GITHUB_PATH
 
-      - name: Build with GCC 11
+      - name: Build with GCC 12
         if: runner.os != 'Windows'
         run: |
           cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -B build -S .
           cmake --build build --config $BUILD_TYPE
         env:
-          CC: gcc-11
-          CXX: g++-11
+          CC: gcc-12
+          CXX: g++-12
 
       - name: Build with Visual Studio
         if: runner.os == 'Windows'
@@ -66,14 +66,14 @@ jobs:
         working-directory: ${{ github.workspace }}/build
         run: |
           ctest -V -C $BUILD_TYPE
-          gcovr --gcov-executable gcov-11 -j $(nproc) --delete --root ../source/ --exclude '\.\./source/test/' --print-summary --xml-pretty --xml coverage.xml .
+          gcovr --gcov-executable gcov-12 -j $(nproc) --delete --root ../source/ --exclude '\.\./source/test/' --print-summary --xml-pretty --xml coverage.xml .
 
       - name: Run tests & generate coverage on macOS
         if: runner.os == 'macOS'
         working-directory: ${{ github.workspace }}/build
         run: |
           ctest -V -C $BUILD_TYPE
-          gcovr --gcov-executable gcov-11 -j 2 --delete --root ../source/ --exclude '\.\./source/test/' --print-summary --xml-pretty --xml coverage.xml .
+          gcovr --gcov-executable gcov-12 -j 2 --delete --root ../source/ --exclude '\.\./source/test/' --print-summary --xml-pretty --xml coverage.xml .
 
       - name: Run tests & generate coverage on Windows
         if: runner.os == 'Windows'
@@ -106,20 +106,20 @@ jobs:
         with:
           cmake-version: 3.18
 
-      - name: Install GCC 11
+      - name: Install GCC 12
         if: runner.os == 'Linux'
         run: |
-          sudo apt install gcc-11 g++-11
+          sudo apt install gcc-12 g++-12
 
-      - name: Build with GCC 11
+      - name: Build with GCC 12
         if: runner.os != 'Windows'
         run: |
           cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -B build -S .
           cmake --build build --config $BUILD_TYPE
         working-directory: ./source/test/integration/${{ matrix.name }}
         env:
-          CC: gcc-11
-          CXX: g++-11
+          CC: gcc-12
+          CXX: g++-12
 
       - name: Build with Visual Studio
         if: runner.os == 'Windows'
