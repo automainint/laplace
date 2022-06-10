@@ -77,8 +77,6 @@ if(LAPLACE_ENABLE_TESTING)
       ${LAPLACE_LIBRARY} PUBLIC
       -fsanitize=undefined#,address
       --coverage)
-  elseif(MSVC)
-    target_compile_options(${LAPLACE_LIBRARY} PUBLIC /Od)
   endif()
 
   add_test(
@@ -89,12 +87,6 @@ if(LAPLACE_ENABLE_TESTING)
     ${LAPLACE_UNITTESTS}
     PROPERTIES
     TIMEOUT "15")
-else()
-  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(${LAPLACE_LIBRARY} PUBLIC -O3)
-  elseif(MSVC)
-    target_compile_options(${LAPLACE_LIBRARY} PUBLIC /O2)
-  endif()
 endif()
 
 add_subdirectory(source)
