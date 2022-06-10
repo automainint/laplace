@@ -5,7 +5,7 @@
 #define LAPLACE_IMPACT_H
 
 namespace laplace {
-  class impact { };
+  struct impact { };
 }
 
 #endif

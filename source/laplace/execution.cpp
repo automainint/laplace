@@ -10,7 +10,7 @@ namespace laplace {
   using std::jthread, std::this_thread::sleep_for,
       std::chrono::milliseconds, std::bad_alloc, std::system_error,
       std::unique_lock, std::shared_lock, std::thread, std::min,
-      std::max;
+      std::max, std::function;
 
   const ptrdiff_t execution::default_thread_count = 3;
   const ptrdiff_t execution::overthreading_limit  = 8;
@@ -140,4 +140,14 @@ namespace laplace {
     _set_done(true);
     m_is_error = true;
   }
+
+  void execution::queue(action a) noexcept {
+    m_action = a;
+  }
+
+  void execution::schedule(time_type time) noexcept {
+    std::ignore = m_action.run().begin();
+  }
+
+  void execution::join() noexcept { }
 }

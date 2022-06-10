@@ -5,8 +5,6 @@
 #define LAPLACE_ENTITY_H
 
 #include "options.h"
-#include <coro/generator.h>
-#include <functional>
 #include <vector>
 
 namespace laplace {

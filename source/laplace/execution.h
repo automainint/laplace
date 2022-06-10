@@ -4,7 +4,7 @@
 #ifndef LAPLACE_EXECUTION_H
 #define LAPLACE_EXECUTION_H
 
-#include <cstddef>
+#include "action.h"
 #include <shared_mutex>
 #include <thread>
 #include <vector>
@@ -30,6 +30,11 @@ namespace laplace {
     [[nodiscard]] auto set_thread_count(
         ptrdiff_t thread_count) const noexcept -> execution;
 
+    void queue(action a) noexcept;
+
+    void schedule(time_type time) noexcept;
+    void join() noexcept;
+
   private:
     [[nodiscard]] static auto _error() noexcept -> execution;
     [[nodiscard]] auto        _is_done() noexcept -> bool;
@@ -45,6 +50,7 @@ namespace laplace {
     bool                      m_is_done  = false;
     std::vector<std::jthread> m_threads;
     std::shared_mutex         m_mutex;
+    action                    m_action;
   };
 }
 

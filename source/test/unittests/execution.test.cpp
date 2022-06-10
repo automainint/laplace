@@ -37,4 +37,33 @@ namespace laplace::test {
                 .set_thread_count(0)
                 .is_error());
   }
+
+  TEST_CASE("Execution queue action") {
+    bool called = false;
+
+    auto exe = execution {};
+
+    exe.queue(action {}.setup([&]() -> coro::generator<impact> {
+      called = true;
+      co_return;
+    }));
+
+    REQUIRE(!called);
+  }
+
+  TEST_CASE("Execution queue action and schedule") {
+    bool called = false;
+
+    auto exe = execution {};
+
+    exe.queue(action {}.setup([&]() -> coro::generator<impact> {
+      called = true;
+      co_return;
+    }));
+
+    exe.schedule(1);
+    exe.join();
+
+    REQUIRE(called);
+  }
 }
