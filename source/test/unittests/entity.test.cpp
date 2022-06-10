@@ -87,9 +87,9 @@ namespace laplace::test {
                 .is_error());
   }
 
-  TEST_CASE("Entity constexpr index of") {
+  /*TEST_CASE("Entity constexpr index of") {
     constexpr auto index =
         entity {}.setup({ { .id = 42 } }).index_of(42);
     REQUIRE(index == 0);
-  }
+  }*/
 }

@@ -7,19 +7,19 @@
 #include <algorithm>
 
 namespace laplace {
-  constexpr auto entity::is_error() const noexcept -> bool {
+  inline auto entity::is_error() const noexcept -> bool {
     return m_is_error;
   }
 
-  constexpr auto entity::get_size() const noexcept -> ptrdiff_t {
+  inline auto entity::get_size() const noexcept -> ptrdiff_t {
     return m_fields.size();
   }
 
-  constexpr auto entity::get_id() const noexcept -> ptrdiff_t {
+  inline auto entity::get_id() const noexcept -> ptrdiff_t {
     return m_id;
   }
 
-  constexpr auto entity::index_of(ptrdiff_t id) const noexcept
+  inline auto entity::index_of(ptrdiff_t id) const noexcept
       -> ptrdiff_t {
     auto const i = std::lower_bound(
         m_fields.begin(), m_fields.end(), id,
@@ -28,8 +28,8 @@ namespace laplace {
                                               : index_undefined;
   }
 
-  constexpr auto entity::setup(
-      std::vector<field> fields) const noexcept -> entity {
+  inline auto entity::setup(std::vector<field> fields) const noexcept
+      -> entity {
     if (is_error())
       return *this;
 
@@ -60,8 +60,7 @@ namespace laplace {
     return e;
   }
 
-  constexpr auto entity::set_id(ptrdiff_t id) const noexcept
-      -> entity {
+  inline auto entity::set_id(ptrdiff_t id) const noexcept -> entity {
     if (is_error())
       return *this;
 
@@ -70,7 +69,7 @@ namespace laplace {
     return e;
   }
 
-  constexpr auto entity::_error() noexcept -> entity {
+  inline auto entity::_error() noexcept -> entity {
     auto e       = entity {};
     e.m_is_error = true;
     return e;

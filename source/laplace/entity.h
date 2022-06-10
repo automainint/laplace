@@ -17,24 +17,22 @@ namespace laplace {
       value_type value = 0;
     };
 
-    [[nodiscard]] constexpr auto is_error() const noexcept -> bool;
+    [[nodiscard]] auto is_error() const noexcept -> bool;
 
-    [[nodiscard]] constexpr auto get_size() const noexcept
+    [[nodiscard]] auto get_size() const noexcept -> ptrdiff_t;
+
+    [[nodiscard]] auto get_id() const noexcept -> ptrdiff_t;
+
+    [[nodiscard]] auto index_of(ptrdiff_t id) const noexcept
         -> ptrdiff_t;
 
-    [[nodiscard]] constexpr auto get_id() const noexcept -> ptrdiff_t;
-
-    [[nodiscard]] constexpr auto index_of(ptrdiff_t id) const noexcept
-        -> ptrdiff_t;
-
-    [[nodiscard]] constexpr auto setup(
-        std::vector<field> fields) const noexcept -> entity;
-
-    [[nodiscard]] constexpr auto set_id(ptrdiff_t id) const noexcept
+    [[nodiscard]] auto setup(std::vector<field> fields) const noexcept
         -> entity;
 
+    [[nodiscard]] auto set_id(ptrdiff_t id) const noexcept -> entity;
+
   private:
-    [[nodiscard]] static constexpr auto _error() noexcept -> entity;
+    [[nodiscard]] static auto _error() noexcept -> entity;
 
     bool               m_is_error = false;
     ptrdiff_t          m_id       = id_undefined;
