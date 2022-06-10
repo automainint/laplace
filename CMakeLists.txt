@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
-option(LAPLACE_ENABLE_FETCH "Enable fetch dependencies" ON)
 option(LAPLACE_ENABLE_TESTING "Enable testing" ON)
 
 set(LAPLACE_PROJECT laplace)
@@ -26,11 +25,12 @@ target_include_directories(
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source>)
 target_compile_features(${LAPLACE_LIBRARY} PUBLIC cxx_std_20)
 
+include(FetchContent)
+
 find_package(Threads REQUIRED)
+find_package(coro QUIET)
 
-if(LAPLACE_ENABLE_FETCH)
-  include(FetchContent)
-
+if(NOT coro_FOUND)
   FetchContent_Declare(
     coro
     GIT_REPOSITORY https://github.com/automainint/coro.git
@@ -39,20 +39,18 @@ if(LAPLACE_ENABLE_FETCH)
   set(CORO_ENABLE_TESTING OFF)
 
   FetchContent_MakeAvailable(coro)
+endif()
 
-  if(LAPLACE_ENABLE_TESTING)
+if(LAPLACE_ENABLE_TESTING)
+  find_package(Catch2 QUIET)
+  
+  if(NOT Catch2_FOUND)
     FetchContent_Declare(
       Catch2
       GIT_REPOSITORY https://github.com/catchorg/Catch2.git
       GIT_TAG v2.13.9)
 
     FetchContent_MakeAvailable(Catch2)
-  endif()
-else()
-  find_package(coro REQUIRED)
-
-  if(LAPLACE_ENABLE_TESTING)
-    find_package(Catch2 REQUIRED)
   endif()
 endif()
 
