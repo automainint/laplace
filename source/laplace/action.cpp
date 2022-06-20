@@ -19,7 +19,7 @@ namespace laplace {
   auto action::setup(impact_generator gen) const noexcept -> action {
     if (is_error())
       return *this;
-    
+
     auto a        = action { *this };
     a.m_generator = std::move(gen);
     return a;
@@ -37,8 +37,20 @@ namespace laplace {
     return a;
   }
 
-  auto action::run() const noexcept -> coro::generator<impact> {
-    return !is_error() && m_generator ? m_generator() : _noop()();
+  auto action::set_self(entity const &self) const noexcept -> action {
+    auto a   = action { *this };
+    a.m_self = self;
+    return a;
+  }
+
+  auto action::run(entity self) const noexcept
+      -> coro::generator<impact> {
+    return !is_error() && m_generator ? m_generator(std::move(self))
+                                      : _noop()(std::move(self));
+  }
+
+  auto action::get_self() const noexcept -> entity {
+    return m_self;
   }
 
   auto action::_error() noexcept -> action {
@@ -48,6 +60,6 @@ namespace laplace {
   }
 
   auto action::_noop() noexcept -> impact_generator {
-    return []() -> coro::generator<impact> { co_return; };
+    return [](entity) -> coro::generator<impact> { co_return; };
   }
 }

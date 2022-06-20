@@ -58,7 +58,7 @@ namespace laplace::test {
 
     auto exe = execution {};
 
-    exe.queue(action {}.setup([&]() -> coro::generator<impact> {
+    exe.queue(action {}.setup([&](entity) -> coro::generator<impact> {
       called = true;
       co_return;
     }));
@@ -71,7 +71,7 @@ namespace laplace::test {
 
     auto exe = execution {};
 
-    exe.queue(action {}.setup([&]() -> coro::generator<impact> {
+    exe.queue(action {}.setup([&](entity) -> coro::generator<impact> {
       called = true;
       co_return;
     }));
@@ -80,5 +80,40 @@ namespace laplace::test {
     exe.join();
 
     REQUIRE(called);
+  }
+
+  TEST_CASE("Execution queue action and access default self") {
+    bool ok = false;
+
+    auto exe = execution {};
+
+    exe.queue(
+        action {}.setup([&](entity self) -> coro::generator<impact> {
+          ok = self.index_of(1) == index_undefined;
+          co_return;
+        }));
+
+    exe.schedule(1);
+    exe.join();
+
+    REQUIRE(ok);
+  }
+
+  TEST_CASE("Execution queue action and access custom self") {
+    bool ok = false;
+
+    auto exe = execution {};
+
+    exe.queue(action {}
+                  .set_self(entity {}.setup({ { .id = 1 } }))
+                  .setup([&](entity self) -> coro::generator<impact> {
+                    ok = self.index_of(1) == 0;
+                    co_return;
+                  }));
+
+    exe.schedule(1);
+    exe.join();
+
+    REQUIRE(ok);
   }
 }

@@ -4,6 +4,7 @@
 #ifndef LAPLACE_ACTION_H
 #define LAPLACE_ACTION_H
 
+#include "entity.h"
 #include "impact.h"
 #include "options.h"
 #include <coro/generator.h>
@@ -14,7 +15,8 @@ namespace laplace {
   public:
     static time_type const default_tick_duration;
 
-    using impact_generator = std::function<coro::generator<impact>()>;
+    using impact_generator =
+        std::function<coro::generator<impact>(entity self)>;
 
     [[nodiscard]] auto is_error() const noexcept -> bool;
 
@@ -27,8 +29,13 @@ namespace laplace {
     [[nodiscard]] auto set_tick_duration(
         time_type duration) const noexcept -> action;
 
-    [[nodiscard]] auto run() const noexcept
+    [[nodiscard]] auto set_self(entity const &self) const noexcept
+        -> action;
+
+    [[nodiscard]] auto run(entity self) const noexcept
         -> coro::generator<impact>;
+
+    [[nodiscard]] auto get_self() const noexcept -> entity;
 
   private:
     [[nodiscard]] static auto _error() noexcept -> action;
@@ -37,6 +44,7 @@ namespace laplace {
     bool             m_is_error      = false;
     time_type        m_tick_duration = default_tick_duration;
     impact_generator m_generator     = {};
+    entity           m_self          = {};
   };
 }
 

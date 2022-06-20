@@ -27,20 +27,20 @@ namespace laplace::test {
   }
 
   TEST_CASE("Action run default") {
-    auto run = action {}.run();
+    auto run = action {}.run({});
     run.resume();
     REQUIRE(run.is_done());
   }
-  
+
   TEST_CASE("Action setup and run") {
     bool called = false;
 
     auto run = action {}
-                   .setup([&]() -> coro::generator<impact> {
+                   .setup([&](entity) -> coro::generator<impact> {
                      called = true;
                      co_return;
                    })
-                   .run();
+                   .run({});
     run.resume();
 
     REQUIRE(called);
@@ -58,11 +58,11 @@ namespace laplace::test {
 
     auto run = action {}
                    .set_tick_duration(-1)
-                   .setup([&]() -> coro::generator<impact> {
+                   .setup([&](entity) -> coro::generator<impact> {
                      called = true;
                      co_return;
                    })
-                   .run();
+                   .run({});
     run.resume();
 
     REQUIRE(!called);
@@ -72,12 +72,12 @@ namespace laplace::test {
     bool called = false;
 
     auto run = action {}
-                   .setup([&]() -> coro::generator<impact> {
+                   .setup([&](entity) -> coro::generator<impact> {
                      called = true;
                      co_return;
                    })
                    .set_tick_duration(-1)
-                   .run();
+                   .run({});
     run.resume();
 
     REQUIRE(!called);
