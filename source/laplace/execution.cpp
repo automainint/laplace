@@ -6,9 +6,7 @@
 #include <utility>
 
 namespace laplace {
-  using std::jthread, std::this_thread::sleep_for,
-      std::chrono::milliseconds, std::bad_alloc, std::system_error,
-      std::thread, std::min, std::max, std::function;
+  using std::thread, std::max;
 
   const ptrdiff_t execution::default_thread_count = 3;
   const ptrdiff_t execution::overthreading_limit  = 8;
