@@ -13,17 +13,13 @@ namespace laplace {
   overload(types_...) -> overload<types_...>;
 
   state::state() noexcept {
-    m_random.seed(std::random_device()());
+    m_random.seed(std::random_device {}());
   }
 
-  auto state::seed(int_type seed_value) const noexcept -> state {
+  auto state::set_seed(int_type seed) const noexcept -> state {
     auto s = state { *this };
-    s.m_random.seed(seed_value);
+    s.m_random.seed(seed);
     return s;
-  }
-
-  auto state::is_error() const noexcept -> bool {
-    return false;
   }
 
   auto state::get_integer(ptrdiff_t id, ptrdiff_t index,
@@ -41,6 +37,9 @@ namespace laplace {
         overload {
             [&](noop const &i) { return true; },
             [&](tick_continue const &i) { return false; },
+            [&](integer_reserve const &i) {
+              return m_integers.reserve(i.count);
+            },
             [&](integer_reallocate const &i) {
               return m_integers.reallocate(i.id, i.size);
             },
@@ -57,12 +56,15 @@ namespace laplace {
             [&](integer_add const &i) {
               return m_integers.add(i.id, i.index, i.delta);
             },
+            [&](byte_reserve const &i) {
+              return m_bytes.reserve(i.count);
+            },
             [&](byte_reallocate const &i) {
               return m_bytes.reallocate(i.id, i.size);
             },
             [&](byte_allocate const &i) {
-              return m_bytes.set(i.return_id, i.return_index,
-                                 m_bytes.allocate(i.size));
+              return m_integers.set(i.return_id, i.return_index,
+                                    m_bytes.allocate(i.size));
             },
             [&](byte_deallocate const &i) {
               return m_bytes.deallocate(i.id);

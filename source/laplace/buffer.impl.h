@@ -11,13 +11,14 @@
 
 namespace laplace {
   using std::bad_alloc, std::numeric_limits,
-      std::memory_order_relaxed, std::min;
+      std::memory_order_relaxed, std::min, std::max;
 
   template <typename int_, atomic_integer atomic_int_>
   basic_buffer<int_, atomic_int_>::basic_buffer(
       basic_buffer const &buf) noexcept :
       m_is_error(buf.m_is_error),
-      m_chunk_size(buf.m_chunk_size), m_next_block(buf.m_next_block),
+      m_chunk_size(buf.m_chunk_size), m_reserved(buf.m_reserved),
+      m_next_block(buf.m_next_block),
       m_next_chunk(buf.m_next_chunk.load(memory_order_relaxed)),
       m_blocks(buf.m_blocks), m_values(buf.m_values) { }
 
@@ -26,6 +27,7 @@ namespace laplace {
       basic_buffer const &buf) noexcept -> basic_buffer & {
     m_is_error   = buf.m_is_error;
     m_chunk_size = buf.m_chunk_size;
+    m_reserved   = buf.m_reserved;
     m_next_block = buf.m_next_block;
     m_next_chunk.store(buf.m_next_chunk.load(memory_order_relaxed),
                        memory_order_relaxed);
@@ -71,6 +73,28 @@ namespace laplace {
   }
 
   template <typename int_, atomic_integer atomic_int_>
+  auto basic_buffer<int_, atomic_int_>::reserve(
+      ptrdiff_t count) noexcept -> bool {
+    if (is_error())
+      return false;
+    if (count < 0)
+      return false;
+
+    if (m_blocks.size() < count) {
+      try {
+        m_blocks.resize(count, index_undefined);
+      } catch (bad_alloc &) { return false; }
+    }
+
+    m_reserved   = count;
+    m_next_block = max(m_next_block, count);
+    while (m_next_block < m_blocks.size() &&
+           m_blocks[m_next_block] != index_undefined)
+      ++m_next_block;
+    return true;
+  }
+
+  template <typename int_, atomic_integer atomic_int_>
   auto basic_buffer<int_, atomic_int_>::allocate(
       ptrdiff_t size) noexcept -> ptrdiff_t {
     if (is_error())
@@ -85,7 +109,7 @@ namespace laplace {
     auto const block = m_next_block;
     if (block >= m_blocks.size()) {
       try {
-        m_blocks.resize(block + 1);
+        m_blocks.resize(block + 1, index_undefined);
       } catch (bad_alloc &) {
         _free(offset);
         return id_undefined;
@@ -119,7 +143,7 @@ namespace laplace {
 
     if (block >= m_blocks.size()) {
       try {
-        m_blocks.resize(block + 1);
+        m_blocks.resize(block + 1, index_undefined);
       } catch (bad_alloc &) {
         _free(offset);
         return false;
@@ -148,7 +172,7 @@ namespace laplace {
     _free(m_blocks[block]);
 
     m_blocks[block] = index_undefined;
-    m_next_block    = min(m_next_block, block);
+    m_next_block    = max(m_reserved, min(m_next_block, block));
     return true;
   }
 

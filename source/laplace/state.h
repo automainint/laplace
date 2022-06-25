@@ -14,10 +14,8 @@ namespace laplace {
   public:
     state() noexcept;
 
-    [[nodiscard]] auto seed(int_type seed_value) const noexcept
+    [[nodiscard]] auto set_seed(int_type seed) const noexcept
         -> state;
-
-    [[nodiscard]] auto is_error() const noexcept -> bool;
 
     [[nodiscard]] auto get_integer(ptrdiff_t id, ptrdiff_t index,
                                    int_type def) const noexcept

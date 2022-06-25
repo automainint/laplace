@@ -12,6 +12,10 @@ namespace laplace {
   struct noop { };
   struct tick_continue { };
 
+  struct integer_reserve {
+    ptrdiff_t count;
+  };
+
   struct integer_reallocate {
     ptrdiff_t id;
     ptrdiff_t size;
@@ -37,6 +41,10 @@ namespace laplace {
     ptrdiff_t id;
     ptrdiff_t index;
     int_type  delta;
+  };
+
+  struct byte_reserve {
+    ptrdiff_t count;
   };
 
   struct byte_reallocate {
@@ -75,9 +83,10 @@ namespace laplace {
   };
 
   using impact = std::variant<
-      noop, tick_continue, integer_reallocate, integer_allocate,
-      integer_deallocate, integer_set, integer_add, byte_reallocate,
-      byte_allocate, byte_deallocate, byte_set, byte_add, random>;
+      noop, tick_continue, integer_reserve, integer_reallocate,
+      integer_allocate, integer_deallocate, integer_set, integer_add,
+      byte_reserve, byte_reallocate, byte_allocate, byte_deallocate,
+      byte_set, byte_add, random>;
 }
 
 #endif

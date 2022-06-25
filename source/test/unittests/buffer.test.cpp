@@ -66,6 +66,32 @@ namespace laplace::test {
     REQUIRE(buf.reallocate(id, 100));
   }
 
+  TEST_CASE("buffer reserve and allocate") {
+    auto      buf      = buffer {};
+    ptrdiff_t reserved = 42;
+    REQUIRE(buf.reserve(reserved));
+    REQUIRE(buf.allocate(10) == reserved);
+  }
+
+  TEST_CASE("buffer reserve, reallocate and allocate") {
+    auto      buf      = buffer {};
+    ptrdiff_t reserved = 42;
+    ptrdiff_t id       = 1;
+    REQUIRE(buf.reserve(reserved));
+    REQUIRE(buf.reallocate(id, 10));
+    REQUIRE(buf.allocate(10) == reserved);
+  }
+
+  TEST_CASE("buffer reserve, deallocate and allocate") {
+    auto      buf      = buffer {};
+    ptrdiff_t reserved = 42;
+    ptrdiff_t id       = 1;
+    REQUIRE(buf.reserve(reserved));
+    REQUIRE(buf.reallocate(id, 10));
+    REQUIRE(buf.deallocate(id));
+    REQUIRE(buf.allocate(10) == reserved);
+  }
+
   TEST_CASE("buffer deallocate") {
     auto buf = buffer {};
     REQUIRE(buf.deallocate(buf.allocate(10)));

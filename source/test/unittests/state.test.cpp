@@ -6,7 +6,7 @@
 
 namespace laplace {
   TEST_CASE("create state") {
-    REQUIRE(!state {}.is_error());
+    std::ignore = state {};
   }
 
   TEST_CASE("state apply noop") {
@@ -37,6 +37,27 @@ namespace laplace {
     auto id = s.get_integer(ret, 0, -1);
     REQUIRE(id != -1);
     REQUIRE(s.get_integer(id, 0, -1) == 0);
+  }
+
+  TEST_CASE("state apply reserve int and reallocate") {
+    auto s  = state {};
+    auto id = ptrdiff_t { 0 };
+    REQUIRE(s.apply(integer_reserve { 10 }));
+    REQUIRE(s.apply(integer_reallocate { id, 1 }));
+    REQUIRE(s.get_integer(id, 0, -1) == 0);
+  }
+
+  TEST_CASE("state apply reserve int and allocate") {
+    auto      s        = state {};
+    ptrdiff_t ret      = 0;
+    ptrdiff_t reserved = 10;
+    REQUIRE(s.apply(integer_reserve { reserved }));
+    REQUIRE(s.apply(integer_reallocate { ret, 2 }));
+    REQUIRE(s.apply(integer_allocate { 1, ret, 0 }));
+    REQUIRE(s.apply(integer_allocate { 1, ret, 1 }));
+    while (s.adjust()) { }
+    REQUIRE(s.get_integer(ret, 0, -1) == reserved);
+    REQUIRE(s.get_integer(ret, 1, -1) == reserved + 1);
   }
 
   TEST_CASE("state apply allocate int, set and get") {
@@ -106,6 +127,27 @@ namespace laplace {
     REQUIRE(s.get_byte(id, 0, -1) == 42);
   }
 
+  TEST_CASE("state apply reserve byte and reallocate") {
+    auto s  = state {};
+    auto id = ptrdiff_t { 0 };
+    REQUIRE(s.apply(byte_reserve { 10 }));
+    REQUIRE(s.apply(byte_reallocate { id, 1 }));
+    REQUIRE(s.get_byte(id, 0, -1) == 0);
+  }
+
+  TEST_CASE("state apply reserve byte and allocate") {
+    auto      s        = state {};
+    ptrdiff_t ret      = 0;
+    ptrdiff_t reserved = 10;
+    REQUIRE(s.apply(integer_reallocate { ret, 2 }));
+    REQUIRE(s.apply(byte_reserve { reserved }));
+    REQUIRE(s.apply(byte_allocate { 1, ret, 0 }));
+    REQUIRE(s.apply(byte_allocate { 1, ret, 1 }));
+    while (s.adjust()) { }
+    REQUIRE(s.get_integer(ret, 0, -1) == reserved);
+    REQUIRE(s.get_integer(ret, 1, -1) == reserved + 1);
+  }
+
   TEST_CASE("state deallocate byte") {
     auto s  = state {};
     auto id = ptrdiff_t { 0 };
@@ -137,12 +179,12 @@ namespace laplace {
   }
 
   TEST_CASE("state seed") {
-    REQUIRE(!state {}.seed(42).is_error());
+    std::ignore = state {}.set_seed(42);
   }
 
   TEST_CASE("state random with equal seed") {
-    auto foo  = state {}.seed(42);
-    auto bar  = state {}.seed(42);
+    auto foo  = state {}.set_seed(42);
+    auto bar  = state {}.set_seed(42);
     auto id   = ptrdiff_t { 0 };
     auto size = ptrdiff_t { 1000 };
     REQUIRE(foo.apply(integer_reallocate { id, size }));
@@ -158,8 +200,8 @@ namespace laplace {
   }
 
   TEST_CASE("state random with different seed") {
-    auto foo  = state {}.seed(42);
-    auto bar  = state {}.seed(43);
+    auto foo  = state {}.set_seed(42);
+    auto bar  = state {}.set_seed(43);
     auto id   = ptrdiff_t { 0 };
     auto size = ptrdiff_t { 1000 };
     REQUIRE(foo.apply(integer_reallocate { id, size }));
