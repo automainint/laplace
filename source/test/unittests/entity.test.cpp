@@ -5,66 +5,66 @@
 #include <catch2/catch.hpp>
 
 namespace laplace::test {
-  TEST_CASE("Create entity") {
+  TEST_CASE("create entity") {
     REQUIRE(!entity {}.is_error());
   }
 
-  TEST_CASE("Entity size is zero by default") {
+  TEST_CASE("entity size is zero by default") {
     REQUIRE(entity {}.get_size() == 0);
   }
 
-  TEST_CASE("Entity default id") {
+  TEST_CASE("entity default id") {
     REQUIRE(entity {}.get_id() == id_undefined);
   }
 
-  TEST_CASE("Entity set id") {
+  TEST_CASE("entity set id") {
     REQUIRE(entity {}.set_id(42).get_id() == 42);
   }
 
-  TEST_CASE("Entity setup fields") {
+  TEST_CASE("entity setup fields") {
     REQUIRE(entity {}.setup({}).get_size() == 0);
   }
 
-  TEST_CASE("Entity setup 3 fields") {
+  TEST_CASE("entity setup 3 fields") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 2 }, { .id = 3 } })
                 .get_size() == 3);
   }
 
-  TEST_CASE("Entity setup twice") {
+  TEST_CASE("entity setup twice") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 2 } })
                 .setup({ { .id = 3 }, { .id = 4 }, { .id = 5 } })
                 .get_size() == 5);
   }
 
-  TEST_CASE("Entity setup and get index") {
+  TEST_CASE("entity setup and get index") {
     REQUIRE(entity {}.setup({ { .id = 42 } }).index_of(42) == 0);
   }
 
-  TEST_CASE("Entity setup 2 fields and get index") {
+  TEST_CASE("entity setup 2 fields and get index") {
     REQUIRE(
         entity {}.setup({ { .id = 1 }, { .id = 42 } }).index_of(42) ==
         1);
   }
 
-  TEST_CASE("Entity get index may fail") {
+  TEST_CASE("entity get index may fail") {
     REQUIRE(entity {}.index_of(42) == index_undefined);
   }
 
-  TEST_CASE("Entity setup unsorted") {
+  TEST_CASE("entity setup unsorted") {
     REQUIRE(entity {}
                 .setup({ { .id = 3 }, { .id = 2 }, { .id = 1 } })
                 .index_of(1) == 0);
   }
 
-  TEST_CASE("Entity setup repeating will fail") {
+  TEST_CASE("entity setup repeating will fail") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 2 }, { .id = 1 } })
                 .is_error());
   }
 
-  TEST_CASE("Entity setup twice with repeating") {
+  TEST_CASE("entity setup twice with repeating") {
     auto e = entity {}
                  .setup({ { .id = 1 }, { .id = 2 } })
                  .setup({ { .id = 1 }, { .id = 3 }, { .id = 4 } });
@@ -76,7 +76,7 @@ namespace laplace::test {
     REQUIRE(e.index_of(4) == 3);
   }
 
-  TEST_CASE("Entity propagate error") {
+  TEST_CASE("entity propagate error") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 1 } })
                 .setup({ { .id = 42 } })
@@ -87,7 +87,7 @@ namespace laplace::test {
                 .is_error());
   }
 
-  /*TEST_CASE("Entity constexpr index of") {
+  /*TEST_CASE("entity constexpr index of") {
     constexpr auto index =
         entity {}.setup({ { .id = 42 } }).index_of(42);
     REQUIRE(index == 0);

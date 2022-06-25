@@ -4,19 +4,17 @@
 #include "../../laplace/action.h"
 #include <catch2/catch.hpp>
 
-#include <iostream>
-
 namespace laplace::test {
-  TEST_CASE("Create action") {
+  TEST_CASE("create action") {
     REQUIRE(!action {}.is_error());
   }
 
-  TEST_CASE("Action default tick duration") {
+  TEST_CASE("action default tick duration") {
     REQUIRE(action {}.get_tick_duration() ==
             action::default_tick_duration);
   }
 
-  TEST_CASE("Action set tick duration") {
+  TEST_CASE("action set tick duration") {
     REQUIRE(action {}.set_tick_duration(42).get_tick_duration() ==
             42);
   }
@@ -26,13 +24,13 @@ namespace laplace::test {
     REQUIRE(action {}.set_tick_duration(-1).is_error());
   }
 
-  TEST_CASE("Action run default") {
+  TEST_CASE("action run default") {
     auto run = action {}.run({});
     run.resume();
     REQUIRE(run.is_done());
   }
 
-  TEST_CASE("Action setup and run") {
+  TEST_CASE("action setup and run") {
     bool called = false;
 
     auto run = action {}
@@ -46,14 +44,14 @@ namespace laplace::test {
     REQUIRE(called);
   }
 
-  TEST_CASE("Action propagate error") {
+  TEST_CASE("action propagate error") {
     REQUIRE(action {}
                 .set_tick_duration(-1)
                 .set_tick_duration(1)
                 .is_error());
   }
 
-  TEST_CASE("Action propagate error and run") {
+  TEST_CASE("action propagate error and run") {
     bool called = false;
 
     auto run = action {}
@@ -68,7 +66,7 @@ namespace laplace::test {
     REQUIRE(!called);
   }
 
-  TEST_CASE("Action setup first, propagate error and run") {
+  TEST_CASE("action setup first, propagate error and run") {
     bool called = false;
 
     auto run = action {}

@@ -17,7 +17,7 @@ namespace laplace {
   basic_buffer<int_, atomic_int_>::basic_buffer(
       basic_buffer const &buf) noexcept :
       m_is_error(buf.m_is_error),
-      m_chunk_size(buf.m_chunk_size),
+      m_chunk_size(buf.m_chunk_size), m_next_block(buf.m_next_block),
       m_next_chunk(buf.m_next_chunk.load(memory_order_relaxed)),
       m_blocks(buf.m_blocks), m_values(buf.m_values) { }
 
@@ -26,6 +26,7 @@ namespace laplace {
       basic_buffer const &buf) noexcept -> basic_buffer & {
     m_is_error   = buf.m_is_error;
     m_chunk_size = buf.m_chunk_size;
+    m_next_block = buf.m_next_block;
     m_next_chunk.store(buf.m_next_chunk.load(memory_order_relaxed),
                        memory_order_relaxed);
     m_blocks = buf.m_blocks;
@@ -77,31 +78,56 @@ namespace laplace {
     if (size <= 0)
       return id_undefined;
 
-    auto offset = 0;
-
-    for (; offset < m_values.size();
-         offset += m_values[offset].offset) {
-      if (m_values[offset].empty && m_values[offset].offset >= size)
-        break;
-    }
-
-    if (size >= numeric_limits<ptrdiff_t>::max() - offset)
+    auto const offset = _alloc(size);
+    if (offset == index_undefined)
       return id_undefined;
 
-    if (offset >= m_values.size()) {
+    auto const block = m_next_block;
+    if (block >= m_blocks.size()) {
       try {
-        m_values.resize(offset + size);
-      } catch (bad_alloc &) { return id_undefined; }
+        m_blocks.resize(block + 1);
+      } catch (bad_alloc &) {
+        _free(offset);
+        return id_undefined;
+      }
     }
+    m_blocks[block] = offset;
 
-    for (auto i = 0; i < size; ++i) {
-      m_values[offset + i].empty  = false;
-      m_values[offset + i].offset = size - i;
-    }
+    while (m_next_block < m_blocks.size() &&
+           m_blocks[m_next_block] != index_undefined)
+      ++m_next_block;
 
-    auto block = static_cast<ptrdiff_t>(m_blocks.size());
-    m_blocks.push_back(offset);
     return block;
+  }
+
+  template <typename int_, atomic_integer atomic_int_>
+  auto basic_buffer<int_, atomic_int_>::reallocate(
+      ptrdiff_t block, ptrdiff_t size) noexcept -> bool {
+    if (is_error())
+      return false;
+    if (block < 0)
+      return false;
+    if (size <= 0)
+      return false;
+
+    if (block < m_blocks.size() && m_blocks[block] != index_undefined)
+      _free(m_blocks[block]);
+
+    auto const offset = _alloc(size);
+    if (offset == index_undefined)
+      return false;
+
+    if (block >= m_blocks.size()) {
+      try {
+        m_blocks.resize(block + 1);
+      } catch (bad_alloc &) {
+        _free(offset);
+        return false;
+      }
+    }
+
+    m_blocks[block] = offset;
+    return true;
   }
 
   template <typename int_, atomic_integer atomic_int_>
@@ -111,18 +137,13 @@ namespace laplace {
       return false;
     if (block < 0 || block >= m_blocks.size())
       return false;
-    auto begin = m_blocks[block];
-    auto end   = begin;
-    while (end < m_values.size()) {
-      end += m_values[end].offset;
-      if (end < m_values.size() && !m_values[end].empty)
-        break;
-    }
-    for (auto i = begin; i < end; ++i) {
-      m_values[i].empty  = true;
-      m_values[i].offset = end - i;
-    }
-    m_blocks.erase(m_blocks.begin() + block);
+    if (m_blocks[block] == index_undefined)
+      return false;
+
+    _free(m_blocks[block]);
+
+    m_blocks[block] = index_undefined;
+    m_next_block    = min(m_next_block, block);
     return true;
   }
 
@@ -207,6 +228,50 @@ namespace laplace {
     auto result       = basic_buffer<int_, atomic_int_> {};
     result.m_is_error = true;
     return result;
+  }
+
+  template <typename int_, atomic_integer atomic_int_>
+  auto basic_buffer<int_, atomic_int_>::_alloc(
+      ptrdiff_t size) noexcept -> ptrdiff_t {
+    auto offset = ptrdiff_t {};
+
+    for (; offset < m_values.size();
+         offset += m_values[offset].offset) {
+      if (m_values[offset].empty && m_values[offset].offset >= size)
+        break;
+    }
+
+    if (size >= numeric_limits<ptrdiff_t>::max() - offset)
+      return index_undefined;
+
+    if (offset >= m_values.size()) {
+      try {
+        m_values.resize(offset + size);
+      } catch (bad_alloc &) { return index_undefined; }
+    }
+
+    for (auto i = 0; i < size; ++i) {
+      m_values[offset + i].empty  = false;
+      m_values[offset + i].offset = size - i;
+    }
+
+    return offset;
+  }
+
+  template <typename int_, atomic_integer atomic_int_>
+  void basic_buffer<int_, atomic_int_>::_free(
+      ptrdiff_t offset) noexcept {
+    auto begin = offset;
+    auto end   = begin;
+    while (end < m_values.size()) {
+      end += m_values[end].offset;
+      if (end < m_values.size() && !m_values[end].empty)
+        break;
+    }
+    for (auto i = begin; i < end; ++i) {
+      m_values[i].empty  = true;
+      m_values[i].offset = end - i;
+    }
   }
 
   template <typename int_, atomic_integer atomic_int_>

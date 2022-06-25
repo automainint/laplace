@@ -47,6 +47,8 @@ namespace laplace {
     [[nodiscard]] auto get_size() const noexcept -> ptrdiff_t;
 
     [[nodiscard]] auto allocate(ptrdiff_t size) noexcept -> ptrdiff_t;
+    [[nodiscard]] auto reallocate(ptrdiff_t block,
+                                  ptrdiff_t size) noexcept -> bool;
     [[nodiscard]] auto deallocate(ptrdiff_t block) noexcept -> bool;
 
     [[nodiscard]] auto get(ptrdiff_t block, ptrdiff_t index,
@@ -62,6 +64,9 @@ namespace laplace {
   private:
     [[nodiscard]] auto _error() const noexcept
         -> basic_buffer<int_, atomic_int_>;
+
+    [[nodiscard]] auto _alloc(ptrdiff_t size) noexcept -> ptrdiff_t;
+    void               _free(ptrdiff_t offset) noexcept;
 
     struct row {
       bool        empty  = true;
@@ -79,6 +84,7 @@ namespace laplace {
 
     bool                   m_is_error   = false;
     ptrdiff_t              m_chunk_size = default_chunk_size;
+    ptrdiff_t              m_next_block = 0;
     std::atomic<ptrdiff_t> m_next_chunk = 0;
     std::vector<ptrdiff_t> m_blocks;
     std::vector<row>       m_values;

@@ -3,21 +3,17 @@
 
 #include "execution.h"
 
-#include <mutex>
-#include <stdexcept>
+#include <utility>
 
 namespace laplace {
   using std::jthread, std::this_thread::sleep_for,
       std::chrono::milliseconds, std::bad_alloc, std::system_error,
-      std::unique_lock, std::shared_lock, std::thread, std::min,
-      std::max, std::function;
+      std::thread, std::min, std::max, std::function;
 
   const ptrdiff_t execution::default_thread_count = 3;
   const ptrdiff_t execution::overthreading_limit  = 8;
 
-  execution::execution() noexcept {
-    _init_threads(default_thread_count);
-  }
+  execution::execution() noexcept { }
 
   execution::execution(execution const &exe) noexcept {
     _assign(exe);
@@ -27,22 +23,18 @@ namespace laplace {
     _assign(std::move(exe));
   }
 
-  execution::~execution() noexcept {
-    _set_done(true);
-  }
+  execution::~execution() noexcept { }
 
   auto execution::operator=(execution const &exe) noexcept
       -> execution & {
     if (this == &exe)
       return *this;
 
-    _cleanup();
     _assign(exe);
     return *this;
   }
 
   auto execution::operator=(execution &&exe) noexcept -> execution & {
-    _cleanup();
     _assign(std::move(exe));
     return *this;
   }
@@ -52,7 +44,7 @@ namespace laplace {
   }
 
   auto execution::get_thread_count() const noexcept -> ptrdiff_t {
-    return static_cast<signed long long>(m_threads.size());
+    return m_thread_count;
   }
 
   auto execution::set_thread_count(
@@ -66,8 +58,8 @@ namespace laplace {
             max<ptrdiff_t>(1, thread::hardware_concurrency()))
       return _error();
 
-    auto exe = execution {};
-    exe._init_threads(thread_count);
+    auto exe           = execution {};
+    exe.m_thread_count = thread_count;
     return exe;
   }
 
@@ -77,72 +69,28 @@ namespace laplace {
     return exe;
   }
 
-  auto execution::_is_done() noexcept -> bool {
-    auto _sl = shared_lock { m_mutex };
-    return m_is_done;
-  }
-
-  void execution::_init_threads(
-      signed long long thread_count) noexcept {
-    try {
-      _set_done(true);
-
-      for (auto &thread : m_threads)
-        if (thread.joinable())
-          thread.join();
-
-      _set_done(false);
-
-      m_threads.resize(min<ptrdiff_t>(thread_count,
-                                      thread::hardware_concurrency() *
-                                          overthreading_limit));
-
-      for (auto &thread : m_threads)
-        thread = jthread { [&]() {
-          while (!_is_done()) sleep_for(milliseconds(1));
-        } };
-
-    } catch (bad_alloc &) { _set_error(); } catch (system_error &) {
-      _set_error();
-    }
-  }
-
   void execution::_assign(execution const &exe) noexcept {
-    if (exe.is_error()) {
-      _set_error();
-      return;
-    }
-
-    _init_threads(exe.get_thread_count());
+    m_is_error     = exe.m_is_error;
+    m_is_done      = exe.m_is_done;
+    m_thread_count = exe.m_thread_count;
+    m_action       = exe.m_action;
   }
 
   void execution::_assign(execution &&exe) noexcept {
-    if (exe.is_error()) {
-      _set_error();
-      return;
-    }
-
-    _init_threads(exe.get_thread_count());
+    m_is_error     = exe.m_is_error;
+    m_is_done      = exe.m_is_done;
+    m_thread_count = exe.m_thread_count;
+    m_action       = std::move(exe.m_action);
 
     exe._set_error();
   }
 
-  void execution::_cleanup() noexcept {
-    _set_done(true);
-  }
-
-  void execution::_set_done(bool is_done) noexcept {
-    auto _ul  = unique_lock { m_mutex };
-    m_is_done = is_done;
-  }
-
   void execution::_set_error() noexcept {
-    _set_done(true);
     m_is_error = true;
   }
 
   void execution::queue(action a) noexcept {
-    m_action = a;
+    m_action = std::move(a);
   }
 
   void execution::schedule(time_type time) noexcept {

@@ -9,69 +9,88 @@
 namespace laplace::test {
   using std::numeric_limits, std::thread, std::vector;
 
-  TEST_CASE("Create buffer") {
+  TEST_CASE("create buffer") {
     REQUIRE(!buffer {}.is_error());
   }
 
-  TEST_CASE("Buffer get chunk size") {
+  TEST_CASE("buffer get chunk size") {
     REQUIRE(buffer {}.get_chunk_size() == buffer::default_chunk_size);
   }
 
-  TEST_CASE("Buffer set chunk size") {
+  TEST_CASE("buffer set chunk size") {
     REQUIRE(buffer {}.set_chunk_size(10).get_chunk_size() == 10);
   }
 
-  TEST_CASE("Buffer set chunk size may fail") {
+  TEST_CASE("buffer set chunk size may fail") {
     REQUIRE(buffer {}.set_chunk_size(-1).is_error());
   }
 
-  TEST_CASE("Buffer propagate error") {
+  TEST_CASE("buffer propagate error") {
     REQUIRE(
         buffer {}.set_chunk_size(-1).set_chunk_size(10).is_error());
   }
 
-  TEST_CASE("Buffer allocate") {
+  TEST_CASE("buffer allocate") {
     REQUIRE(buffer {}.allocate(10) != id_undefined);
   }
 
-  TEST_CASE("Buffer allocate may fail") {
+  TEST_CASE("buffer allocate may fail") {
     REQUIRE(buffer {}.allocate(-1) == id_undefined);
     REQUIRE(buffer {}.allocate(0) == id_undefined);
     REQUIRE(buffer {}.allocate(numeric_limits<ptrdiff_t>::max()) ==
-            -1);
+            id_undefined);
     REQUIRE(buffer {}.set_chunk_size(-1).allocate(10) ==
             id_undefined);
   }
 
-  TEST_CASE("Buffer deallocate") {
+  TEST_CASE("buffer reallocate") {
+    REQUIRE(buffer {}.reallocate(42, 10));
+  }
+
+  TEST_CASE("buffer reallocate may fail") {
+    REQUIRE(!buffer {}.reallocate(id_undefined, 10));
+    REQUIRE(!buffer {}.reallocate(42, -1));
+    REQUIRE(!buffer {}.reallocate(42, 0));
+    REQUIRE(
+        !buffer {}.reallocate(42, numeric_limits<ptrdiff_t>::max()));
+    REQUIRE(!buffer {}.set_chunk_size(-1).reallocate(42, 10));
+  }
+
+  TEST_CASE("buffer allocate and reallocate") {
+    auto buf = buffer {};
+    auto id  = buf.allocate(10);
+    REQUIRE(buf.reallocate(id, 100));
+  }
+
+  TEST_CASE("buffer deallocate") {
     auto buf = buffer {};
     REQUIRE(buf.deallocate(buf.allocate(10)));
   }
 
-  TEST_CASE("Buffer deallocate invalid") {
+  TEST_CASE("buffer deallocate invalid") {
     REQUIRE(!buffer {}.deallocate(-1));
     REQUIRE(!buffer {}.deallocate(42));
   }
 
-  TEST_CASE("Buffer deallocate may fail") {
+  TEST_CASE("buffer deallocate may fail") {
     auto buf = buffer {}.set_chunk_size(-1);
     REQUIRE(!buf.deallocate(0));
   }
 
-  TEST_CASE("Buffer deallocate twice will fail") {
+  TEST_CASE("buffer deallocate twice will fail") {
     auto buf   = buffer {};
     auto block = buf.allocate(10);
     REQUIRE(buf.deallocate(block));
     REQUIRE(!buf.deallocate(block));
   }
 
-  TEST_CASE("Buffer get value") {
+  TEST_CASE("buffer get value") {
     auto buf   = buffer {};
     auto block = buf.allocate(10);
     REQUIRE(buf.get(block, 0, -1) == 0);
   }
 
-  TEST_CASE("Buffer get value may fail") {
+  TEST_CASE("buffer get value may fail") {
     auto buf   = buffer {};
     auto block = buf.allocate(10);
     REQUIRE(buf.get(-1, 0, 42) == 42);
@@ -81,14 +100,14 @@ namespace laplace::test {
     REQUIRE(buffer {}.set_chunk_size(-1).get(0, 0, 42) == 42);
   }
 
-  TEST_CASE("Buffer set value") {
+  TEST_CASE("buffer set value") {
     auto buf   = buffer {};
     auto block = buf.allocate(10);
     REQUIRE(buf.set(block, 0, 42));
     REQUIRE(buf.get(block, 0, -1) == 0);
   }
 
-  TEST_CASE("Buffer set value may fail") {
+  TEST_CASE("buffer set value may fail") {
     auto buf   = buffer {};
     auto block = buf.allocate(10);
     REQUIRE(!buf.set(-1, 0, 42));
@@ -98,7 +117,7 @@ namespace laplace::test {
     REQUIRE(!buffer {}.set_chunk_size(-1).set(0, 0, 42));
   }
 
-  TEST_CASE("Buffer set value and adjust") {
+  TEST_CASE("buffer set value and adjust") {
     auto buf   = buffer {};
     auto block = buf.allocate(10);
     REQUIRE(buf.set(block, 0, 42));
@@ -106,7 +125,17 @@ namespace laplace::test {
     REQUIRE(buf.get(block, 0, -1) == 42);
   }
 
-  TEST_CASE("Buffer add delta may fail") {
+  TEST_CASE("buffer set value, deallocate and get value") {
+    auto buf = buffer {};
+    auto foo = buf.allocate(1);
+    auto bar = buf.allocate(1);
+    REQUIRE(buf.set(bar, 0, 42));
+    REQUIRE(buf.deallocate(foo));
+    while (buf.adjust()) { }
+    REQUIRE(buf.get(bar, 0, -1) == 42);
+  }
+
+  TEST_CASE("buffer add delta may fail") {
     auto buf   = buffer {};
     auto block = buf.allocate(10);
     REQUIRE(!buf.add(-1, 0, 42));
@@ -116,7 +145,7 @@ namespace laplace::test {
     REQUIRE(!buffer {}.set_chunk_size(-1).add(0, 0, 42));
   }
 
-  TEST_CASE("Buffer add delta and adjust") {
+  TEST_CASE("buffer add delta and adjust") {
     auto buf   = buffer {};
     auto block = buf.allocate(10);
     REQUIRE(buf.add(block, 0, 42));
@@ -124,7 +153,7 @@ namespace laplace::test {
     REQUIRE(buf.get(block, 0, -1) == 42);
   }
 
-  TEST_CASE("Buffer add delta twice and adjust") {
+  TEST_CASE("buffer add delta twice and adjust") {
     auto buf   = buffer {};
     auto block = buf.allocate(10);
     REQUIRE(buf.add(block, 0, 20));
@@ -133,7 +162,7 @@ namespace laplace::test {
     REQUIRE(buf.get(block, 0, -1) == 42);
   }
 
-  TEST_CASE("Buffer set value and add delta and adjust") {
+  TEST_CASE("buffer set value and add delta and adjust") {
     auto buf   = buffer {};
     auto block = buf.allocate(10);
     REQUIRE(buf.set(block, 0, 20));
@@ -142,7 +171,7 @@ namespace laplace::test {
     REQUIRE(buf.get(block, 0, -1) == 42);
   }
 
-  TEST_CASE("Buffer adjust one chunk") {
+  TEST_CASE("buffer adjust one chunk") {
     auto buf   = buffer {}.set_chunk_size(100);
     auto block = buf.allocate(100);
     for (int i = 0; i < 100; ++i) std::ignore = buf.set(block, i, i);
@@ -152,12 +181,12 @@ namespace laplace::test {
     }
   }
 
-  TEST_CASE("Buffer adjust one chunk may fail") {
+  TEST_CASE("buffer adjust one chunk may fail") {
     auto buf = buffer {}.set_chunk_size(-1);
     REQUIRE(!buf.adjust());
   }
 
-  TEST_CASE("Buffer adjust by chunks") {
+  TEST_CASE("buffer adjust by chunks") {
     auto buf   = buffer {}.set_chunk_size(10);
     auto block = buf.allocate(100);
     for (int i = 0; i < 100; ++i) std::ignore = buf.set(block, i, i);
@@ -165,7 +194,7 @@ namespace laplace::test {
     for (int i = 0; i < 100; ++i) REQUIRE(buf.get(block, i, -1) == i);
   }
 
-  TEST_CASE("Buffer adjust by chunks twice") {
+  TEST_CASE("buffer adjust by chunks twice") {
     auto buf   = buffer {}.set_chunk_size(10);
     auto block = buf.allocate(100);
     for (int i = 0; i < 100; ++i) std::ignore = buf.set(block, i, i);
@@ -178,7 +207,7 @@ namespace laplace::test {
     }
   }
 
-  TEST_CASE("Buffer allocate two blocks") {
+  TEST_CASE("buffer allocate two blocks") {
     auto buf = buffer {};
     auto foo = buf.allocate(10);
     auto bar = buf.allocate(10);
@@ -187,7 +216,7 @@ namespace laplace::test {
     REQUIRE(foo != bar);
   }
 
-  TEST_CASE("Buffer fill two blocks") {
+  TEST_CASE("buffer fill two blocks") {
     auto buf = buffer {};
     auto foo = buf.allocate(10);
     auto bar = buf.allocate(10);
@@ -198,31 +227,31 @@ namespace laplace::test {
     REQUIRE(buf.get(bar, 0, -1) == 42);
   }
 
-  TEST_CASE("Buffer get size") {
+  TEST_CASE("buffer get size") {
     REQUIRE(buffer {}.get_size() == 0);
   }
 
-  TEST_CASE("Buffer size with 2 blocks") {
+  TEST_CASE("buffer size with 2 blocks") {
     auto buf    = buffer {};
     std::ignore = buf.allocate(20);
     std::ignore = buf.allocate(22);
     REQUIRE(buf.get_size() == 42);
   }
 
-  TEST_CASE("Buffer size after deallocate one") {
+  TEST_CASE("buffer size after deallocate one") {
     auto buf = buffer {};
     REQUIRE(buf.deallocate(buf.allocate(10)));
     REQUIRE(buf.get_size() == 10);
   }
 
-  TEST_CASE("Buffer size after deallocate and reallocate one") {
+  TEST_CASE("buffer size after deallocate and reallocate one") {
     auto buf = buffer {};
     REQUIRE(buf.deallocate(buf.allocate(10)));
     std::ignore = buf.allocate(10);
     REQUIRE(buf.get_size() == 10);
   }
 
-  TEST_CASE("Buffer deallocate efficiency") {
+  TEST_CASE("buffer deallocate efficiency") {
     auto buf    = buffer {};
     std::ignore = buf.allocate(10);
     REQUIRE(buf.deallocate(buf.allocate(10)));
@@ -230,7 +259,7 @@ namespace laplace::test {
     REQUIRE(buf.get_size() == 20);
   }
 
-  TEST_CASE("Buffer add delta concurrency") {
+  TEST_CASE("buffer add delta concurrency") {
     auto buf = buffer {};
     auto id  = buf.allocate(1);
 
@@ -250,7 +279,7 @@ namespace laplace::test {
     REQUIRE(buf.get(id, 0, -1) == 100);
   }
 
-  TEST_CASE("Buffer add delta concurrency harder") {
+  TEST_CASE("buffer add delta concurrency harder") {
     auto buf = buffer {};
     auto id  = buf.allocate(1);
 
@@ -270,7 +299,7 @@ namespace laplace::test {
     REQUIRE(buf.get(id, 0, -1) == 1000);
   }
 
-  TEST_CASE("Buffer adjust concurrency") {
+  TEST_CASE("buffer adjust concurrency") {
     auto buf = buffer {}.set_chunk_size(10);
     auto id  = buf.allocate(10000);
     for (int i = 0; i < 10000; i++) std::ignore = buf.set(id, i, i);
@@ -286,7 +315,7 @@ namespace laplace::test {
     }
   }
 
-  TEST_CASE("Buffer adjust concurrency harder") {
+  TEST_CASE("buffer adjust concurrency harder") {
     auto buf = buffer {}.set_chunk_size(1);
     auto id  = buf.allocate(10000);
     for (int i = 0; i < 10000; i++) std::ignore = buf.set(id, i, i);
@@ -300,5 +329,43 @@ namespace laplace::test {
     for (int i = 0; i < 10000; i++) {
       REQUIRE(buf.get(id, i, -1) == i);
     }
+  }
+
+  TEST_CASE("buffer create copy") {
+    auto foo = buffer {};
+    auto id  = foo.allocate(1);
+    REQUIRE(foo.set(id, 0, 42));
+    auto bar = foo;
+    while (bar.adjust()) { }
+    REQUIRE(bar.get(id, 0, -1) == 42);
+  }
+
+  TEST_CASE("buffer create move") {
+    auto foo = buffer {};
+    auto id  = foo.allocate(1);
+    REQUIRE(foo.set(id, 0, 42));
+    auto bar = std::move(foo);
+    while (bar.adjust()) { }
+    REQUIRE(bar.get(id, 0, -1) == 42);
+  }
+
+  TEST_CASE("buffer assign copy") {
+    auto foo = buffer {};
+    auto bar = buffer {};
+    auto id  = foo.allocate(1);
+    REQUIRE(foo.set(id, 0, 42));
+    bar = foo;
+    while (bar.adjust()) { }
+    REQUIRE(bar.get(id, 0, -1) == 42);
+  }
+
+  TEST_CASE("buffer assign move") {
+    auto foo = buffer {};
+    auto bar = buffer {};
+    auto id  = foo.allocate(1);
+    REQUIRE(foo.set(id, 0, 42));
+    bar = std::move(foo);
+    while (bar.adjust()) { }
+    REQUIRE(bar.get(id, 0, -1) == 42);
   }
 }

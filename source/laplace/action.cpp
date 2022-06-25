@@ -4,8 +4,6 @@
 #include "action.h"
 
 namespace laplace {
-  using std::function;
-
   time_type const action::default_tick_duration = 10;
 
   auto action::is_error() const noexcept -> bool {

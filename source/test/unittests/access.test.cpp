@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 
 namespace laplace::test {
-  TEST_CASE("Create access") {
+  TEST_CASE("create access") {
     std::ignore = access {};
   }
 }

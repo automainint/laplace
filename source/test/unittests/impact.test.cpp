@@ -5,7 +5,7 @@
 #include <catch2/catch.hpp>
 
 namespace laplace::test {
-  TEST_CASE("Create impact") {
+  TEST_CASE("create impact") {
     std::ignore = impact {};
   }
 }
