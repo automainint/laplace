@@ -7,7 +7,6 @@
 #include "options.h"
 #include <atomic>
 #include <concepts>
-#include <cstdint>
 #include <vector>
 
 namespace laplace {
@@ -90,8 +89,8 @@ namespace laplace {
     std::vector<row>       m_values;
   };
 
-  using buffer      = basic_buffer<value_type>;
-  using byte_buffer = basic_buffer<int8_t>;
+  using buffer      = basic_buffer<int_type>;
+  using byte_buffer = basic_buffer<byte_type>;
 }
 
 #endif

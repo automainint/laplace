@@ -127,6 +127,11 @@ namespace laplace {
     }
 
     m_blocks[block] = offset;
+
+    while (m_next_block < m_blocks.size() &&
+           m_blocks[m_next_block] != index_undefined)
+      ++m_next_block;
+
     return true;
   }
 
@@ -271,6 +276,8 @@ namespace laplace {
     for (auto i = begin; i < end; ++i) {
       m_values[i].empty  = true;
       m_values[i].offset = end - i;
+      m_values[i].value  = 0;
+      m_values[i].delta.store(0, memory_order_relaxed);
     }
   }
 

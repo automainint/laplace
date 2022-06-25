@@ -7,23 +7,35 @@
 #include "buffer.h"
 #include "impact.h"
 #include "options.h"
+#include <random>
 
 namespace laplace {
   class state {
   public:
+    state() noexcept;
+
+    [[nodiscard]] auto seed(int_type seed_value) const noexcept
+        -> state;
+
     [[nodiscard]] auto is_error() const noexcept -> bool;
+
+    [[nodiscard]] auto get_integer(ptrdiff_t id, ptrdiff_t index,
+                                   int_type def) const noexcept
+        -> int_type;
+
+    [[nodiscard]] auto get_byte(ptrdiff_t id, ptrdiff_t index,
+                                byte_type def) const noexcept
+        -> byte_type;
 
     [[nodiscard]] auto apply(impact const &i) noexcept -> bool;
 
-    [[nodiscard]] auto get_integer(ptrdiff_t id, ptrdiff_t index,
-                                   value_type def) const noexcept
-        -> value_type;
-
     [[nodiscard]] auto adjust() noexcept -> bool;
-    void adjust_done() noexcept;
+    void               adjust_done() noexcept;
 
   private:
-    buffer m_integers;
+    std::mt19937_64 m_random;
+    buffer          m_integers;
+    byte_buffer     m_bytes;
   };
 }
 

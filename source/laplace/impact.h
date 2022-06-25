@@ -10,6 +10,7 @@
 
 namespace laplace {
   struct noop { };
+  struct tick_continue { };
 
   struct integer_reallocate {
     ptrdiff_t id;
@@ -27,20 +28,56 @@ namespace laplace {
   };
 
   struct integer_set {
-    ptrdiff_t  id;
-    ptrdiff_t  index;
-    value_type value;
+    ptrdiff_t id;
+    ptrdiff_t index;
+    int_type  value;
   };
 
   struct integer_add {
-    ptrdiff_t  id;
-    ptrdiff_t  index;
-    value_type delta;
+    ptrdiff_t id;
+    ptrdiff_t index;
+    int_type  delta;
   };
 
-  using impact =
-      std::variant<noop, integer_reallocate, integer_allocate,
-                   integer_deallocate, integer_set, integer_add>;
+  struct byte_reallocate {
+    ptrdiff_t id;
+    ptrdiff_t size;
+  };
+
+  struct byte_allocate {
+    ptrdiff_t size;
+    ptrdiff_t return_id;
+    ptrdiff_t return_index;
+  };
+
+  struct byte_deallocate {
+    ptrdiff_t id;
+  };
+
+  struct byte_set {
+    ptrdiff_t id;
+    ptrdiff_t index;
+    byte_type value;
+  };
+
+  struct byte_add {
+    ptrdiff_t id;
+    ptrdiff_t index;
+    byte_type delta;
+  };
+
+  struct random {
+    int_type  min;
+    int_type  max;
+    ptrdiff_t return_id;
+    ptrdiff_t return_index;
+    ptrdiff_t return_size;
+  };
+
+  using impact = std::variant<
+      noop, tick_continue, integer_reallocate, integer_allocate,
+      integer_deallocate, integer_set, integer_add, byte_reallocate,
+      byte_allocate, byte_deallocate, byte_set, byte_add, random>;
 }
 
 #endif

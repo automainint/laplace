@@ -11,8 +11,8 @@ namespace laplace {
   class entity {
   public:
     struct field {
-      ptrdiff_t  id    = id_undefined;
-      value_type value = 0;
+      ptrdiff_t id    = id_undefined;
+      int_type  value = 0;
     };
 
     [[nodiscard]] auto is_error() const noexcept -> bool;

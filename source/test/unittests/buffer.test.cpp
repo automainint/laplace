@@ -9,8 +9,12 @@
 namespace laplace::test {
   using std::numeric_limits, std::thread, std::vector;
 
-  TEST_CASE("create buffer") {
+  TEST_CASE("create int buffer") {
     REQUIRE(!buffer {}.is_error());
+  }
+
+  TEST_CASE("create byte buffer") {
+    REQUIRE(!byte_buffer {}.is_error());
   }
 
   TEST_CASE("buffer get chunk size") {
@@ -133,6 +137,16 @@ namespace laplace::test {
     REQUIRE(buf.deallocate(foo));
     while (buf.adjust()) { }
     REQUIRE(buf.get(bar, 0, -1) == 42);
+  }
+
+  TEST_CASE("buffer set value, deallocate, allocate and get value") {
+    auto buf = buffer {};
+    auto id  = buf.allocate(1);
+    REQUIRE(buf.set(id, 0, 42));
+    while (buf.adjust()) { }
+    REQUIRE(buf.deallocate(id));
+    id = buf.allocate(1);
+    REQUIRE(buf.get(id, 0, -1) == 0);
   }
 
   TEST_CASE("buffer add delta may fail") {
@@ -315,7 +329,7 @@ namespace laplace::test {
     }
   }
 
-  TEST_CASE("buffer adjust concurrency harder") {
+  TEST_CASE("int buffer adjust concurrency harder") {
     auto buf = buffer {}.set_chunk_size(1);
     auto id  = buf.allocate(10000);
     for (int i = 0; i < 10000; i++) std::ignore = buf.set(id, i, i);
@@ -328,6 +342,23 @@ namespace laplace::test {
 
     for (int i = 0; i < 10000; i++) {
       REQUIRE(buf.get(id, i, -1) == i);
+    }
+  }
+
+  TEST_CASE("byte buffer adjust concurrency harder") {
+    auto buf = byte_buffer {}.set_chunk_size(1);
+    auto id  = buf.allocate(10000);
+    for (int i = 0; i < 10000; i++)
+      std::ignore = buf.set(id, i, static_cast<byte_type>(i % 128));
+
+    auto pool = vector<thread> {};
+    for (int i = 0; i < 10000; i++)
+      pool.emplace_back(
+          thread { [&]() { std::ignore = buf.adjust(); } });
+    for (auto &t : pool) t.join();
+
+    for (int i = 0; i < 10000; i++) {
+      REQUIRE(buf.get(id, i, -1) == static_cast<byte_type>(i % 128));
     }
   }
 
