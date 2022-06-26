@@ -97,14 +97,6 @@ namespace laplace::test {
                 .is_error());
   }
 
-  TEST_CASE("entity spawn without id") {
-    REQUIRE(entity {}
-                .setup({ { .id = 1 }, { .id = 2 } })
-                .spawn({ .return_id = 3, .return_index = 42 }) ==
-            impact { integer_allocate {
-                .size = 2, .return_id = 3, .return_index = 42 } });
-  }
-
   TEST_CASE("entity spawn with id") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 2 } })
@@ -118,7 +110,7 @@ namespace laplace::test {
             impact { integer_deallocate { .id = 42 } });
   }
 
-  TEST_CASE("entity set by id") {
+  TEST_CASE("entity set") {
     REQUIRE(
         entity {}
             .setup({ { .id = 1 }, { .id = 2 } })
@@ -127,16 +119,7 @@ namespace laplace::test {
         impact { integer_set { .id = 3, .index = 1, .value = 42 } });
   }
 
-  TEST_CASE("entity set by index") {
-    REQUIRE(
-        entity {}
-            .setup({ { .id = 1 }, { .id = 2 } })
-            .set_id(3)
-            .set_by_index(1, 42) ==
-        impact { integer_set { .id = 3, .index = 1, .value = 42 } });
-  }
-
-  TEST_CASE("entity get by id") {
+  TEST_CASE("entity get") {
     auto s      = state {};
     std::ignore = s.apply(integer_reallocate { .id = 0, .size = 1 });
     std::ignore = s.apply(
@@ -150,34 +133,52 @@ namespace laplace::test {
                 .get(7, -1) == 42);
   }
 
-  TEST_CASE("entity get by index") {
-    auto s      = state {};
-    std::ignore = s.apply(integer_reallocate { .id = 0, .size = 1 });
-    std::ignore = s.apply(
-        integer_set({ .id = 0, .index = 0, .value = 42 }));
-    while (s.adjust()) { }
+  TEST_CASE("entity add") {
+    REQUIRE(
+        entity {}
+            .setup({ { .id = 1 }, { .id = 2 } })
+            .set_id(3)
+            .add(2, 42) ==
+        impact { integer_add { .id = 3, .index = 1, .delta = 42 } });
+  }
 
+  TEST_CASE("entity random") {
     REQUIRE(entity {}
-                .setup({ { .id = 7 } })
-                .set_access(access { s })
-                .set_id(0)
-                .get_by_index(0, -1) == 42);
+                .setup({ { .id = 1 }, { .id = 2 } })
+                .set_id(3)
+                .random(2, 1, 100) ==
+            impact { random { .min          = 1,
+                              .max          = 100,
+                              .return_id    = 3,
+                              .return_index = 1,
+                              .return_size  = 1 } });
+  }
+
+  TEST_CASE("entity spawn to") {
+    REQUIRE(entity {}
+                .setup({ { .id = 1 }, { .id = 2 } })
+                .spawn_to({ entity {}
+                                .setup({ { .id = 42 } })
+                                .set_id(1)
+                                .point(42) }) ==
+            impact { integer_allocate {
+                .size = 2, .return_id = 1, .return_index = 0 } });
   }
 
   TEST_CASE("entity error impacts") {
     auto const error = entity {}.setup({ { .id = 1 }, { .id = 1 } });
-    REQUIRE(error.spawn({ .return_id = 0, .return_index = 0 }) ==
-            impact { noop {} });
     REQUIRE(error.spawn() == impact { noop {} });
     REQUIRE(error.remove() == impact { noop {} });
-    REQUIRE(error.set(0, 0) == impact { noop {} });
-    REQUIRE(error.set_by_index(0, 0) == impact { noop {} });
+    REQUIRE(error.set(1, 0) == impact { noop {} });
+    REQUIRE(error.add(1, 0) == impact { noop {} });
+    REQUIRE(error.random(1, 1, 100) == impact { noop {} });
+    REQUIRE(error.spawn_to({ .id = 0, .index = 0 }) ==
+            impact { noop {} });
   }
 
   TEST_CASE("entity error access") {
     auto const error = entity {}.setup({ { .id = 1 }, { .id = 1 } });
     REQUIRE(error.get(1, -1) == -1);
-    REQUIRE(error.get_by_index(0, -1) == -1);
   }
 
   /*TEST_CASE("entity constexpr index of") {

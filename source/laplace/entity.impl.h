@@ -83,16 +83,6 @@ namespace laplace {
     return e;
   }
 
-  inline auto entity::spawn(spawn_options options) const noexcept
-      -> impact {
-    if (is_error())
-      return noop {};
-
-    return integer_allocate { .size         = get_size(),
-                              .return_id    = options.return_id,
-                              .return_index = options.return_index };
-  }
-
   inline auto entity::spawn() const noexcept -> impact {
     if (is_error())
       return noop {};
@@ -107,6 +97,13 @@ namespace laplace {
     return integer_deallocate { .id = get_id() };
   }
 
+  inline auto entity::get(ptrdiff_t value_id,
+                          int_type  def) const noexcept -> int_type {
+    if (is_error())
+      return def;
+    return m_access.get_integer(get_id(), index_of(value_id), def);
+  }
+
   inline auto entity::set(ptrdiff_t value_id,
                           int_type  value) const noexcept -> impact {
     if (is_error())
@@ -117,30 +114,41 @@ namespace laplace {
                          .value = value };
   }
 
-  inline auto entity::set_by_index(ptrdiff_t index,
-                                   int_type  value) const noexcept
+  inline auto entity::add(ptrdiff_t value_id,
+                          int_type  delta) const noexcept -> impact {
+    if (is_error())
+      return noop {};
+
+    return integer_add { .id    = get_id(),
+                         .index = index_of(value_id),
+                         .delta = delta };
+  }
+
+  inline auto entity::random(ptrdiff_t value_id, int_type min,
+                             int_type max) const noexcept -> impact {
+    if (is_error())
+      return noop {};
+
+    return laplace::random { .min          = min,
+                             .max          = max,
+                             .return_id    = get_id(),
+                             .return_index = index_of(value_id),
+                             .return_size  = 1 };
+  }
+
+  inline auto entity::point(ptrdiff_t value_id) const noexcept
+      -> value_point {
+    return { .id = get_id(), .index = index_of(value_id) };
+  }
+
+  inline auto entity::spawn_to(value_point p) const noexcept
       -> impact {
     if (is_error())
       return noop {};
 
-    return integer_set { .id    = get_id(),
-                         .index = index,
-                         .value = value };
-  }
-
-  inline auto entity::get(ptrdiff_t value_id,
-                          int_type  def) const noexcept -> int_type {
-    if (is_error())
-      return def;
-    return m_access.get_integer(get_id(), index_of(value_id), def);
-  }
-
-  inline auto entity::get_by_index(ptrdiff_t index,
-                                   int_type  def) const noexcept
-      -> int_type {
-    if (is_error())
-      return def;
-    return m_access.get_integer(get_id(), index, def);
+    return integer_allocate { .size         = get_size(),
+                              .return_id    = p.id,
+                              .return_index = p.index };
   }
 
   inline auto entity::_error() noexcept -> entity {

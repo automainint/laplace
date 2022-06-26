@@ -12,8 +12,7 @@ namespace laplace {
   class entity {
   public:
     struct field {
-      ptrdiff_t id    = id_undefined;
-      int_type  value = 0;
+      ptrdiff_t id = id_undefined;
     };
 
     [[nodiscard]] auto is_error() const noexcept -> bool;
@@ -34,31 +33,32 @@ namespace laplace {
 
     [[nodiscard]] auto set_access(access a) const noexcept -> entity;
 
-    struct spawn_options {
-      ptrdiff_t return_id;
-      ptrdiff_t return_index;
-    };
-
-    [[nodiscard]] auto spawn(spawn_options options) const noexcept
-        -> impact;
-
     [[nodiscard]] auto spawn() const noexcept -> impact;
 
     [[nodiscard]] auto remove() const noexcept -> impact;
 
-    [[nodiscard]] auto set(ptrdiff_t value_id,
-                           int_type  value) const noexcept -> impact;
-
-    [[nodiscard]] auto set_by_index(ptrdiff_t index,
-                                    int_type  value) const noexcept
-        -> impact;
-
     [[nodiscard]] auto get(ptrdiff_t value_id,
                            int_type  def) const noexcept -> int_type;
 
-    [[nodiscard]] auto get_by_index(ptrdiff_t index,
-                                    int_type  def) const noexcept
-        -> int_type;
+    [[nodiscard]] auto set(ptrdiff_t value_id,
+                           int_type  value) const noexcept -> impact;
+
+    [[nodiscard]] auto add(ptrdiff_t value_id,
+                           int_type  delta) const noexcept -> impact;
+
+    [[nodiscard]] auto random(ptrdiff_t value_id, int_type min,
+                              int_type max) const noexcept -> impact;
+
+    struct value_point {
+      ptrdiff_t id;
+      ptrdiff_t index;
+    };
+
+    [[nodiscard]] auto point(ptrdiff_t value_id) const noexcept
+        -> value_point;
+
+    [[nodiscard]] auto spawn_to(value_point p) const noexcept
+        -> impact;
 
   private:
     [[nodiscard]] static auto _error() noexcept -> entity;
