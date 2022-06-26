@@ -17,8 +17,18 @@ namespace laplace::test {
     REQUIRE(entity {}.get_id() == id_undefined);
   }
 
+  TEST_CASE("entity default access") {
+    REQUIRE(entity {}.get_access() == access {});
+  }
+
   TEST_CASE("entity set id") {
     REQUIRE(entity {}.set_id(42).get_id() == 42);
+  }
+
+  TEST_CASE("entity set access") {
+    auto s = state {};
+    REQUIRE(entity {}.set_access(access { s }).get_access() ==
+            access { s });
   }
 
   TEST_CASE("entity setup fields") {
@@ -85,6 +95,89 @@ namespace laplace::test {
                 .setup({ { .id = 1 }, { .id = 1 } })
                 .set_id(0)
                 .is_error());
+  }
+
+  TEST_CASE("entity spawn without id") {
+    REQUIRE(entity {}
+                .setup({ { .id = 1 }, { .id = 2 } })
+                .spawn({ .return_id = 3, .return_index = 42 }) ==
+            impact { integer_allocate {
+                .size = 2, .return_id = 3, .return_index = 42 } });
+  }
+
+  TEST_CASE("entity spawn with id") {
+    REQUIRE(entity {}
+                .setup({ { .id = 1 }, { .id = 2 } })
+                .set_id(42)
+                .spawn() ==
+            impact { integer_reallocate { .id = 42, .size = 2 } });
+  }
+
+  TEST_CASE("entity remove") {
+    REQUIRE(entity {}.set_id(42).remove() ==
+            impact { integer_deallocate { .id = 42 } });
+  }
+
+  TEST_CASE("entity set by id") {
+    REQUIRE(
+        entity {}
+            .setup({ { .id = 1 }, { .id = 2 } })
+            .set_id(3)
+            .set(2, 42) ==
+        impact { integer_set { .id = 3, .index = 1, .value = 42 } });
+  }
+
+  TEST_CASE("entity set by index") {
+    REQUIRE(
+        entity {}
+            .setup({ { .id = 1 }, { .id = 2 } })
+            .set_id(3)
+            .set_by_index(1, 42) ==
+        impact { integer_set { .id = 3, .index = 1, .value = 42 } });
+  }
+
+  TEST_CASE("entity get by id") {
+    auto s      = state {};
+    std::ignore = s.apply(integer_reallocate { .id = 0, .size = 1 });
+    std::ignore = s.apply(
+        integer_set({ .id = 0, .index = 0, .value = 42 }));
+    while (s.adjust()) { }
+
+    REQUIRE(entity {}
+                .setup({ { .id = 7 } })
+                .set_access(access { s })
+                .set_id(0)
+                .get(7, -1) == 42);
+  }
+
+  TEST_CASE("entity get by index") {
+    auto s      = state {};
+    std::ignore = s.apply(integer_reallocate { .id = 0, .size = 1 });
+    std::ignore = s.apply(
+        integer_set({ .id = 0, .index = 0, .value = 42 }));
+    while (s.adjust()) { }
+
+    REQUIRE(entity {}
+                .setup({ { .id = 7 } })
+                .set_access(access { s })
+                .set_id(0)
+                .get_by_index(0, -1) == 42);
+  }
+
+  TEST_CASE("entity error impacts") {
+    auto const error = entity {}.setup({ { .id = 1 }, { .id = 1 } });
+    REQUIRE(error.spawn({ .return_id = 0, .return_index = 0 }) ==
+            impact { noop {} });
+    REQUIRE(error.spawn() == impact { noop {} });
+    REQUIRE(error.remove() == impact { noop {} });
+    REQUIRE(error.set(0, 0) == impact { noop {} });
+    REQUIRE(error.set_by_index(0, 0) == impact { noop {} });
+  }
+
+  TEST_CASE("entity error access") {
+    auto const error = entity {}.setup({ { .id = 1 }, { .id = 1 } });
+    REQUIRE(error.get(1, -1) == -1);
+    REQUIRE(error.get_by_index(0, -1) == -1);
   }
 
   /*TEST_CASE("entity constexpr index of") {

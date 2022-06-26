@@ -20,6 +20,10 @@ namespace laplace {
     return m_id;
   }
 
+  inline auto entity::get_access() const noexcept -> access const & {
+    return m_access;
+  }
+
   inline auto entity::index_of(ptrdiff_t id) const noexcept
       -> ptrdiff_t {
     auto const i = std::lower_bound(
@@ -68,6 +72,75 @@ namespace laplace {
     auto e = entity { *this };
     e.m_id = id;
     return e;
+  }
+
+  inline auto entity::set_access(access a) const noexcept -> entity {
+    if (is_error())
+      return *this;
+
+    auto e     = entity { *this };
+    e.m_access = std::move(a);
+    return e;
+  }
+
+  inline auto entity::spawn(spawn_options options) const noexcept
+      -> impact {
+    if (is_error())
+      return noop {};
+
+    return integer_allocate { .size         = get_size(),
+                              .return_id    = options.return_id,
+                              .return_index = options.return_index };
+  }
+
+  inline auto entity::spawn() const noexcept -> impact {
+    if (is_error())
+      return noop {};
+
+    return integer_reallocate { .id = get_id(), .size = get_size() };
+  }
+
+  inline auto entity::remove() const noexcept -> impact {
+    if (is_error())
+      return noop {};
+
+    return integer_deallocate { .id = get_id() };
+  }
+
+  inline auto entity::set(ptrdiff_t value_id,
+                          int_type  value) const noexcept -> impact {
+    if (is_error())
+      return noop {};
+
+    return integer_set { .id    = get_id(),
+                         .index = index_of(value_id),
+                         .value = value };
+  }
+
+  inline auto entity::set_by_index(ptrdiff_t index,
+                                   int_type  value) const noexcept
+      -> impact {
+    if (is_error())
+      return noop {};
+
+    return integer_set { .id    = get_id(),
+                         .index = index,
+                         .value = value };
+  }
+
+  inline auto entity::get(ptrdiff_t value_id,
+                          int_type  def) const noexcept -> int_type {
+    if (is_error())
+      return def;
+    return m_access.get_integer(get_id(), index_of(value_id), def);
+  }
+
+  inline auto entity::get_by_index(ptrdiff_t index,
+                                   int_type  def) const noexcept
+      -> int_type {
+    if (is_error())
+      return def;
+    return m_access.get_integer(get_id(), index, def);
   }
 
   inline auto entity::_error() noexcept -> entity {

@@ -31,9 +31,9 @@ namespace laplace {
     void               adjust_done() noexcept;
 
   private:
-    std::mt19937_64 m_random;
-    buffer          m_integers;
-    byte_buffer     m_bytes;
+    std::mt19937_64       m_random;
+    buffer                m_integers;
+    byte_buffer           m_bytes;
   };
 }
 

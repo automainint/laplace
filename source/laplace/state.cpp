@@ -32,7 +32,7 @@ namespace laplace {
     return m_bytes.get(id, index, def);
   }
 
-  bool state::apply(impact const &i) noexcept {
+  auto state::apply(impact const &i) noexcept -> bool {
     return std::visit(
         overload {
             [&](noop const &i) { return true; },
