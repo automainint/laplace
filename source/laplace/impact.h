@@ -7,6 +7,7 @@
 #include "options.h"
 #include <array>
 #include <cstddef>
+#include <memory_resource>
 #include <variant>
 #include <vector>
 
@@ -137,32 +138,31 @@ namespace laplace {
       byte_allocate, byte_deallocate, random, tick_continue>;
 
   struct impact_list {
-    static constexpr ptrdiff_t small_size = 16;
-
-    struct small_data {
-      std::array<impact, small_size> v;
-    };
-
-    struct large_data {
-      impact *v = nullptr;
-    };
-
-    using data_type = std::variant<impact, small_data, large_data>;
-
-    data_type data = noop {};
-    ptrdiff_t size = 0;
-
+  public:
     impact_list() noexcept = default;
     explicit impact_list(impact i) noexcept;
 
     [[nodiscard]] auto get_size() const noexcept -> ptrdiff_t;
     [[nodiscard]] auto add(impact i) const noexcept -> impact_list;
+    [[nodiscard]] auto add(impact_list i) const noexcept
+        -> impact_list;
 
     [[nodiscard]] auto operator[](ptrdiff_t index) const noexcept
         -> impact const &;
+
+  private:
+    std::pmr::vector<impact> m_data;
   };
 
   [[nodiscard]] auto operator+(impact a, impact b) noexcept
+      -> impact_list;
+  [[nodiscard]] auto operator+(impact_list const &a,
+                               impact b) noexcept -> impact_list;
+  [[nodiscard]] auto operator+(impact             a,
+                               impact_list const &b) noexcept
+      -> impact_list;
+  [[nodiscard]] auto operator+(impact_list const &a,
+                               impact_list const &b) noexcept
       -> impact_list;
 }
 

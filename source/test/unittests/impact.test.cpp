@@ -56,4 +56,27 @@ namespace laplace::test {
                           .id = 0, .index = 0, .value = 0 } });
     REQUIRE(foo[1] == impact { tick_continue {} });
   }
+
+  TEST_CASE("impact list add impact") {
+    auto foo = impact_list { impact { noop {} } } +
+               impact { noop {} };
+    REQUIRE(foo[0] == impact { noop {} });
+    REQUIRE(foo[1] == impact { noop {} });
+  }
+
+  TEST_CASE("impact add impact list") {
+    auto foo = impact { noop {} } +
+               impact_list { impact { noop {} } };
+    REQUIRE(foo[0] == impact { noop {} });
+    REQUIRE(foo[1] == impact { noop {} });
+  }
+
+  TEST_CASE("impact list add impact list") {
+    auto foo = (impact { noop {} } + impact { tick_continue {} }) +
+               (impact { tick_continue {} } + impact { noop {} });
+    REQUIRE(foo[0] == impact { noop {} });
+    REQUIRE(foo[1] == impact { tick_continue {} });
+    REQUIRE(foo[2] == impact { tick_continue {} });
+    REQUIRE(foo[3] == impact { noop {} });
+  }
 }

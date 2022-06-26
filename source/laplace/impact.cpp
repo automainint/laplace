@@ -4,53 +4,53 @@
 #include "impact.h"
 
 namespace laplace {
-  template <class... types_>
-  struct overload : types_... {
-    using types_::operator()...;
-  };
+  using std::pmr::synchronized_pool_resource;
 
-  template <class... types_>
-  overload(types_...) -> overload<types_...>;
+  static auto impact_resource = synchronized_pool_resource {};
 
-  impact_list::impact_list(impact i) noexcept {
-    data = i;
-    size = 1;
+  impact_list::impact_list(impact i) noexcept :
+      m_data(&impact_resource) {
+    m_data.emplace_back(i);
   }
 
   auto impact_list::get_size() const noexcept -> ptrdiff_t {
-    return size;
+    return static_cast<ptrdiff_t>(m_data.size());
   }
 
   auto impact_list::add(impact i) const noexcept -> impact_list {
-    auto result = impact_list {};
-    result.size = size + 1;
-    if (result.size == 1)
-      result.data = i;
-    else if (result.size <= small_size) {
-      result.data = small_data {};
-      ptrdiff_t k = 0;
-      for (; k < get_size(); k++)
-        std::get<1>(result.data).v[k] = (*this)[k];
-      std::get<1>(result.data).v[k] = i;
-    }
+    auto result = impact_list { *this };
+    result.m_data.emplace_back(i);
+    return result;
+  }
+
+  auto impact_list::add(impact_list i) const noexcept -> impact_list {
+    auto result = impact_list { *this };
+    result.m_data.insert(result.m_data.end(), i.m_data.begin(),
+                         i.m_data.end());
     return result;
   }
 
   auto impact_list::operator[](ptrdiff_t index) const noexcept
       -> impact const & {
-    return std::visit(
-        overload {
-            [&](impact const &i) -> impact const & { return i; },
-            [&](small_data const &v) -> impact const & {
-              return v.v[index];
-            },
-            [&](large_data const &v) -> impact const & {
-              return v.v[index];
-            } },
-        data);
+    return m_data[index];
   }
 
   auto operator+(impact a, impact b) noexcept -> impact_list {
     return impact_list { a }.add(b);
+  }
+
+  auto operator+(impact_list const &a, impact b) noexcept
+      -> impact_list {
+    return a.add(b);
+  }
+
+  auto operator+(impact a, impact_list const &b) noexcept
+      -> impact_list {
+    return impact_list { a }.add(b);
+  }
+
+  auto operator+(impact_list const &a, impact_list const &b) noexcept
+      -> impact_list {
+    return a.add(b);
   }
 }
