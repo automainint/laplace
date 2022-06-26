@@ -35,21 +35,21 @@ namespace laplace::test {
   }
 
   TEST_CASE("impact list") {
-    auto foo = impact {
+    impact_list foo = impact {
       integer_set { .id = 0, .index = 0, .value = 0 }
     } + impact { tick_continue {} };
-    REQUIRE(foo.get_size() == 2);
+    REQUIRE(foo.size() == 2);
   }
 
   TEST_CASE("impact list single access") {
-    auto foo = impact_list { impact {
-        integer_set { .id = 0, .index = 0, .value = 0 } } };
+    impact_list foo = impact { integer_set {
+        .id = 0, .index = 0, .value = 0 } };
     REQUIRE(foo[0] == impact { integer_set {
                           .id = 0, .index = 0, .value = 0 } });
   }
 
   TEST_CASE("impact list small access") {
-    auto foo = impact {
+    impact_list foo = impact {
       integer_set { .id = 0, .index = 0, .value = 0 }
     } + impact { tick_continue {} };
     REQUIRE(foo[0] == impact { integer_set {
@@ -58,22 +58,24 @@ namespace laplace::test {
   }
 
   TEST_CASE("impact list add impact") {
-    auto foo = impact_list { impact { noop {} } } +
-               impact { noop {} };
+    impact_list foo = impact_list_intermediate {
+      impact { noop {} }
+    } + impact { noop {} };
     REQUIRE(foo[0] == impact { noop {} });
     REQUIRE(foo[1] == impact { noop {} });
   }
 
   TEST_CASE("impact add impact list") {
-    auto foo = impact { noop {} } +
-               impact_list { impact { noop {} } };
+    impact_list foo = impact { noop {} } +
+                      impact_list_intermediate { impact { noop {} } };
     REQUIRE(foo[0] == impact { noop {} });
     REQUIRE(foo[1] == impact { noop {} });
   }
 
   TEST_CASE("impact list add impact list") {
-    auto foo = (impact { noop {} } + impact { tick_continue {} }) +
-               (impact { tick_continue {} } + impact { noop {} });
+    impact_list foo =
+        (impact { noop {} } + impact { tick_continue {} }) +
+        (impact { tick_continue {} } + impact { noop {} });
     REQUIRE(foo[0] == impact { noop {} });
     REQUIRE(foo[1] == impact { tick_continue {} });
     REQUIRE(foo[2] == impact { tick_continue {} });

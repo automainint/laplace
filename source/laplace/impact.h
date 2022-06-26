@@ -137,33 +137,47 @@ namespace laplace {
       integer_deallocate, byte_reserve, byte_reallocate,
       byte_allocate, byte_deallocate, random, tick_continue>;
 
-  struct impact_list {
+  struct impact_list_intermediate {
+    std::vector<impact> data;
+
+    explicit impact_list_intermediate(impact i) noexcept;
+  };
+
+  class impact_list {
   public:
-    impact_list() noexcept = default;
-    explicit impact_list(impact i) noexcept;
+    impact_list(impact i) noexcept;
+    impact_list(impact_list_intermediate const &list) noexcept;
 
-    [[nodiscard]] auto get_size() const noexcept -> ptrdiff_t;
-    [[nodiscard]] auto add(impact i) const noexcept -> impact_list;
-    [[nodiscard]] auto add(impact_list i) const noexcept
-        -> impact_list;
-
+    [[nodiscard]] auto size() const noexcept -> ptrdiff_t;
     [[nodiscard]] auto operator[](ptrdiff_t index) const noexcept
         -> impact const &;
 
+    [[nodiscard]] auto begin() const noexcept;
+    [[nodiscard]] auto end() const noexcept;
+
   private:
+    static std::pmr::synchronized_pool_resource m_resource;
+
     std::pmr::vector<impact> m_data;
   };
 
   [[nodiscard]] auto operator+(impact a, impact b) noexcept
-      -> impact_list;
-  [[nodiscard]] auto operator+(impact_list const &a,
-                               impact b) noexcept -> impact_list;
-  [[nodiscard]] auto operator+(impact             a,
-                               impact_list const &b) noexcept
-      -> impact_list;
-  [[nodiscard]] auto operator+(impact_list const &a,
-                               impact_list const &b) noexcept
-      -> impact_list;
+      -> impact_list_intermediate;
+
+  [[nodiscard]] auto operator+(impact_list_intermediate const &a,
+                               impact b) noexcept
+      -> impact_list_intermediate;
+
+  [[nodiscard]] auto operator+(
+      impact a, impact_list_intermediate const &b) noexcept
+      -> impact_list_intermediate;
+
+  [[nodiscard]] auto operator+(
+      impact_list_intermediate const &a,
+      impact_list_intermediate const &b) noexcept
+      -> impact_list_intermediate;
 }
+
+#include "impact.impl.h"
 
 #endif
