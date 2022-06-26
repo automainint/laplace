@@ -73,6 +73,10 @@ namespace laplace::test {
     REQUIRE(buf.allocate(10) == reserved);
   }
 
+  TEST_CASE("buffer reserve may fail") {
+    REQUIRE(!buffer {}.reserve(-1));
+  }
+
   TEST_CASE("buffer reserve, reallocate and allocate") {
     auto      buf      = buffer {};
     ptrdiff_t reserved = 42;
