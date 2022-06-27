@@ -90,4 +90,24 @@ namespace laplace::test {
     REQUIRE(foo[2] == impact { tick_continue {} });
     REQUIRE(foo[3] == impact { noop {} });
   }
+
+  TEST_CASE("impact mode") {
+    REQUIRE(mode_of(noop {}) == mode::async);
+    REQUIRE(mode_of(integer_set {}) == mode::async);
+    REQUIRE(mode_of(integer_add {}) == mode::async);
+    REQUIRE(mode_of(byte_set {}) == mode::async);
+    REQUIRE(mode_of(byte_add {}) == mode::async);
+    REQUIRE(mode_of(integer_reserve {}) == mode::sync);
+    REQUIRE(mode_of(integer_allocate_into {}) == mode::sync);
+    REQUIRE(mode_of(integer_allocate {}) == mode::sync);
+    REQUIRE(mode_of(integer_deallocate {}) == mode::sync);
+    REQUIRE(mode_of(byte_reserve {}) == mode::sync);
+    REQUIRE(mode_of(byte_allocate_into {}) == mode::sync);
+    REQUIRE(mode_of(byte_allocate {}) == mode::sync);
+    REQUIRE(mode_of(byte_deallocate {}) == mode::sync);
+    REQUIRE(mode_of(integer_seed {}) == mode::sync);
+    REQUIRE(mode_of(integer_random {}) == mode::sync);
+    REQUIRE(mode_of(queue_action {}) == mode::sync);
+    REQUIRE(mode_of(tick_continue {}) == mode::control);
+  }
 }

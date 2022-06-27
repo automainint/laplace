@@ -58,6 +58,24 @@ namespace laplace {
       -> impact_list {
     return a += b;
   }
+
+  inline auto mode_of(impact const &i) noexcept -> mode {
+    return std::visit(
+        [&](auto const &i) {
+          using std::is_same_v, std::decay_t;
+          using type = decay_t<decltype(i)>;
+          if constexpr (is_same_v<type, tick_continue>)
+            return mode::control;
+          if constexpr (is_same_v<type, noop> ||
+                        is_same_v<type, integer_set> ||
+                        is_same_v<type, integer_add> ||
+                        is_same_v<type, byte_set> ||
+                        is_same_v<type, byte_add>)
+            return mode::async;
+          return mode::sync;
+        },
+        i.value);
+  }
 }
 
 #endif

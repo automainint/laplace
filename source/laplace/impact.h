@@ -12,9 +12,15 @@
 
 namespace laplace {
   struct queue_action {
-    [[nodiscard]] auto operator==(queue_action const &) const noexcept
-        -> bool = default;
+    action value;
+
+    [[nodiscard]] auto operator==(
+        queue_action const &other) const noexcept -> bool {
+      return this == &other;
+    }
   };
+
+  enum class mode { async, sync, control };
 
   struct impact {
     using value_type = std::variant<
@@ -22,7 +28,7 @@ namespace laplace {
         integer_reserve, integer_allocate_into, integer_allocate,
         integer_deallocate, byte_reserve, byte_allocate_into,
         byte_allocate, byte_deallocate, integer_seed, integer_random,
-        tick_continue>;
+        queue_action, tick_continue>;
 
     value_type value;
 
@@ -41,6 +47,7 @@ namespace laplace {
     impact(byte_deallocate const &i) noexcept : value(i) { }
     impact(integer_seed const &i) noexcept : value(i) { }
     impact(integer_random const &i) noexcept : value(i) { }
+    impact(queue_action const &i) noexcept : value(i) { }
     impact(tick_continue const &i) noexcept : value(i) { }
 
     [[nodiscard]] auto operator==(impact const &) const noexcept
@@ -80,6 +87,8 @@ namespace laplace {
   [[nodiscard]] auto operator+(impact_list        a,
                                impact_list const &b) noexcept
       -> impact_list;
+
+  [[nodiscard]] auto mode_of(impact const &i) noexcept -> mode;
 }
 
 #include "impact.impl.h"
