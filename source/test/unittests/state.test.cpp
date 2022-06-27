@@ -2,9 +2,12 @@
  */
 
 #include "../../laplace/state.h"
+#include "../../laplace/impact.h"
 #include <catch2/catch.hpp>
 
 namespace laplace {
+  using std::make_shared;
+
   TEST_CASE("create state") {
     std::ignore = state {};
   }
@@ -13,7 +16,7 @@ namespace laplace {
     REQUIRE(state {}.apply(noop {}));
   }
 
-  TEST_CASE("state apply tick_continue will fail") {
+  TEST_CASE("state apply may fail") {
     REQUIRE(!state {}.apply(tick_continue {}));
   }
 
@@ -21,17 +24,17 @@ namespace laplace {
     REQUIRE(state {}.get_integer(0, 0, -1) == -1);
   }
 
-  TEST_CASE("state apply reallocate int and get") {
+  TEST_CASE("state apply allocate into int and get") {
     auto s  = state {};
     auto id = ptrdiff_t { 42 };
-    REQUIRE(s.apply(integer_reallocate { id, 1 }));
+    REQUIRE(s.apply(integer_allocate_into { id, 1 }));
     REQUIRE(s.get_integer(id, 0, -1) == 0);
   }
 
   TEST_CASE("state apply allocate int and get") {
     auto s   = state {};
     auto ret = ptrdiff_t { 0 };
-    REQUIRE(s.apply(integer_reallocate { ret, 1 }));
+    REQUIRE(s.apply(integer_allocate_into { ret, 1 }));
     REQUIRE(s.apply(integer_allocate { 1, ret, 0 }));
     while (s.adjust()) { }
     auto id = s.get_integer(ret, 0, -1);
@@ -39,11 +42,11 @@ namespace laplace {
     REQUIRE(s.get_integer(id, 0, -1) == 0);
   }
 
-  TEST_CASE("state apply reserve int and reallocate") {
+  TEST_CASE("state apply reserve int and allocate into") {
     auto s  = state {};
     auto id = ptrdiff_t { 0 };
     REQUIRE(s.apply(integer_reserve { 10 }));
-    REQUIRE(s.apply(integer_reallocate { id, 1 }));
+    REQUIRE(s.apply(integer_allocate_into { id, 1 }));
     REQUIRE(s.get_integer(id, 0, -1) == 0);
   }
 
@@ -52,7 +55,7 @@ namespace laplace {
     ptrdiff_t ret      = 0;
     ptrdiff_t reserved = 10;
     REQUIRE(s.apply(integer_reserve { reserved }));
-    REQUIRE(s.apply(integer_reallocate { ret, 2 }));
+    REQUIRE(s.apply(integer_allocate_into { ret, 2 }));
     REQUIRE(s.apply(integer_allocate { 1, ret, 0 }));
     REQUIRE(s.apply(integer_allocate { 1, ret, 1 }));
     while (s.adjust()) { }
@@ -63,7 +66,7 @@ namespace laplace {
   TEST_CASE("state apply allocate int, set and get") {
     auto s   = state {};
     auto ret = ptrdiff_t { 0 };
-    REQUIRE(s.apply(integer_reallocate { ret, 1 }));
+    REQUIRE(s.apply(integer_allocate_into { ret, 1 }));
     REQUIRE(s.apply(integer_allocate { 1, ret, 0 }));
     while (s.adjust()) { }
     s.adjust_done();
@@ -77,14 +80,14 @@ namespace laplace {
   TEST_CASE("state deallocate int") {
     auto s  = state {};
     auto id = ptrdiff_t { 0 };
-    REQUIRE(s.apply(integer_reallocate { id, 1 }));
+    REQUIRE(s.apply(integer_allocate_into { id, 1 }));
     REQUIRE(s.apply(integer_deallocate { id }));
   }
 
   TEST_CASE("state apply add int") {
     auto s  = state {};
     auto id = ptrdiff_t { 0 };
-    REQUIRE(s.apply(integer_reallocate { id, 1 }));
+    REQUIRE(s.apply(integer_allocate_into { id, 1 }));
     REQUIRE(s.apply(integer_add { id, 0, 18 }));
     REQUIRE(s.apply(integer_add { id, 0, 24 }));
     while (s.adjust()) { }
@@ -95,17 +98,17 @@ namespace laplace {
     REQUIRE(state {}.get_byte(0, 0, -1) == -1);
   }
 
-  TEST_CASE("state apply reallocate byte and get") {
+  TEST_CASE("state apply allocate into byte and get") {
     auto s  = state {};
     auto id = ptrdiff_t { 42 };
-    REQUIRE(s.apply(byte_reallocate { id, 1 }));
+    REQUIRE(s.apply(byte_allocate_into { id, 1 }));
     REQUIRE(s.get_byte(id, 0, -1) == 0);
   }
 
   TEST_CASE("state apply allocate byte and get") {
     auto s   = state {};
     auto ret = ptrdiff_t { 0 };
-    REQUIRE(s.apply(integer_reallocate { ret, 1 }));
+    REQUIRE(s.apply(integer_allocate_into { ret, 1 }));
     REQUIRE(s.apply(byte_allocate { 1, ret, 0 }));
     while (s.adjust()) { }
     auto id = s.get_integer(ret, 0, -1);
@@ -116,7 +119,7 @@ namespace laplace {
   TEST_CASE("state apply allocate byte, set and get") {
     auto s   = state {};
     auto ret = ptrdiff_t { 0 };
-    REQUIRE(s.apply(integer_reallocate { ret, 1 }));
+    REQUIRE(s.apply(integer_allocate_into { ret, 1 }));
     REQUIRE(s.apply(byte_allocate { 1, ret, 0 }));
     while (s.adjust()) { }
     s.adjust_done();
@@ -127,11 +130,11 @@ namespace laplace {
     REQUIRE(s.get_byte(id, 0, -1) == 42);
   }
 
-  TEST_CASE("state apply reserve byte and reallocate") {
+  TEST_CASE("state apply reserve byte and allocate into") {
     auto s  = state {};
     auto id = ptrdiff_t { 0 };
     REQUIRE(s.apply(byte_reserve { 10 }));
-    REQUIRE(s.apply(byte_reallocate { id, 1 }));
+    REQUIRE(s.apply(byte_allocate_into { id, 1 }));
     REQUIRE(s.get_byte(id, 0, -1) == 0);
   }
 
@@ -139,7 +142,7 @@ namespace laplace {
     auto      s        = state {};
     ptrdiff_t ret      = 0;
     ptrdiff_t reserved = 10;
-    REQUIRE(s.apply(integer_reallocate { ret, 2 }));
+    REQUIRE(s.apply(integer_allocate_into { ret, 2 }));
     REQUIRE(s.apply(byte_reserve { reserved }));
     REQUIRE(s.apply(byte_allocate { 1, ret, 0 }));
     REQUIRE(s.apply(byte_allocate { 1, ret, 1 }));
@@ -151,14 +154,14 @@ namespace laplace {
   TEST_CASE("state deallocate byte") {
     auto s  = state {};
     auto id = ptrdiff_t { 0 };
-    REQUIRE(s.apply(byte_reallocate { id, 1 }));
+    REQUIRE(s.apply(byte_allocate_into { id, 1 }));
     REQUIRE(s.apply(byte_deallocate { id }));
   }
 
   TEST_CASE("state apply add byte") {
     auto s  = state {};
     auto id = ptrdiff_t { 0 };
-    REQUIRE(s.apply(byte_reallocate { id, 1 }));
+    REQUIRE(s.apply(byte_allocate_into { id, 1 }));
     REQUIRE(s.apply(byte_add { id, 0, 18 }));
     REQUIRE(s.apply(byte_add { id, 0, 24 }));
     while (s.adjust()) { }
@@ -169,8 +172,8 @@ namespace laplace {
     auto s    = state {};
     auto id   = ptrdiff_t { 0 };
     auto size = ptrdiff_t { 1000 };
-    REQUIRE(s.apply(integer_reallocate { id, size }));
-    REQUIRE(s.apply(random { 1, 100, id, 0, size }));
+    REQUIRE(s.apply(integer_allocate_into { id, size }));
+    REQUIRE(s.apply(integer_random { 1, 100, id, 0, size }));
     while (s.adjust()) { }
     for (auto i = ptrdiff_t {}; i < size; i++) {
       REQUIRE((s.get_integer(id, i, -1) >= 1 &&
@@ -179,18 +182,20 @@ namespace laplace {
   }
 
   TEST_CASE("state seed") {
-    std::ignore = state {}.set_seed(42);
+    REQUIRE(state {}.apply(integer_seed { 42 }));
   }
 
   TEST_CASE("state random with equal seed") {
-    auto foo  = state {}.set_seed(42);
-    auto bar  = state {}.set_seed(42);
+    auto foo  = state {};
+    auto bar  = state {};
     auto id   = ptrdiff_t { 0 };
     auto size = ptrdiff_t { 1000 };
-    REQUIRE(foo.apply(integer_reallocate { id, size }));
-    REQUIRE(bar.apply(integer_reallocate { id, size }));
-    REQUIRE(foo.apply(random { 1, 100, id, 0, size }));
-    REQUIRE(bar.apply(random { 1, 100, id, 0, size }));
+    REQUIRE(foo.apply(integer_seed { 42 }));
+    REQUIRE(bar.apply(integer_seed { 42 }));
+    REQUIRE(foo.apply(integer_allocate_into { id, size }));
+    REQUIRE(bar.apply(integer_allocate_into { id, size }));
+    REQUIRE(foo.apply(integer_random { 1, 100, id, 0, size }));
+    REQUIRE(bar.apply(integer_random { 1, 100, id, 0, size }));
     while (foo.adjust()) { }
     while (bar.adjust()) { }
     for (auto i = ptrdiff_t {}; i < size; i++) {
@@ -200,14 +205,16 @@ namespace laplace {
   }
 
   TEST_CASE("state random with different seed") {
-    auto foo  = state {}.set_seed(42);
-    auto bar  = state {}.set_seed(43);
+    auto foo  = state {};
+    auto bar  = state {};
     auto id   = ptrdiff_t { 0 };
     auto size = ptrdiff_t { 1000 };
-    REQUIRE(foo.apply(integer_reallocate { id, size }));
-    REQUIRE(bar.apply(integer_reallocate { id, size }));
-    REQUIRE(foo.apply(random { 1, 100, id, 0, size }));
-    REQUIRE(bar.apply(random { 1, 100, id, 0, size }));
+    REQUIRE(foo.apply(integer_seed { 42 }));
+    REQUIRE(bar.apply(integer_seed { 43 }));
+    REQUIRE(foo.apply(integer_allocate_into { id, size }));
+    REQUIRE(bar.apply(integer_allocate_into { id, size }));
+    REQUIRE(foo.apply(integer_random { 1, 100, id, 0, size }));
+    REQUIRE(bar.apply(integer_random { 1, 100, id, 0, size }));
     while (foo.adjust()) { }
     while (bar.adjust()) { }
 
@@ -223,7 +230,7 @@ namespace laplace {
     auto s  = state {};
     auto id = ptrdiff_t {};
 
-    REQUIRE(s.apply(integer_reallocate { id, 5 }));
+    REQUIRE(s.apply(integer_allocate_into { id, 5 }));
     REQUIRE(s.apply(integer_allocate { 10, id, 0 }));
     REQUIRE(s.apply(integer_allocate { 20, id, 1 }));
     REQUIRE(s.apply(integer_allocate { 30, id, 2 }));
@@ -253,5 +260,64 @@ namespace laplace {
     s.adjust_done();
 
     REQUIRE(s.get_integer(id, 0, -1) == 1);
+  }
+
+  TEST_CASE("state copy and edit") {
+    auto foo = state {};
+    auto bar = foo;
+    REQUIRE(foo.apply(integer_allocate_into { 0, 1 }));
+    REQUIRE(foo.apply(integer_set { 0, 0, 1 }));
+    while (foo.adjust()) { }
+    REQUIRE(foo.get_integer(0, 0, -1) == 1);
+    REQUIRE(bar.get_integer(0, 0, -1) == -1);
+  }
+
+  TEST_CASE("state assign and edit") {
+    auto foo = state {};
+    auto bar = state {};
+    bar      = foo;
+    REQUIRE(foo.apply(integer_allocate_into { 0, 1 }));
+    REQUIRE(foo.apply(integer_set { 0, 0, 1 }));
+    while (foo.adjust()) { }
+    REQUIRE(foo.get_integer(0, 0, -1) == 1);
+    REQUIRE(bar.get_integer(0, 0, -1) == -1);
+  }
+
+  TEST_CASE("custom io implementation") {
+    struct custom_io_impl : io_interface {
+      [[nodiscard]] auto clone() const noexcept
+          -> std::shared_ptr<io_interface> override {
+        return std::make_shared<custom_io_impl>(*this);
+      }
+
+      [[nodiscard]] auto get_integer(ptrdiff_t id, ptrdiff_t index,
+                                     int_type def) const noexcept
+          -> int_type override {
+        return 42;
+      }
+
+      [[nodiscard]] auto get_byte(ptrdiff_t id, ptrdiff_t index,
+                                  byte_type def) const noexcept
+          -> byte_type override {
+        return 24;
+      }
+
+      [[nodiscard]] auto apply(impact const &i) noexcept
+          -> bool override {
+        return true;
+      }
+
+      [[nodiscard]] auto adjust() noexcept -> bool override {
+        return false;
+      }
+
+      void adjust_done() noexcept override { }
+    };
+
+    auto s = state { make_shared<custom_io_impl>() };
+    REQUIRE(s.get_integer(0, 0, -1) == 42);
+    REQUIRE(s.get_byte(0, 0, -1) == 24);
+    REQUIRE(s.apply(tick_continue {}));
+    REQUIRE(!s.adjust());
   }
 }

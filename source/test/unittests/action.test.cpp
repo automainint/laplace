@@ -2,6 +2,7 @@
  */
 
 #include "../../laplace/action.h"
+#include "../../laplace/impact.h"
 #include <catch2/catch.hpp>
 
 namespace laplace::test {
@@ -34,10 +35,11 @@ namespace laplace::test {
     bool called = false;
 
     auto run = action {}
-                   .setup([&](entity) -> coro::generator<impact> {
-                     called = true;
-                     co_return;
-                   })
+                   .setup(
+                       [&](entity) -> coro::generator<impact_list> {
+                         called = true;
+                         co_return;
+                       })
                    .run({});
     run.resume();
 
@@ -56,10 +58,11 @@ namespace laplace::test {
 
     auto run = action {}
                    .set_tick_duration(-1)
-                   .setup([&](entity) -> coro::generator<impact> {
-                     called = true;
-                     co_return;
-                   })
+                   .setup(
+                       [&](entity) -> coro::generator<impact_list> {
+                         called = true;
+                         co_return;
+                       })
                    .run({});
     run.resume();
 
@@ -70,10 +73,11 @@ namespace laplace::test {
     bool called = false;
 
     auto run = action {}
-                   .setup([&](entity) -> coro::generator<impact> {
-                     called = true;
-                     co_return;
-                   })
+                   .setup(
+                       [&](entity) -> coro::generator<impact_list> {
+                         called = true;
+                         co_return;
+                       })
                    .set_tick_duration(-1)
                    .run({});
     run.resume();

@@ -3,97 +3,51 @@
 
 #include "state.h"
 
+#include "impact.h"
+
 namespace laplace {
-  template <class... types_>
-  struct overload : types_... {
-    using types_::operator()...;
-  };
+  using std::random_device, std::make_shared, std::shared_ptr;
 
-  template <class... types_>
-  overload(types_...) -> overload<types_...>;
-
-  state::state() noexcept {
-    m_random.seed(std::random_device {}());
+  state::state() noexcept : m_io(make_shared<io_impl>()) {
+    std::ignore = m_io->apply(integer_seed { random_device {}() });
   }
 
-  auto state::set_seed(int_type seed) const noexcept -> state {
-    auto s = state { *this };
-    s.m_random.seed(seed);
-    return s;
+  state::state(shared_ptr<io_interface> io) noexcept :
+      m_io(std::move(io)) { }
+
+  state::state(state const &other) noexcept {
+    m_io = other.m_io->clone();
+  }
+
+  auto state::operator=(state const &other) noexcept -> state & {
+    if (this != &other)
+      m_io = other.m_io->clone();
+    return *this;
+  }
+
+  auto state::io() const noexcept -> shared_ptr<io_interface> {
+    return m_io;
   }
 
   auto state::get_integer(ptrdiff_t id, ptrdiff_t index,
                           int_type def) const noexcept -> int_type {
-    return m_integers.get(id, index, def);
+    return m_io->get_integer(id, index, def);
   }
 
   auto state::get_byte(ptrdiff_t id, ptrdiff_t index,
                        byte_type def) const noexcept -> byte_type {
-    return m_bytes.get(id, index, def);
+    return m_io->get_byte(id, index, def);
   }
 
   auto state::apply(impact const &i) noexcept -> bool {
-    return std::visit(
-        overload {
-            [&](noop const &i) { return true; },
-            [&](tick_continue const &i) { return false; },
-            [&](integer_reserve const &i) {
-              return m_integers.reserve(i.count);
-            },
-            [&](integer_reallocate const &i) {
-              return m_integers.reallocate(i.id, i.size);
-            },
-            [&](integer_allocate const &i) {
-              return m_integers.set(i.return_id, i.return_index,
-                                    m_integers.allocate(i.size));
-            },
-            [&](integer_deallocate const &i) {
-              return m_integers.deallocate(i.id);
-            },
-            [&](integer_set const &i) {
-              return m_integers.set(i.id, i.index, i.value);
-            },
-            [&](integer_add const &i) {
-              return m_integers.add(i.id, i.index, i.delta);
-            },
-            [&](byte_reserve const &i) {
-              return m_bytes.reserve(i.count);
-            },
-            [&](byte_reallocate const &i) {
-              return m_bytes.reallocate(i.id, i.size);
-            },
-            [&](byte_allocate const &i) {
-              return m_integers.set(i.return_id, i.return_index,
-                                    m_bytes.allocate(i.size));
-            },
-            [&](byte_deallocate const &i) {
-              return m_bytes.deallocate(i.id);
-            },
-            [&](byte_set const &i) {
-              return m_bytes.set(i.id, i.index, i.value);
-            },
-            [&](byte_add const &i) {
-              return m_bytes.add(i.id, i.index, i.delta);
-            },
-            [&](random const &i) {
-              auto distribute =
-                  std::uniform_int_distribution<int_type> { i.min,
-                                                            i.max };
-              for (ptrdiff_t k = 0; k < i.return_size; k++)
-                if (!m_integers.set(i.return_id, i.return_index + k,
-                                    distribute(m_random)))
-                  return false;
-              return true;
-            } },
-        i);
+    return m_io->apply(i);
   }
 
   auto state::adjust() noexcept -> bool {
-    return m_integers.adjust() || m_bytes.adjust();
+    return m_io->adjust();
   }
 
   void state::adjust_done() noexcept {
-    m_integers.adjust_done();
-    m_bytes.adjust_done();
+    m_io->adjust_done();
   }
 }

@@ -5,40 +5,10 @@
 #define LAPLACE_IMPACT_IMPL_H
 
 namespace laplace {
-  inline impact_list_intermediate::impact_list_intermediate(
-      impact i) noexcept {
-    data.emplace_back(i);
-  }
-
-  inline auto operator+(impact a, impact b) noexcept
-      -> impact_list_intermediate {
-    auto list = impact_list_intermediate { a };
-    list.data.emplace_back(b);
-    return list;
-  }
-
-  inline auto operator+(impact_list_intermediate const &a,
-                        impact                          b) noexcept
-      -> impact_list_intermediate {
-    auto list = impact_list_intermediate { a };
-    list.data.emplace_back(b);
-    return list;
-  }
-
-  inline auto operator+(impact                          a,
-                        impact_list_intermediate const &b) noexcept
-      -> impact_list_intermediate {
-    auto list = impact_list_intermediate { a };
-    list.data.insert(list.data.end(), b.data.begin(), b.data.end());
-    return list;
-  }
-
-  inline auto operator+(impact_list_intermediate const &a,
-                        impact_list_intermediate const &b) noexcept
-      -> impact_list_intermediate {
-    auto list = impact_list_intermediate { a };
-    list.data.insert(list.data.end(), b.data.begin(), b.data.end());
-    return list;
+  inline impact_list::impact_list(impact i) noexcept :
+      m_data(&m_resource) {
+    m_data.reserve(average_impact_list_size);
+    m_data.emplace_back(i);
   }
 
   inline auto impact_list::size() const noexcept -> ptrdiff_t {
@@ -56,6 +26,37 @@ namespace laplace {
 
   inline auto impact_list::end() const noexcept {
     return m_data.end();
+  }
+
+  inline auto impact_list::operator+=(impact a) noexcept
+      -> impact_list & {
+    m_data.emplace_back(a);
+    return *this;
+  }
+
+  inline auto impact_list::operator+=(impact_list const &a) noexcept
+      -> impact_list & {
+    m_data.insert(m_data.end(), a.m_data.begin(), a.m_data.end());
+    return *this;
+  }
+
+  inline auto operator+(impact a, impact b) noexcept -> impact_list {
+    return impact_list { a } += b;
+  }
+
+  inline auto operator+(impact_list a, impact b) noexcept
+      -> impact_list {
+    return a += b;
+  }
+
+  inline auto operator+(impact a, impact_list b) noexcept
+      -> impact_list {
+    return b += a;
+  }
+
+  inline auto operator+(impact_list a, impact_list const &b) noexcept
+      -> impact_list {
+    return a += b;
   }
 }
 

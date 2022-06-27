@@ -7,6 +7,7 @@
 #include "options.h"
 #include <atomic>
 #include <concepts>
+#include <functional>
 #include <vector>
 
 namespace laplace {
@@ -47,8 +48,8 @@ namespace laplace {
 
     [[nodiscard]] auto reserve(ptrdiff_t count) noexcept -> bool;
     [[nodiscard]] auto allocate(ptrdiff_t size) noexcept -> ptrdiff_t;
-    [[nodiscard]] auto reallocate(ptrdiff_t block,
-                                  ptrdiff_t size) noexcept -> bool;
+    [[nodiscard]] auto allocate_into(ptrdiff_t block,
+                                     ptrdiff_t size) noexcept -> bool;
     [[nodiscard]] auto deallocate(ptrdiff_t block) noexcept -> bool;
 
     [[nodiscard]] auto get(ptrdiff_t block, ptrdiff_t index,
@@ -64,6 +65,12 @@ namespace laplace {
   private:
     [[nodiscard]] auto _error() const noexcept
         -> basic_buffer<int_, atomic_int_>;
+    [[nodiscard]] auto _bind(
+        std::function<basic_buffer<int_, atomic_int_>()> f)
+        const noexcept -> basic_buffer<int_, atomic_int_>;
+    template <typename type_>
+    [[nodiscard]] auto _bind(std::function<type_()> f,
+                             type_ def) const noexcept -> type_;
 
     [[nodiscard]] auto _alloc(ptrdiff_t size) noexcept -> ptrdiff_t;
     void               _free(ptrdiff_t offset) noexcept;

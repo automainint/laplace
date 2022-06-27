@@ -2,6 +2,7 @@
  */
 
 #include "../../laplace/execution.h"
+#include "../../laplace/impact.h"
 #include <catch2/catch.hpp>
 
 namespace laplace::test {
@@ -59,10 +60,11 @@ namespace laplace::test {
 
     auto exe = execution {};
 
-    exe.queue(action {}.setup([&](entity) -> coro::generator<impact> {
-      called = true;
-      co_return;
-    }));
+    exe.queue(
+        action {}.setup([&](entity) -> coro::generator<impact_list> {
+          called = true;
+          co_return;
+        }));
 
     REQUIRE(!called);
   }
@@ -72,10 +74,11 @@ namespace laplace::test {
 
     auto exe = execution {};
 
-    exe.queue(action {}.setup([&](entity) -> coro::generator<impact> {
-      called = true;
-      co_return;
-    }));
+    exe.queue(
+        action {}.setup([&](entity) -> coro::generator<impact_list> {
+          called = true;
+          co_return;
+        }));
 
     exe.schedule(1);
     exe.join();
@@ -88,8 +91,8 @@ namespace laplace::test {
 
     auto exe = execution {};
 
-    exe.queue(
-        action {}.setup([&](entity self) -> coro::generator<impact> {
+    exe.queue(action {}.setup(
+        [&](entity self) -> coro::generator<impact_list> {
           ok = self.index_of(1) == index_undefined;
           co_return;
         }));
@@ -105,12 +108,13 @@ namespace laplace::test {
 
     auto exe = execution {};
 
-    exe.queue(action {}
-                  .set_self(entity {}.setup({ { .id = 1 } }))
-                  .setup([&](entity self) -> coro::generator<impact> {
-                    ok = self.index_of(1) == 0;
-                    co_return;
-                  }));
+    exe.queue(
+        action {}
+            .set_self(entity {}.setup({ { .id = 1 } }))
+            .setup([&](entity self) -> coro::generator<impact_list> {
+              ok = self.index_of(1) == 0;
+              co_return;
+            }));
 
     exe.schedule(1);
     exe.join();

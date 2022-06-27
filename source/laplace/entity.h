@@ -5,10 +5,13 @@
 #define LAPLACE_ENTITY_H
 
 #include "access.h"
-#include "options.h"
+#include "operations.h"
+#include <functional>
 #include <vector>
 
 namespace laplace {
+  class impact;
+
   class entity {
   public:
     struct field {
@@ -61,7 +64,12 @@ namespace laplace {
         -> impact;
 
   private:
-    [[nodiscard]] static auto _error() noexcept -> entity;
+    [[nodiscard]] auto _error() const noexcept -> entity;
+    [[nodiscard]] auto _bind(std::function<entity()> f) const noexcept
+        -> entity;
+    template <typename type_>
+    [[nodiscard]] auto _bind(std::function<type_()> f,
+                             type_ def) const noexcept -> type_;
 
     bool               m_is_error = false;
     ptrdiff_t          m_id       = id_undefined;

@@ -47,23 +47,23 @@ namespace laplace::test {
             id_undefined);
   }
 
-  TEST_CASE("buffer reallocate") {
-    REQUIRE(buffer {}.reallocate(42, 10));
+  TEST_CASE("buffer allocate into") {
+    REQUIRE(buffer {}.allocate_into(42, 10));
   }
 
-  TEST_CASE("buffer reallocate may fail") {
-    REQUIRE(!buffer {}.reallocate(id_undefined, 10));
-    REQUIRE(!buffer {}.reallocate(42, -1));
-    REQUIRE(!buffer {}.reallocate(42, 0));
-    REQUIRE(
-        !buffer {}.reallocate(42, numeric_limits<ptrdiff_t>::max()));
-    REQUIRE(!buffer {}.set_chunk_size(-1).reallocate(42, 10));
+  TEST_CASE("buffer allocate into may fail") {
+    REQUIRE(!buffer {}.allocate_into(id_undefined, 10));
+    REQUIRE(!buffer {}.allocate_into(42, -1));
+    REQUIRE(!buffer {}.allocate_into(42, 0));
+    REQUIRE(!buffer {}.allocate_into(
+        42, numeric_limits<ptrdiff_t>::max()));
+    REQUIRE(!buffer {}.set_chunk_size(-1).allocate_into(42, 10));
   }
 
-  TEST_CASE("buffer allocate and reallocate") {
+  TEST_CASE("buffer allocate and allocate into") {
     auto buf = buffer {};
     auto id  = buf.allocate(10);
-    REQUIRE(buf.reallocate(id, 100));
+    REQUIRE(buf.allocate_into(id, 100));
   }
 
   TEST_CASE("buffer reserve and allocate") {
@@ -77,12 +77,12 @@ namespace laplace::test {
     REQUIRE(!buffer {}.reserve(-1));
   }
 
-  TEST_CASE("buffer reserve, reallocate and allocate") {
+  TEST_CASE("buffer reserve, allocate into and allocate") {
     auto      buf      = buffer {};
     ptrdiff_t reserved = 42;
     ptrdiff_t id       = 1;
     REQUIRE(buf.reserve(reserved));
-    REQUIRE(buf.reallocate(id, 10));
+    REQUIRE(buf.allocate_into(id, 10));
     REQUIRE(buf.allocate(10) == reserved);
   }
 
@@ -91,7 +91,7 @@ namespace laplace::test {
     ptrdiff_t reserved = 42;
     ptrdiff_t id       = 1;
     REQUIRE(buf.reserve(reserved));
-    REQUIRE(buf.reallocate(id, 10));
+    REQUIRE(buf.allocate_into(id, 10));
     REQUIRE(buf.deallocate(id));
     REQUIRE(buf.allocate(10) == reserved);
   }
@@ -288,7 +288,7 @@ namespace laplace::test {
     REQUIRE(buf.get_size() == 10);
   }
 
-  TEST_CASE("buffer size after deallocate and reallocate one") {
+  TEST_CASE("buffer size after deallocate and allocate into one") {
     auto buf = buffer {};
     REQUIRE(buf.deallocate(buf.allocate(10)));
     std::ignore = buf.allocate(10);

@@ -2,6 +2,7 @@
  */
 
 #include "../../laplace/entity.h"
+#include "../../laplace/impact.h"
 #include <catch2/catch.hpp>
 
 namespace laplace::test {
@@ -102,7 +103,7 @@ namespace laplace::test {
                 .setup({ { .id = 1 }, { .id = 2 } })
                 .set_id(42)
                 .spawn() ==
-            impact { integer_reallocate { .id = 42, .size = 2 } });
+            impact { integer_allocate_into { .id = 42, .size = 2 } });
   }
 
   TEST_CASE("entity remove") {
@@ -121,7 +122,8 @@ namespace laplace::test {
 
   TEST_CASE("entity get") {
     auto s      = state {};
-    std::ignore = s.apply(integer_reallocate { .id = 0, .size = 1 });
+    std::ignore = s.apply(
+        integer_allocate_into { .id = 0, .size = 1 });
     std::ignore = s.apply(
         integer_set({ .id = 0, .index = 0, .value = 42 }));
     while (s.adjust()) { }
@@ -147,11 +149,11 @@ namespace laplace::test {
                 .setup({ { .id = 1 }, { .id = 2 } })
                 .set_id(3)
                 .random(2, 1, 100) ==
-            impact { random { .min          = 1,
-                              .max          = 100,
-                              .return_id    = 3,
-                              .return_index = 1,
-                              .return_size  = 1 } });
+            impact { integer_random { .min          = 1,
+                                      .max          = 100,
+                                      .return_id    = 3,
+                                      .return_index = 1,
+                                      .return_size  = 1 } });
   }
 
   TEST_CASE("entity spawn to") {

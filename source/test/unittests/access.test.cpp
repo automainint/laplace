@@ -2,6 +2,7 @@
  */
 
 #include "../../laplace/access.h"
+#include "../../laplace/impact.h"
 #include <catch2/catch.hpp>
 
 namespace laplace::test {
@@ -21,13 +22,28 @@ namespace laplace::test {
 
   TEST_CASE("access get from state") {
     auto s      = state {};
-    std::ignore = s.apply(integer_reallocate { 0, 1 });
+    std::ignore = s.apply(integer_allocate_into { 0, 1 });
     std::ignore = s.apply(integer_set { 0, 0, 42 });
-    std::ignore = s.apply(byte_reallocate { 1, 1 });
+    std::ignore = s.apply(byte_allocate_into { 1, 1 });
     std::ignore = s.apply(byte_set { 1, 0, 43 });
     while (s.adjust()) { }
 
     auto a = access { s };
+    REQUIRE(a.get_integer(0, 0, -1) == 42);
+    REQUIRE(a.get_byte(1, 0, -1) == 43);
+  }
+
+  TEST_CASE("access get from destroyed state") {
+    auto *s     = new state {};
+    std::ignore = s->apply(integer_allocate_into { 0, 1 });
+    std::ignore = s->apply(integer_set { 0, 0, 42 });
+    std::ignore = s->apply(byte_allocate_into { 1, 1 });
+    std::ignore = s->apply(byte_set { 1, 0, 43 });
+    while (s->adjust()) { }
+
+    auto a = access { *s };
+    delete s;
+
     REQUIRE(a.get_integer(0, 0, -1) == 42);
     REQUIRE(a.get_byte(1, 0, -1) == 43);
   }

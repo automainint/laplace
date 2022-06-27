@@ -50,14 +50,14 @@ namespace laplace {
   template <typename int_, atomic_integer atomic_int_>
   auto basic_buffer<int_, atomic_int_>::set_chunk_size(ptrdiff_t size)
       const noexcept -> basic_buffer<int_, atomic_int_> {
-    if (is_error())
-      return *this;
-    if (size <= 0)
-      return _error();
+    return _bind([&]() {
+      if (size <= 0)
+        return _error();
 
-    auto result         = *this;
-    result.m_chunk_size = size;
-    return result;
+      auto result         = *this;
+      result.m_chunk_size = size;
+      return result;
+    });
   }
 
   template <typename int_, atomic_integer atomic_int_>
@@ -69,111 +69,121 @@ namespace laplace {
   template <typename int_, atomic_integer atomic_int_>
   auto basic_buffer<int_, atomic_int_>::get_size() const noexcept
       -> ptrdiff_t {
-    return m_values.size();
+    return _bind<ptrdiff_t>([&]() { return m_values.size(); },
+                            index_undefined);
   }
 
   template <typename int_, atomic_integer atomic_int_>
   auto basic_buffer<int_, atomic_int_>::reserve(
       ptrdiff_t count) noexcept -> bool {
-    if (is_error())
-      return false;
-    if (count < 0)
-      return false;
+    return _bind<bool>(
+        [&]() {
+          if (count < 0)
+            return false;
 
-    if (m_blocks.size() < count) {
-      try {
-        m_blocks.resize(count, index_undefined);
-      } catch (bad_alloc &) { return false; }
-    }
+          if (m_blocks.size() < count) {
+            try {
+              m_blocks.resize(count, index_undefined);
+            } catch (bad_alloc &) { return false; }
+          }
 
-    m_reserved   = count;
-    m_next_block = max(m_next_block, count);
-    while (m_next_block < m_blocks.size() &&
-           m_blocks[m_next_block] != index_undefined)
-      ++m_next_block;
-    return true;
+          m_reserved   = count;
+          m_next_block = max(m_next_block, count);
+          while (m_next_block < m_blocks.size() &&
+                 m_blocks[m_next_block] != index_undefined)
+            ++m_next_block;
+          return true;
+        },
+        false);
   }
 
   template <typename int_, atomic_integer atomic_int_>
   auto basic_buffer<int_, atomic_int_>::allocate(
       ptrdiff_t size) noexcept -> ptrdiff_t {
-    if (is_error())
-      return id_undefined;
-    if (size <= 0)
-      return id_undefined;
+    return _bind<ptrdiff_t>(
+        [&]() {
+          if (size <= 0)
+            return id_undefined;
 
-    auto const offset = _alloc(size);
-    if (offset == index_undefined)
-      return id_undefined;
+          auto const offset = _alloc(size);
+          if (offset == index_undefined)
+            return id_undefined;
 
-    auto const block = m_next_block;
-    if (block >= m_blocks.size()) {
-      try {
-        m_blocks.resize(block + 1, index_undefined);
-      } catch (bad_alloc &) {
-        _free(offset);
-        return id_undefined;
-      }
-    }
-    m_blocks[block] = offset;
+          auto const block = m_next_block;
+          if (block >= m_blocks.size()) {
+            try {
+              m_blocks.resize(block + 1, index_undefined);
+            } catch (bad_alloc &) {
+              _free(offset);
+              return id_undefined;
+            }
+          }
+          m_blocks[block] = offset;
 
-    while (m_next_block < m_blocks.size() &&
-           m_blocks[m_next_block] != index_undefined)
-      ++m_next_block;
+          while (m_next_block < m_blocks.size() &&
+                 m_blocks[m_next_block] != index_undefined)
+            ++m_next_block;
 
-    return block;
+          return block;
+        },
+        id_undefined);
   }
 
   template <typename int_, atomic_integer atomic_int_>
-  auto basic_buffer<int_, atomic_int_>::reallocate(
+  auto basic_buffer<int_, atomic_int_>::allocate_into(
       ptrdiff_t block, ptrdiff_t size) noexcept -> bool {
-    if (is_error())
-      return false;
-    if (block < 0)
-      return false;
-    if (size <= 0)
-      return false;
+    return _bind<bool>(
+        [&]() {
+          if (block < 0)
+            return false;
+          if (size <= 0)
+            return false;
 
-    if (block < m_blocks.size() && m_blocks[block] != index_undefined)
-      _free(m_blocks[block]);
+          if (block < m_blocks.size() &&
+              m_blocks[block] != index_undefined)
+            _free(m_blocks[block]);
 
-    auto const offset = _alloc(size);
-    if (offset == index_undefined)
-      return false;
+          auto const offset = _alloc(size);
+          if (offset == index_undefined)
+            return false;
 
-    if (block >= m_blocks.size()) {
-      try {
-        m_blocks.resize(block + 1, index_undefined);
-      } catch (bad_alloc &) {
-        _free(offset);
-        return false;
-      }
-    }
+          if (block >= m_blocks.size()) {
+            try {
+              m_blocks.resize(block + 1, index_undefined);
+            } catch (bad_alloc &) {
+              _free(offset);
+              return false;
+            }
+          }
 
-    m_blocks[block] = offset;
+          m_blocks[block] = offset;
 
-    while (m_next_block < m_blocks.size() &&
-           m_blocks[m_next_block] != index_undefined)
-      ++m_next_block;
+          while (m_next_block < m_blocks.size() &&
+                 m_blocks[m_next_block] != index_undefined)
+            ++m_next_block;
 
-    return true;
+          return true;
+        },
+        false);
   }
 
   template <typename int_, atomic_integer atomic_int_>
   auto basic_buffer<int_, atomic_int_>::deallocate(
       ptrdiff_t block) noexcept -> bool {
-    if (is_error())
-      return false;
-    if (block < 0 || block >= m_blocks.size())
-      return false;
-    if (m_blocks[block] == index_undefined)
-      return false;
+    return _bind<bool>(
+        [&]() {
+          if (block < 0 || block >= m_blocks.size())
+            return false;
+          if (m_blocks[block] == index_undefined)
+            return false;
 
-    _free(m_blocks[block]);
+          _free(m_blocks[block]);
 
-    m_blocks[block] = index_undefined;
-    m_next_block    = max(m_reserved, min(m_next_block, block));
-    return true;
+          m_blocks[block] = index_undefined;
+          m_next_block    = max(m_reserved, min(m_next_block, block));
+          return true;
+        },
+        false);
   }
 
   template <typename int_, atomic_integer atomic_int_>
@@ -181,14 +191,16 @@ namespace laplace {
                                             ptrdiff_t index,
                                             int_ fail) const noexcept
       -> int_ {
-    if (is_error())
-      return fail;
-    if (block < 0 || block >= m_blocks.size())
-      return fail;
-    auto const offset = m_blocks[block] + index;
-    if (offset < 0 || offset >= m_values.size())
-      return fail;
-    return m_values[offset].value;
+    return _bind<int_>(
+        [&]() {
+          if (block < 0 || block >= m_blocks.size())
+            return fail;
+          auto const offset = m_blocks[block] + index;
+          if (offset < 0 || offset >= m_values.size())
+            return fail;
+          return m_values[offset].value;
+        },
+        fail);
   }
 
   template <typename int_, atomic_integer atomic_int_>
@@ -196,16 +208,18 @@ namespace laplace {
                                             ptrdiff_t index,
                                             int_      value) noexcept
       -> bool {
-    if (is_error())
-      return false;
-    if (block < 0 || block >= m_blocks.size())
-      return false;
-    auto const offset = m_blocks[block] + index;
-    if (offset < 0 || offset >= m_values.size())
-      return false;
-    m_values[offset].delta.fetch_add(value - m_values[offset].value,
-                                     memory_order_relaxed);
-    return true;
+    return _bind<bool>(
+        [&]() {
+          if (block < 0 || block >= m_blocks.size())
+            return false;
+          auto const offset = m_blocks[block] + index;
+          if (offset < 0 || offset >= m_values.size())
+            return false;
+          m_values[offset].delta.fetch_add(
+              value - m_values[offset].value, memory_order_relaxed);
+          return true;
+        },
+        false);
   }
 
   template <typename int_, atomic_integer atomic_int_>
@@ -213,50 +227,70 @@ namespace laplace {
                                             ptrdiff_t index,
                                             int_      delta) noexcept
       -> bool {
-    if (is_error())
-      return false;
-    if (block < 0 || block >= m_blocks.size())
-      return false;
-    auto const offset = m_blocks[block] + index;
-    if (offset < 0 || offset >= m_values.size())
-      return false;
-    m_values[offset].delta.fetch_add(delta, memory_order_relaxed);
-    return true;
+    return _bind<bool>(
+        [&]() {
+          if (block < 0 || block >= m_blocks.size())
+            return false;
+          auto const offset = m_blocks[block] + index;
+          if (offset < 0 || offset >= m_values.size())
+            return false;
+          m_values[offset].delta.fetch_add(delta,
+                                           memory_order_relaxed);
+          return true;
+        },
+        false);
   }
 
   template <typename int_, atomic_integer atomic_int_>
   auto basic_buffer<int_, atomic_int_>::adjust() noexcept -> bool {
-    if (is_error())
-      return false;
+    return _bind<bool>(
+        [&]() {
+          const auto begin = m_next_chunk.fetch_add(
+              m_chunk_size, memory_order_relaxed);
+          const auto end     = min<ptrdiff_t>(begin + m_chunk_size,
+                                          m_values.size());
+          const bool is_done = end == m_values.size();
 
-    const auto begin   = m_next_chunk.fetch_add(m_chunk_size,
-                                                memory_order_relaxed);
-    const auto end     = min<ptrdiff_t>(begin + m_chunk_size,
-                                    m_values.size());
-    const bool is_done = end == m_values.size();
+          for (auto i = begin; i < end; ++i) {
+            m_values[i].value += m_values[i].delta.exchange(
+                0, memory_order_relaxed);
+          }
 
-    for (auto i = begin; i < end; ++i) {
-      m_values[i].value += m_values[i].delta.exchange(
-          0, memory_order_relaxed);
-    }
-
-    return !is_done;
+          return !is_done;
+        },
+        false);
   }
 
   template <typename int_, atomic_integer atomic_int_>
   void basic_buffer<int_, atomic_int_>::adjust_done() noexcept {
-    if (is_error())
-      return;
-
-    m_next_chunk.store(0, memory_order_relaxed);
+    if (!is_error())
+      m_next_chunk.store(0, memory_order_relaxed);
   }
 
   template <typename int_, atomic_integer atomic_int_>
   auto basic_buffer<int_, atomic_int_>::_error() const noexcept
       -> basic_buffer<int_, atomic_int_> {
-    auto result       = basic_buffer<int_, atomic_int_> {};
+    auto result       = basic_buffer<int_, atomic_int_> { *this };
     result.m_is_error = true;
     return result;
+  }
+
+  template <typename int_, atomic_integer atomic_int_>
+  auto basic_buffer<int_, atomic_int_>::_bind(
+      std::function<basic_buffer<int_, atomic_int_>()> f)
+      const noexcept -> basic_buffer<int_, atomic_int_> {
+    if (is_error())
+      return _error();
+    return f();
+  }
+
+  template <typename int_, atomic_integer atomic_int_>
+  template <typename type_>
+  auto basic_buffer<int_, atomic_int_>::_bind(
+      std::function<type_()> f, type_ def) const noexcept -> type_ {
+    if (is_error())
+      return def;
+    return f();
   }
 
   template <typename int_, atomic_integer atomic_int_>

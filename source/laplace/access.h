@@ -7,6 +7,8 @@
 #include "state.h"
 
 namespace laplace {
+  /*  Read-only access to the state.
+   */
   class access {
   public:
     access() noexcept = default;
@@ -24,7 +26,7 @@ namespace laplace {
         -> bool = default;
 
   private:
-    state const *m_state = nullptr;
+    std::shared_ptr<io_interface> m_io = nullptr;
   };
 }
 

@@ -14,6 +14,9 @@ namespace laplace {
 
   static constexpr ptrdiff_t id_undefined    = -1;
   static constexpr ptrdiff_t index_undefined = -1;
+
+  static constexpr ptrdiff_t average_impact_list_size = 16;
+  static constexpr ptrdiff_t average_impact_count     = 1024;
 }
 
 #endif

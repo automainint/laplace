@@ -3,6 +3,7 @@
 
 #include "execution.h"
 
+#include "impact.h"
 #include <utility>
 
 namespace laplace {
