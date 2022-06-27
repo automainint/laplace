@@ -8,7 +8,7 @@
 
 namespace laplace::test {
   using std::make_shared;
-  
+
   TEST_CASE("create execution") {
     REQUIRE(!execution {}.is_error());
   }
@@ -139,5 +139,27 @@ namespace laplace::test {
                 .set_state(state { make_shared<test_io_impl>() })
                 .read_only()
                 .get_byte(0, 0, -1) == 24);
+  }
+
+  TEST_CASE("execution state copy") {
+    auto s      = state {};
+    std::ignore = s.apply(integer_allocate_into { 0, 1 });
+
+    auto foo = execution {};
+    auto bar = execution {}.set_state(s);
+    foo      = bar;
+    REQUIRE(foo.read_only().get_integer(0, 0, -1) == 0);
+    REQUIRE(bar.read_only().get_integer(0, 0, -1) == 0);
+  }
+
+  TEST_CASE("execution state move") {
+    auto s      = state {};
+    std::ignore = s.apply(integer_allocate_into { 0, 1 });
+
+    auto foo = execution {};
+    auto bar = execution {}.set_state(s);
+    foo      = std::move(bar);
+    REQUIRE(foo.read_only().get_integer(0, 0, -1) == 0);
+    REQUIRE(bar.read_only().get_integer(0, 0, -1) == -1);
   }
 }

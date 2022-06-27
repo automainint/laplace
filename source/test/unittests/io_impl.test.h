@@ -6,14 +6,8 @@
 
 #include "../../laplace/io_interface.h"
 
-#include <iostream>
-
 namespace laplace::test {
   struct test_io_impl : io_interface {
-    test_io_impl() {
-      std::cout << "custom_io_impl()\n";
-    }
-
     [[nodiscard]] auto clone() const noexcept
         -> std::shared_ptr<io_interface> override {
       return std::make_shared<test_io_impl>(*this);
@@ -21,7 +15,6 @@ namespace laplace::test {
     [[nodiscard]] auto get_integer(ptrdiff_t id, ptrdiff_t index,
                                    int_type def) const noexcept
         -> int_type override {
-      std::cout << "get_integer()\n";
       return 42;
     }
     [[nodiscard]] auto get_byte(ptrdiff_t id, ptrdiff_t index,

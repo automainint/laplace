@@ -111,6 +111,7 @@ namespace laplace {
     m_is_done      = exe.m_is_done;
     m_thread_count = exe.m_thread_count;
     m_action       = exe.m_action;
+    m_state        = exe.m_state;
   }
 
   void execution::_assign(execution &&exe) noexcept {
@@ -118,6 +119,7 @@ namespace laplace {
     m_is_done      = exe.m_is_done;
     m_thread_count = exe.m_thread_count;
     m_action       = std::move(exe.m_action);
+    m_state        = std::move(exe.m_state);
 
     exe._set_error();
   }
