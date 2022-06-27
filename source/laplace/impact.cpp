@@ -2,7 +2,3 @@
  */
 
 #include "impact.h"
-
-namespace laplace {
-  std::pmr::synchronized_pool_resource impact_list::m_resource = {};
-}

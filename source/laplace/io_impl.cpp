@@ -8,7 +8,7 @@
 namespace laplace {
   using std::visit, std::is_same_v, std::decay_t,
       std::uniform_int_distribution, std::shared_ptr,
-       std::make_shared;
+      std::make_shared;
 
   auto io_impl::clone() const noexcept -> shared_ptr<io_interface> {
     return make_shared<io_impl>(*this);
@@ -38,9 +38,12 @@ namespace laplace {
           else if constexpr (is_same_v<type, integer_allocate_into>)
             return integers.allocate_into(i.id, i.size);
 
-          else if constexpr (is_same_v<type, integer_allocate>)
-            return integers.set(i.return_id, i.return_index,
-                                integers.allocate(i.size));
+          else if constexpr (is_same_v<type, integer_allocate>) {
+            auto const id = integers.allocate(i.size);
+            return id != id_undefined
+                       ? integers.set(i.return_id, i.return_index, id)
+                       : false;
+          }
 
           else if constexpr (is_same_v<type, integer_deallocate>)
             return integers.deallocate(i.id);
@@ -57,9 +60,12 @@ namespace laplace {
           else if constexpr (is_same_v<type, byte_allocate_into>)
             return bytes.allocate_into(i.id, i.size);
 
-          else if constexpr (is_same_v<type, byte_allocate>)
-            return integers.set(i.return_id, i.return_index,
-                                bytes.allocate(i.size));
+          else if constexpr (is_same_v<type, byte_allocate>) {
+            auto const id = bytes.allocate(i.size);
+            return id != id_undefined
+                       ? integers.set(i.return_id, i.return_index, id)
+                       : false;
+          }
 
           else if constexpr (is_same_v<type, byte_deallocate>)
             return bytes.deallocate(i.id);

@@ -6,7 +6,7 @@
 #include <catch2/catch.hpp>
 
 namespace laplace {
-  using std::make_shared;
+  using std::make_shared, std::shared_ptr;
 
   TEST_CASE("create state") {
     std::ignore = state {};
@@ -286,31 +286,26 @@ namespace laplace {
   TEST_CASE("custom io implementation") {
     struct custom_io_impl : io_interface {
       [[nodiscard]] auto clone() const noexcept
-          -> std::shared_ptr<io_interface> override {
-        return std::make_shared<custom_io_impl>(*this);
+          -> shared_ptr<io_interface> override {
+        return make_shared<custom_io_impl>(*this);
       }
-
       [[nodiscard]] auto get_integer(ptrdiff_t id, ptrdiff_t index,
                                      int_type def) const noexcept
           -> int_type override {
         return 42;
       }
-
       [[nodiscard]] auto get_byte(ptrdiff_t id, ptrdiff_t index,
                                   byte_type def) const noexcept
           -> byte_type override {
         return 24;
       }
-
       [[nodiscard]] auto apply(impact const &i) noexcept
           -> bool override {
         return true;
       }
-
       [[nodiscard]] auto adjust() noexcept -> bool override {
         return false;
       }
-
       void adjust_done() noexcept override { }
     };
 

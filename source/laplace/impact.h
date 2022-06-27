@@ -6,7 +6,6 @@
 
 #include "action.h"
 #include <array>
-#include <memory_resource>
 #include <variant>
 #include <vector>
 
@@ -70,9 +69,9 @@ namespace laplace {
     auto operator+=(impact_list const &a) noexcept -> impact_list &;
 
   private:
-    static std::pmr::synchronized_pool_resource m_resource;
+    using data_type = std::pmr::vector<impact>;
 
-    std::pmr::vector<impact> m_data;
+    data_type m_data = data_type { &memory_resource };
   };
 
   [[nodiscard]] auto operator+(impact a, impact b) noexcept

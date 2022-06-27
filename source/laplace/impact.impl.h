@@ -5,8 +5,7 @@
 #define LAPLACE_IMPACT_IMPL_H
 
 namespace laplace {
-  inline impact_list::impact_list(impact i) noexcept :
-      m_data(&m_resource) {
+  inline impact_list::impact_list(impact i) noexcept {
     m_data.reserve(average_impact_list_size);
     m_data.emplace_back(i);
   }

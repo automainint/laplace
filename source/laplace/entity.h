@@ -5,6 +5,7 @@
 #define LAPLACE_ENTITY_H
 
 #include "access.h"
+#include "memory.h"
 #include "operations.h"
 #include <functional>
 #include <vector>
@@ -16,6 +17,11 @@ namespace laplace {
   public:
     struct field {
       ptrdiff_t id = id_undefined;
+    };
+
+    struct value_point {
+      ptrdiff_t id;
+      ptrdiff_t index;
     };
 
     [[nodiscard]] auto is_error() const noexcept -> bool;
@@ -36,12 +42,15 @@ namespace laplace {
 
     [[nodiscard]] auto set_access(access a) const noexcept -> entity;
 
+    [[nodiscard]] auto get(ptrdiff_t value_id,
+                           int_type  def) const noexcept -> int_type;
+
+    [[nodiscard]] auto point(ptrdiff_t value_id) const noexcept
+        -> value_point;
+
     [[nodiscard]] auto spawn() const noexcept -> impact;
 
     [[nodiscard]] auto remove() const noexcept -> impact;
-
-    [[nodiscard]] auto get(ptrdiff_t value_id,
-                           int_type  def) const noexcept -> int_type;
 
     [[nodiscard]] auto set(ptrdiff_t value_id,
                            int_type  value) const noexcept -> impact;
@@ -51,14 +60,6 @@ namespace laplace {
 
     [[nodiscard]] auto random(ptrdiff_t value_id, int_type min,
                               int_type max) const noexcept -> impact;
-
-    struct value_point {
-      ptrdiff_t id;
-      ptrdiff_t index;
-    };
-
-    [[nodiscard]] auto point(ptrdiff_t value_id) const noexcept
-        -> value_point;
 
     [[nodiscard]] auto spawn_to(value_point p) const noexcept
         -> impact;
@@ -71,13 +72,13 @@ namespace laplace {
     [[nodiscard]] auto _bind(std::function<type_()> f,
                              type_ def) const noexcept -> type_;
 
-    bool               m_is_error = false;
-    ptrdiff_t          m_id       = id_undefined;
-    access             m_access;
-    std::vector<field> m_fields;
+    using fields_type = std::pmr::vector<field>;
+
+    bool        m_is_error = false;
+    ptrdiff_t   m_id       = id_undefined;
+    access      m_access;
+    fields_type m_fields = fields_type { &memory_resource };
   };
 }
-
-#include "entity.impl.h"
 
 #endif

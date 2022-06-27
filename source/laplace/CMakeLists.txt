@@ -1,8 +1,9 @@
 target_sources(
   ${LAPLACE_LIBRARY}
     PRIVATE
-      impact.cpp io_impl.cpp buffer.cpp entity.cpp access.cpp
-      execution.cpp controller.cpp action.cpp state.cpp
+      impact.cpp io_impl.cpp buffer.cpp entity.cpp options.cpp
+      access.cpp execution.cpp controller.cpp memory.cpp action.cpp
+      state.cpp
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/execution.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/io_impl.h>
@@ -10,8 +11,8 @@ target_sources(
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/access.impl.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/buffer.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/operations.h>
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/entity.impl.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/state.h>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/memory.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/access.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/impact.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/controller.h>
