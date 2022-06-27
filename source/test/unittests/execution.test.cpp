@@ -3,11 +3,12 @@
 
 #include "../../laplace/execution.h"
 #include "../../laplace/impact.h"
+#include "io_impl.test.h"
 #include <catch2/catch.hpp>
 
 namespace laplace::test {
-  using std::make_shared, std::shared_ptr;
-
+  using std::make_shared;
+  
   TEST_CASE("create execution") {
     REQUIRE(!execution {}.is_error());
   }
@@ -129,38 +130,13 @@ namespace laplace::test {
   }
 
   TEST_CASE("execution set state") {
-    struct custom_io_impl : io_interface {
-      [[nodiscard]] auto clone() const noexcept
-          -> shared_ptr<io_interface> override {
-        return make_shared<custom_io_impl>(*this);
-      }
-      [[nodiscard]] auto get_integer(ptrdiff_t id, ptrdiff_t index,
-                                     int_type def) const noexcept
-          -> int_type override {
-        return 42;
-      }
-      [[nodiscard]] auto get_byte(ptrdiff_t id, ptrdiff_t index,
-                                  byte_type def) const noexcept
-          -> byte_type override {
-        return 24;
-      }
-      [[nodiscard]] auto apply(impact const &i) noexcept
-          -> bool override {
-        return true;
-      }
-      [[nodiscard]] auto adjust() noexcept -> bool override {
-        return false;
-      }
-      void adjust_done() noexcept override { }
-    };
-
     REQUIRE(execution {}
-                .set_state(state { make_shared<custom_io_impl>() })
+                .set_state(state { make_shared<test_io_impl>() })
                 .read_only()
                 .get_integer(0, 0, -1) == 42);
 
     REQUIRE(execution {}
-                .set_state(state { make_shared<custom_io_impl>() })
+                .set_state(state { make_shared<test_io_impl>() })
                 .read_only()
                 .get_byte(0, 0, -1) == 24);
   }
