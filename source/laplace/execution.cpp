@@ -9,9 +9,6 @@
 namespace laplace {
   using std::thread, std::max, std::function;
 
-  const ptrdiff_t execution::default_thread_count = 3;
-  const ptrdiff_t execution::overthreading_limit  = 8;
-
   execution::execution() noexcept { }
 
   execution::execution(execution const &exe) noexcept {

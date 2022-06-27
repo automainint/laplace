@@ -11,9 +11,6 @@
 namespace laplace {
   class execution {
   public:
-    static const ptrdiff_t default_thread_count;
-    static const ptrdiff_t overthreading_limit;
-
     execution() noexcept;
     execution(execution const &exe) noexcept;
     execution(execution &&exe) noexcept;

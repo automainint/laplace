@@ -30,8 +30,7 @@ namespace laplace::test {
   }
 
   TEST_CASE("execution get thread count") {
-    REQUIRE(execution {}.get_thread_count() ==
-            execution::default_thread_count);
+    REQUIRE(execution {}.get_thread_count() == default_thread_count);
   }
 
   TEST_CASE("execution set thread count") {
