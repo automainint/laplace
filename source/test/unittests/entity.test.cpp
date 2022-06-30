@@ -6,6 +6,8 @@
 #include <catch2/catch.hpp>
 
 namespace laplace::test {
+  using std::numeric_limits;
+
   TEST_CASE("create entity") {
     REQUIRE(!entity {}.error());
   }
@@ -66,7 +68,7 @@ namespace laplace::test {
   TEST_CASE("entity setup unsorted") {
     REQUIRE(entity {}
                 .setup({ { .id = 3 }, { .id = 2 }, { .id = 1 } })
-                .index_of(1) == 2);
+                .index_of(1) == 0);
   }
 
   TEST_CASE("entity setup repeating will fail") {
@@ -187,9 +189,12 @@ namespace laplace::test {
     REQUIRE(error.get(1, -1) == -1);
   }
 
-  /*TEST_CASE("entity constexpr index of") {
-    constexpr auto index =
-        entity {}.setup({ { .id = 42 } }).index_of(42);
-    REQUIRE(index == 0);
-  }*/
+  TEST_CASE("entity setup with large id") {
+    REQUIRE(entity {}
+                .setup({ { .id = 0x1000000000000 } })
+                .index_of(0x1000000000000) == 0);
+    REQUIRE(entity {}
+                .setup({ { .id = numeric_limits<ptrdiff_t>::max() } })
+                .index_of(numeric_limits<ptrdiff_t>::max()) == 0);
+  }
 }

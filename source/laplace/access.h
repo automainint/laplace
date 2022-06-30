@@ -5,6 +5,7 @@
 #define LAPLACE_ACCESS_H
 
 #include "state.h"
+#include <optional>
 
 namespace laplace {
   /*  Read-only access to the state.
@@ -26,7 +27,7 @@ namespace laplace {
         -> bool = default;
 
   private:
-    std::shared_ptr<io_interface> m_io = nullptr;
+    std::optional<std::shared_ptr<io_interface>> m_io;
   };
 }
 

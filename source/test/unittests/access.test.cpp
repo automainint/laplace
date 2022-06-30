@@ -47,4 +47,13 @@ namespace laplace::test {
     REQUIRE(a.get_integer(0, 0, -1) == 42);
     REQUIRE(a.get_byte(1, 0, -1) == 43);
   }
+
+  TEST_CASE("access use in constexpr context") {
+    constexpr auto n = []() {
+      auto s = access {};
+      return 0;
+    }();
+
+    REQUIRE(n == 0);
+  }
 }

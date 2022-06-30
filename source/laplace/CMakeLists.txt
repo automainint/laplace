@@ -11,6 +11,7 @@ target_sources(
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/access.impl.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/buffer.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/operations.h>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/entity.impl.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/state.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/memory.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/access.h>
