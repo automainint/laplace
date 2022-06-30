@@ -24,13 +24,14 @@ namespace laplace {
       ptrdiff_t index;
     };
 
-    [[nodiscard]] auto is_error() const noexcept -> bool;
+    [[nodiscard]] auto error() const noexcept -> bool;
 
-    [[nodiscard]] auto get_size() const noexcept -> ptrdiff_t;
+    [[nodiscard]] auto size() const noexcept -> ptrdiff_t;
 
-    [[nodiscard]] auto get_id() const noexcept -> ptrdiff_t;
+    [[nodiscard]] auto id() const noexcept -> ptrdiff_t;
 
-    [[nodiscard]] auto get_access() const noexcept -> access const &;
+    [[nodiscard]] auto access() const noexcept
+        -> laplace::access const &;
 
     [[nodiscard]] auto index_of(ptrdiff_t id) const noexcept
         -> ptrdiff_t;
@@ -40,7 +41,8 @@ namespace laplace {
 
     [[nodiscard]] auto set_id(ptrdiff_t id) const noexcept -> entity;
 
-    [[nodiscard]] auto set_access(access a) const noexcept -> entity;
+    [[nodiscard]] auto set_access(laplace::access a) const noexcept
+        -> entity;
 
     [[nodiscard]] auto get(ptrdiff_t value_id,
                            int_type  def) const noexcept -> int_type;
@@ -72,12 +74,13 @@ namespace laplace {
     [[nodiscard]] auto _bind(std::function<type_()> f,
                              type_ def) const noexcept -> type_;
 
-    using fields_type = std::pmr::vector<field>;
+    using indices_type = std::pmr::vector<ptrdiff_t>;
 
-    bool        m_is_error = false;
-    ptrdiff_t   m_id       = id_undefined;
-    access      m_access;
-    fields_type m_fields = fields_type { &memory_resource };
+    bool            m_is_error = false;
+    ptrdiff_t       m_id       = id_undefined;
+    ptrdiff_t       m_size     = 0;
+    laplace::access m_access;
+    indices_type    m_indices = indices_type { &memory_resource };
   };
 }
 

@@ -19,9 +19,9 @@ namespace laplace {
     using impact_generator =
         std::function<coro::generator<impact_list>(entity self)>;
 
-    [[nodiscard]] auto is_error() const noexcept -> bool;
+    [[nodiscard]] auto error() const noexcept -> bool;
 
-    [[nodiscard]] auto get_tick_duration() const noexcept
+    [[nodiscard]] auto tick_duration() const noexcept
         -> time_type;
 
     [[nodiscard]] auto setup(impact_generator gen) const noexcept
@@ -36,7 +36,7 @@ namespace laplace {
     [[nodiscard]] auto run(entity self) const noexcept
         -> coro::generator<impact_list>;
 
-    [[nodiscard]] auto get_self() const noexcept -> entity;
+    [[nodiscard]] auto self() const noexcept -> entity;
 
   private:
     [[nodiscard]] auto _error() const noexcept -> action;

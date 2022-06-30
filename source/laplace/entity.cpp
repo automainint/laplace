@@ -8,62 +8,50 @@
 #include <iterator>
 
 namespace laplace {
-  auto entity::is_error() const noexcept -> bool {
+  using std::vector;
+
+  auto entity::error() const noexcept -> bool {
     return m_is_error;
   }
 
-  auto entity::get_size() const noexcept -> ptrdiff_t {
-    return _bind<ptrdiff_t>([&]() { return m_fields.size(); },
+  auto entity::size() const noexcept -> ptrdiff_t {
+    return _bind<ptrdiff_t>([&]() { return m_size; },
                             index_undefined);
   }
 
-  auto entity::get_id() const noexcept -> ptrdiff_t {
+  auto entity::id() const noexcept -> ptrdiff_t {
     return _bind<ptrdiff_t>([&]() { return m_id; }, id_undefined);
   }
 
-  auto entity::get_access() const noexcept -> access const & {
+  auto entity::access() const noexcept -> laplace::access const & {
     return m_access;
   }
 
   auto entity::index_of(ptrdiff_t id) const noexcept -> ptrdiff_t {
     return _bind<ptrdiff_t>(
         [&]() {
-          auto const i = std::lower_bound(
-              m_fields.begin(), m_fields.end(), id,
-              [](field const &a, ptrdiff_t b) { return a.id < b; });
-          return i != m_fields.end() && i->id == id
-                     ? i - m_fields.begin()
-                     : index_undefined;
+          if (id < 0 || id >= m_indices.size())
+            return index_undefined;
+          return m_indices[id];
         },
         index_undefined);
   }
 
-  auto entity::setup(std::vector<field> fields) const noexcept
-      -> entity {
+  auto entity::setup(vector<field> fields) const noexcept -> entity {
     return _bind([&]() {
-      auto e = entity {};
+      auto e = entity { *this };
 
-      auto compare = [](field const &a, field const &b) {
-        return a.id < b.id;
-      };
-
-      std::sort(fields.begin(), fields.end(), compare);
-
-      for (ptrdiff_t i = 1; i < fields.size(); i++)
-        if (fields[i].id == fields[i - 1].id)
+      for (auto &f : fields) {
+        auto const id = f.id;
+        if (id < 0)
           return _error();
-
-      e.m_id = m_id;
-
-      std::merge(m_fields.begin(), m_fields.end(), fields.begin(),
-                 fields.end(), std::back_inserter(e.m_fields),
-                 compare);
-
-      for (ptrdiff_t i = 1; i < e.m_fields.size();) {
-        if (e.m_fields[i].id == e.m_fields[i - 1].id)
-          e.m_fields.erase(e.m_fields.begin() + i);
-        else
-          i++;
+        if (e.m_indices.size() <= id)
+          e.m_indices.resize(id + 1, index_undefined);
+        if (e.m_indices[id] == index_undefined)
+          e.m_indices[id] = e.m_size++;
+        else if (id >= m_indices.size() ||
+                 m_indices[id] == index_undefined)
+          return _error();
       }
 
       return e;
@@ -78,7 +66,8 @@ namespace laplace {
     });
   }
 
-  auto entity::set_access(access a) const noexcept -> entity {
+  auto entity::set_access(laplace::access a) const noexcept
+      -> entity {
     return _bind([&]() {
       auto e     = entity { *this };
       e.m_access = std::move(a);
@@ -90,37 +79,34 @@ namespace laplace {
       -> int_type {
     return _bind<int_type>(
         [&]() {
-          return m_access.get_integer(get_id(), index_of(value_id),
-                                      def);
+          return m_access.get_integer(id(), index_of(value_id), def);
         },
         def);
   }
 
   auto entity::point(ptrdiff_t value_id) const noexcept
       -> value_point {
-    return { .id = get_id(), .index = index_of(value_id) };
+    return { .id = id(), .index = index_of(value_id) };
   }
 
   auto entity::spawn() const noexcept -> impact {
     return _bind<impact>(
         [&]() {
-          return integer_allocate_into { .id   = get_id(),
-                                         .size = get_size() };
+          return integer_allocate_into { .id = id(), .size = size() };
         },
         noop {});
   }
 
   auto entity::remove() const noexcept -> impact {
     return _bind<impact>(
-        [&]() { return integer_deallocate { .id = get_id() }; },
-        noop {});
+        [&]() { return integer_deallocate { .id = id() }; }, noop {});
   }
 
   auto entity::set(ptrdiff_t value_id, int_type value) const noexcept
       -> impact {
     return _bind<impact>(
         [&]() {
-          return integer_set { .id    = get_id(),
+          return integer_set { .id    = id(),
                                .index = index_of(value_id),
                                .value = value };
         },
@@ -131,7 +117,7 @@ namespace laplace {
       -> impact {
     return _bind<impact>(
         [&]() {
-          return integer_add { .id    = get_id(),
+          return integer_add { .id    = id(),
                                .index = index_of(value_id),
                                .delta = delta };
         },
@@ -144,7 +130,7 @@ namespace laplace {
         [&]() {
           return integer_random { .min          = min,
                                   .max          = max,
-                                  .return_id    = get_id(),
+                                  .return_id    = id(),
                                   .return_index = index_of(value_id),
                                   .return_size  = 1 };
         },
@@ -154,7 +140,7 @@ namespace laplace {
   auto entity::spawn_to(value_point p) const noexcept -> impact {
     return _bind<impact>(
         [&]() {
-          return integer_allocate { .size         = get_size(),
+          return integer_allocate { .size         = size(),
                                     .return_id    = p.id,
                                     .return_index = p.index };
         },
@@ -169,7 +155,7 @@ namespace laplace {
 
   auto entity::_bind(std::function<entity()> f) const noexcept
       -> entity {
-    if (is_error())
+    if (error())
       return *this;
     return f();
   }
@@ -177,7 +163,7 @@ namespace laplace {
   template <typename type_>
   auto entity::_bind(std::function<type_()> f,
                      type_ def) const noexcept -> type_ {
-    if (is_error())
+    if (error())
       return def;
     return f();
   }

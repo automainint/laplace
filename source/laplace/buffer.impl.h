@@ -42,7 +42,7 @@ namespace laplace {
           8000 / sizeof(int_);
 
   template <typename int_, atomic_integer atomic_int_>
-  auto basic_buffer<int_, atomic_int_>::is_error() const noexcept
+  auto basic_buffer<int_, atomic_int_>::error() const noexcept
       -> bool {
     return m_is_error;
   }
@@ -61,13 +61,13 @@ namespace laplace {
   }
 
   template <typename int_, atomic_integer atomic_int_>
-  auto basic_buffer<int_, atomic_int_>::get_chunk_size()
-      const noexcept -> ptrdiff_t {
+  auto basic_buffer<int_, atomic_int_>::chunk_size() const noexcept
+      -> ptrdiff_t {
     return m_chunk_size;
   }
 
   template <typename int_, atomic_integer atomic_int_>
-  auto basic_buffer<int_, atomic_int_>::get_size() const noexcept
+  auto basic_buffer<int_, atomic_int_>::size() const noexcept
       -> ptrdiff_t {
     return _bind<ptrdiff_t>([&]() { return m_values.size(); },
                             index_undefined);
@@ -263,7 +263,7 @@ namespace laplace {
 
   template <typename int_, atomic_integer atomic_int_>
   void basic_buffer<int_, atomic_int_>::adjust_done() noexcept {
-    if (!is_error())
+    if (!error())
       m_next_chunk.store(0, memory_order_relaxed);
   }
 
@@ -279,7 +279,7 @@ namespace laplace {
   auto basic_buffer<int_, atomic_int_>::_bind(
       std::function<basic_buffer<int_, atomic_int_>()> f)
       const noexcept -> basic_buffer<int_, atomic_int_> {
-    if (is_error())
+    if (error())
       return _error();
     return f();
   }
@@ -288,7 +288,7 @@ namespace laplace {
   template <typename type_>
   auto basic_buffer<int_, atomic_int_>::_bind(
       std::function<type_()> f, type_ def) const noexcept -> type_ {
-    if (is_error())
+    if (error())
       return def;
     return f();
   }

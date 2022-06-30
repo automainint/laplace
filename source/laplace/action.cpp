@@ -8,11 +8,11 @@
 namespace laplace {
   time_type const action::default_tick_duration = 10;
 
-  auto action::is_error() const noexcept -> bool {
+  auto action::error() const noexcept -> bool {
     return m_is_error;
   }
 
-  auto action::get_tick_duration() const noexcept -> time_type {
+  auto action::tick_duration() const noexcept -> time_type {
     return m_tick_duration;
   }
 
@@ -45,11 +45,11 @@ namespace laplace {
 
   auto action::run(entity self) const noexcept
       -> coro::generator<impact_list> {
-    return !is_error() && m_generator ? m_generator(std::move(self))
-                                      : _noop()(std::move(self));
+    return !error() && m_generator ? m_generator(std::move(self))
+                                   : _noop()(std::move(self));
   }
 
-  auto action::get_self() const noexcept -> entity {
+  auto action::self() const noexcept -> entity {
     return m_self;
   }
 
@@ -61,7 +61,7 @@ namespace laplace {
 
   auto action::_bind(std::function<action()> f) const noexcept
       -> action {
-    if (is_error())
+    if (error())
       return *this;
     return f();
   }

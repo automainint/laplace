@@ -10,28 +10,27 @@ namespace laplace::test {
   using std::numeric_limits, std::thread, std::vector;
 
   TEST_CASE("create int buffer") {
-    REQUIRE(!buffer {}.is_error());
+    REQUIRE(!buffer {}.error());
   }
 
   TEST_CASE("create byte buffer") {
-    REQUIRE(!byte_buffer {}.is_error());
+    REQUIRE(!byte_buffer {}.error());
   }
 
   TEST_CASE("buffer get chunk size") {
-    REQUIRE(buffer {}.get_chunk_size() == buffer::default_chunk_size);
+    REQUIRE(buffer {}.chunk_size() == buffer::default_chunk_size);
   }
 
   TEST_CASE("buffer set chunk size") {
-    REQUIRE(buffer {}.set_chunk_size(10).get_chunk_size() == 10);
+    REQUIRE(buffer {}.set_chunk_size(10).chunk_size() == 10);
   }
 
   TEST_CASE("buffer set chunk size may fail") {
-    REQUIRE(buffer {}.set_chunk_size(-1).is_error());
+    REQUIRE(buffer {}.set_chunk_size(-1).error());
   }
 
   TEST_CASE("buffer propagate error") {
-    REQUIRE(
-        buffer {}.set_chunk_size(-1).set_chunk_size(10).is_error());
+    REQUIRE(buffer {}.set_chunk_size(-1).set_chunk_size(10).error());
   }
 
   TEST_CASE("buffer allocate") {
@@ -272,27 +271,27 @@ namespace laplace::test {
   }
 
   TEST_CASE("buffer get size") {
-    REQUIRE(buffer {}.get_size() == 0);
+    REQUIRE(buffer {}.size() == 0);
   }
 
   TEST_CASE("buffer size with 2 blocks") {
     auto buf    = buffer {};
     std::ignore = buf.allocate(20);
     std::ignore = buf.allocate(22);
-    REQUIRE(buf.get_size() == 42);
+    REQUIRE(buf.size() == 42);
   }
 
   TEST_CASE("buffer size after deallocate one") {
     auto buf = buffer {};
     REQUIRE(buf.deallocate(buf.allocate(10)));
-    REQUIRE(buf.get_size() == 10);
+    REQUIRE(buf.size() == 10);
   }
 
   TEST_CASE("buffer size after deallocate and allocate into one") {
     auto buf = buffer {};
     REQUIRE(buf.deallocate(buf.allocate(10)));
     std::ignore = buf.allocate(10);
-    REQUIRE(buf.get_size() == 10);
+    REQUIRE(buf.size() == 10);
   }
 
   TEST_CASE("buffer deallocate efficiency") {
@@ -300,7 +299,7 @@ namespace laplace::test {
     std::ignore = buf.allocate(10);
     REQUIRE(buf.deallocate(buf.allocate(10)));
     std::ignore = buf.allocate(10);
-    REQUIRE(buf.get_size() == 20);
+    REQUIRE(buf.size() == 20);
   }
 
   TEST_CASE("buffer add delta concurrency") {

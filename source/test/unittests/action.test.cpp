@@ -7,22 +7,21 @@
 
 namespace laplace::test {
   TEST_CASE("create action") {
-    REQUIRE(!action {}.is_error());
+    REQUIRE(!action {}.error());
   }
 
   TEST_CASE("action default tick duration") {
-    REQUIRE(action {}.get_tick_duration() ==
+    REQUIRE(action {}.tick_duration() ==
             action::default_tick_duration);
   }
 
   TEST_CASE("action set tick duration") {
-    REQUIRE(action {}.set_tick_duration(42).get_tick_duration() ==
-            42);
+    REQUIRE(action {}.set_tick_duration(42).tick_duration() == 42);
   }
 
   TEST_CASE("Set tick duration may fail") {
-    REQUIRE(action {}.set_tick_duration(0).is_error());
-    REQUIRE(action {}.set_tick_duration(-1).is_error());
+    REQUIRE(action {}.set_tick_duration(0).error());
+    REQUIRE(action {}.set_tick_duration(-1).error());
   }
 
   TEST_CASE("action run default") {
@@ -47,10 +46,8 @@ namespace laplace::test {
   }
 
   TEST_CASE("action propagate error") {
-    REQUIRE(action {}
-                .set_tick_duration(-1)
-                .set_tick_duration(1)
-                .is_error());
+    REQUIRE(
+        action {}.set_tick_duration(-1).set_tick_duration(1).error());
   }
 
   TEST_CASE("action propagate error and run") {

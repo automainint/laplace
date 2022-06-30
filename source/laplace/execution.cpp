@@ -77,7 +77,7 @@ namespace laplace {
   }
 
   void execution::schedule(time_type time) noexcept {
-    std::ignore = m_action.run(m_action.get_self()).begin();
+    std::ignore = m_action.run(m_action.self()).begin();
   }
 
   void execution::join() noexcept { }

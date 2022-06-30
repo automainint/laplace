@@ -38,13 +38,14 @@ namespace laplace {
     auto operator=(basic_buffer &&) noexcept
         -> basic_buffer & = default;
 
-    [[nodiscard]] auto is_error() const noexcept -> bool;
+    [[nodiscard]] auto error() const noexcept -> bool;
 
     [[nodiscard]] auto set_chunk_size(ptrdiff_t size) const noexcept
         -> basic_buffer<int_, atomic_int_>;
-    [[nodiscard]] auto get_chunk_size() const noexcept -> ptrdiff_t;
 
-    [[nodiscard]] auto get_size() const noexcept -> ptrdiff_t;
+    [[nodiscard]] auto chunk_size() const noexcept -> ptrdiff_t;
+
+    [[nodiscard]] auto size() const noexcept -> ptrdiff_t;
 
     [[nodiscard]] auto reserve(ptrdiff_t count) noexcept -> bool;
     [[nodiscard]] auto allocate(ptrdiff_t size) noexcept -> ptrdiff_t;

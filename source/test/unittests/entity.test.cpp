@@ -7,46 +7,46 @@
 
 namespace laplace::test {
   TEST_CASE("create entity") {
-    REQUIRE(!entity {}.is_error());
+    REQUIRE(!entity {}.error());
   }
 
   TEST_CASE("entity size is zero by default") {
-    REQUIRE(entity {}.get_size() == 0);
+    REQUIRE(entity {}.size() == 0);
   }
 
   TEST_CASE("entity default id") {
-    REQUIRE(entity {}.get_id() == id_undefined);
+    REQUIRE(entity {}.id() == id_undefined);
   }
 
   TEST_CASE("entity default access") {
-    REQUIRE(entity {}.get_access() == access {});
+    REQUIRE(entity {}.access() == access {});
   }
 
   TEST_CASE("entity set id") {
-    REQUIRE(entity {}.set_id(42).get_id() == 42);
+    REQUIRE(entity {}.set_id(42).id() == 42);
   }
 
   TEST_CASE("entity set access") {
     auto s = state {};
-    REQUIRE(entity {}.set_access(access { s }).get_access() ==
+    REQUIRE(entity {}.set_access(access { s }).access() ==
             access { s });
   }
 
   TEST_CASE("entity setup fields") {
-    REQUIRE(entity {}.setup({}).get_size() == 0);
+    REQUIRE(entity {}.setup({}).size() == 0);
   }
 
   TEST_CASE("entity setup 3 fields") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 2 }, { .id = 3 } })
-                .get_size() == 3);
+                .size() == 3);
   }
 
   TEST_CASE("entity setup twice") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 2 } })
                 .setup({ { .id = 3 }, { .id = 4 }, { .id = 5 } })
-                .get_size() == 5);
+                .size() == 5);
   }
 
   TEST_CASE("entity setup and get index") {
@@ -66,21 +66,25 @@ namespace laplace::test {
   TEST_CASE("entity setup unsorted") {
     REQUIRE(entity {}
                 .setup({ { .id = 3 }, { .id = 2 }, { .id = 1 } })
-                .index_of(1) == 0);
+                .index_of(1) == 2);
   }
 
   TEST_CASE("entity setup repeating will fail") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 2 }, { .id = 1 } })
-                .is_error());
+                .error());
+  }
+
+  TEST_CASE("entity negative field ids not allowed") {
+    REQUIRE(entity {}.setup({ { .id = -3 } }).error());
   }
 
   TEST_CASE("entity setup twice with repeating") {
     auto e = entity {}
                  .setup({ { .id = 1 }, { .id = 2 } })
                  .setup({ { .id = 1 }, { .id = 3 }, { .id = 4 } });
-    REQUIRE(!e.is_error());
-    REQUIRE(e.get_size() == 4);
+    REQUIRE(!e.error());
+    REQUIRE(e.size() == 4);
     REQUIRE(e.index_of(1) == 0);
     REQUIRE(e.index_of(2) == 1);
     REQUIRE(e.index_of(3) == 2);
@@ -91,11 +95,11 @@ namespace laplace::test {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 1 } })
                 .setup({ { .id = 42 } })
-                .is_error());
+                .error());
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 1 } })
                 .set_id(0)
-                .is_error());
+                .error());
   }
 
   TEST_CASE("entity spawn with id") {
