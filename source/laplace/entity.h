@@ -26,6 +26,9 @@ namespace laplace {
       ptrdiff_t index;
     };
 
+    entity(std::pmr::memory_resource *resource =
+               default_memory_resource()) noexcept;
+
     [[nodiscard]] auto error() const noexcept -> bool;
 
     [[nodiscard]] auto size() const noexcept -> ptrdiff_t;
@@ -80,7 +83,7 @@ namespace laplace {
 
     bool            m_is_error = false;
     ptrdiff_t       m_id       = id_undefined;
-    fields_type     m_fields   = fields_type { &memory_resource };
+    fields_type     m_fields;
     laplace::access m_access;
   };
 }

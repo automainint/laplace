@@ -6,6 +6,11 @@
 #include "impact.h"
 
 namespace laplace {
+  using std::pmr::memory_resource;
+
+  entity::entity(memory_resource *resource) noexcept :
+      m_fields(resource) { }
+
   auto entity::access() const noexcept -> laplace::access const & {
     return m_access;
   }

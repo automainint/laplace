@@ -6,9 +6,8 @@ include(FetchContent)
 FetchContent_Declare(
   laplace
   GIT_REPOSITORY https://github.com/automainint/laplace.git
-  GIT_TAG redesign-lockstep-engine-only
-  CMAKE_ARGS
-  -D LAPLACE_ENABLE_TESTING=OFF)
+  GIT_TAG redesign-lockstep-engine-only)
+set(LAPLACE_ENABLE_TESTING OFF)
 FetchContent_MakeAvailable(laplace)
 
 add_executable(${NAME})

@@ -7,7 +7,8 @@
 #include <memory_resource>
 
 namespace laplace {
-  extern std::pmr::synchronized_pool_resource memory_resource;
+  [[nodiscard]] auto default_memory_resource()
+      -> std::pmr::memory_resource *;
 }
 
 #endif

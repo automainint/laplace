@@ -5,7 +5,13 @@
 #define LAPLACE_IMPACT_IMPL_H
 
 namespace laplace {
-  inline impact_list::impact_list(impact i) noexcept {
+  inline impact_list::impact_list(
+      std::pmr::memory_resource *resource) noexcept :
+      m_data(resource) { }
+
+  inline impact_list::impact_list(
+      impact i, std::pmr::memory_resource *resource) noexcept :
+      m_data(resource) {
     m_data.reserve(average_impact_list_size);
     m_data.emplace_back(i);
   }

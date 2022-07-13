@@ -55,8 +55,10 @@ namespace laplace {
 
   class impact_list {
   public:
-    impact_list() noexcept = default;
-    impact_list(impact i) noexcept;
+    impact_list(std::pmr::memory_resource *resource =
+                    default_memory_resource()) noexcept;
+    impact_list(impact i, std::pmr::memory_resource *resource =
+                              default_memory_resource()) noexcept;
 
     [[nodiscard]] auto size() const noexcept -> ptrdiff_t;
     [[nodiscard]] auto operator[](ptrdiff_t index) const noexcept
@@ -71,7 +73,7 @@ namespace laplace {
   private:
     using data_type = std::pmr::vector<impact>;
 
-    data_type m_data = data_type { &memory_resource };
+    data_type m_data;
   };
 
   [[nodiscard]] auto operator+(impact a, impact b) noexcept
