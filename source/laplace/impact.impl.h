@@ -35,9 +35,10 @@ namespace laplace {
   }
 
   inline impact_list::impact_list(
-      std::pmr::memory_resource *resource) noexcept :
+      ptrdiff_t reserve, std::pmr::memory_resource *resource) noexcept
+      :
       m_data(resource) {
-    m_data.reserve(average_impact_list_size);
+    m_data.reserve(reserve);
   }
 
   inline impact_list::impact_list(
@@ -61,6 +62,10 @@ namespace laplace {
 
   inline auto impact_list::end() const noexcept {
     return m_data.end();
+  }
+
+  inline void impact_list::clear() noexcept {
+    m_data.clear();
   }
 
   inline auto impact_list::operator+=(impact a) noexcept

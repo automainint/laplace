@@ -54,6 +54,7 @@ namespace laplace {
   public:
     impact_list() noexcept;
     explicit impact_list(
+        ptrdiff_t                  reserve,
         std::pmr::memory_resource *resource) noexcept;
     impact_list(impact i, std::pmr::memory_resource *resource =
                               default_memory_resource()) noexcept;
@@ -64,6 +65,8 @@ namespace laplace {
 
     [[nodiscard]] auto begin() const noexcept;
     [[nodiscard]] auto end() const noexcept;
+    
+    void clear() noexcept;
 
     auto operator+=(impact a) noexcept -> impact_list &;
     auto operator+=(impact_list const &a) noexcept -> impact_list &;

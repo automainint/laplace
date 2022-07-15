@@ -1,9 +1,11 @@
 #include "../../laplace/execution.h"
 #include "io_impl.test.h"
 #include <catch2/catch.hpp>
+#include <thread>
 
 namespace laplace::test {
-  using std::make_shared;
+  using std::make_shared, std::this_thread::sleep_for,
+      std::chrono::milliseconds;
 
   TEST_CASE("create execution") {
     REQUIRE(!execution {}.error());
@@ -292,5 +294,60 @@ namespace laplace::test {
 
     REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
     REQUIRE(exe.read_only().get_integer(1, 0, -1) == 43);
+  }
+
+  TEST_CASE("execution queue action impact") {
+    auto exe = execution {};
+
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact { queue_action { action {}.setup(
+              [](entity) -> coro::generator<impact_list> {
+                co_yield impact {
+                  integer_allocate_into { .id = 0, .size = 1 }
+                } + impact { integer_set {
+                        .id = 0, .index = 0, .value = 42 } };
+              }) } };
+        }));
+
+    exe.schedule_and_join(1);
+
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  }
+
+  TEST_CASE("execution action order") {
+    auto       exe  = execution {};
+    const auto tick = action::default_tick_duration;
+
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact { noop {} };
+          sleep_for(milliseconds(20));
+          co_yield impact { queue_action { action {}.setup(
+              { [](entity) -> coro::generator<impact_list> {
+                sleep_for(milliseconds(20));
+                co_yield impact { queue_action { action {}.setup(
+                    { [](entity) -> coro::generator<impact_list> {
+                      sleep_for(milliseconds(20));
+                      co_yield impact { integer_allocate_into {
+                          .id = 0, .size = 1 } };
+                    } }) } };
+              } }) } };
+        }));
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact { noop {} };
+          co_yield impact { queue_action { action {}.setup(
+              { [](entity) -> coro::generator<impact_list> {
+                co_yield impact { queue_action { action {}.setup(
+                    { [](entity) -> coro::generator<impact_list> {
+                      co_yield impact { integer_deallocate {
+                          .id = 0 } };
+                    } }) } };
+              } }) } };
+        }));
+    exe.schedule_and_join(1 + tick);
+
+    REQUIRE(!exe.error());
   }
 }

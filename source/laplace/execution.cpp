@@ -6,7 +6,7 @@
 namespace laplace {
   using std::pmr::memory_resource, std::thread, std::max,
       std::function, std::visit, std::decay_t, std::is_same_v,
-      std::any_of, std::remove_if;
+      std::remove_if, std::pmr::vector, std::lower_bound, std::sort;
 
   execution::execution() noexcept { }
 
@@ -75,25 +75,34 @@ namespace laplace {
   }
 
   void execution::queue(action const &a) noexcept {
-    m_queue.emplace_back(
-        action_state { .tick_duration = a.tick_duration(),
-                       .generator     = a.run(a.self()) });
+    m_queue.emplace_back(action_state {
+        .index         = static_cast<ptrdiff_t>(m_queue.size()),
+        .tick_duration = a.tick_duration(),
+        .generator     = a.run(a.self()) });
   }
 
   void execution::schedule(time_type time) noexcept {
+    auto sync  = impact_list { average_sync_impact_count,
+                              default_memory_resource() };
+    auto async = impact_list { average_async_impact_count,
+                               default_memory_resource() };
+    auto forks = vector<action_state> { default_memory_resource() };
+    forks.reserve(average_fork_count);
+
     for (; time > 0; time--) {
       for (bool done = false; !done;) {
         done = true;
 
-        auto sync  = impact_list {};
-        auto async = impact_list {};
+        sync.clear();
+        async.clear();
+        forks.clear();
 
         for (auto &a : m_queue) {
           if (a.generator.is_done() || a.clock != 0)
             continue;
 
           bool is_continue = false;
-          
+
           for (auto const &i : a.generator.next())
             visit(
                 [&](auto const &v) {
@@ -101,9 +110,20 @@ namespace laplace {
 
                   if constexpr (is_same_v<type, tick_continue>) {
                     is_continue = true;
-                    return;
+                    done        = false;
                   } else if constexpr (is_same_v<type,
                                                  queue_action>) {
+                    forks.emplace(
+                        lower_bound(forks.begin(), forks.end(),
+                                    a.index,
+                                    [](auto const &f, auto n) {
+                                      return f.index < n;
+                                    }),
+                        action_state {
+                            .tick_duration = v.value.tick_duration(),
+                            .generator     = v.value.run(
+                                    v.value.self()) });
+                    done = false;
                   } else if constexpr (mode_of<type>() == mode::sync)
                     sync += i;
                   else
@@ -113,8 +133,6 @@ namespace laplace {
 
           if (!is_continue)
             a.clock = a.tick_duration;
-          else
-            done = false;
         }
 
         for (auto &i : sync)
@@ -124,6 +142,11 @@ namespace laplace {
         for (auto &i : async)
           if (!m_state.apply(i))
             _set_error();
+
+        for (auto n = ptrdiff_t {}; n < forks.size(); n++)
+          forks[n].index = m_queue.size() + n;
+
+        m_queue.insert(m_queue.end(), forks.begin(), forks.end());
 
         if (sync.size() > 0 || async.size() > 0) {
           while (m_state.adjust()) { }
@@ -136,7 +159,10 @@ namespace laplace {
                     [](auto &a) { return a.generator.is_done(); }),
           m_queue.end());
 
-      for (auto &a : m_queue) a.clock--;
+      for (auto n = ptrdiff_t {}; n < m_queue.size(); n++) {
+        m_queue[n].index = n;
+        m_queue[n].clock--;
+      }
     }
   }
 

@@ -15,7 +15,9 @@ namespace laplace {
   extern ptrdiff_t const default_thread_count;
   extern ptrdiff_t const overthreading_limit;
   extern ptrdiff_t const average_impact_list_size;
-  extern ptrdiff_t const average_impact_count;
+  extern ptrdiff_t const average_async_impact_count;
+  extern ptrdiff_t const average_sync_impact_count;
+  extern ptrdiff_t const average_fork_count;
 }
 
 #endif

@@ -51,6 +51,7 @@ namespace laplace {
     void _set_error() noexcept;
 
     struct action_state {
+      ptrdiff_t                    index         = 0;
       time_type                    clock         = 0;
       time_type                    tick_duration = 0;
       coro::generator<impact_list> generator;
