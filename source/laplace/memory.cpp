@@ -1,6 +1,3 @@
-/*  Copyright (c) 2022 Mitya Selivanov
- */
-
 #include "memory.h"
 
 namespace laplace {

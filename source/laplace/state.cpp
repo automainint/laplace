@@ -1,6 +1,3 @@
-/*  Copyright (c) 2022 Mitya Selivanov
- */
-
 #include "state.h"
 
 #include "impact.h"

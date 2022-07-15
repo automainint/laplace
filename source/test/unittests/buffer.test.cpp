@@ -1,6 +1,3 @@
-/*  Copyright (c) 2022 Mitya Selivanov
- */
-
 #include "../../laplace/buffer.h"
 #include <catch2/catch.hpp>
 #include <limits>

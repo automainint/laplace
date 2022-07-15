@@ -1,6 +1,3 @@
-/*  Copyright (c) 2022 Mitya Selivanov
- */
-
 #ifndef LAPLACE_OPTIONS_H
 #define LAPLACE_OPTIONS_H
 

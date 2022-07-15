@@ -1,6 +1,3 @@
-/*  Copyright (c) 2022 Mitya Selivanov
- */
-
 #ifndef LAPLACE_ACCESS_H
 #define LAPLACE_ACCESS_H
 
@@ -8,8 +5,6 @@
 #include <optional>
 
 namespace laplace {
-  /*  Read-only access to the state.
-   */
   class access {
   public:
     access() noexcept = default;

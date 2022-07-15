@@ -1,6 +1,3 @@
-/*  Copyright (c) 2022 Mitya Selivanov
- */
-
 #define CATCH_CONFIG_RUNNER
 #include <catch2/catch.hpp>
 

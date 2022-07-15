@@ -1,8 +1,4 @@
-/*  Copyright (c) 2022 Mitya Selivanov
- */
-
 #include "../../laplace/execution.h"
-#include "../../laplace/impact.h"
 #include "io_impl.test.h"
 #include <catch2/catch.hpp>
 
@@ -82,10 +78,23 @@ namespace laplace::test {
           co_return;
         }));
 
-    exe.schedule(1);
-    exe.join();
-
+    exe.schedule_and_join(1);
     REQUIRE(called);
+  }
+
+  TEST_CASE("execution queue action and schedule zero") {
+    bool called = false;
+
+    auto exe = execution {};
+
+    exe.queue(
+        action {}.setup([&](entity) -> coro::generator<impact_list> {
+          called = true;
+          co_return;
+        }));
+
+    exe.schedule_and_join(0);
+    REQUIRE(!called);
   }
 
   TEST_CASE("execution queue action and access default self") {
@@ -99,9 +108,7 @@ namespace laplace::test {
           co_return;
         }));
 
-    exe.schedule(1);
-    exe.join();
-
+    exe.schedule_and_join(1);
     REQUIRE(ok);
   }
 
@@ -118,9 +125,7 @@ namespace laplace::test {
               co_return;
             }));
 
-    exe.schedule(1);
-    exe.join();
-
+    exe.schedule_and_join(1);
     REQUIRE(ok);
   }
 
@@ -160,5 +165,44 @@ namespace laplace::test {
     foo      = std::move(bar);
     REQUIRE(foo.read_only().get_integer(0, 0, -1) == 0);
     REQUIRE(bar.read_only().get_integer(0, 0, -1) == -1);
+  }
+
+  TEST_CASE("execution set value") {
+    auto exe = execution {};
+
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact {
+            integer_allocate_into { .id = 0, .size = 1 }
+          } + impact { integer_set {
+                  .id = 0, .index = 0, .value = 42 } };
+          co_yield impact { integer_set {
+              .id = 0, .index = 0, .value = 43 } };
+        }));
+
+    exe.schedule_and_join(1);
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  }
+
+  TEST_CASE("execution set value twice") {
+    auto exe = execution {};
+
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact {
+            integer_allocate_into { .id = 0, .size = 1 }
+          } + impact { integer_set {
+                  .id = 0, .index = 0, .value = 42 } };
+          co_yield impact { integer_set {
+              .id = 0, .index = 0, .value = 43 } };
+        }));
+
+    const auto tick = action::default_tick_duration;
+
+    exe.schedule_and_join(tick);
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+
+    exe.schedule_and_join(tick);
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
   }
 }

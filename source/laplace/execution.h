@@ -4,7 +4,7 @@
 #ifndef LAPLACE_EXECUTION_H
 #define LAPLACE_EXECUTION_H
 
-#include "action.h"
+#include "impact.h"
 #include <thread>
 #include <vector>
 
@@ -30,10 +30,12 @@ namespace laplace {
 
     [[nodiscard]] auto read_only() const noexcept -> access;
 
-    void queue(action a) noexcept;
+    void queue(action const &a) noexcept;
 
     void schedule(time_type time) noexcept;
     void join() noexcept;
+
+    void schedule_and_join(time_type time) noexcept;
 
   private:
     [[nodiscard]] auto _error() const noexcept -> execution;
@@ -47,11 +49,17 @@ namespace laplace {
     void _assign(execution &&exe) noexcept;
     void _set_error() noexcept;
 
-    bool      m_is_error     = false;
-    bool      m_is_done      = false;
-    ptrdiff_t m_thread_count = default_thread_count;
-    action    m_action;
-    state     m_state;
+    struct action_state {
+      time_type                    clock         = 0;
+      time_type                    tick_duration = 0;
+      coro::generator<impact_list> generator;
+    };
+
+    bool                        m_is_error     = false;
+    bool                        m_is_done      = false;
+    ptrdiff_t                   m_thread_count = default_thread_count;
+    std::optional<action_state> m_action;
+    state                       m_state;
   };
 }
 

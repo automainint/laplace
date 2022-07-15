@@ -1,6 +1,3 @@
-/*  Copyright (c) 2022 Mitya Selivanov
- */
-
 #include "../../laplace/entity.h"
 #include "../../laplace/impact.h"
 #include <catch2/catch.hpp>
@@ -197,4 +194,9 @@ namespace laplace::test {
                 .setup({ { .id = numeric_limits<ptrdiff_t>::max() } })
                 .index_of(numeric_limits<ptrdiff_t>::max()) == 0);
   }
+
+  /*TEST_CASE("entity index of in constexpr context") {
+    constexpr auto n = entity {}.setup({ { .id = 42 } }).index_of(42);
+    REQUIRE(n == 0);
+  }*/
 }

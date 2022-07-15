@@ -1,6 +1,3 @@
-/*  Copyright (c) 2022 Mitya Selivanov
- */
-
 #include "../../laplace/state.h"
 #include "../../laplace/impact.h"
 #include "io_impl.test.h"
@@ -182,7 +179,7 @@ namespace laplace::test {
     }
   }
 
-  TEST_CASE("state seed") {
+  TEST_CASE("state apply seed") {
     REQUIRE(state {}.apply(integer_seed { 42 }));
   }
 

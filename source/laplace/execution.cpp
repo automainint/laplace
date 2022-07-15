@@ -1,13 +1,11 @@
-/*  Copyright (c) 2022 Mitya Selivanov
- */
-
 #include "execution.h"
 
 #include "impact.h"
 #include <utility>
 
 namespace laplace {
-  using std::thread, std::max, std::function;
+  using std::thread, std::max, std::function, std::visit,
+      std::decay_t, std::is_same_v;
 
   execution::execution() noexcept { }
 
@@ -72,15 +70,45 @@ namespace laplace {
                          access {});
   }
 
-  void execution::queue(action a) noexcept {
-    m_action = std::move(a);
+  void execution::queue(action const &a) noexcept {
+    m_action = action_state { .tick_duration = a.tick_duration(),
+                              .generator     = a.run(a.self()) };
   }
 
   void execution::schedule(time_type time) noexcept {
-    std::ignore = m_action.run(m_action.self()).begin();
+    if (!m_action)
+      return;
+
+    for (; time > 0; time--) {
+      if (m_action->clock == 0) {
+        for (auto &i : m_action->generator.next())
+          visit(
+              [&](auto const &a) {
+                using type = decay_t<decltype(i)>;
+
+                if constexpr (is_same_v<type, tick_continue>)
+                  return;
+                if constexpr (is_same_v<type, queue_action>)
+                  return;
+
+                std::ignore = m_state.apply(a);
+              },
+              i.value);
+        m_action->clock = m_action->tick_duration;
+      } else
+        m_action->clock--;
+
+      while (m_state.adjust()) { }
+      m_state.adjust_done();
+    }
   }
 
   void execution::join() noexcept { }
+
+  void execution::schedule_and_join(time_type time) noexcept {
+    schedule(time);
+    join();
+  }
 
   auto execution::_error() const noexcept -> execution {
     auto exe = execution { *this };

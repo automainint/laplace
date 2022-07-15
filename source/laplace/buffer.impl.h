@@ -1,6 +1,3 @@
-/*  Copyright (c) 2022 Mitya Selivanov
- */
-
 #ifndef LAPLACE_BUFFER_IMPL_H
 #define LAPLACE_BUFFER_IMPL_H
 
