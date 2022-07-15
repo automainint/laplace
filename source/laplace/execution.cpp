@@ -4,10 +4,14 @@
 #include <utility>
 
 namespace laplace {
-  using std::thread, std::max, std::function, std::visit,
-      std::decay_t, std::is_same_v;
+  using std::pmr::memory_resource, std::thread, std::max,
+      std::function, std::visit, std::decay_t, std::is_same_v,
+      std::any_of, std::remove_if;
 
   execution::execution() noexcept { }
+
+  execution::execution(memory_resource *resource) noexcept :
+      m_queue(resource) { }
 
   execution::execution(execution const &exe) noexcept {
     _assign(exe);
@@ -33,11 +37,11 @@ namespace laplace {
     return *this;
   }
 
-  auto execution::is_error() const noexcept -> bool {
+  auto execution::error() const noexcept -> bool {
     return m_is_error;
   }
 
-  auto execution::get_thread_count() const noexcept -> ptrdiff_t {
+  auto execution::thread_count() const noexcept -> ptrdiff_t {
     return m_thread_count;
   }
 
@@ -71,35 +75,68 @@ namespace laplace {
   }
 
   void execution::queue(action const &a) noexcept {
-    m_action = action_state { .tick_duration = a.tick_duration(),
-                              .generator     = a.run(a.self()) };
+    m_queue.emplace_back(
+        action_state { .tick_duration = a.tick_duration(),
+                       .generator     = a.run(a.self()) });
   }
 
   void execution::schedule(time_type time) noexcept {
-    if (!m_action)
-      return;
-
     for (; time > 0; time--) {
-      if (m_action->clock == 0) {
-        for (auto &i : m_action->generator.next())
-          visit(
-              [&](auto const &a) {
-                using type = decay_t<decltype(i)>;
+      for (bool done = false; !done;) {
+        done = true;
 
-                if constexpr (is_same_v<type, tick_continue>)
-                  return;
-                if constexpr (is_same_v<type, queue_action>)
-                  return;
+        auto sync  = impact_list {};
+        auto async = impact_list {};
 
-                std::ignore = m_state.apply(impact { a });
-              },
-              i.value);
-        m_action->clock = m_action->tick_duration;
-      } else
-        m_action->clock--;
+        for (auto &a : m_queue) {
+          if (a.generator.is_done() || a.clock != 0)
+            continue;
 
-      while (m_state.adjust()) { }
-      m_state.adjust_done();
+          bool is_continue = false;
+          
+          for (auto const &i : a.generator.next())
+            visit(
+                [&](auto const &v) {
+                  using type = decay_t<decltype(v)>;
+
+                  if constexpr (is_same_v<type, tick_continue>) {
+                    is_continue = true;
+                    return;
+                  } else if constexpr (is_same_v<type,
+                                                 queue_action>) {
+                  } else if constexpr (mode_of<type>() == mode::sync)
+                    sync += i;
+                  else
+                    async += i;
+                },
+                i.value);
+
+          if (!is_continue)
+            a.clock = a.tick_duration;
+          else
+            done = false;
+        }
+
+        for (auto &i : sync)
+          if (!m_state.apply(i))
+            _set_error();
+
+        for (auto &i : async)
+          if (!m_state.apply(i))
+            _set_error();
+
+        if (sync.size() > 0 || async.size() > 0) {
+          while (m_state.adjust()) { }
+          m_state.adjust_done();
+        }
+      }
+
+      m_queue.erase(
+          remove_if(m_queue.begin(), m_queue.end(),
+                    [](auto &a) { return a.generator.is_done(); }),
+          m_queue.end());
+
+      for (auto &a : m_queue) a.clock--;
     }
   }
 
@@ -118,7 +155,7 @@ namespace laplace {
 
   auto execution::_bind(function<execution()> f) const noexcept
       -> execution {
-    if (is_error())
+    if (error())
       return *this;
     return f();
   }
@@ -126,7 +163,7 @@ namespace laplace {
   template <typename type_>
   auto execution::_bind(function<type_()> f, type_ def) const noexcept
       -> type_ {
-    if (is_error())
+    if (error())
       return def;
     return f();
   }
@@ -135,7 +172,7 @@ namespace laplace {
     m_is_error     = exe.m_is_error;
     m_is_done      = exe.m_is_done;
     m_thread_count = exe.m_thread_count;
-    m_action       = exe.m_action;
+    m_queue        = exe.m_queue;
     m_state        = exe.m_state;
   }
 
@@ -143,7 +180,7 @@ namespace laplace {
     m_is_error     = exe.m_is_error;
     m_is_done      = exe.m_is_done;
     m_thread_count = exe.m_thread_count;
-    m_action       = std::move(exe.m_action);
+    m_queue        = std::move(exe.m_queue);
     m_state        = std::move(exe.m_state);
 
     exe._set_error();

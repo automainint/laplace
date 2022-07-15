@@ -99,20 +99,26 @@ namespace laplace {
     return a += b;
   }
 
+  template <typename impact_type>
+  constexpr auto mode_of() noexcept -> mode {
+    using std::is_same_v;
+    if constexpr (is_same_v<impact_type, tick_continue>)
+      return mode::control;
+    if constexpr (is_same_v<impact_type, noop> ||
+                  is_same_v<impact_type, integer_set> ||
+                  is_same_v<impact_type, integer_add> ||
+                  is_same_v<impact_type, byte_set> ||
+                  is_same_v<impact_type, byte_add>)
+      return mode::async;
+    return mode::sync;
+  }
+
   inline auto mode_of(impact const &i) noexcept -> mode {
     return std::visit(
         [&](auto const &i) {
           using std::is_same_v, std::decay_t;
           using type = decay_t<decltype(i)>;
-          if constexpr (is_same_v<type, tick_continue>)
-            return mode::control;
-          if constexpr (is_same_v<type, noop> ||
-                        is_same_v<type, integer_set> ||
-                        is_same_v<type, integer_add> ||
-                        is_same_v<type, byte_set> ||
-                        is_same_v<type, byte_add>)
-            return mode::async;
-          return mode::sync;
+          return mode_of<type>();
         },
         i.value);
   }

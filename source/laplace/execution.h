@@ -12,6 +12,7 @@ namespace laplace {
   class execution {
   public:
     execution() noexcept;
+    explicit execution(std::pmr::memory_resource *resource) noexcept;
     execution(execution const &exe) noexcept;
     execution(execution &&exe) noexcept;
     ~execution() noexcept;
@@ -19,9 +20,9 @@ namespace laplace {
     auto operator=(execution const &exe) noexcept -> execution &;
     auto operator=(execution &&exe) noexcept -> execution &;
 
-    [[nodiscard]] auto is_error() const noexcept -> bool;
+    [[nodiscard]] auto error() const noexcept -> bool;
 
-    [[nodiscard]] auto get_thread_count() const noexcept -> ptrdiff_t;
+    [[nodiscard]] auto thread_count() const noexcept -> ptrdiff_t;
 
     [[nodiscard]] auto set_thread_count(
         ptrdiff_t thread_count) const noexcept -> execution;
@@ -55,11 +56,11 @@ namespace laplace {
       coro::generator<impact_list> generator;
     };
 
-    bool                        m_is_error     = false;
-    bool                        m_is_done      = false;
-    ptrdiff_t                   m_thread_count = default_thread_count;
-    std::optional<action_state> m_action;
-    state                       m_state;
+    bool      m_is_error     = false;
+    bool      m_is_done      = false;
+    ptrdiff_t m_thread_count = default_thread_count;
+    std::pmr::vector<action_state> m_queue;
+    state                          m_state;
   };
 }
 

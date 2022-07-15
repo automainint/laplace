@@ -89,6 +89,9 @@ namespace laplace {
                                impact_list const &b) noexcept
       -> impact_list;
 
+  template <typename impact_type>
+  [[nodiscard]] constexpr auto mode_of() noexcept -> mode;
+
   [[nodiscard]] auto mode_of(impact const &i) noexcept -> mode;
 }
 
