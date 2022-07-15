@@ -91,7 +91,7 @@ namespace laplace {
                 if constexpr (is_same_v<type, queue_action>)
                   return;
 
-                std::ignore = m_state.apply(a);
+                std::ignore = m_state.apply(impact { a });
               },
               i.value);
         m_action->clock = m_action->tick_duration;

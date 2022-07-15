@@ -126,9 +126,9 @@ namespace laplace::test {
   TEST_CASE("entity get") {
     auto s      = state {};
     std::ignore = s.apply(
-        integer_allocate_into { .id = 0, .size = 1 });
+        impact { integer_allocate_into { .id = 0, .size = 1 } });
     std::ignore = s.apply(
-        integer_set({ .id = 0, .index = 0, .value = 42 }));
+        impact { integer_set { .id = 0, .index = 0, .value = 42 } });
     while (s.adjust()) { }
 
     REQUIRE(entity {}

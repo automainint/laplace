@@ -28,23 +28,23 @@ namespace laplace {
 
     value_type value;
 
-    impact(noop const &i) noexcept : value(i) { }
-    impact(integer_set const &i) noexcept : value(i) { }
-    impact(integer_add const &i) noexcept : value(i) { }
-    impact(byte_set const &i) noexcept : value(i) { }
-    impact(byte_add const &i) noexcept : value(i) { }
-    impact(integer_reserve const &i) noexcept : value(i) { }
-    impact(integer_allocate_into const &i) noexcept : value(i) { }
-    impact(integer_allocate const &i) noexcept : value(i) { }
-    impact(integer_deallocate const &i) noexcept : value(i) { }
-    impact(byte_reserve const &i) noexcept : value(i) { }
-    impact(byte_allocate_into const &i) noexcept : value(i) { }
-    impact(byte_allocate const &i) noexcept : value(i) { }
-    impact(byte_deallocate const &i) noexcept : value(i) { }
-    impact(integer_seed const &i) noexcept : value(i) { }
-    impact(integer_random const &i) noexcept : value(i) { }
-    impact(queue_action const &i) noexcept : value(i) { }
-    impact(tick_continue const &i) noexcept : value(i) { }
+    explicit impact(noop const &i) noexcept;
+    explicit impact(integer_set const &i) noexcept;
+    explicit impact(integer_add const &i) noexcept;
+    explicit impact(byte_set const &i) noexcept;
+    explicit impact(byte_add const &i) noexcept;
+    explicit impact(integer_reserve const &i) noexcept;
+    explicit impact(integer_allocate_into const &i) noexcept;
+    explicit impact(integer_allocate const &i) noexcept;
+    explicit impact(integer_deallocate const &i) noexcept;
+    explicit impact(byte_reserve const &i) noexcept;
+    explicit impact(byte_allocate_into const &i) noexcept;
+    explicit impact(byte_allocate const &i) noexcept;
+    explicit impact(byte_deallocate const &i) noexcept;
+    explicit impact(integer_seed const &i) noexcept;
+    explicit impact(integer_random const &i) noexcept;
+    explicit impact(queue_action const &i) noexcept;
+    explicit impact(tick_continue const &i) noexcept;
 
     [[nodiscard]] auto operator==(impact const &) const noexcept
         -> bool = default;
@@ -52,8 +52,9 @@ namespace laplace {
 
   class impact_list {
   public:
-    impact_list(std::pmr::memory_resource *resource =
-                    default_memory_resource()) noexcept;
+    impact_list() noexcept;
+    explicit impact_list(
+        std::pmr::memory_resource *resource) noexcept;
     impact_list(impact i, std::pmr::memory_resource *resource =
                               default_memory_resource()) noexcept;
 
@@ -68,6 +69,8 @@ namespace laplace {
     auto operator+=(impact_list const &a) noexcept -> impact_list &;
 
   private:
+    void _assign(impact i) noexcept;
+
     using data_type = std::pmr::vector<impact>;
 
     data_type m_data;

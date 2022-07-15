@@ -2,15 +2,48 @@
 #define LAPLACE_IMPACT_IMPL_H
 
 namespace laplace {
+  inline impact::impact(noop const &i) noexcept : value(i) { }
+  inline impact::impact(integer_set const &i) noexcept : value(i) { }
+  inline impact::impact(integer_add const &i) noexcept : value(i) { }
+  inline impact::impact(byte_set const &i) noexcept : value(i) { }
+  inline impact::impact(byte_add const &i) noexcept : value(i) { }
+  inline impact::impact(integer_reserve const &i) noexcept :
+      value(i) { }
+  inline impact::impact(integer_allocate_into const &i) noexcept :
+      value(i) { }
+  inline impact::impact(integer_allocate const &i) noexcept :
+      value(i) { }
+  inline impact::impact(integer_deallocate const &i) noexcept :
+      value(i) { }
+  inline impact::impact(byte_reserve const &i) noexcept : value(i) { }
+  inline impact::impact(byte_allocate_into const &i) noexcept :
+      value(i) { }
+  inline impact::impact(byte_allocate const &i) noexcept :
+      value(i) { }
+  inline impact::impact(byte_deallocate const &i) noexcept :
+      value(i) { }
+  inline impact::impact(integer_seed const &i) noexcept : value(i) { }
+  inline impact::impact(integer_random const &i) noexcept :
+      value(i) { }
+  inline impact::impact(queue_action const &i) noexcept : value(i) { }
+  inline impact::impact(tick_continue const &i) noexcept :
+      value(i) { }
+
+  inline impact_list::impact_list() noexcept :
+      m_data(default_memory_resource()) {
+    m_data.reserve(average_impact_list_size);
+  }
+
   inline impact_list::impact_list(
       std::pmr::memory_resource *resource) noexcept :
-      m_data(resource) { }
+      m_data(resource) {
+    m_data.reserve(average_impact_list_size);
+  }
 
   inline impact_list::impact_list(
       impact i, std::pmr::memory_resource *resource) noexcept :
       m_data(resource) {
-    m_data.reserve(average_impact_list_size);
-    m_data.emplace_back(i);
+    _assign(std::move(i));
   }
 
   inline auto impact_list::size() const noexcept -> ptrdiff_t {
@@ -40,6 +73,11 @@ namespace laplace {
       -> impact_list & {
     m_data.insert(m_data.end(), a.m_data.begin(), a.m_data.end());
     return *this;
+  }
+
+  inline void impact_list::_assign(impact i) noexcept {
+    m_data.reserve(average_impact_list_size);
+    m_data.emplace_back(i);
   }
 
   inline auto operator+(impact a, impact b) noexcept -> impact_list {

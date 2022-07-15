@@ -147,7 +147,7 @@ namespace laplace::test {
 
   TEST_CASE("execution state copy") {
     auto s      = state {};
-    std::ignore = s.apply(integer_allocate_into { 0, 1 });
+    std::ignore = s.apply(impact { integer_allocate_into { 0, 1 } });
 
     auto foo = execution {};
     auto bar = execution {}.set_state(s);
@@ -158,7 +158,7 @@ namespace laplace::test {
 
   TEST_CASE("execution state move") {
     auto s      = state {};
-    std::ignore = s.apply(integer_allocate_into { 0, 1 });
+    std::ignore = s.apply(impact { integer_allocate_into { 0, 1 } });
 
     auto foo = execution {};
     auto bar = execution {}.set_state(s);

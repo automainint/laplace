@@ -19,10 +19,10 @@ namespace laplace::test {
 
   TEST_CASE("access get from state") {
     auto s      = state {};
-    std::ignore = s.apply(integer_allocate_into { 0, 1 });
-    std::ignore = s.apply(integer_set { 0, 0, 42 });
-    std::ignore = s.apply(byte_allocate_into { 1, 1 });
-    std::ignore = s.apply(byte_set { 1, 0, 43 });
+    std::ignore = s.apply(impact { integer_allocate_into { 0, 1 } });
+    std::ignore = s.apply(impact { integer_set { 0, 0, 42 } });
+    std::ignore = s.apply(impact { byte_allocate_into { 1, 1 } });
+    std::ignore = s.apply(impact { byte_set { 1, 0, 43 } });
     while (s.adjust()) { }
 
     auto a = access { s };
@@ -32,10 +32,10 @@ namespace laplace::test {
 
   TEST_CASE("access get from destroyed state") {
     auto *s     = new state {};
-    std::ignore = s->apply(integer_allocate_into { 0, 1 });
-    std::ignore = s->apply(integer_set { 0, 0, 42 });
-    std::ignore = s->apply(byte_allocate_into { 1, 1 });
-    std::ignore = s->apply(byte_set { 1, 0, 43 });
+    std::ignore = s->apply(impact { integer_allocate_into { 0, 1 } });
+    std::ignore = s->apply(impact { integer_set { 0, 0, 42 } });
+    std::ignore = s->apply(impact { byte_allocate_into { 1, 1 } });
+    std::ignore = s->apply(impact { byte_set { 1, 0, 43 } });
     while (s->adjust()) { }
 
     auto a = access { *s };

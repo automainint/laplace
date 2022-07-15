@@ -6,7 +6,8 @@ namespace laplace {
   using std::random_device, std::make_shared, std::shared_ptr;
 
   state::state() noexcept : m_io(make_shared<io_impl>()) {
-    std::ignore = m_io->apply(integer_seed { random_device {}() });
+    std::ignore = m_io->apply(
+        impact { integer_seed { random_device {}() } });
   }
 
   state::state(shared_ptr<io_interface> io) noexcept :

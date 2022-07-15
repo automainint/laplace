@@ -89,22 +89,23 @@ namespace laplace::test {
   }
 
   TEST_CASE("impact mode") {
-    REQUIRE(mode_of(noop {}) == mode::async);
-    REQUIRE(mode_of(integer_set {}) == mode::async);
-    REQUIRE(mode_of(integer_add {}) == mode::async);
-    REQUIRE(mode_of(byte_set {}) == mode::async);
-    REQUIRE(mode_of(byte_add {}) == mode::async);
-    REQUIRE(mode_of(integer_reserve {}) == mode::sync);
-    REQUIRE(mode_of(integer_allocate_into {}) == mode::sync);
-    REQUIRE(mode_of(integer_allocate {}) == mode::sync);
-    REQUIRE(mode_of(integer_deallocate {}) == mode::sync);
-    REQUIRE(mode_of(byte_reserve {}) == mode::sync);
-    REQUIRE(mode_of(byte_allocate_into {}) == mode::sync);
-    REQUIRE(mode_of(byte_allocate {}) == mode::sync);
-    REQUIRE(mode_of(byte_deallocate {}) == mode::sync);
-    REQUIRE(mode_of(integer_seed {}) == mode::sync);
-    REQUIRE(mode_of(integer_random {}) == mode::sync);
-    REQUIRE(mode_of(queue_action {}) == mode::sync);
-    REQUIRE(mode_of(tick_continue {}) == mode::control);
+    REQUIRE(mode_of(impact { noop {} }) == mode::async);
+    REQUIRE(mode_of(impact { integer_set {} }) == mode::async);
+    REQUIRE(mode_of(impact { integer_add {} }) == mode::async);
+    REQUIRE(mode_of(impact { byte_set {} }) == mode::async);
+    REQUIRE(mode_of(impact { byte_add {} }) == mode::async);
+    REQUIRE(mode_of(impact { integer_reserve {} }) == mode::sync);
+    REQUIRE(mode_of(impact { integer_allocate_into {} }) ==
+            mode::sync);
+    REQUIRE(mode_of(impact { integer_allocate {} }) == mode::sync);
+    REQUIRE(mode_of(impact { integer_deallocate {} }) == mode::sync);
+    REQUIRE(mode_of(impact { byte_reserve {} }) == mode::sync);
+    REQUIRE(mode_of(impact { byte_allocate_into {} }) == mode::sync);
+    REQUIRE(mode_of(impact { byte_allocate {} }) == mode::sync);
+    REQUIRE(mode_of(impact { byte_deallocate {} }) == mode::sync);
+    REQUIRE(mode_of(impact { integer_seed {} }) == mode::sync);
+    REQUIRE(mode_of(impact { integer_random {} }) == mode::sync);
+    REQUIRE(mode_of(impact { queue_action {} }) == mode::sync);
+    REQUIRE(mode_of(impact { tick_continue {} }) == mode::control);
   }
 }
