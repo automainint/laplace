@@ -381,7 +381,7 @@ namespace laplace::test {
   }
 
   TEST_CASE("execution two parallel actions") {
-    auto exe = execution {}.set_thread_count(2);
+    auto exe = execution {}.set_thread_count(4);
 
     auto foo_begin = steady_clock::time_point {};
     auto foo_end   = steady_clock::time_point {};
@@ -391,14 +391,14 @@ namespace laplace::test {
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
           foo_begin = steady_clock::now();
-          sleep_for(milliseconds(300));
+          sleep_for(milliseconds(2000));
           foo_end = steady_clock::now();
           co_yield impact { noop {} };
         }));
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
           bar_begin = steady_clock::now();
-          sleep_for(milliseconds(300));
+          sleep_for(milliseconds(2000));
           bar_end = steady_clock::now();
           co_yield impact { noop {} };
         }));
