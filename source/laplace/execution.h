@@ -55,24 +55,37 @@ namespace laplace {
     [[nodiscard]] auto _bind(std::function<type_()> f,
                              type_ def) const noexcept -> type_;
 
-    void               _init_state() noexcept;
+    void               _once(std::function<void()> f) noexcept;
     void               _done_and_notify() noexcept;
     void               _stop_threads() noexcept;
     [[nodiscard]] auto _next_action() noexcept
-        -> std::optional<action_state>;
-    void _thread() noexcept;
-    void _init_threads(ptrdiff_t thread_count) noexcept;
+        -> std::optional<ptrdiff_t>;
+    void               _add_sync(impact const &i) noexcept;
+    void               _add_async(impact const &i) noexcept;
+    void               _add_impacts(impact_list list) noexcept;
+    [[nodiscard]] auto _next_async() noexcept
+        -> std::optional<ptrdiff_t>;
+    [[nodiscard]] auto _dec_tick() noexcept -> bool;
+    void               _thread() noexcept;
+    void               _init_threads(ptrdiff_t thread_count) noexcept;
 
     void _assign(execution const &exe) noexcept;
     void _assign(execution &&exe) noexcept;
     void _set_error() noexcept;
-    void _set_error_internal() noexcept;
 
-    bool                    m_is_error = false;
-    bool                    m_is_done  = true;
-    time_type               m_ticks    = 0;
+    bool                    m_is_error    = false;
+    bool                    m_is_done     = true;
+    ptrdiff_t               m_fence_in    = 0;
+    ptrdiff_t               m_fence_out   = 0;
+    ptrdiff_t               m_queue_index = 0;
+    ptrdiff_t               m_async_index = 0;
+    impact_list             m_sync;
+    impact_list             m_async;
+    time_type               m_ticks = 0;
     std::mutex              m_lock;
-    std::condition_variable m_control;
+    std::condition_variable m_on_tick;
+    std::condition_variable m_on_join;
+    std::condition_variable m_on_fence;
 
     state                          m_state;
     std::pmr::vector<action_state> m_queue;

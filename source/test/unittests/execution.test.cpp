@@ -383,10 +383,10 @@ namespace laplace::test {
   TEST_CASE("execution two parallel actions") {
     auto exe = execution {}.set_thread_count(2);
 
-    auto foo_begin    = steady_clock::time_point {};
-    auto foo_end      = steady_clock::time_point {};
-    auto bar_begin    = steady_clock::time_point {};
-    auto bar_end      = steady_clock::time_point {};
+    auto foo_begin = steady_clock::time_point {};
+    auto foo_end   = steady_clock::time_point {};
+    auto bar_begin = steady_clock::time_point {};
+    auto bar_end   = steady_clock::time_point {};
 
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
@@ -407,7 +407,7 @@ namespace laplace::test {
     REQUIRE((foo_begin < bar_end && bar_begin < foo_end));
   }
 
-  TEST_CASE("execution join") {
+  TEST_CASE("execution join one") {
     auto exe = execution {}.set_thread_count(1);
 
     exe.queue(
@@ -422,6 +422,41 @@ namespace laplace::test {
     exe.schedule(1);
     REQUIRE(exe.read_only().get_integer(0, 0, -1) == -1);
     exe.join();
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  }
+  
+  TEST_CASE("execution join four") {
+    auto exe = execution {}.set_thread_count(4);
+
+    exe.queue(
+        action {}.setup([&](entity) -> coro::generator<impact_list> {
+          sleep_for(milliseconds(100));
+          co_yield impact {
+            integer_allocate_into { .id = 0, .size = 1 }
+          } + impact { integer_set {
+                  .id = 0, .index = 0, .value = 42 } };
+        }));
+
+    exe.schedule(1);
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == -1);
+    exe.join();
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  }
+
+  TEST_CASE("execution set value impact") {
+    auto exe = execution {}.set_thread_count(4);
+
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact {
+            integer_allocate_into { .id = 0, .size = 1 }
+          } + impact { integer_set {
+                  .id = 0, .index = 0, .value = 42 } };
+          co_yield impact { integer_set {
+              .id = 0, .index = 0, .value = 43 } };
+        }));
+
+    exe.schedule_and_join(1);
     REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
   }
 }

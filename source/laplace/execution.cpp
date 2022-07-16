@@ -178,7 +178,7 @@ namespace laplace {
       auto _ul = unique_lock(m_lock);
       m_ticks += time;
       _ul.unlock();
-      m_control.notify_all();
+      m_on_tick.notify_all();
     }
   }
 
@@ -186,7 +186,7 @@ namespace laplace {
     if (m_threads.empty())
       return;
     auto _ul = unique_lock(m_lock);
-    while (!m_is_done && m_ticks > 0) m_control.wait(_ul);
+    m_on_join.wait(_ul, [&]() { return m_is_done || m_ticks == 0; });
   }
 
   void execution::schedule_and_join(time_type time) noexcept {
@@ -215,13 +215,32 @@ namespace laplace {
     return f();
   }
 
+  void execution::_once(std::function<void()> f) noexcept {
+    auto _ul = unique_lock(m_lock);
+    if (++m_fence_in == m_threads.size()) {
+      _ul.unlock();
+      f();
+      m_on_fence.notify_all();
+      _ul.lock();
+    } else
+      m_on_fence.wait(_ul);
+    if (++m_fence_out == m_threads.size()) {
+      m_fence_in  = 0;
+      m_fence_out = 0;
+      _ul.unlock();
+      m_on_fence.notify_all();
+    } else
+      m_on_fence.wait(_ul);
+  }
+
   void execution::_done_and_notify() noexcept {
     if (m_is_done)
       return;
     auto _ul  = unique_lock(m_lock);
     m_is_done = true;
     _ul.unlock();
-    m_control.notify_all();
+    m_on_tick.notify_all();
+    m_on_join.notify_all();
   }
 
   void execution::_stop_threads() noexcept {
@@ -229,32 +248,79 @@ namespace laplace {
     for (auto &t : m_threads) t.join();
   }
 
-  auto execution::_next_action() noexcept -> optional<action_state> {
-    if (m_queue.empty())
+  auto execution::_next_action() noexcept -> optional<ptrdiff_t> {
+    auto _ul = unique_lock(m_lock);
+    if (m_queue_index == m_queue.size())
       return nullopt;
-    auto result = m_queue[0];
-    m_queue.erase(m_queue.begin());
-    return result;
+    return m_queue_index++;
+  }
+
+  void execution::_add_sync(impact const &i) noexcept {
+    auto _ul = unique_lock(m_lock);
+    m_sync += i;
+  }
+
+  void execution::_add_async(impact const &i) noexcept {
+    auto _ul = unique_lock(m_lock);
+    m_async += i;
+  }
+
+  void execution::_add_impacts(impact_list list) noexcept {
+    for (auto &i : list)
+      if (mode_of(i) == mode::sync)
+        _add_sync(i);
+      else
+        _add_async(i);
+  }
+
+  auto execution::_next_async() noexcept -> optional<ptrdiff_t> {
+    auto _ul = unique_lock(m_lock);
+    if (m_async_index == m_async.size())
+      return nullopt;
+    return m_async_index++;
+  }
+
+  auto execution::_dec_tick() noexcept -> bool {
+    auto _ul = unique_lock(m_lock);
+    return --m_ticks == 0;
   }
 
   void execution::_thread() noexcept {
     auto _ul = unique_lock(m_lock);
     while (!m_is_done) {
-      m_control.wait(_ul);
-      while (m_ticks > 0) {
-        auto a = _next_action();
+      m_on_tick.wait(_ul,
+                     [&]() { return m_is_done || m_ticks != 0; });
+      while (m_ticks != 0) {
         _ul.unlock();
-        if (a) {
-          auto list = a->generator.next();
-          for (auto &i : list) std::ignore = m_state.apply(i);
-        } else {
-          while (m_state.adjust()) { }
+
+        while (auto n = _next_action())
+          _add_impacts(m_queue[*n].generator.next());
+
+        _once([&]() {
+          m_queue_index = 0;
+
+          for (auto &i : m_sync) std::ignore = m_state.apply(i);
+          m_sync.clear();
+        });
+
+        while (auto n = _next_async())
+          std::ignore = m_state.apply(m_async[*n]);
+
+        _once([&]() {
+          m_async_index = 0;
+          m_async.clear();
+        });
+
+        while (m_state.adjust()) { }
+
+        _once([&]() {
           m_state.adjust_done();
-          _ul.lock();
-          m_ticks = 0;
-          _ul.unlock();
-          m_control.notify_all();
-        }
+
+          if (_dec_tick()) {
+            m_on_join.notify_all();
+          }
+        });
+
         _ul.lock();
       }
     }
