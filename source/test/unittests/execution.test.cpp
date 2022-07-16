@@ -4,8 +4,6 @@
 #include <chrono>
 #include <thread>
 
-#include <iostream>
-
 namespace laplace::test {
   using std::make_shared, std::this_thread::sleep_for,
       std::chrono::milliseconds, std::chrono::steady_clock;
@@ -383,34 +381,40 @@ namespace laplace::test {
   }
 
   TEST_CASE("execution two parallel actions") {
-    auto exe = execution {}.set_thread_count(4);
+    static auto m         = std::mutex {};
+    static auto foo_begin = 0;
+    static auto foo_end   = 0;
+    static auto bar_begin = 0;
+    static auto bar_end   = 0;
 
-    auto foo_begin = steady_clock::time_point {};
-    auto foo_end   = steady_clock::time_point {};
-    auto bar_begin = steady_clock::time_point {};
-    auto bar_end   = steady_clock::time_point {};
+    auto exe = execution {}.set_thread_count(4);
 
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
-          foo_begin = steady_clock::now();
-          std::cout << "  foo begin\n";
-          sleep_for(milliseconds(5000));
-          std::cout << "  foo end\n";
-          foo_end = steady_clock::now();
+          m.lock();
+          foo_begin++;
+          m.unlock();
+          sleep_for(milliseconds(300));
+          m.lock();
+          foo_end = bar_begin;
+          m.unlock();
           co_yield impact { noop {} };
         }));
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
-          bar_begin = steady_clock::now();
-          std::cout << "  bar begin\n";
-          sleep_for(milliseconds(5000));
-          std::cout << "  bar end\n";
-          bar_end = steady_clock::now();
+          m.lock();
+          bar_begin++;
+          m.unlock();
+          sleep_for(milliseconds(300));
+          m.lock();
+          bar_end = foo_begin;
+          m.unlock();
           co_yield impact { noop {} };
         }));
     exe.schedule_and_join(1);
 
-    REQUIRE((foo_begin < bar_end && bar_begin < foo_end));
+    REQUIRE(foo_end == 1);
+    REQUIRE(bar_end == 1);
   }
 
   TEST_CASE("execution join one") {
@@ -430,7 +434,7 @@ namespace laplace::test {
     exe.join();
     REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
   }
-  
+
   TEST_CASE("execution join four") {
     auto exe = execution {}.set_thread_count(4);
 
