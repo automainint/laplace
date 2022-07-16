@@ -31,7 +31,7 @@ namespace laplace {
 
   inline impact_list::impact_list() noexcept :
       m_data(default_memory_resource()) {
-    m_data.reserve(average_impact_list_size);
+    m_data.reserve(average_impact_list_size());
   }
 
   inline impact_list::impact_list(
@@ -81,7 +81,7 @@ namespace laplace {
   }
 
   inline void impact_list::_assign(impact i) noexcept {
-    m_data.reserve(average_impact_list_size);
+    m_data.reserve(average_impact_list_size());
     m_data.emplace_back(i);
   }
 

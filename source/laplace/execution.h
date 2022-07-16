@@ -5,6 +5,8 @@
 #define LAPLACE_EXECUTION_H
 
 #include "impact.h"
+#include <atomic>
+#include <condition_variable>
 #include <thread>
 #include <vector>
 
@@ -39,17 +41,6 @@ namespace laplace {
     void schedule_and_join(time_type time) noexcept;
 
   private:
-    [[nodiscard]] auto _error() const noexcept -> execution;
-    [[nodiscard]] auto _bind(
-        std::function<execution()> f) const noexcept -> execution;
-    template <typename type_>
-    [[nodiscard]] auto _bind(std::function<type_()> f,
-                             type_ def) const noexcept -> type_;
-
-    void _assign(execution const &exe) noexcept;
-    void _assign(execution &&exe) noexcept;
-    void _set_error() noexcept;
-
     struct action_state {
       ptrdiff_t                    index         = 0;
       time_type                    clock         = 0;
@@ -57,11 +48,35 @@ namespace laplace {
       coro::generator<impact_list> generator;
     };
 
-    bool      m_is_error     = false;
-    bool      m_is_done      = false;
-    ptrdiff_t m_thread_count = default_thread_count;
-    std::pmr::vector<action_state> m_queue;
+    [[nodiscard]] auto _error() const noexcept -> execution;
+    [[nodiscard]] auto _bind(
+        std::function<execution()> f) const noexcept -> execution;
+    template <typename type_>
+    [[nodiscard]] auto _bind(std::function<type_()> f,
+                             type_ def) const noexcept -> type_;
+
+    void               _init_state() noexcept;
+    void               _done_and_notify() noexcept;
+    void               _stop_threads() noexcept;
+    [[nodiscard]] auto _next_action() noexcept
+        -> std::optional<action_state>;
+    void _thread() noexcept;
+    void _init_threads(ptrdiff_t thread_count) noexcept;
+
+    void _assign(execution const &exe) noexcept;
+    void _assign(execution &&exe) noexcept;
+    void _set_error() noexcept;
+    void _set_error_internal() noexcept;
+
+    bool                    m_is_error = false;
+    bool                    m_is_done  = true;
+    time_type               m_ticks    = 0;
+    std::mutex              m_lock;
+    std::condition_variable m_control;
+
     state                          m_state;
+    std::pmr::vector<action_state> m_queue;
+    std::pmr::vector<std::jthread> m_threads;
   };
 }
 

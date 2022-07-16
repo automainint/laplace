@@ -1,11 +1,12 @@
 #include "../../laplace/execution.h"
 #include "io_impl.test.h"
 #include <catch2/catch.hpp>
+#include <chrono>
 #include <thread>
 
 namespace laplace::test {
   using std::make_shared, std::this_thread::sleep_for,
-      std::chrono::milliseconds;
+      std::chrono::milliseconds, std::chrono::steady_clock;
 
   TEST_CASE("create execution") {
     REQUIRE(!execution {}.error());
@@ -28,13 +29,13 @@ namespace laplace::test {
   }
 
   TEST_CASE("execution get thread count") {
-    REQUIRE(execution {}.thread_count() == default_thread_count);
+    REQUIRE(execution {}.thread_count() == default_thread_count());
   }
 
   TEST_CASE("execution set thread count") {
-    auto exe = execution {}.set_thread_count(4);
-    REQUIRE(!exe.error());
-    REQUIRE(exe.thread_count() == 4);
+    REQUIRE(execution {}.set_thread_count(0).thread_count() == 0);
+    REQUIRE(execution {}.set_thread_count(1).thread_count() == 1);
+    REQUIRE(execution {}.set_thread_count(4).thread_count() == 4);
   }
 
   TEST_CASE("execution set thread count to zero") {
@@ -55,10 +56,10 @@ namespace laplace::test {
                 .error());
   }
 
-  TEST_CASE("execution queue action") {
+  TEST_CASE("seq execution queue action") {
     bool called = false;
 
-    auto exe = execution {};
+    auto exe = execution {}.set_thread_count(0);
 
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
@@ -69,10 +70,10 @@ namespace laplace::test {
     REQUIRE(!called);
   }
 
-  TEST_CASE("execution queue action and schedule") {
+  TEST_CASE("seq execution queue action and schedule") {
     bool called = false;
 
-    auto exe = execution {};
+    auto exe = execution {}.set_thread_count(0);
 
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
@@ -84,10 +85,10 @@ namespace laplace::test {
     REQUIRE(called);
   }
 
-  TEST_CASE("execution queue action and schedule zero") {
+  TEST_CASE("seq execution queue action and schedule zero") {
     bool called = false;
 
-    auto exe = execution {};
+    auto exe = execution {}.set_thread_count(0);
 
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
@@ -99,10 +100,10 @@ namespace laplace::test {
     REQUIRE(!called);
   }
 
-  TEST_CASE("execution queue action and access default self") {
+  TEST_CASE("seq execution queue action and access default self") {
     bool ok = false;
 
-    auto exe = execution {};
+    auto exe = execution {}.set_thread_count(0);
 
     exe.queue(action {}.setup(
         [&](entity self) -> coro::generator<impact_list> {
@@ -114,10 +115,10 @@ namespace laplace::test {
     REQUIRE(ok);
   }
 
-  TEST_CASE("execution queue action and access custom self") {
+  TEST_CASE("seq execution queue action and access custom self") {
     bool ok = false;
 
-    auto exe = execution {};
+    auto exe = execution {}.set_thread_count(0);
 
     exe.queue(
         action {}
@@ -169,8 +170,8 @@ namespace laplace::test {
     REQUIRE(bar.read_only().get_integer(0, 0, -1) == -1);
   }
 
-  TEST_CASE("execution set value") {
-    auto exe = execution {};
+  TEST_CASE("seq execution set value impact") {
+    auto exe = execution {}.set_thread_count(0);
 
     exe.queue(
         action {}.setup([](entity) -> coro::generator<impact_list> {
@@ -186,8 +187,8 @@ namespace laplace::test {
     REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
   }
 
-  TEST_CASE("execution set value twice") {
-    auto exe = execution {};
+  TEST_CASE("seq execution set value impact twice") {
+    auto exe = execution {}.set_thread_count(0);
 
     exe.queue(
         action {}.setup([](entity) -> coro::generator<impact_list> {
@@ -208,8 +209,9 @@ namespace laplace::test {
     REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
   }
 
-  TEST_CASE("execution set value twice with continuation") {
-    auto exe = execution {};
+  TEST_CASE(
+      "seq execution set value impact twice with continuation") {
+    auto exe = execution {}.set_thread_count(0);
 
     exe.queue(
         action {}.setup([](entity) -> coro::generator<impact_list> {
@@ -231,8 +233,8 @@ namespace laplace::test {
     REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
   }
 
-  TEST_CASE("execution two actions") {
-    auto exe = execution {};
+  TEST_CASE("seq execution two actions") {
+    auto exe = execution {}.set_thread_count(0);
 
     const auto tick = action::default_tick_duration;
 
@@ -258,8 +260,8 @@ namespace laplace::test {
     REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
   }
 
-  TEST_CASE("execution invalid impact") {
-    auto exe = execution {};
+  TEST_CASE("seq execution invalid impact") {
+    auto exe = execution {}.set_thread_count(0);
 
     exe.queue(
         action {}.setup([](entity) -> coro::generator<impact_list> {
@@ -271,8 +273,8 @@ namespace laplace::test {
     REQUIRE(exe.error());
   }
 
-  TEST_CASE("execution sync impacts applied first") {
-    auto exe = execution {};
+  TEST_CASE("seq execution sync impacts applied first") {
+    auto exe = execution {}.set_thread_count(0);
 
     exe.queue(
         action {}.setup([](entity) -> coro::generator<impact_list> {
@@ -296,8 +298,8 @@ namespace laplace::test {
     REQUIRE(exe.read_only().get_integer(1, 0, -1) == 43);
   }
 
-  TEST_CASE("execution queue action impact") {
-    auto exe = execution {};
+  TEST_CASE("seq execution queue action impact") {
+    auto exe = execution {}.set_thread_count(0);
 
     exe.queue(
         action {}.setup([](entity) -> coro::generator<impact_list> {
@@ -316,7 +318,7 @@ namespace laplace::test {
   }
 
   TEST_CASE("execution action order") {
-    auto       exe  = execution {};
+    auto       exe  = execution {}.set_thread_count(2);
     const auto tick = action::default_tick_duration;
 
     exe.queue(
@@ -349,5 +351,77 @@ namespace laplace::test {
     exe.schedule_and_join(1 + tick);
 
     REQUIRE(!exe.error());
+  }
+
+  TEST_CASE("seq execution no multithreading") {
+    auto exe = execution {}.set_thread_count(0);
+
+    auto foo_begin = steady_clock::time_point {};
+    auto foo_end   = steady_clock::time_point {};
+    auto bar_begin = steady_clock::time_point {};
+    auto bar_end   = steady_clock::time_point {};
+
+    exe.queue(
+        action {}.setup([&](entity) -> coro::generator<impact_list> {
+          foo_begin = steady_clock::now();
+          sleep_for(milliseconds(100));
+          foo_end = steady_clock::now();
+          co_yield impact { noop {} };
+        }));
+    exe.queue(
+        action {}.setup([&](entity) -> coro::generator<impact_list> {
+          bar_begin = steady_clock::now();
+          sleep_for(milliseconds(100));
+          bar_end = steady_clock::now();
+          co_yield impact { noop {} };
+        }));
+    exe.schedule_and_join(1);
+
+    REQUIRE((foo_end < bar_begin || bar_end < foo_begin));
+  }
+
+  TEST_CASE("execution two parallel actions") {
+    auto exe = execution {}.set_thread_count(2);
+
+    auto foo_begin    = steady_clock::time_point {};
+    auto foo_end      = steady_clock::time_point {};
+    auto bar_begin    = steady_clock::time_point {};
+    auto bar_end      = steady_clock::time_point {};
+
+    exe.queue(
+        action {}.setup([&](entity) -> coro::generator<impact_list> {
+          foo_begin = steady_clock::now();
+          sleep_for(milliseconds(100));
+          foo_end = steady_clock::now();
+          co_yield impact { noop {} };
+        }));
+    exe.queue(
+        action {}.setup([&](entity) -> coro::generator<impact_list> {
+          bar_begin = steady_clock::now();
+          sleep_for(milliseconds(100));
+          bar_end = steady_clock::now();
+          co_yield impact { noop {} };
+        }));
+    exe.schedule_and_join(1);
+
+    REQUIRE((foo_begin < bar_end && bar_begin < foo_end));
+  }
+
+  TEST_CASE("execution join") {
+    auto exe = execution {}.set_thread_count(1);
+
+    exe.queue(
+        action {}.setup([&](entity) -> coro::generator<impact_list> {
+          sleep_for(milliseconds(100));
+          co_yield impact {
+            integer_allocate_into { .id = 0, .size = 1 }
+          } + impact { integer_set {
+                  .id = 0, .index = 0, .value = 42 } };
+        }));
+
+    exe.schedule(1);
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == -1);
+    exe.join();
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
   }
 }
