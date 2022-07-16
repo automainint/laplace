@@ -391,14 +391,14 @@ namespace laplace::test {
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
           foo_begin = steady_clock::now();
-          sleep_for(milliseconds(100));
+          sleep_for(milliseconds(300));
           foo_end = steady_clock::now();
           co_yield impact { noop {} };
         }));
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
           bar_begin = steady_clock::now();
-          sleep_for(milliseconds(100));
+          sleep_for(milliseconds(300));
           bar_end = steady_clock::now();
           co_yield impact { noop {} };
         }));
