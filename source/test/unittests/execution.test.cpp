@@ -4,6 +4,8 @@
 #include <chrono>
 #include <thread>
 
+#include <iostream>
+
 namespace laplace::test {
   using std::make_shared, std::this_thread::sleep_for,
       std::chrono::milliseconds, std::chrono::steady_clock;
@@ -391,14 +393,18 @@ namespace laplace::test {
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
           foo_begin = steady_clock::now();
+          std::cout << "  foo begin\n";
           sleep_for(milliseconds(5000));
+          std::cout << "  foo end\n";
           foo_end = steady_clock::now();
           co_yield impact { noop {} };
         }));
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
           bar_begin = steady_clock::now();
+          std::cout << "  bar begin\n";
           sleep_for(milliseconds(5000));
+          std::cout << "  bar end\n";
           bar_end = steady_clock::now();
           co_yield impact { noop {} };
         }));
