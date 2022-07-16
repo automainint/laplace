@@ -62,7 +62,7 @@ namespace laplace {
         -> std::optional<ptrdiff_t>;
     void               _add_sync(impact const &i) noexcept;
     void               _add_async(impact const &i) noexcept;
-    void               _add_impacts(impact_list list) noexcept;
+    void               _add_impacts(impact_list const &list) noexcept;
     [[nodiscard]] auto _next_async() noexcept
         -> std::optional<ptrdiff_t>;
     [[nodiscard]] auto _dec_tick() noexcept -> bool;

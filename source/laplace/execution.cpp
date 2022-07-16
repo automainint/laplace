@@ -265,7 +265,7 @@ namespace laplace {
     m_async += i;
   }
 
-  void execution::_add_impacts(impact_list list) noexcept {
+  void execution::_add_impacts(impact_list const &list) noexcept {
     for (auto &i : list)
       if (mode_of(i) == mode::sync)
         _add_sync(i);
@@ -316,9 +316,8 @@ namespace laplace {
         _once([&]() {
           m_state.adjust_done();
 
-          if (_dec_tick()) {
+          if (_dec_tick())
             m_on_join.notify_all();
-          }
         });
 
         _ul.lock();
