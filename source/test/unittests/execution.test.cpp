@@ -6,7 +6,7 @@
 
 namespace laplace::test {
   using std::make_shared, std::this_thread::sleep_for,
-      std::chrono::milliseconds, std::chrono::steady_clock;
+      std::chrono::milliseconds;
 
   TEST_CASE("create execution") {
     REQUIRE(!execution {}.error());
@@ -317,67 +317,40 @@ namespace laplace::test {
     REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
   }
 
-  TEST_CASE("execution action order") {
-    auto       exe  = execution {}.set_thread_count(2);
-    const auto tick = action::default_tick_duration;
-
-    exe.queue(
-        action {}.setup([](entity) -> coro::generator<impact_list> {
-          co_yield impact { noop {} };
-          sleep_for(milliseconds(20));
-          co_yield impact { queue_action { action {}.setup(
-              { [](entity) -> coro::generator<impact_list> {
-                sleep_for(milliseconds(20));
-                co_yield impact { queue_action { action {}.setup(
-                    { [](entity) -> coro::generator<impact_list> {
-                      sleep_for(milliseconds(20));
-                      co_yield impact { integer_allocate_into {
-                          .id = 0, .size = 1 } };
-                    } }) } };
-              } }) } };
-        }));
-    exe.queue(
-        action {}.setup([](entity) -> coro::generator<impact_list> {
-          co_yield impact { noop {} };
-          co_yield impact { queue_action { action {}.setup(
-              { [](entity) -> coro::generator<impact_list> {
-                co_yield impact { queue_action { action {}.setup(
-                    { [](entity) -> coro::generator<impact_list> {
-                      co_yield impact { integer_deallocate {
-                          .id = 0 } };
-                    } }) } };
-              } }) } };
-        }));
-    exe.schedule_and_join(1 + tick);
-
-    REQUIRE(!exe.error());
-  }
-
   TEST_CASE("seq execution no multithreading") {
+    static auto m         = std::mutex {};
+    static auto foo_begin = 0;
+    static auto foo_end   = 0;
+    static auto bar_begin = 0;
+    static auto bar_end   = 0;
+
     auto exe = execution {}.set_thread_count(0);
 
-    auto foo_begin = steady_clock::time_point {};
-    auto foo_end   = steady_clock::time_point {};
-    auto bar_begin = steady_clock::time_point {};
-    auto bar_end   = steady_clock::time_point {};
-
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
-          foo_begin = steady_clock::now();
-          sleep_for(milliseconds(100));
-          foo_end = steady_clock::now();
+          m.lock();
+          foo_begin++;
+          m.unlock();
+          sleep_for(milliseconds(300));
+          m.lock();
+          foo_end = bar_begin;
+          m.unlock();
           co_yield impact { noop {} };
         }));
     exe.queue(
         action {}.setup([&](entity) -> coro::generator<impact_list> {
-          bar_begin = steady_clock::now();
-          sleep_for(milliseconds(100));
-          bar_end = steady_clock::now();
+          m.lock();
+          bar_begin++;
+          m.unlock();
+          sleep_for(milliseconds(300));
+          m.lock();
+          bar_end = foo_begin;
+          m.unlock();
           co_yield impact { noop {} };
         }));
     exe.schedule_and_join(1);
 
-    REQUIRE((foo_end < bar_begin || bar_end < foo_begin));
+    REQUIRE(foo_end + bar_end == 1);
   }
 
   TEST_CASE("execution two parallel actions") {
@@ -515,4 +488,123 @@ namespace laplace::test {
     REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
   }
 
+  TEST_CASE("execution two actions") {
+    auto exe = execution {}.set_thread_count(4);
+
+    const auto tick = action::default_tick_duration;
+
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact { integer_allocate_into { .id   = 0,
+                                                    .size = 1 } };
+        }));
+    exe.schedule_and_join(1);
+
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact { integer_add {
+              .id = 0, .index = 0, .delta = 18 } };
+        }));
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact { integer_add {
+              .id = 0, .index = 0, .delta = 24 } };
+        }));
+    exe.schedule_and_join(tick);
+
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  }
+
+  TEST_CASE("execution invalid impact") {
+    auto exe = execution {}.set_thread_count(4);
+
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact { integer_set {
+              .id = 1, .index = 0, .value = 42 } };
+        }));
+    exe.schedule_and_join(1);
+
+    REQUIRE(exe.error());
+  }
+
+  TEST_CASE("execution sync impacts applied first") {
+    auto exe = execution {}.set_thread_count(4);
+
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact {
+            integer_set { .id = 0, .index = 0, .value = 42 }
+          } + impact { integer_allocate_into { .id = 0, .size = 1 } };
+        }));
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact { integer_set {
+              .id = 1, .index = 0, .value = 43 } };
+        }));
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact { integer_allocate_into { .id   = 1,
+                                                    .size = 1 } };
+        }));
+    exe.schedule_and_join(1);
+
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+    REQUIRE(exe.read_only().get_integer(1, 0, -1) == 43);
+  }
+
+  TEST_CASE("execution queue action impact") {
+    auto exe = execution {}.set_thread_count(4);
+
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact { queue_action { action {}.setup(
+              [](entity) -> coro::generator<impact_list> {
+                co_yield impact {
+                  integer_allocate_into { .id = 0, .size = 1 }
+                } + impact { integer_set {
+                        .id = 0, .index = 0, .value = 42 } };
+              }) } };
+        }));
+
+    exe.schedule_and_join(1);
+
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  }
+
+  TEST_CASE("execution action order") {
+    auto       exe  = execution {}.set_thread_count(4);
+    const auto tick = action::default_tick_duration;
+
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact { noop {} };
+          sleep_for(milliseconds(20));
+          co_yield impact { queue_action { action {}.setup(
+              { [](entity) -> coro::generator<impact_list> {
+                sleep_for(milliseconds(20));
+                co_yield impact { queue_action { action {}.setup(
+                    { [](entity) -> coro::generator<impact_list> {
+                      sleep_for(milliseconds(20));
+                      co_yield impact { integer_allocate_into {
+                          .id = 0, .size = 1 } };
+                    } }) } };
+              } }) } };
+        }));
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact { noop {} };
+          co_yield impact { queue_action { action {}.setup(
+              { [](entity) -> coro::generator<impact_list> {
+                co_yield impact { queue_action { action {}.setup(
+                    { [](entity) -> coro::generator<impact_list> {
+                      co_yield impact { integer_deallocate {
+                          .id = 0 } };
+                    } }) } };
+              } }) } };
+        }));
+    exe.schedule_and_join(1 + tick);
+
+    REQUIRE(!exe.error());
+  }
 }

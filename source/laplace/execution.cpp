@@ -14,9 +14,8 @@ namespace laplace {
   }
 
   execution::execution(memory_resource *resource) noexcept :
-      m_sync(average_sync_impact_count(), resource),
-      m_async(average_async_impact_count(), resource),
-      m_forks(resource), m_threads(resource), m_queue(resource) {
+      m_sync(resource), m_async(resource), m_forks(resource),
+      m_threads(resource), m_queue(resource) {
     _init();
   }
 
@@ -47,7 +46,7 @@ namespace laplace {
   }
 
   auto execution::error() const noexcept -> bool {
-    return m_is_error;
+    return m_is_error.load(std::memory_order_acquire);
   }
 
   auto execution::thread_count() const noexcept -> ptrdiff_t {
@@ -86,27 +85,16 @@ namespace laplace {
 
   void execution::queue(action const &a) noexcept {
     m_queue.emplace_back(action_state {
-        .index         = static_cast<ptrdiff_t>(m_queue.size()),
+        .order         = static_cast<ptrdiff_t>(m_queue.size()),
         .tick_duration = a.tick_duration(),
         .generator     = a.run(a.self()) });
   }
 
   void execution::schedule(time_type time) noexcept {
     if (m_threads.empty()) {
-      auto sync  = impact_list { average_sync_impact_count(),
-                                default_memory_resource() };
-      auto async = impact_list { average_async_impact_count(),
-                                 default_memory_resource() };
-      auto forks = vector<action_state> { default_memory_resource() };
-      forks.reserve(average_fork_count());
-
       for (; time > 0; time--) {
         for (bool done = false; !done;) {
           done = true;
-
-          sync.clear();
-          async.clear();
-          forks.clear();
 
           for (auto &a : m_queue) {
             if (a.generator.is_done() || a.clock != 0)
@@ -124,11 +112,11 @@ namespace laplace {
                       done        = false;
                     } else if constexpr (is_same_v<type,
                                                    queue_action>) {
-                      forks.emplace(
-                          lower_bound(forks.begin(), forks.end(),
-                                      a.index,
+                      m_forks.emplace(
+                          lower_bound(m_forks.begin(), m_forks.end(),
+                                      a.order,
                                       [](auto const &f, auto n) {
-                                        return f.index < n;
+                                        return f.order < n;
                                       }),
                           action_state { .tick_duration =
                                              v.value.tick_duration(),
@@ -137,9 +125,16 @@ namespace laplace {
                       done = false;
                     } else if constexpr (mode_of<type>() ==
                                          mode::sync)
-                      sync += i;
+                      m_sync.emplace(
+                          lower_bound(m_sync.begin(), m_sync.end(),
+                                      a.order,
+                                      [](auto const &f, auto n) {
+                                        return f.order < n;
+                                      }),
+                          sync_impact { .order = a.order,
+                                        .value = i });
                     else
-                      async += i;
+                      m_async.emplace_back(i);
                   },
                   i.value);
 
@@ -147,23 +142,28 @@ namespace laplace {
               a.clock = a.tick_duration;
           }
 
-          for (auto &i : sync)
+          for (auto &i : m_sync)
+            if (!m_state.apply(i.value))
+              _set_error();
+
+          for (auto &i : m_async)
             if (!m_state.apply(i))
               _set_error();
 
-          for (auto &i : async)
-            if (!m_state.apply(i))
-              _set_error();
+          for (auto n = ptrdiff_t {}; n < m_forks.size(); n++)
+            m_forks[n].order = m_queue.size() + n;
 
-          for (auto n = ptrdiff_t {}; n < forks.size(); n++)
-            forks[n].index = m_queue.size() + n;
+          m_queue.insert(m_queue.end(), m_forks.begin(),
+                         m_forks.end());
 
-          m_queue.insert(m_queue.end(), forks.begin(), forks.end());
-
-          if (sync.size() > 0 || async.size() > 0) {
+          if (m_sync.size() > 0 || m_async.size() > 0) {
             while (m_state.adjust()) { }
             m_state.adjust_done();
           }
+
+          m_sync.clear();
+          m_async.clear();
+          m_forks.clear();
         }
 
         m_queue.erase(
@@ -172,12 +172,12 @@ namespace laplace {
             m_queue.end());
 
         for (auto n = ptrdiff_t {}; n < m_queue.size(); n++) {
-          m_queue[n].index = n;
+          m_queue[n].order = n;
           m_queue[n].clock--;
         }
       }
     } else {
-      auto _ul = unique_lock(m_lock);
+      auto _ul = unique_lock { m_lock };
       m_ticks += time;
       _ul.unlock();
       m_on_tick.notify_all();
@@ -187,7 +187,7 @@ namespace laplace {
   void execution::join() noexcept {
     if (m_threads.empty())
       return;
-    auto _ul = unique_lock(m_lock);
+    auto _ul = unique_lock { m_lock };
     m_on_join.wait(_ul, [&]() { return m_is_done || m_ticks == 0; });
   }
 
@@ -218,7 +218,7 @@ namespace laplace {
   }
 
   void execution::_once(std::function<void()> f) noexcept {
-    auto _ul = unique_lock(m_lock);
+    auto _ul = unique_lock { m_lock };
     if (++m_fence_in == m_threads.size()) {
       _ul.unlock();
       f();
@@ -236,9 +236,9 @@ namespace laplace {
   }
 
   void execution::_done_and_notify() noexcept {
+    auto _ul = unique_lock { m_lock };
     if (m_is_done)
       return;
-    auto _ul  = unique_lock(m_lock);
     m_is_done = true;
     _ul.unlock();
     m_on_tick.notify_all();
@@ -251,23 +251,40 @@ namespace laplace {
   }
 
   auto execution::_next_action() noexcept -> optional<ptrdiff_t> {
-    auto _ul = unique_lock(m_lock);
+    auto _ul = unique_lock { m_lock };
     if (m_queue_index == m_queue.size())
       return nullopt;
     return m_queue_index++;
   }
 
-  void execution::_add_sync(impact const &i) noexcept {
-    auto _ul = unique_lock(m_lock);
-    m_sync += i;
+  void execution::_add_sync(ptrdiff_t     order,
+                            impact const &i) noexcept {
+    auto _ul = unique_lock { m_lock };
+    m_sync.emplace(lower_bound(m_sync.begin(), m_sync.end(), order,
+                               [](auto const &f, auto n) {
+                                 return f.order < n;
+                               }),
+                   sync_impact { .order = order, .value = i });
   }
 
   void execution::_add_async(impact const &i) noexcept {
-    auto _ul = unique_lock(m_lock);
-    m_async += i;
+    auto _ul = unique_lock { m_lock };
+    m_async.emplace_back(i);
   }
 
-  auto execution::_add_impacts(impact_list const &list) noexcept
+  void execution::_add_fork(ptrdiff_t     order,
+                            action const &a) noexcept {
+    auto _ul = unique_lock { m_lock };
+    m_forks.emplace(lower_bound(m_forks.begin(), m_forks.end(), order,
+                                [](auto const &f, auto n) {
+                                  return f.order < n;
+                                }),
+                    action_state { .tick_duration = a.tick_duration(),
+                                   .generator = a.run(a.self()) });
+  }
+
+  auto execution::_add_impacts(ptrdiff_t          order,
+                               impact_list const &list) noexcept
       -> tick_status {
     auto s = tick_status::done;
     for (auto &i : list)
@@ -277,8 +294,10 @@ namespace laplace {
 
             if constexpr (is_same_v<type, tick_continue>)
               s = tick_status::continue_;
+            else if constexpr (is_same_v<type, queue_action>)
+              _add_fork(order, v.value);
             else if constexpr (mode_of<type>() == mode::sync)
-              _add_sync(i);
+              _add_sync(order, i);
             else
               _add_async(i);
           },
@@ -289,31 +308,31 @@ namespace laplace {
   auto execution::_perform(ptrdiff_t index) noexcept -> bool {
     auto &a         = m_queue[index];
     bool  performed = a.clock == 0;
-    if (performed &&
-        _add_impacts(a.generator.next()) == tick_status::done)
+    if (performed && _add_impacts(a.order, a.generator.next()) ==
+                         tick_status::done)
       a.clock = a.tick_duration;
     return performed;
   }
 
   auto execution::_next_async() noexcept -> optional<ptrdiff_t> {
-    auto _ul = unique_lock(m_lock);
+    auto _ul = unique_lock { m_lock };
     if (m_async_index == m_async.size())
       return nullopt;
     return m_async_index++;
   }
 
   auto execution::_dec_tick() noexcept -> bool {
-    auto _ul = unique_lock(m_lock);
+    auto _ul = unique_lock { m_lock };
     return --m_ticks == 0;
   }
 
   auto execution::_tick_done() noexcept -> bool {
-    auto _ul = unique_lock(m_lock);
+    auto _ul = unique_lock { m_lock };
     return m_is_tick_done;
   }
 
   void execution::_add_tick_done(bool done) noexcept {
-    auto _ul = unique_lock(m_lock);
+    auto _ul = unique_lock { m_lock };
     m_is_tick_done &= done;
   }
 
@@ -331,18 +350,32 @@ namespace laplace {
     return !_tick_done();
   }
 
+  void execution::_set_error_internal() noexcept {
+    auto _ul  = unique_lock { m_lock };
+    m_is_done = true;
+    _ul.unlock();
+    m_is_error.store(true, std::memory_order_release);
+    m_on_join.notify_all();
+  }
+
   void execution::_apply_impacts() noexcept {
     _once([&]() {
-      for (auto &i : m_sync) std::ignore = m_state.apply(i);
+      for (auto &i : m_sync)
+        if (!m_state.apply(i.value))
+          _set_error_internal();
       m_sync.clear();
     });
 
     while (auto n = _next_async())
-      std::ignore = m_state.apply(m_async[*n]);
+      if (!m_state.apply(m_async[*n]))
+        _set_error_internal();
 
     _once([&]() {
       m_async_index = 0;
       m_async.clear();
+
+      m_queue.insert(m_queue.end(), m_forks.begin(), m_forks.end());
+      m_forks.clear();
     });
 
     while (m_state.adjust()) { }
@@ -351,9 +384,17 @@ namespace laplace {
   }
 
   void execution::_apply_time() noexcept {
-    while (auto n = _next_action()) m_queue[*n].clock--;
-
     _once([&]() {
+      m_queue.erase(
+          remove_if(m_queue.begin(), m_queue.end(),
+                    [](auto &a) { return a.generator.is_done(); }),
+          m_queue.end());
+
+      for (auto n = ptrdiff_t {}; n < m_queue.size(); n++) {
+        m_queue[n].order = n;
+        m_queue[n].clock--;
+      }
+
       m_queue_index = 0;
 
       if (_dec_tick())
@@ -362,7 +403,7 @@ namespace laplace {
   }
 
   void execution::_thread() noexcept {
-    auto _ul = unique_lock(m_lock);
+    auto _ul = unique_lock { m_lock };
     while (!m_is_done) {
       m_on_tick.wait(_ul,
                      [&]() { return m_is_done || m_ticks != 0; });
@@ -379,7 +420,7 @@ namespace laplace {
   }
 
   void execution::_init_threads(ptrdiff_t thread_count) noexcept {
-    if (m_is_error)
+    if (error())
       return;
     _stop_threads();
     m_is_done = false;
@@ -394,9 +435,10 @@ namespace laplace {
   }
 
   void execution::_assign(execution const &exe) noexcept {
-    m_is_error = exe.m_is_error;
-    m_state    = exe.m_state;
-    m_queue    = exe.m_queue;
+    m_is_error.store(exe.error(), std::memory_order_release);
+
+    m_state = exe.m_state;
+    m_queue = exe.m_queue;
 
     _init_threads(exe.m_threads.size());
   }
@@ -404,9 +446,10 @@ namespace laplace {
   void execution::_assign(execution &&exe) noexcept {
     exe.join();
 
-    m_is_error = exe.m_is_error;
-    m_state    = std::move(exe.m_state);
-    m_queue    = std::move(exe.m_queue);
+    m_is_error.store(exe.error(), std::memory_order_release);
+
+    m_state = std::move(exe.m_state);
+    m_queue = std::move(exe.m_queue);
 
     _init_threads(exe.m_threads.size());
 
@@ -414,7 +457,7 @@ namespace laplace {
   }
 
   void execution::_set_error() noexcept {
-    m_is_error = true;
+    m_is_error.store(true, std::memory_order_release);
     _done_and_notify();
   }
 }
