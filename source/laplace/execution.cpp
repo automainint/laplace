@@ -10,12 +10,14 @@ namespace laplace {
       std::unique_lock, std::jthread, std::optional, std::nullopt;
 
   execution::execution() noexcept {
-    _init_threads(default_thread_count());
+    _init();
   }
 
   execution::execution(memory_resource *resource) noexcept :
-      m_threads(resource), m_queue(resource) {
-    _init_threads(default_thread_count());
+      m_sync(average_sync_impact_count(), resource),
+      m_async(average_async_impact_count(), resource),
+      m_forks(resource), m_threads(resource), m_queue(resource) {
+    _init();
   }
 
   execution::execution(execution const &exe) noexcept {
@@ -265,12 +267,32 @@ namespace laplace {
     m_async += i;
   }
 
-  void execution::_add_impacts(impact_list const &list) noexcept {
+  auto execution::_add_impacts(impact_list const &list) noexcept
+      -> tick_status {
+    auto s = tick_status::done;
     for (auto &i : list)
-      if (mode_of(i) == mode::sync)
-        _add_sync(i);
-      else
-        _add_async(i);
+      visit(
+          [&](auto const &v) {
+            using type = decay_t<decltype(v)>;
+
+            if constexpr (is_same_v<type, tick_continue>)
+              s = tick_status::continue_;
+            else if constexpr (mode_of<type>() == mode::sync)
+              _add_sync(i);
+            else
+              _add_async(i);
+          },
+          i.value);
+    return s;
+  }
+
+  auto execution::_perform(ptrdiff_t index) noexcept -> bool {
+    auto &a         = m_queue[index];
+    bool  performed = a.clock == 0;
+    if (performed &&
+        _add_impacts(a.generator.next()) == tick_status::done)
+      a.clock = a.tick_duration;
+    return performed;
   }
 
   auto execution::_next_async() noexcept -> optional<ptrdiff_t> {
@@ -285,6 +307,60 @@ namespace laplace {
     return --m_ticks == 0;
   }
 
+  auto execution::_tick_done() noexcept -> bool {
+    auto _ul = unique_lock(m_lock);
+    return m_is_tick_done;
+  }
+
+  void execution::_add_tick_done(bool done) noexcept {
+    auto _ul = unique_lock(m_lock);
+    m_is_tick_done &= done;
+  }
+
+  auto execution::_perform_actions() noexcept -> bool {
+    _once([&]() { m_is_tick_done = true; });
+
+    bool tick_not_done = false;
+
+    while (auto n = _next_action()) tick_not_done |= _perform(*n);
+
+    _add_tick_done(!tick_not_done);
+
+    _once([&]() { m_queue_index = 0; });
+
+    return !_tick_done();
+  }
+
+  void execution::_apply_impacts() noexcept {
+    _once([&]() {
+      for (auto &i : m_sync) std::ignore = m_state.apply(i);
+      m_sync.clear();
+    });
+
+    while (auto n = _next_async())
+      std::ignore = m_state.apply(m_async[*n]);
+
+    _once([&]() {
+      m_async_index = 0;
+      m_async.clear();
+    });
+
+    while (m_state.adjust()) { }
+
+    _once([&]() { m_state.adjust_done(); });
+  }
+
+  void execution::_apply_time() noexcept {
+    while (auto n = _next_action()) m_queue[*n].clock--;
+
+    _once([&]() {
+      m_queue_index = 0;
+
+      if (_dec_tick())
+        m_on_join.notify_all();
+    });
+  }
+
   void execution::_thread() noexcept {
     auto _ul = unique_lock(m_lock);
     while (!m_is_done) {
@@ -293,32 +369,9 @@ namespace laplace {
       while (m_ticks != 0) {
         _ul.unlock();
 
-        while (auto n = _next_action())
-          _add_impacts(m_queue[*n].generator.next());
+        while (_perform_actions()) _apply_impacts();
 
-        _once([&]() {
-          m_queue_index = 0;
-
-          for (auto &i : m_sync) std::ignore = m_state.apply(i);
-          m_sync.clear();
-        });
-
-        while (auto n = _next_async())
-          std::ignore = m_state.apply(m_async[*n]);
-
-        _once([&]() {
-          m_async_index = 0;
-          m_async.clear();
-        });
-
-        while (m_state.adjust()) { }
-
-        _once([&]() {
-          m_state.adjust_done();
-
-          if (_dec_tick())
-            m_on_join.notify_all();
-        });
+        _apply_time();
 
         _ul.lock();
       }
@@ -333,6 +386,11 @@ namespace laplace {
     m_threads.resize(thread_count);
     for (auto &t : m_threads)
       t = jthread { [this]() { this->_thread(); } };
+  }
+
+  void execution::_init() noexcept {
+    m_forks.reserve(average_fork_count());
+    _init_threads(default_thread_count());
   }
 
   void execution::_assign(execution const &exe) noexcept {

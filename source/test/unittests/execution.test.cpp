@@ -469,4 +469,50 @@ namespace laplace::test {
     exe.schedule_and_join(1);
     REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
   }
+
+  TEST_CASE("execution set value impact twice") {
+    auto exe = execution {}.set_thread_count(4);
+
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact {
+            integer_allocate_into { .id = 0, .size = 1 }
+          } + impact { integer_set {
+                  .id = 0, .index = 0, .value = 42 } };
+          co_yield impact { integer_set {
+              .id = 0, .index = 0, .value = 43 } };
+        }));
+
+    const auto tick = action::default_tick_duration;
+
+    exe.schedule_and_join(1);
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+
+    exe.schedule_and_join(tick);
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
+  }
+
+  TEST_CASE("execution set value impact twice with continuation") {
+    auto exe = execution {}.set_thread_count(4);
+
+    exe.queue(
+        action {}.setup([](entity) -> coro::generator<impact_list> {
+          co_yield impact { integer_allocate_into { .id   = 0,
+                                                    .size = 1 } } +
+              impact { integer_set {
+                  .id = 0, .index = 0, .value = 42 } } +
+              impact { tick_continue {} };
+          co_yield impact { integer_set {
+              .id = 0, .index = 0, .value = 43 } };
+        }));
+
+    const auto tick = action::default_tick_duration;
+
+    exe.schedule_and_join(1);
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
+
+    exe.schedule_and_join(tick);
+    REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
+  }
+
 }

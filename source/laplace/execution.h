@@ -48,6 +48,8 @@ namespace laplace {
       coro::generator<impact_list> generator;
     };
 
+    enum tick_status { done, continue_ };
+
     [[nodiscard]] auto _error() const noexcept -> execution;
     [[nodiscard]] auto _bind(
         std::function<execution()> f) const noexcept -> execution;
@@ -62,30 +64,40 @@ namespace laplace {
         -> std::optional<ptrdiff_t>;
     void               _add_sync(impact const &i) noexcept;
     void               _add_async(impact const &i) noexcept;
-    void               _add_impacts(impact_list const &list) noexcept;
+    [[nodiscard]] auto _add_impacts(impact_list const &list) noexcept
+        -> tick_status;
+    [[nodiscard]] auto _perform(ptrdiff_t index) noexcept -> bool;
     [[nodiscard]] auto _next_async() noexcept
         -> std::optional<ptrdiff_t>;
     [[nodiscard]] auto _dec_tick() noexcept -> bool;
+    [[nodiscard]] auto _tick_done() noexcept -> bool;
+    void               _add_tick_done(bool done) noexcept;
+    [[nodiscard]] auto _perform_actions() noexcept -> bool;
+    void               _apply_impacts() noexcept;
+    void               _apply_time() noexcept;
     void               _thread() noexcept;
     void               _init_threads(ptrdiff_t thread_count) noexcept;
+    void               _init() noexcept;
 
     void _assign(execution const &exe) noexcept;
     void _assign(execution &&exe) noexcept;
     void _set_error() noexcept;
 
-    bool                    m_is_error    = false;
-    bool                    m_is_done     = true;
-    ptrdiff_t               m_fence_in    = 0;
-    ptrdiff_t               m_fence_out   = 0;
-    ptrdiff_t               m_queue_index = 0;
-    ptrdiff_t               m_async_index = 0;
-    impact_list             m_sync;
-    impact_list             m_async;
-    time_type               m_ticks = 0;
-    std::mutex              m_lock;
-    std::condition_variable m_on_tick;
-    std::condition_variable m_on_join;
-    std::condition_variable m_on_fence;
+    bool                           m_is_error     = false;
+    bool                           m_is_done      = true;
+    bool                           m_is_tick_done = true;
+    ptrdiff_t                      m_fence_in     = 0;
+    ptrdiff_t                      m_fence_out    = 0;
+    ptrdiff_t                      m_queue_index  = 0;
+    ptrdiff_t                      m_async_index  = 0;
+    impact_list                    m_sync;
+    impact_list                    m_async;
+    std::pmr::vector<action_state> m_forks;
+    time_type                      m_ticks = 0;
+    std::mutex                     m_lock;
+    std::condition_variable        m_on_tick;
+    std::condition_variable        m_on_join;
+    std::condition_variable        m_on_fence;
 
     state                          m_state;
     std::pmr::vector<action_state> m_queue;
