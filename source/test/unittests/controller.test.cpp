@@ -1,4 +1,6 @@
 #include "../../laplace/controller.h"
-#include <catch2/catch.hpp>
+
+#define KIT_TEST_FILE controller
+#include <kit_test/test.h>
 
 namespace laplace::test { }

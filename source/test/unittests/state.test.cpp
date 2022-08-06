@@ -1,35 +1,37 @@
 #include "../../laplace/state.h"
 #include "../../laplace/impact.h"
 #include "io_impl.test.h"
-#include <catch2/catch.hpp>
+
+#define KIT_TEST_FILE state
+#include <kit_test/test.h>
 
 namespace laplace::test {
   using std::make_shared;
 
-  TEST_CASE("create state") {
+  TEST("create state") {
     std::ignore = state {};
   }
 
-  TEST_CASE("state apply noop") {
+  TEST("state apply noop") {
     REQUIRE(state {}.apply(impact { noop {} }));
   }
 
-  TEST_CASE("state apply may fail") {
+  TEST("state apply may fail") {
     REQUIRE(!state {}.apply(impact { tick_continue {} }));
   }
 
-  TEST_CASE("state get int may fail") {
+  TEST("state get int may fail") {
     REQUIRE(state {}.get_integer(0, 0, -1) == -1);
   }
 
-  TEST_CASE("state apply allocate into int and get") {
+  TEST("state apply allocate into int and get") {
     auto s  = state {};
     auto id = ptrdiff_t { 42 };
     REQUIRE(s.apply(impact { integer_allocate_into { id, 1 } }));
     REQUIRE(s.get_integer(id, 0, -1) == 0);
   }
 
-  TEST_CASE("state apply allocate int and get") {
+  TEST("state apply allocate int and get") {
     auto s   = state {};
     auto ret = ptrdiff_t { 0 };
     REQUIRE(s.apply(impact { integer_allocate_into { ret, 1 } }));
@@ -40,7 +42,7 @@ namespace laplace::test {
     REQUIRE(s.get_integer(id, 0, -1) == 0);
   }
 
-  TEST_CASE("state apply reserve int and allocate into") {
+  TEST("state apply reserve int and allocate into") {
     auto s  = state {};
     auto id = ptrdiff_t { 0 };
     REQUIRE(s.apply(impact { integer_reserve { 10 } }));
@@ -48,7 +50,7 @@ namespace laplace::test {
     REQUIRE(s.get_integer(id, 0, -1) == 0);
   }
 
-  TEST_CASE("state apply reserve int and allocate") {
+  TEST("state apply reserve int and allocate") {
     auto      s        = state {};
     ptrdiff_t ret      = 0;
     ptrdiff_t reserved = 10;
@@ -61,7 +63,7 @@ namespace laplace::test {
     REQUIRE(s.get_integer(ret, 1, -1) == reserved + 1);
   }
 
-  TEST_CASE("state apply allocate int, set and get") {
+  TEST("state apply allocate int, set and get") {
     auto s   = state {};
     auto ret = ptrdiff_t { 0 };
     REQUIRE(s.apply(impact { integer_allocate_into { ret, 1 } }));
@@ -75,14 +77,14 @@ namespace laplace::test {
     REQUIRE(s.get_integer(id, 0, -1) == 42);
   }
 
-  TEST_CASE("state deallocate int") {
+  TEST("state deallocate int") {
     auto s  = state {};
     auto id = ptrdiff_t { 0 };
     REQUIRE(s.apply(impact { integer_allocate_into { id, 1 } }));
     REQUIRE(s.apply(impact { integer_deallocate { id } }));
   }
 
-  TEST_CASE("state apply add int") {
+  TEST("state apply add int") {
     auto s  = state {};
     auto id = ptrdiff_t { 0 };
     REQUIRE(s.apply(impact { integer_allocate_into { id, 1 } }));
@@ -92,18 +94,18 @@ namespace laplace::test {
     REQUIRE(s.get_integer(id, 0, -1) == 42);
   }
 
-  TEST_CASE("get byte may fail") {
+  TEST("get byte may fail") {
     REQUIRE(state {}.get_byte(0, 0, -1) == -1);
   }
 
-  TEST_CASE("state apply allocate into byte and get") {
+  TEST("state apply allocate into byte and get") {
     auto s  = state {};
     auto id = ptrdiff_t { 42 };
     REQUIRE(s.apply(impact { byte_allocate_into { id, 1 } }));
     REQUIRE(s.get_byte(id, 0, -1) == 0);
   }
 
-  TEST_CASE("state apply allocate byte and get") {
+  TEST("state apply allocate byte and get") {
     auto s   = state {};
     auto ret = ptrdiff_t { 0 };
     REQUIRE(s.apply(impact { integer_allocate_into { ret, 1 } }));
@@ -114,7 +116,7 @@ namespace laplace::test {
     REQUIRE(s.get_byte(id, 0, -1) == 0);
   }
 
-  TEST_CASE("state apply allocate byte, set and get") {
+  TEST("state apply allocate byte, set and get") {
     auto s   = state {};
     auto ret = ptrdiff_t { 0 };
     REQUIRE(s.apply(impact { integer_allocate_into { ret, 1 } }));
@@ -128,7 +130,7 @@ namespace laplace::test {
     REQUIRE(s.get_byte(id, 0, -1) == 42);
   }
 
-  TEST_CASE("state apply reserve byte and allocate into") {
+  TEST("state apply reserve byte and allocate into") {
     auto s  = state {};
     auto id = ptrdiff_t { 0 };
     REQUIRE(s.apply(impact { byte_reserve { 10 } }));
@@ -136,7 +138,7 @@ namespace laplace::test {
     REQUIRE(s.get_byte(id, 0, -1) == 0);
   }
 
-  TEST_CASE("state apply reserve byte and allocate") {
+  TEST("state apply reserve byte and allocate") {
     auto      s        = state {};
     ptrdiff_t ret      = 0;
     ptrdiff_t reserved = 10;
@@ -149,14 +151,14 @@ namespace laplace::test {
     REQUIRE(s.get_integer(ret, 1, -1) == reserved + 1);
   }
 
-  TEST_CASE("state deallocate byte") {
+  TEST("state deallocate byte") {
     auto s  = state {};
     auto id = ptrdiff_t { 0 };
     REQUIRE(s.apply(impact { byte_allocate_into { id, 1 } }));
     REQUIRE(s.apply(impact { byte_deallocate { id } }));
   }
 
-  TEST_CASE("state apply add byte") {
+  TEST("state apply add byte") {
     auto s  = state {};
     auto id = ptrdiff_t { 0 };
     REQUIRE(s.apply(impact { byte_allocate_into { id, 1 } }));
@@ -166,7 +168,7 @@ namespace laplace::test {
     REQUIRE(s.get_byte(id, 0, -1) == 42);
   }
 
-  TEST_CASE("state apply random") {
+  TEST("state apply random") {
     auto s    = state {};
     auto id   = ptrdiff_t { 0 };
     auto size = ptrdiff_t { 1000 };
@@ -174,17 +176,18 @@ namespace laplace::test {
     REQUIRE(
         s.apply(impact { integer_random { 1, 100, id, 0, size } }));
     while (s.adjust()) { }
-    for (auto i = ptrdiff_t {}; i < size; i++) {
-      REQUIRE((s.get_integer(id, i, -1) >= 1 &&
-               s.get_integer(id, i, -1) <= 100));
-    }
+    bool ok = true;
+    for (auto i = ptrdiff_t {}; i < size; i++)
+      ok = ok && ((s.get_integer(id, i, -1) >= 1 &&
+                   s.get_integer(id, i, -1) <= 100));
+    REQUIRE(ok);
   }
 
-  TEST_CASE("state apply seed") {
+  TEST("state apply seed") {
     REQUIRE(state {}.apply(impact { integer_seed { 42 } }));
   }
 
-  TEST_CASE("state random with equal seed") {
+  TEST("state random with equal seed") {
     auto foo  = state {};
     auto bar  = state {};
     auto id   = ptrdiff_t { 0 };
@@ -199,13 +202,14 @@ namespace laplace::test {
         bar.apply(impact { integer_random { 1, 100, id, 0, size } }));
     while (foo.adjust()) { }
     while (bar.adjust()) { }
-    for (auto i = ptrdiff_t {}; i < size; i++) {
-      REQUIRE(
-          (foo.get_integer(id, i, -1) == bar.get_integer(id, i, -1)));
-    }
+    bool ok = true;
+    for (auto i = ptrdiff_t {}; i < size; i++)
+      ok = ok &&
+           foo.get_integer(id, i, -1) == bar.get_integer(id, i, -1);
+    REQUIRE(ok);
   }
 
-  TEST_CASE("state random with different seed") {
+  TEST("state random with different seed") {
     auto foo  = state {};
     auto bar  = state {};
     auto id   = ptrdiff_t { 0 };
@@ -229,7 +233,7 @@ namespace laplace::test {
     REQUIRE(different_count > size / 2);
   }
 
-  TEST_CASE("state allocation determinism") {
+  TEST("state allocation determinism") {
     auto s  = state {};
     auto id = ptrdiff_t {};
 
@@ -268,7 +272,7 @@ namespace laplace::test {
     REQUIRE(s.get_integer(id, 0, -1) == 1);
   }
 
-  TEST_CASE("state copy and edit") {
+  TEST("state copy and edit") {
     auto foo = state {};
     auto bar = foo;
     REQUIRE(foo.apply(impact { integer_allocate_into { 0, 1 } }));
@@ -278,7 +282,7 @@ namespace laplace::test {
     REQUIRE(bar.get_integer(0, 0, -1) == -1);
   }
 
-  TEST_CASE("state assign and edit") {
+  TEST("state assign and edit") {
     auto foo = state {};
     auto bar = state {};
     bar      = foo;
@@ -289,7 +293,7 @@ namespace laplace::test {
     REQUIRE(bar.get_integer(0, 0, -1) == -1);
   }
 
-  TEST_CASE("custom io implementation") {
+  TEST("custom io implementation") {
     auto s = state { make_shared<test_io_impl>() };
     REQUIRE(s.get_integer(0, 0, -1) == 42);
     REQUIRE(s.get_byte(0, 0, -1) == 24);

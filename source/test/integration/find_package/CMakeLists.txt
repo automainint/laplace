@@ -6,8 +6,8 @@ include(ExternalProject)
 
 ExternalProject_Add(
   laplace
-  GIT_REPOSITORY  https://github.com/automainint/laplace.git
-  GIT_TAG         redesign-lockstep-engine-only
+  GIT_REPOSITORY https://github.com/automainint/laplace.git
+  GIT_TAG dev
   CMAKE_ARGS
   -D CMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install
   -D LAPLACE_ENABLE_TESTING=OFF)

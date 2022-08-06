@@ -16,7 +16,6 @@ Official repository: [GitHub][laplace-link]
 
 ##  How to build
 To build the project CMake 3.16 and Git are required.
-Make sure your compiler [supports][compiler-support-link] C++20.
 
 ### With CMake
 - Configure and build the project.

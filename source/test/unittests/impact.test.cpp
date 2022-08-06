@@ -1,8 +1,10 @@
 #include "../../laplace/impact.h"
-#include <catch2/catch.hpp>
+
+#define KIT_TEST_FILE impact
+#include <kit_test/test.h>
 
 namespace laplace::test {
-  TEST_CASE("create impact") {
+  TEST("create impact") {
     std::ignore = impact { noop {} };
     std::ignore = impact { tick_continue {} };
     std::ignore = impact { integer_reserve { .count = 1 } };
@@ -33,14 +35,14 @@ namespace laplace::test {
                                             .return_size  = 1 } };
   }
 
-  TEST_CASE("impact list from two") {
+  TEST("impact list from two") {
     impact_list foo = impact {
       integer_set { .id = 0, .index = 0, .value = 0 }
     } + impact { tick_continue {} };
     REQUIRE(foo.size() == 2);
   }
 
-  TEST_CASE("impact list from three") {
+  TEST("impact list from three") {
     impact_list foo = impact { integer_set {
                           .id = 0, .index = 0, .value = 0 } } +
                       impact { tick_continue {} } +
@@ -48,14 +50,14 @@ namespace laplace::test {
     REQUIRE(foo.size() == 3);
   }
 
-  TEST_CASE("impact list single access") {
+  TEST("impact list single access") {
     impact_list foo = impact { integer_set {
         .id = 0, .index = 0, .value = 0 } };
     REQUIRE(foo[0] == impact { integer_set {
                           .id = 0, .index = 0, .value = 0 } });
   }
 
-  TEST_CASE("impact list small access") {
+  TEST("impact list small access") {
     impact_list foo = impact {
       integer_set { .id = 0, .index = 0, .value = 0 }
     } + impact { tick_continue {} };
@@ -64,21 +66,21 @@ namespace laplace::test {
     REQUIRE(foo[1] == impact { tick_continue {} });
   }
 
-  TEST_CASE("impact list add impact") {
+  TEST("impact list add impact") {
     impact_list foo = impact_list { impact { noop {} } } +
                       impact { noop {} };
     REQUIRE(foo[0] == impact { noop {} });
     REQUIRE(foo[1] == impact { noop {} });
   }
 
-  TEST_CASE("impact add impact list") {
+  TEST("impact add impact list") {
     impact_list foo = impact { noop {} } +
                       impact_list { impact { noop {} } };
     REQUIRE(foo[0] == impact { noop {} });
     REQUIRE(foo[1] == impact { noop {} });
   }
 
-  TEST_CASE("impact list add impact list") {
+  TEST("impact list add impact list") {
     impact_list foo =
         (impact { noop {} } + impact { tick_continue {} }) +
         (impact { tick_continue {} } + impact { noop {} });
@@ -88,7 +90,7 @@ namespace laplace::test {
     REQUIRE(foo[3] == impact { noop {} });
   }
 
-  TEST_CASE("impact mode") {
+  TEST("impact mode") {
     REQUIRE(mode_of(impact { noop {} }) == mode::async);
     REQUIRE(mode_of(impact { integer_set {} }) == mode::async);
     REQUIRE(mode_of(impact { integer_add {} }) == mode::async);

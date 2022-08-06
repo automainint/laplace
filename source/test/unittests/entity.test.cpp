@@ -1,84 +1,86 @@
 #include "../../laplace/entity.h"
 #include "../../laplace/impact.h"
-#include <catch2/catch.hpp>
+
+#define KIT_TEST_FILE entity
+#include <kit_test/test.h>
 
 namespace laplace::test {
   using std::numeric_limits;
 
-  TEST_CASE("create entity") {
+  TEST("create entity") {
     REQUIRE(!entity {}.error());
   }
 
-  TEST_CASE("entity size is zero by default") {
+  TEST("entity size is zero by default") {
     REQUIRE(entity {}.size() == 0);
   }
 
-  TEST_CASE("entity default id") {
+  TEST("entity default id") {
     REQUIRE(entity {}.id() == id_undefined);
   }
 
-  TEST_CASE("entity default access") {
+  TEST("entity default access") {
     REQUIRE(entity {}.access() == access {});
   }
 
-  TEST_CASE("entity set id") {
+  TEST("entity set id") {
     REQUIRE(entity {}.set_id(42).id() == 42);
   }
 
-  TEST_CASE("entity set access") {
+  TEST("entity set access") {
     auto s = state {};
     REQUIRE(entity {}.set_access(access { s }).access() ==
             access { s });
   }
 
-  TEST_CASE("entity setup fields") {
+  TEST("entity setup fields") {
     REQUIRE(entity {}.setup({}).size() == 0);
   }
 
-  TEST_CASE("entity setup 3 fields") {
+  TEST("entity setup 3 fields") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 2 }, { .id = 3 } })
                 .size() == 3);
   }
 
-  TEST_CASE("entity setup twice") {
+  TEST("entity setup twice") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 2 } })
                 .setup({ { .id = 3 }, { .id = 4 }, { .id = 5 } })
                 .size() == 5);
   }
 
-  TEST_CASE("entity setup and get index") {
+  TEST("entity setup and get index") {
     REQUIRE(entity {}.setup({ { .id = 42 } }).index_of(42) == 0);
   }
 
-  TEST_CASE("entity setup 2 fields and get index") {
+  TEST("entity setup 2 fields and get index") {
     REQUIRE(
         entity {}.setup({ { .id = 1 }, { .id = 42 } }).index_of(42) ==
         1);
   }
 
-  TEST_CASE("entity get index may fail") {
+  TEST("entity get index may fail") {
     REQUIRE(entity {}.index_of(42) == index_undefined);
   }
 
-  TEST_CASE("entity setup unsorted") {
+  TEST("entity setup unsorted") {
     REQUIRE(entity {}
                 .setup({ { .id = 3 }, { .id = 2 }, { .id = 1 } })
                 .index_of(1) == 0);
   }
 
-  TEST_CASE("entity setup repeating will fail") {
+  TEST("entity setup repeating will fail") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 2 }, { .id = 1 } })
                 .error());
   }
 
-  TEST_CASE("entity negative field ids not allowed") {
+  TEST("entity negative field ids not allowed") {
     REQUIRE(entity {}.setup({ { .id = -3 } }).error());
   }
 
-  TEST_CASE("entity setup twice with repeating") {
+  TEST("entity setup twice with repeating") {
     auto e = entity {}
                  .setup({ { .id = 1 }, { .id = 2 } })
                  .setup({ { .id = 1 }, { .id = 3 }, { .id = 4 } });
@@ -90,7 +92,7 @@ namespace laplace::test {
     REQUIRE(e.index_of(4) == 3);
   }
 
-  TEST_CASE("entity propagate error") {
+  TEST("entity propagate error") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 1 } })
                 .setup({ { .id = 42 } })
@@ -101,7 +103,7 @@ namespace laplace::test {
                 .error());
   }
 
-  TEST_CASE("entity spawn with id") {
+  TEST("entity spawn with id") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 2 } })
                 .set_id(42)
@@ -109,12 +111,12 @@ namespace laplace::test {
             impact { integer_allocate_into { .id = 42, .size = 2 } });
   }
 
-  TEST_CASE("entity remove") {
+  TEST("entity remove") {
     REQUIRE(entity {}.set_id(42).remove() ==
             impact { integer_deallocate { .id = 42 } });
   }
 
-  TEST_CASE("entity set") {
+  TEST("entity set") {
     REQUIRE(
         entity {}
             .setup({ { .id = 1 }, { .id = 2 } })
@@ -123,7 +125,7 @@ namespace laplace::test {
         impact { integer_set { .id = 3, .index = 1, .value = 42 } });
   }
 
-  TEST_CASE("entity get") {
+  TEST("entity get") {
     auto s      = state {};
     std::ignore = s.apply(
         impact { integer_allocate_into { .id = 0, .size = 1 } });
@@ -138,7 +140,7 @@ namespace laplace::test {
                 .get(7, -1) == 42);
   }
 
-  TEST_CASE("entity add") {
+  TEST("entity add") {
     REQUIRE(
         entity {}
             .setup({ { .id = 1 }, { .id = 2 } })
@@ -147,7 +149,7 @@ namespace laplace::test {
         impact { integer_add { .id = 3, .index = 1, .delta = 42 } });
   }
 
-  TEST_CASE("entity random") {
+  TEST("entity random") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 2 } })
                 .set_id(3)
@@ -159,7 +161,7 @@ namespace laplace::test {
                                       .return_size  = 1 } });
   }
 
-  TEST_CASE("entity spawn to") {
+  TEST("entity spawn to") {
     REQUIRE(entity {}
                 .setup({ { .id = 1 }, { .id = 2 } })
                 .spawn_to({ entity {}
@@ -170,7 +172,7 @@ namespace laplace::test {
                 .size = 2, .return_id = 1, .return_index = 0 } });
   }
 
-  TEST_CASE("entity error impacts") {
+  TEST("entity error impacts") {
     auto const error = entity {}.setup({ { .id = 1 }, { .id = 1 } });
     REQUIRE(error.spawn() == impact { noop {} });
     REQUIRE(error.remove() == impact { noop {} });
@@ -181,12 +183,12 @@ namespace laplace::test {
             impact { noop {} });
   }
 
-  TEST_CASE("entity error access") {
+  TEST("entity error access") {
     auto const error = entity {}.setup({ { .id = 1 }, { .id = 1 } });
     REQUIRE(error.get(1, -1) == -1);
   }
 
-  TEST_CASE("entity setup with large id") {
+  TEST("entity setup with large id") {
     REQUIRE(entity {}
                 .setup({ { .id = 0x1000000000000 } })
                 .index_of(0x1000000000000) == 0);
@@ -195,7 +197,7 @@ namespace laplace::test {
                 .index_of(numeric_limits<ptrdiff_t>::max()) == 0);
   }
 
-  /*TEST_CASE("entity index of in constexpr context") {
+  /*TEST("entity index of in constexpr context") {
     constexpr auto n = entity {}.setup({ { .id = 42 } }).index_of(42);
     REQUIRE(n == 0);
   }*/

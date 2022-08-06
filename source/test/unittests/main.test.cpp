@@ -1,6 +1,5 @@
-#define CATCH_CONFIG_RUNNER
-#include <catch2/catch.hpp>
+#include <kit_test/test.h>
 
 auto main(int argc, char **argv) -> int {
-  return Catch::Session().run(argc, argv);
+  return run_tests(argc, argv);
 }
