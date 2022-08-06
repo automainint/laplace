@@ -3,6 +3,7 @@ Checks: >
   -llvmlibc-*,
   -fuchsia-*,
   -altera-*,
+  -*-identifier-length,
   -*-avoid-underscore-in-googletest-name,
   -*-avoid-c-arrays,
   -*-braces-around-statements,
@@ -20,11 +21,12 @@ Checks: >
   -*-return-braced-init-list,
   -*-isolate-declaration,
   -*-unused-parameters,
-  -*-uppercase-literal-suffix,
   -cert-dcl16-c,
   -*-deprecated-headers,
   -*-reinterpret-cast,
   -*-constant-array-index,
   -*-private-member-variables-in-classes,
   -*-simplify-boolean-expr,
-  -*-qualified-auto
+  -*-qualified-auto,
+  -*-prefer-member-initializer,
+  -*-runtime-int

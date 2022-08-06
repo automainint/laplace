@@ -1,5 +1,4 @@
 /*build*/
-/thirdparty/
 
 /.vs/
 /.idea/
@@ -7,8 +6,3 @@
 *.vcxproj
 *.filters
 *.user
-
-/data/lcd.h
-/source/laplace/generated/*.cpp
-/source/laplace/generated/gl/*.h
-/tools/OpenGL-Registry/

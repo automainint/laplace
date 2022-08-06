@@ -1,11 +1,7 @@
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
+find_dependency(Threads)
+find_dependency(coro)
 
-find_dependency(GTest)
-find_dependency(benchmark)
-find_dependency(wolfssl)
-find_dependency(freetype)
-
-include("${CMAKE_CURRENT_LIST_DIR}/@project_lower_@-targets.cmake")
-check_required_components("@LAPLACE_COMPONENT_DEVELOPMENT@")
+include("${CMAKE_CURRENT_LIST_DIR}/@LAPLACE_TARGETS@.cmake")
