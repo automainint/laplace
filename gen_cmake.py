@@ -39,7 +39,7 @@ def print_list(s: list, offset: int):
 
 def print_sources(folder: str, target_name: str):
   buf = ''
-  srcs = get_files(folder, '*.cpp')
+  srcs = get_files(folder, '*.c') + get_files(folder, '*.cpp')
   hdrs = get_files(folder, '*.h')
   if len(srcs) > 0 or len(hdrs) > 0:
     buf += 'target_sources(\n  ' + target_name
@@ -81,8 +81,8 @@ def gen_cmake(folder: str, target_name: str):
   write_subdirs(folder, target_name)
 
 def main():
-  gen_cmake(os.path.join('..', 'source', 'laplace'), '${LAPLACE_LIBRARY}')
-  gen_cmake(os.path.join('..', 'source', 'test', 'unittests'), '${LAPLACE_TEST}')
+  gen_cmake(os.path.join('source', 'laplace'),            '${LAPLACE_LIBRARY}')
+  gen_cmake(os.path.join('source', 'test', 'unittests'),  '${LAPLACE_TEST}')
 
 if __name__ == '__main__':
   main()

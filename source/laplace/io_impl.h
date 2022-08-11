@@ -1,7 +1,7 @@
 #ifndef LAPLACE_IO_IMPL_H
 #define LAPLACE_IO_IMPL_H
 
-#include "buffer.h"
+#include "x_buffer.h"
 #include "io_interface.h"
 #include "options.h"
 #include <random>

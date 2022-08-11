@@ -1,4 +1,4 @@
-#include "buffer.impl.h"
+#include "x_buffer.impl.h"
 
 namespace laplace {
   template class basic_buffer<int_type>;

@@ -2,102 +2,99 @@
 #define LAPLACE_BUFFER_H
 
 #include "options.h"
-#include <atomic>
-#include <concepts>
-#include <functional>
-#include <vector>
 
-namespace laplace {
-  template <typename int_>
-  concept atomic_integer =
-      requires(int_ val, int_ hlp) {
-        val.store(hlp.load(std::memory_order_relaxed),
-                  std::memory_order_relaxed);
-        val.load(std::memory_order_relaxed);
-        val.fetch_add(hlp.load(std::memory_order_relaxed),
-                      std::memory_order_relaxed);
-        val.exchange(hlp.load(std::memory_order_relaxed),
-                     std::memory_order_relaxed);
-      };
+#include <string.h>
 
-  template <typename int_,
-            atomic_integer atomic_int_ = std::atomic<int_>>
-  class basic_buffer {
-  public:
-    static ptrdiff_t const default_chunk_size;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    basic_buffer() noexcept = default;
-    basic_buffer(basic_buffer const &buf) noexcept;
-    basic_buffer(basic_buffer &&) noexcept = default;
-    ~basic_buffer() noexcept               = default;
-    auto operator=(basic_buffer const &buf) noexcept
-        -> basic_buffer &;
-    auto operator=(basic_buffer &&) noexcept
-        -> basic_buffer & = default;
+enum {
+  LAPLACE_BUFFER_ERROR_INVALID_CHUNK_SIZE        = 1,
+  LAPLACE_BUFFER_ERROR_INVALID_HANDLE_ID         = 2,
+  LAPLACE_BUFFER_ERROR_INVALID_HANDLE_GENERATION = 3,
+  LAPLACE_BUFFER_ERROR_INVALID_SIZE              = 4,
+  LAPLACE_BUFFER_ERROR_INVALID_BUFFER            = 5,
+  LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE              = 8000
+};
 
-    [[nodiscard]] auto error() const noexcept -> bool;
-
-    [[nodiscard]] auto set_chunk_size(ptrdiff_t size) const noexcept
-        -> basic_buffer<int_, atomic_int_>;
-
-    [[nodiscard]] auto chunk_size() const noexcept -> ptrdiff_t;
-
-    [[nodiscard]] auto size() const noexcept -> ptrdiff_t;
-
-    [[nodiscard]] auto reserve(ptrdiff_t count) noexcept -> bool;
-    [[nodiscard]] auto allocate(ptrdiff_t size) noexcept -> ptrdiff_t;
-    [[nodiscard]] auto allocate_into(ptrdiff_t block,
-                                     ptrdiff_t size) noexcept -> bool;
-    [[nodiscard]] auto deallocate(ptrdiff_t block) noexcept -> bool;
-
-    [[nodiscard]] auto get(ptrdiff_t block, ptrdiff_t index,
-                           int_ fail) const noexcept -> int_;
-    [[nodiscard]] auto set(ptrdiff_t block, ptrdiff_t index,
-                           int_ value) noexcept -> bool;
-    [[nodiscard]] auto add(ptrdiff_t block, ptrdiff_t index,
-                           int_ delta) noexcept -> bool;
-
-    [[nodiscard]] auto adjust() noexcept -> bool;
-    void               adjust_done() noexcept;
-
-  private:
-    [[nodiscard]] auto _error() const noexcept
-        -> basic_buffer<int_, atomic_int_>;
-    [[nodiscard]] auto _bind(
-        std::function<basic_buffer<int_, atomic_int_>()> f)
-        const noexcept -> basic_buffer<int_, atomic_int_>;
-    template <typename type_>
-    [[nodiscard]] auto _bind(std::function<type_()> f,
-                             type_ def) const noexcept -> type_;
-
-    [[nodiscard]] auto _alloc(ptrdiff_t size) noexcept -> ptrdiff_t;
-    void               _free(ptrdiff_t offset) noexcept;
-
-    struct row {
-      bool        empty  = true;
-      ptrdiff_t   offset = 0;
-      int_        value  = 0;
-      atomic_int_ delta  = 0;
-
-      row() noexcept = default;
-      row(row const &r) noexcept;
-      row(row &&) noexcept = default;
-      ~row() noexcept      = default;
-      auto operator=(row const &r) noexcept -> row &;
-      auto operator=(row &&) noexcept -> row & = default;
-    };
-
-    bool                   m_is_error   = false;
-    ptrdiff_t              m_chunk_size = default_chunk_size;
-    ptrdiff_t              m_reserved   = 0;
-    ptrdiff_t              m_next_block = 0;
-    std::atomic<ptrdiff_t> m_next_chunk = 0;
-    std::vector<ptrdiff_t> m_blocks;
-    std::vector<row>       m_values;
+typedef struct {
+  ptrdiff_t id;
+  union {
+    int       error;
+    ptrdiff_t generation;
   };
+} laplace_buffer_handle_t;
 
-  using buffer      = basic_buffer<int_type>;
-  using byte_buffer = basic_buffer<byte_type>;
+typedef struct {
+  int       error;
+  ptrdiff_t chunk_size;
+  ptrdiff_t generation;
+  void     *values;
+} laplace_buffer_void_t;
+
+#define LAPLACE_BUFFER_CREATE(name_, element_type_)        \
+  struct {                                                 \
+    int       error;                                       \
+    ptrdiff_t chunk_size;                                  \
+    ptrdiff_t generation;                                  \
+    struct {                                               \
+      element_type_ value;                                 \
+    } * values;                                            \
+  } name_;                                                 \
+  do {                                                     \
+    memset(&name_, 0, sizeof name_);                       \
+    name_.chunk_size = LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE / \
+                       sizeof(element_type_);              \
+    name_.generation = -1;                                 \
+  } while (0)
+
+void laplace_buffer_set_chunk_size(laplace_buffer_void_t *buffer,
+                                   ptrdiff_t              chunk_size);
+
+laplace_buffer_handle_t laplace_buffer_allocate(
+    laplace_buffer_void_t *buffer, ptrdiff_t element_size,
+    ptrdiff_t size);
+
+laplace_buffer_handle_t laplace_buffer_allocate_into(
+    laplace_buffer_void_t *buffer, ptrdiff_t element_size,
+    ptrdiff_t size, laplace_buffer_handle_t handle);
+
+#define LAPLACE_BUFFER_ERROR(buf_) (buf_).error
+
+#define LAPLACE_BUFFER_CHUNK_SIZE(buf_) (buf_).chunk_size
+
+#define LAPLACE_BUFFER_SET_CHUNK_SIZE(buf_, chunk_size_)           \
+  laplace_buffer_set_chunk_size((laplace_buffer_void_t *) &(buf_), \
+                                (chunk_size_))
+
+#define LAPLACE_BUFFER_ALLOCATE(buf_, size_)                 \
+  laplace_buffer_allocate((laplace_buffer_void_t *) &(buf_), \
+                          sizeof((buf_).values[0].value), (size_))
+
+#define LAPLACE_BUFFER_ALLOCATE_INTO(buf_, size_, handle_)        \
+  laplace_buffer_allocate_into((laplace_buffer_void_t *) &(buf_), \
+                               sizeof((buf_).values[0].value),    \
+                               (size_), (handle_))
+
+#ifndef LAPLACE_DISABLE_SHORT_NAMES
+#  define BUFFER_CREATE LAPLACE_BUFFER_CREATE
+#  define BUFFER_ERROR LAPLACE_BUFFER_ERROR
+#  define BUFFER_CHUNK_SIZE LAPLACE_BUFFER_CHUNK_SIZE
+#  define BUFFER_SET_CHUNK_SIZE LAPLACE_BUFFER_SET_CHUNK_SIZE
+#  define BUFFER_ALLOCATE LAPLACE_BUFFER_ALLOCATE
+#  define BUFFER_ALLOCATE_INTO LAPLACE_BUFFER_ALLOCATE_INTO
+
+#  define BUFFER_DEFAULT_CHUNK_SIZE LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE
+#  define BUFFER_ERROR_INVALID_CHUNK_SIZE \
+    LAPLACE_BUFFER_ERROR_INVALID_CHUNK_SIZE
+
+#  define buffer_handle_t laplace_buffer_handle_t
+#  define buffer_chunk_size laplace_buffer_chunk_size
+#endif
+
+#ifdef __cplusplus
 }
+#endif
 
 #endif

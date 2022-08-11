@@ -1,45 +1,45 @@
-#include "../../laplace/buffer.h"
+#include "../../laplace/x_buffer.h"
 #include <limits>
 #include <thread>
 
-#define KIT_TEST_FILE buffer
+#define KIT_TEST_FILE x_buffer
 #include <kit_test/test.h>
 
 using std::numeric_limits, std::thread, std::vector;
 
-TEST("create int buffer") {
+TEST("x create int buffer") {
   REQUIRE(!laplace::buffer {}.error());
 }
 
-TEST("create byte buffer") {
+TEST("x create byte buffer") {
   REQUIRE(!laplace::byte_buffer {}.error());
 }
 
-TEST("buffer get chunk size") {
+TEST("x buffer get chunk size") {
   REQUIRE(laplace::buffer {}.chunk_size() ==
           laplace::buffer::default_chunk_size);
 }
 
-TEST("buffer set chunk size") {
+TEST("x buffer set chunk size") {
   REQUIRE(laplace::buffer {}.set_chunk_size(10).chunk_size() == 10);
 }
 
-TEST("buffer set chunk size may fail") {
+TEST("x buffer set chunk size may fail") {
   REQUIRE(laplace::buffer {}.set_chunk_size(-1).error());
 }
 
-TEST("buffer propagate error") {
+TEST("x buffer propagate error") {
   REQUIRE(laplace::buffer {}
               .set_chunk_size(-1)
               .set_chunk_size(10)
               .error());
 }
 
-TEST("buffer allocate") {
+TEST("x buffer allocate") {
   REQUIRE(laplace::buffer {}.allocate(10) != laplace::id_undefined);
 }
 
-TEST("buffer allocate may fail") {
+TEST("x buffer allocate may fail") {
   REQUIRE(laplace::buffer {}.allocate(-1) == laplace::id_undefined);
   REQUIRE(laplace::buffer {}.allocate(0) == laplace::id_undefined);
   REQUIRE(
@@ -49,11 +49,11 @@ TEST("buffer allocate may fail") {
           laplace::id_undefined);
 }
 
-TEST("buffer allocate into") {
+TEST("x buffer allocate into") {
   REQUIRE(laplace::buffer {}.allocate_into(42, 10));
 }
 
-TEST("buffer allocate into may fail") {
+TEST("x buffer allocate into may fail") {
   REQUIRE(
       !laplace::buffer {}.allocate_into(laplace::id_undefined, 10));
   REQUIRE(!laplace::buffer {}.allocate_into(42, -1));
@@ -64,24 +64,24 @@ TEST("buffer allocate into may fail") {
       !laplace::buffer {}.set_chunk_size(-1).allocate_into(42, 10));
 }
 
-TEST("buffer allocate and allocate into") {
+TEST("x buffer allocate and allocate into") {
   auto buf = laplace::buffer {};
   auto id  = buf.allocate(10);
   REQUIRE(buf.allocate_into(id, 100));
 }
 
-TEST("buffer reserve and allocate") {
+TEST("x buffer reserve and allocate") {
   auto      buf      = laplace::buffer {};
   ptrdiff_t reserved = 42;
   REQUIRE(buf.reserve(reserved));
   REQUIRE(buf.allocate(10) == reserved);
 }
 
-TEST("buffer reserve may fail") {
+TEST("x buffer reserve may fail") {
   REQUIRE(!laplace::buffer {}.reserve(-1));
 }
 
-TEST("buffer reserve, allocate into and allocate") {
+TEST("x buffer reserve, allocate into and allocate") {
   auto      buf      = laplace::buffer {};
   ptrdiff_t reserved = 42;
   ptrdiff_t id       = 1;
@@ -90,7 +90,7 @@ TEST("buffer reserve, allocate into and allocate") {
   REQUIRE(buf.allocate(10) == reserved);
 }
 
-TEST("buffer reserve, deallocate and allocate") {
+TEST("x buffer reserve, deallocate and allocate") {
   auto      buf      = laplace::buffer {};
   ptrdiff_t reserved = 42;
   ptrdiff_t id       = 1;
@@ -100,35 +100,35 @@ TEST("buffer reserve, deallocate and allocate") {
   REQUIRE(buf.allocate(10) == reserved);
 }
 
-TEST("buffer deallocate") {
+TEST("x buffer deallocate") {
   auto buf = laplace::buffer {};
   REQUIRE(buf.deallocate(buf.allocate(10)));
 }
 
-TEST("buffer deallocate invalid") {
+TEST("x buffer deallocate invalid") {
   REQUIRE(!laplace::buffer {}.deallocate(-1));
   REQUIRE(!laplace::buffer {}.deallocate(42));
 }
 
-TEST("buffer deallocate may fail") {
+TEST("x buffer deallocate may fail") {
   auto buf = laplace::buffer {}.set_chunk_size(-1);
   REQUIRE(!buf.deallocate(0));
 }
 
-TEST("buffer deallocate twice will fail") {
+TEST("x buffer deallocate twice will fail") {
   auto buf   = laplace::buffer {};
   auto block = buf.allocate(10);
   REQUIRE(buf.deallocate(block));
   REQUIRE(!buf.deallocate(block));
 }
 
-TEST("buffer get value") {
+TEST("x buffer get value") {
   auto buf   = laplace::buffer {};
   auto block = buf.allocate(10);
   REQUIRE(buf.get(block, 0, -1) == 0);
 }
 
-TEST("buffer get value may fail") {
+TEST("x buffer get value may fail") {
   auto buf   = laplace::buffer {};
   auto block = buf.allocate(10);
   REQUIRE(buf.get(-1, 0, 42) == 42);
@@ -138,14 +138,14 @@ TEST("buffer get value may fail") {
   REQUIRE(laplace::buffer {}.set_chunk_size(-1).get(0, 0, 42) == 42);
 }
 
-TEST("buffer set value") {
+TEST("x buffer set value") {
   auto buf   = laplace::buffer {};
   auto block = buf.allocate(10);
   REQUIRE(buf.set(block, 0, 42));
   REQUIRE(buf.get(block, 0, -1) == 0);
 }
 
-TEST("buffer set value may fail") {
+TEST("x buffer set value may fail") {
   auto buf   = laplace::buffer {};
   auto block = buf.allocate(10);
   REQUIRE(!buf.set(-1, 0, 42));
@@ -155,7 +155,7 @@ TEST("buffer set value may fail") {
   REQUIRE(!laplace::buffer {}.set_chunk_size(-1).set(0, 0, 42));
 }
 
-TEST("buffer set value and adjust") {
+TEST("x buffer set value and adjust") {
   auto buf   = laplace::buffer {};
   auto block = buf.allocate(10);
   REQUIRE(buf.set(block, 0, 42));
@@ -163,7 +163,7 @@ TEST("buffer set value and adjust") {
   REQUIRE(buf.get(block, 0, -1) == 42);
 }
 
-TEST("buffer set value, deallocate and get value") {
+TEST("x buffer set value, deallocate and get value") {
   auto buf = laplace::buffer {};
   auto foo = buf.allocate(1);
   auto bar = buf.allocate(1);
@@ -173,7 +173,7 @@ TEST("buffer set value, deallocate and get value") {
   REQUIRE(buf.get(bar, 0, -1) == 42);
 }
 
-TEST("buffer set value, deallocate, allocate and get value") {
+TEST("x buffer set value, deallocate, allocate and get value") {
   auto buf = laplace::buffer {};
   auto id  = buf.allocate(1);
   REQUIRE(buf.set(id, 0, 42));
@@ -183,7 +183,7 @@ TEST("buffer set value, deallocate, allocate and get value") {
   REQUIRE(buf.get(id, 0, -1) == 0);
 }
 
-TEST("buffer add delta may fail") {
+TEST("x buffer add delta may fail") {
   auto buf   = laplace::buffer {};
   auto block = buf.allocate(10);
   REQUIRE(!buf.add(-1, 0, 42));
@@ -193,7 +193,7 @@ TEST("buffer add delta may fail") {
   REQUIRE(!laplace::buffer {}.set_chunk_size(-1).add(0, 0, 42));
 }
 
-TEST("buffer add delta and adjust") {
+TEST("x buffer add delta and adjust") {
   auto buf   = laplace::buffer {};
   auto block = buf.allocate(10);
   REQUIRE(buf.add(block, 0, 42));
@@ -201,7 +201,7 @@ TEST("buffer add delta and adjust") {
   REQUIRE(buf.get(block, 0, -1) == 42);
 }
 
-TEST("buffer add delta twice and adjust") {
+TEST("x buffer add delta twice and adjust") {
   auto buf   = laplace::buffer {};
   auto block = buf.allocate(10);
   REQUIRE(buf.add(block, 0, 20));
@@ -210,7 +210,7 @@ TEST("buffer add delta twice and adjust") {
   REQUIRE(buf.get(block, 0, -1) == 42);
 }
 
-TEST("buffer set value and add delta and adjust") {
+TEST("x buffer set value and add delta and adjust") {
   auto buf   = laplace::buffer {};
   auto block = buf.allocate(10);
   REQUIRE(buf.set(block, 0, 20));
@@ -219,7 +219,7 @@ TEST("buffer set value and add delta and adjust") {
   REQUIRE(buf.get(block, 0, -1) == 42);
 }
 
-TEST("buffer adjust one chunk") {
+TEST("x buffer adjust one chunk") {
   auto buf   = laplace::buffer {}.set_chunk_size(100);
   auto block = buf.allocate(100);
   for (int i = 0; i < 100; ++i) std::ignore = buf.set(block, i, i);
@@ -229,12 +229,12 @@ TEST("buffer adjust one chunk") {
   REQUIRE(ok);
 }
 
-TEST("buffer adjust one chunk may fail") {
+TEST("x buffer adjust one chunk may fail") {
   auto buf = laplace::buffer {}.set_chunk_size(-1);
   REQUIRE(!buf.adjust());
 }
 
-TEST("buffer adjust by chunks") {
+TEST("x buffer adjust by chunks") {
   auto buf   = laplace::buffer {}.set_chunk_size(10);
   auto block = buf.allocate(100);
   for (int i = 0; i < 100; ++i) std::ignore = buf.set(block, i, i);
@@ -244,7 +244,7 @@ TEST("buffer adjust by chunks") {
   REQUIRE(ok);
 }
 
-TEST("buffer adjust by chunks twice") {
+TEST("x buffer adjust by chunks twice") {
   auto buf   = laplace::buffer {}.set_chunk_size(10);
   auto block = buf.allocate(100);
   for (int i = 0; i < 100; ++i) std::ignore = buf.set(block, i, i);
@@ -258,7 +258,7 @@ TEST("buffer adjust by chunks twice") {
   REQUIRE(ok);
 }
 
-TEST("buffer allocate two blocks") {
+TEST("x buffer allocate two blocks") {
   auto buf = laplace::buffer {};
   auto foo = buf.allocate(10);
   auto bar = buf.allocate(10);
@@ -267,7 +267,7 @@ TEST("buffer allocate two blocks") {
   REQUIRE(foo != bar);
 }
 
-TEST("buffer fill two blocks") {
+TEST("x buffer fill two blocks") {
   auto buf = laplace::buffer {};
   auto foo = buf.allocate(10);
   auto bar = buf.allocate(10);
@@ -278,31 +278,31 @@ TEST("buffer fill two blocks") {
   REQUIRE(buf.get(bar, 0, -1) == 42);
 }
 
-TEST("buffer get size") {
+TEST("x buffer get size") {
   REQUIRE(laplace::buffer {}.size() == 0);
 }
 
-TEST("buffer size with 2 blocks") {
+TEST("x buffer size with 2 blocks") {
   auto buf    = laplace::buffer {};
   std::ignore = buf.allocate(20);
   std::ignore = buf.allocate(22);
   REQUIRE(buf.size() == 42);
 }
 
-TEST("buffer size after deallocate one") {
+TEST("x buffer size after deallocate one") {
   auto buf = laplace::buffer {};
   REQUIRE(buf.deallocate(buf.allocate(10)));
   REQUIRE(buf.size() == 10);
 }
 
-TEST("buffer size after deallocate and allocate into one") {
+TEST("x buffer size after deallocate and allocate into one") {
   auto buf = laplace::buffer {};
   REQUIRE(buf.deallocate(buf.allocate(10)));
   std::ignore = buf.allocate(10);
   REQUIRE(buf.size() == 10);
 }
 
-TEST("buffer deallocate efficiency") {
+TEST("x buffer deallocate efficiency") {
   auto buf    = laplace::buffer {};
   std::ignore = buf.allocate(10);
   REQUIRE(buf.deallocate(buf.allocate(10)));
@@ -310,7 +310,7 @@ TEST("buffer deallocate efficiency") {
   REQUIRE(buf.size() == 20);
 }
 
-TEST("buffer add delta concurrency") {
+TEST("x buffer add delta concurrency") {
   auto buf = laplace::buffer {};
   auto id  = buf.allocate(1);
 
@@ -330,7 +330,7 @@ TEST("buffer add delta concurrency") {
   REQUIRE(buf.get(id, 0, -1) == 100);
 }
 
-TEST("buffer add delta concurrency harder") {
+TEST("x buffer add delta concurrency harder") {
   auto buf = laplace::buffer {};
   auto id  = buf.allocate(1);
 
@@ -350,7 +350,7 @@ TEST("buffer add delta concurrency harder") {
   REQUIRE(buf.get(id, 0, -1) == 1000);
 }
 
-TEST("buffer adjust concurrency") {
+TEST("x buffer adjust concurrency") {
   auto buf = laplace::buffer {}.set_chunk_size(10);
   auto id  = buf.allocate(10000);
   for (int i = 0; i < 10000; i++) std::ignore = buf.set(id, i, i);
@@ -367,7 +367,7 @@ TEST("buffer adjust concurrency") {
   REQUIRE(ok);
 }
 
-TEST("int buffer adjust concurrency harder") {
+TEST("x int buffer adjust concurrency harder") {
   auto buf = laplace::buffer {}.set_chunk_size(1);
   auto id  = buf.allocate(10000);
   for (int i = 0; i < 10000; i++) std::ignore = buf.set(id, i, i);
@@ -384,7 +384,7 @@ TEST("int buffer adjust concurrency harder") {
   REQUIRE(ok);
 }
 
-TEST("byte buffer adjust concurrency harder") {
+TEST("x byte buffer adjust concurrency harder") {
   auto buf = laplace::byte_buffer {}.set_chunk_size(1);
   auto id  = buf.allocate(10000);
   for (int i = 0; i < 10000; i++)
@@ -405,7 +405,7 @@ TEST("byte buffer adjust concurrency harder") {
   REQUIRE(ok);
 }
 
-TEST("buffer create copy") {
+TEST("x buffer create copy") {
   auto foo = laplace::buffer {};
   auto id  = foo.allocate(1);
   REQUIRE(foo.set(id, 0, 42));
@@ -414,7 +414,7 @@ TEST("buffer create copy") {
   REQUIRE(bar.get(id, 0, -1) == 42);
 }
 
-TEST("buffer create move") {
+TEST("x buffer create move") {
   auto foo = laplace::buffer {};
   auto id  = foo.allocate(1);
   REQUIRE(foo.set(id, 0, 42));
@@ -423,7 +423,7 @@ TEST("buffer create move") {
   REQUIRE(bar.get(id, 0, -1) == 42);
 }
 
-TEST("buffer assign copy") {
+TEST("x buffer assign copy") {
   auto foo = laplace::buffer {};
   auto bar = laplace::buffer {};
   auto id  = foo.allocate(1);
@@ -433,7 +433,7 @@ TEST("buffer assign copy") {
   REQUIRE(bar.get(id, 0, -1) == 42);
 }
 
-TEST("buffer assign move") {
+TEST("x buffer assign move") {
   auto foo = laplace::buffer {};
   auto bar = laplace::buffer {};
   auto id  = foo.allocate(1);

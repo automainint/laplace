@@ -1,7 +1,7 @@
-#ifndef LAPLACE_BUFFER_IMPL_H
-#define LAPLACE_BUFFER_IMPL_H
+#ifndef LAPLACE_X_BUFFER_IMPL_H
+#define LAPLACE_X_BUFFER_IMPL_H
 
-#include "buffer.h"
+#include "x_buffer.h"
 
 #include <limits>
 #include <stdexcept>

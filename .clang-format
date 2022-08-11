@@ -14,7 +14,7 @@ PenaltyBreakAssignment: 100
 PenaltyReturnTypeOnItsOwnLine: 200
 
 IndentCaseLabels: true
-IndentExternBlock: Indent
+IndentExternBlock: NoIndent
 IndentGotoLabels: false
 IndentPPDirectives: AfterHash
 IndentRequires: true
