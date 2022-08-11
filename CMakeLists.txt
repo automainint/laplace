@@ -87,7 +87,7 @@ if(LAPLACE_ENABLE_TESTING)
   set_tests_properties(
     ${LAPLACE_UNITTESTS}
     PROPERTIES
-    TIMEOUT "60")
+    TIMEOUT "80")
 endif()
 
 add_subdirectory(source)
