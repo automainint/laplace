@@ -52,6 +52,10 @@ if(LAPLACE_ENABLE_LIBRARY OR LAPLACE_ENABLE_TESTING)
   target_compile_features(${LAPLACE_LIBRARY} PUBLIC c_std_11)
   target_link_libraries(${LAPLACE_LIBRARY} PUBLIC Threads::Threads coro::coro kit::kit)
 
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    #target_compile_options(${LAPLACE_LIBRARY} PUBLIC -pedantic -Wall -Werror)
+  endif()
+
   if(LAPLACE_DISABLE_SYSTEM_MALLOC)
     target_compile_definitions(${LAPLACE_LIBRARY} PUBLIC LAPLACE_DISABLE_SYSTEM_MALLOC)
   endif()
