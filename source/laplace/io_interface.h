@@ -7,13 +7,13 @@
 extern "C" {
 #endif
 
-typedef struct laplace_impact       laplace_impact_t;
-typedef struct laplace_io_interface laplace_io_interface_t;
+typedef struct laplace_impact     laplace_impact_t;
+typedef struct laplace_read_write laplace_read_write_t;
 
 typedef void (*laplace_acquire_fn)(void *state);
 typedef void (*laplace_release_fn)(void *state);
 
-typedef laplace_io_interface_t (*laplace_clone_fn)(void *state);
+typedef laplace_read_write_t (*laplace_clone_fn)(void *state);
 
 typedef laplace_status_t (*laplace_read_integers_fn)(
     void *state, laplace_handle_t handle, ptrdiff_t index,
@@ -39,7 +39,7 @@ typedef void (*laplace_adjust_loop_fn)(void *state);
 
 typedef void (*laplace_adjust_done_fn)(void *state);
 
-struct laplace_io_interface {
+struct laplace_read_write {
   void              *state;
   laplace_acquire_fn acquire;
   laplace_release_fn release;
@@ -68,7 +68,7 @@ typedef struct {
 
 #ifdef LAPLACE_DISABLE_SHORT_NAMES
 #  define impact_t laplace_impact_t
-#  define io_interface_t laplace_io_interface_t
+#  define read_write_t laplace_read_write_t
 #  define read_only_t laplace_read_only_t
 #endif
 

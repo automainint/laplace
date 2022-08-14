@@ -20,9 +20,6 @@ enum { LAPLACE_STATUS_OK = 0, LAPLACE_ID_UNDEFINED = -1 };
 #  define STATUS_OK LAPLACE_STATUS_OK
 
 #  define status_t laplace_status_t
-#  define time_t laplace_time_t
-#  define integer_t laplace_integer_t
-#  define byte_t laplace_byte_t;
 #endif
 
 #ifdef __cplusplus
