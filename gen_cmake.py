@@ -34,7 +34,7 @@ def print_list(s: list, offset: int):
       for i in range(offset - 1):
         buf += ' '
       char_count = offset - 1
-    buf += ' ' + f    
+    buf += ' ' + f
   return buf
 
 def print_sources(folder: str, target_name: str):
@@ -81,8 +81,9 @@ def gen_cmake(folder: str, target_name: str):
   write_subdirs(folder, target_name)
 
 def main():
-  gen_cmake(os.path.join('source', 'laplace'),            '${LAPLACE_LIBRARY}')
-  gen_cmake(os.path.join('source', 'test', 'unittests'),  '${LAPLACE_TEST}')
+  gen_cmake(os.path.join('source', 'laplace'), '${LAPLACE_LIBRARY}')
+  gen_cmake(os.path.join('source', 'codegen'), '${LAPLACE_CODEGEN}')
+  gen_cmake(os.path.join('source', 'test', 'unittests'), '${LAPLACE_TEST}')
 
 if __name__ == '__main__':
   main()

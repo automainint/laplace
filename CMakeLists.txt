@@ -5,6 +5,7 @@ option(LAPLACE_ENABLE_TESTING "Enable testing" ON)
 
 set(LAPLACE_PROJECT laplace)
 set(LAPLACE_LIBRARY laplace)
+set(LAPLACE_CODEGEN laplace_codegen)
 set(LAPLACE_TEST laplace_test)
 set(LAPLACE_TARGETS laplace-targets)
 
@@ -18,43 +19,46 @@ project(
   DESCRIPTION "Kit"
   LANGUAGES CXX C)
 
-if(LAPLACE_ENABLE_LIBRARY OR LAPLACE_ENABLE_TESTING)
-  include(FetchContent)
+include(FetchContent)
 
-  find_package(Threads)
-  find_package(kit QUIET)
-  find_package(coro QUIET)
+find_package(Threads)
+find_package(kit QUIET)
+find_package(coro QUIET)
 
-  if(NOT kit_FOUND)
-    FetchContent_Declare(
-      kit
-      GIT_REPOSITORY https://github.com/automainint/kit.git
-      GIT_TAG dev)
-    set(KIT_ENABLE_TESTING OFF)
-    FetchContent_MakeAvailable(kit)
-  endif()
-
-  if(NOT coro_FOUND)
-    FetchContent_Declare(
-      coro
-      GIT_REPOSITORY https://github.com/automainint/coro.git
-      GIT_TAG dev)
-    set(CORO_ENABLE_TESTING OFF)
-    FetchContent_MakeAvailable(coro)
-  endif()
-
-  add_library(${LAPLACE_LIBRARY} STATIC)
-  add_library(${LAPLACE_PROJECT}::${LAPLACE_LIBRARY} ALIAS ${LAPLACE_LIBRARY})
-  target_include_directories(
-    ${LAPLACE_LIBRARY} INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source>)
-  target_compile_features(${LAPLACE_LIBRARY} PUBLIC c_std_11)
-  target_link_libraries(${LAPLACE_LIBRARY} PUBLIC Threads::Threads coro::coro kit::kit)
-
-  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    #target_compile_options(${LAPLACE_LIBRARY} PUBLIC -pedantic -Wall -Werror)
-  endif()
+if(NOT kit_FOUND)
+  FetchContent_Declare(
+    kit
+    GIT_REPOSITORY https://github.com/automainint/kit.git
+    GIT_TAG dev)
+  set(KIT_ENABLE_TESTING OFF)
+  FetchContent_MakeAvailable(kit)
 endif()
+
+if(NOT coro_FOUND)
+  FetchContent_Declare(
+    coro
+    GIT_REPOSITORY https://github.com/automainint/coro.git
+    GIT_TAG dev)
+  set(CORO_ENABLE_TESTING OFF)
+  FetchContent_MakeAvailable(coro)
+endif()
+
+add_library(${LAPLACE_LIBRARY} STATIC)
+add_library(${LAPLACE_PROJECT}::${LAPLACE_LIBRARY} ALIAS ${LAPLACE_LIBRARY})
+target_include_directories(
+  ${LAPLACE_LIBRARY} INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source>)
+target_compile_features(${LAPLACE_LIBRARY} PUBLIC c_std_11)
+target_link_libraries(${LAPLACE_LIBRARY} PUBLIC Threads::Threads coro::coro kit::kit)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  #target_compile_options(${LAPLACE_LIBRARY} PUBLIC -pedantic -Wall -Werror)
+endif()
+
+add_executable(${LAPLACE_CODEGEN})
+add_executable(${LAPLACE_PROJECT}::${LAPLACE_CODEGEN} ALIAS ${LAPLACE_CODEGEN})
+target_compile_features(${LAPLACE_CODEGEN} PRIVATE c_std_11)
+target_link_libraries(${LAPLACE_CODEGEN} PRIVATE ${LAPLACE_LIBRARY})
 
 enable_testing()
 
@@ -84,7 +88,7 @@ if(LAPLACE_ENABLE_TESTING)
   set_tests_properties(
     ${LAPLACE_LIBRARY}_unittests
     PROPERTIES
-    TIMEOUT "100")
+    TIMEOUT "120")
 endif()
 
 add_subdirectory(source)
