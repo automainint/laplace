@@ -1,7 +1,7 @@
 #ifndef LAPLACE_IO_IMPL_TEST_H
 #define LAPLACE_IO_IMPL_TEST_H
 
-#include "../../laplace/io_interface.h"
+#include "../../laplace/x_io_interface.h"
 
 namespace laplace::test {
   struct test_io_impl : io_interface {

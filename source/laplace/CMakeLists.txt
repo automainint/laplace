@@ -1,10 +1,12 @@
 target_sources(
   ${LAPLACE_LIBRARY}
     PRIVATE
-      buffer.c impact.cpp io_impl.cpp entity.cpp options.cpp
-      access.cpp execution.cpp controller.cpp x_buffer.cpp memory.cpp
-      action.cpp state.cpp
+      handle.c buffer.c io_interface.c impact.cpp io_impl.cpp
+      entity.cpp options.cpp access.cpp execution.cpp controller.cpp
+      x_buffer.cpp memory.cpp action.cpp state.cpp
     PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/handle.h>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/x_io_interface.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/execution.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/io_impl.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/action.h>

@@ -1,9 +1,9 @@
 #ifndef LAPLACE_IO_IMPL_H
 #define LAPLACE_IO_IMPL_H
 
-#include "x_buffer.h"
-#include "io_interface.h"
 #include "options.h"
+#include "x_buffer.h"
+#include "x_io_interface.h"
 #include <random>
 
 namespace laplace {
