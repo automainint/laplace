@@ -1,6 +1,6 @@
-#include <laplace/execution.h>
+#include <laplace/buffer.h>
+#include <laplace/layout.h>
 
 auto main() -> int {
-  auto exec = laplace::execution {};
   return 0;
 }
