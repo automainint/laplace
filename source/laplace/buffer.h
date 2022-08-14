@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 
+#include <kit/atomic.h>
 #include <kit/dynamic_array.h>
 
 #include <stdatomic.h>
@@ -42,10 +43,10 @@ typedef struct {
 
 #define LAPLACE_BUFFER_DATA               \
   struct {                                \
-    ptrdiff_t         chunk_size;         \
-    ptrdiff_t         reserved;           \
-    ptrdiff_t         next_block;         \
-    _Atomic ptrdiff_t next_chunk;         \
+    ptrdiff_t chunk_size;                 \
+    ptrdiff_t reserved;                   \
+    ptrdiff_t next_block;                 \
+    ATOMIC(ptrdiff_t) next_chunk;         \
     KIT_DA(blocks, LAPLACE_BUFFER_BLOCK); \
   }
 
@@ -58,8 +59,8 @@ typedef struct {
 #define LAPLACE_BUFFER_CELL(element_type_) \
   struct {                                 \
     LAPLACE_BUFFER_CELL_DATA;              \
-    _Atomic element_type_ delta;           \
-    element_type_         value;           \
+    ATOMIC(element_type_) delta;           \
+    element_type_ value;                   \
   }
 
 typedef struct {

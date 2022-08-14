@@ -68,10 +68,12 @@ endif()
 enable_testing()
 
 if(LAPLACE_ENABLE_TESTING)
+  find_package(Threads REQUIRED)
+
   add_executable(${LAPLACE_TEST})
   add_executable(${LAPLACE_PROJECT}::${LAPLACE_TEST} ALIAS ${LAPLACE_TEST})
   target_compile_features(${LAPLACE_TEST} PRIVATE c_std_11)
-  target_link_libraries(${LAPLACE_TEST} PRIVATE ${LAPLACE_LIBRARY} kit::kit_test)
+  target_link_libraries(${LAPLACE_TEST} PRIVATE ${LAPLACE_LIBRARY} kit::kit_test Threads::Threads)
 
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(
