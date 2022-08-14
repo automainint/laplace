@@ -1,8 +1,8 @@
-#ifndef LAPLACE_ACTION_H
-#define LAPLACE_ACTION_H
+#ifndef LAPLACE_X_ACTION_H
+#define LAPLACE_X_ACTION_H
 
-#include "entity.h"
 #include "options.h"
+#include "x_entity.h"
 #include <coro/generator.h>
 #include <functional>
 
@@ -18,8 +18,7 @@ namespace laplace {
 
     [[nodiscard]] auto error() const noexcept -> bool;
 
-    [[nodiscard]] auto tick_duration() const noexcept
-        -> time_type;
+    [[nodiscard]] auto tick_duration() const noexcept -> time_type;
 
     [[nodiscard]] auto setup(impact_generator gen) const noexcept
         -> action;

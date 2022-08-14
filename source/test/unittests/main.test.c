@@ -1,5 +1,5 @@
 #include <kit_test/test.h>
 
-auto main(int argc, char **argv) -> int {
+int main(int argc, char **argv) {
   return run_tests(argc, argv);
 }

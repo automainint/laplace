@@ -1,6 +1,6 @@
-#include "entity.h"
+#include "x_entity.h"
 
-#include "impact.h"
+#include "x_impact.h"
 
 namespace laplace {
   using std::pmr::memory_resource;

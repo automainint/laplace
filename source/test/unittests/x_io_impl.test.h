@@ -1,5 +1,5 @@
-#ifndef LAPLACE_IO_IMPL_TEST_H
-#define LAPLACE_IO_IMPL_TEST_H
+#ifndef LAPLACE_X_IO_IMPL_TEST_H
+#define LAPLACE_X_IO_IMPL_TEST_H
 
 #include "../../laplace/x_io_interface.h"
 

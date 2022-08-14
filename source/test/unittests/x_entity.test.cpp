@@ -1,88 +1,88 @@
-#include "../../laplace/entity.h"
-#include "../../laplace/impact.h"
+#include "../../laplace/x_entity.h"
+#include "../../laplace/x_impact.h"
 
-#define KIT_TEST_FILE entity
+#define KIT_TEST_FILE x_entity
 #include <kit_test/test.h>
 
 using std::numeric_limits;
 
-TEST("create entity") {
+TEST("x create entity") {
   REQUIRE(!laplace::entity {}.error());
 }
 
-TEST("entity size is zero by default") {
+TEST("x entity size is zero by default") {
   REQUIRE(laplace::entity {}.size() == 0);
 }
 
-TEST("entity default id") {
+TEST("x entity default id") {
   REQUIRE(laplace::entity {}.id() == laplace::id_undefined);
 }
 
-TEST("entity default access") {
+TEST("x entity default access") {
   REQUIRE(laplace::entity {}.access() == laplace::access {});
 }
 
-TEST("entity set id") {
+TEST("x entity set id") {
   REQUIRE(laplace::entity {}.set_id(42).id() == 42);
 }
 
-TEST("entity set access") {
+TEST("x entity set access") {
   auto s = laplace::state {};
   REQUIRE(
       laplace::entity {}.set_access(laplace::access { s }).access() ==
       laplace::access { s });
 }
 
-TEST("entity setup fields") {
+TEST("x entity setup fields") {
   REQUIRE(laplace::entity {}.setup({}).size() == 0);
 }
 
-TEST("entity setup 3 fields") {
+TEST("x entity setup 3 fields") {
   REQUIRE(laplace::entity {}
               .setup({ { .id = 1 }, { .id = 2 }, { .id = 3 } })
               .size() == 3);
 }
 
-TEST("entity setup twice") {
+TEST("x entity setup twice") {
   REQUIRE(laplace::entity {}
               .setup({ { .id = 1 }, { .id = 2 } })
               .setup({ { .id = 3 }, { .id = 4 }, { .id = 5 } })
               .size() == 5);
 }
 
-TEST("entity setup and get index") {
+TEST("x entity setup and get index") {
   REQUIRE(laplace::entity {}.setup({ { .id = 42 } }).index_of(42) ==
           0);
 }
 
-TEST("entity setup 2 fields and get index") {
+TEST("x entity setup 2 fields and get index") {
   REQUIRE(laplace::entity {}
               .setup({ { .id = 1 }, { .id = 42 } })
               .index_of(42) == 1);
 }
 
-TEST("entity get index may fail") {
+TEST("x entity get index may fail") {
   REQUIRE(laplace::entity {}.index_of(42) ==
           laplace::index_undefined);
 }
 
-TEST("entity setup unsorted") {
+TEST("x entity setup unsorted") {
   REQUIRE(laplace::entity {}
               .setup({ { .id = 3 }, { .id = 2 }, { .id = 1 } })
               .index_of(1) == 0);
 }
 
-TEST("entity setup repeating will fail") {
+TEST("x entity setup repeating will fail") {
   REQUIRE(laplace::entity {}
               .setup({ { .id = 1 }, { .id = 2 }, { .id = 1 } })
               .error());
 }
 
-TEST("entity negative field ids not allowed") {
+TEST("x entity negative field ids not allowed") {
   REQUIRE(laplace::entity {}.setup({ { .id = -3 } }).error());
 }
 
-TEST("entity setup twice with repeating") {
+TEST("x entity setup twice with repeating") {
   auto e = laplace::entity {}
                .setup({ { .id = 1 }, { .id = 2 } })
                .setup({ { .id = 1 }, { .id = 3 }, { .id = 4 } });
@@ -94,7 +94,7 @@ TEST("entity setup twice with repeating") {
   REQUIRE(e.index_of(4) == 3);
 }
 
-TEST("entity propagate error") {
+TEST("x entity propagate error") {
   REQUIRE(laplace::entity {}
               .setup({ { .id = 1 }, { .id = 1 } })
               .setup({ { .id = 42 } })
@@ -105,7 +105,7 @@ TEST("entity propagate error") {
               .error());
 }
 
-TEST("entity spawn with id") {
+TEST("x entity spawn with id") {
   REQUIRE(laplace::entity {}
               .setup({ { .id = 1 }, { .id = 2 } })
               .set_id(42)
@@ -114,13 +114,13 @@ TEST("entity spawn with id") {
               .id = 42, .size = 2 } });
 }
 
-TEST("entity remove") {
+TEST("x entity remove") {
   REQUIRE(
       laplace::entity {}.set_id(42).remove() ==
       laplace::impact { laplace::integer_deallocate { .id = 42 } });
 }
 
-TEST("entity set") {
+TEST("x entity set") {
   REQUIRE(laplace::entity {}
               .setup({ { .id = 1 }, { .id = 2 } })
               .set_id(3)
@@ -129,7 +129,7 @@ TEST("entity set") {
               .id = 3, .index = 1, .value = 42 } });
 }
 
-TEST("entity get") {
+TEST("x entity get") {
   auto s      = laplace::state {};
   std::ignore = s.apply(laplace::impact {
       laplace::integer_allocate_into { .id = 0, .size = 1 } });
@@ -144,7 +144,7 @@ TEST("entity get") {
               .get(7, -1) == 42);
 }
 
-TEST("entity add") {
+TEST("x entity add") {
   REQUIRE(laplace::entity {}
               .setup({ { .id = 1 }, { .id = 2 } })
               .set_id(3)
@@ -153,7 +153,7 @@ TEST("entity add") {
               .id = 3, .index = 1, .delta = 42 } });
 }
 
-TEST("entity random") {
+TEST("x entity random") {
   REQUIRE(laplace::entity {}
               .setup({ { .id = 1 }, { .id = 2 } })
               .set_id(3)
@@ -166,7 +166,7 @@ TEST("entity random") {
                                         .return_size  = 1 } });
 }
 
-TEST("entity spawn to") {
+TEST("x entity spawn to") {
   REQUIRE(laplace::entity {}
               .setup({ { .id = 1 }, { .id = 2 } })
               .spawn_to({ laplace::entity {}
@@ -177,7 +177,7 @@ TEST("entity spawn to") {
               .size = 2, .return_id = 1, .return_index = 0 } });
 }
 
-TEST("entity error impacts") {
+TEST("x entity error impacts") {
   auto const error = laplace::entity {}.setup(
       { { .id = 1 }, { .id = 1 } });
   REQUIRE(error.spawn() == laplace::impact { laplace::noop {} });
@@ -190,13 +190,13 @@ TEST("entity error impacts") {
           laplace::impact { laplace::noop {} });
 }
 
-TEST("entity error access") {
+TEST("x entity error access") {
   auto const error = laplace::entity {}.setup(
       { { .id = 1 }, { .id = 1 } });
   REQUIRE(error.get(1, -1) == -1);
 }
 
-TEST("entity setup with large id") {
+TEST("x entity setup with large id") {
   REQUIRE(laplace::entity {}
               .setup({ { .id = 0x1000000000000 } })
               .index_of(0x1000000000000) == 0);

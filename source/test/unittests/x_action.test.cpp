@@ -1,35 +1,35 @@
-#include "../../laplace/action.h"
-#include "../../laplace/impact.h"
+#include "../../laplace/x_action.h"
+#include "../../laplace/x_impact.h"
 
 #define KIT_TEST_FILE action
 #include <kit_test/test.h>
 
-TEST("create action") {
+TEST("x create action") {
   REQUIRE(!laplace::action {}.error());
 }
 
-TEST("action default tick duration") {
+TEST("x action default tick duration") {
   REQUIRE(laplace::action {}.tick_duration() ==
           laplace::action::default_tick_duration);
 }
 
-TEST("action set tick duration") {
+TEST("x action set tick duration") {
   REQUIRE(laplace::action {}.set_tick_duration(42).tick_duration() ==
           42);
 }
 
-TEST("Set tick duration may fail") {
+TEST("x Set tick duration may fail") {
   REQUIRE(laplace::action {}.set_tick_duration(0).error());
   REQUIRE(laplace::action {}.set_tick_duration(-1).error());
 }
 
-TEST("action run default") {
+TEST("x action run default") {
   auto run = laplace::action {}.run({});
   run.resume();
   REQUIRE(run.is_done());
 }
 
-TEST("action setup and run") {
+TEST("x action setup and run") {
   bool called = false;
 
   auto run = laplace::action {}
@@ -44,14 +44,14 @@ TEST("action setup and run") {
   REQUIRE(called);
 }
 
-TEST("action propagate error") {
+TEST("x action propagate error") {
   REQUIRE(laplace::action {}
               .set_tick_duration(-1)
               .set_tick_duration(1)
               .error());
 }
 
-TEST("action propagate error and run") {
+TEST("x action propagate error and run") {
   bool called = false;
 
   auto run = laplace::action {}
@@ -67,7 +67,7 @@ TEST("action propagate error and run") {
   REQUIRE(!called);
 }
 
-TEST("action setup first, propagate error and run") {
+TEST("x action setup first, propagate error and run") {
   bool called = false;
 
   auto run = laplace::action {}

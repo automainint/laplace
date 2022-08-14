@@ -1,6 +1,6 @@
-#include "action.h"
+#include "x_action.h"
 
-#include "impact.h"
+#include "x_impact.h"
 
 namespace laplace {
   time_type const action::default_tick_duration = 10;

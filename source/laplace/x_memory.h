@@ -1,5 +1,5 @@
-#ifndef LAPLACE_MEMORY_H
-#define LAPLACE_MEMORY_H
+#ifndef LAPLACE_X_MEMORY_H
+#define LAPLACE_X_MEMORY_H
 
 #include <memory_resource>
 

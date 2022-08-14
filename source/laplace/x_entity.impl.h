@@ -1,5 +1,5 @@
-#ifndef LAPLACE_ENTITY_IMPL_H
-#define LAPLACE_ENTITY_IMPL_H
+#ifndef LAPLACE_X_ENTITY_IMPL_H
+#define LAPLACE_X_ENTITY_IMPL_H
 
 namespace laplace {
   /*  TODO

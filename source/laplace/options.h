@@ -18,8 +18,6 @@ enum { LAPLACE_STATUS_OK = 0, LAPLACE_ID_UNDEFINED = -1 };
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
 #  define ID_UNDEFINED LAPLACE_ID_UNDEFINED
 #  define STATUS_OK LAPLACE_STATUS_OK
-
-#  define status_t laplace_status_t
 #endif
 
 #ifdef __cplusplus

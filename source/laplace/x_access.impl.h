@@ -1,5 +1,5 @@
-#ifndef LAPLACE_ACCESS_IMPL_H
-#define LAPLACE_ACCESS_IMPL_H
+#ifndef LAPLACE_X_ACCESS_IMPL_H
+#define LAPLACE_X_ACCESS_IMPL_H
 
 namespace laplace {
   inline access::access(state const &s) noexcept {

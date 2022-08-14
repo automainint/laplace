@@ -1,10 +1,10 @@
 /*  Copyright (c) 2022 Mitya Selivanov
  */
 
-#ifndef LAPLACE_EXECUTION_H
-#define LAPLACE_EXECUTION_H
+#ifndef LAPLACE_X_EXECUTION_H
+#define LAPLACE_X_EXECUTION_H
 
-#include "impact.h"
+#include "x_impact.h"
 #include <atomic>
 #include <condition_variable>
 #include <thread>

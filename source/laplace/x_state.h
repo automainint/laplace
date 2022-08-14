@@ -1,7 +1,7 @@
-#ifndef LAPLACE_STATE_H
-#define LAPLACE_STATE_H
+#ifndef LAPLACE_X_STATE_H
+#define LAPLACE_X_STATE_H
 
-#include "io_impl.h"
+#include "x_io_impl.h"
 
 namespace laplace {
   class impact;

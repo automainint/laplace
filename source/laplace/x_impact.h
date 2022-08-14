@@ -1,7 +1,7 @@
-#ifndef LAPLACE_IMPACT_H
-#define LAPLACE_IMPACT_H
+#ifndef LAPLACE_X_IMPACT_H
+#define LAPLACE_X_IMPACT_H
 
-#include "action.h"
+#include "x_action.h"
 #include <array>
 #include <variant>
 #include <vector>
@@ -65,7 +65,7 @@ namespace laplace {
 
     [[nodiscard]] auto begin() const noexcept;
     [[nodiscard]] auto end() const noexcept;
-    
+
     void clear() noexcept;
 
     auto operator+=(impact a) noexcept -> impact_list &;
@@ -98,6 +98,6 @@ namespace laplace {
   [[nodiscard]] auto mode_of(impact const &i) noexcept -> mode;
 }
 
-#include "impact.impl.h"
+#include "x_impact.impl.h"
 
 #endif

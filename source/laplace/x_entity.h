@@ -1,9 +1,9 @@
-#ifndef LAPLACE_ENTITY_H
-#define LAPLACE_ENTITY_H
+#ifndef LAPLACE_X_ENTITY_H
+#define LAPLACE_X_ENTITY_H
 
-#include "access.h"
-#include "memory.h"
-#include "operations.h"
+#include "x_access.h"
+#include "x_memory.h"
+#include "x_operations.h"
 #include <algorithm>
 #include <functional>
 #include <iterator>
@@ -85,6 +85,6 @@ namespace laplace {
   };
 }
 
-#include "entity.impl.h"
+#include "x_entity.impl.h"
 
 #endif

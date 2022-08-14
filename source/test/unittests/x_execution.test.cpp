@@ -1,5 +1,5 @@
-#include "../../laplace/execution.h"
-#include "io_impl.test.h"
+#include "../../laplace/x_execution.h"
+#include "x_io_impl.test.h"
 #include <chrono>
 #include <thread>
 
@@ -9,11 +9,11 @@
 using std::make_shared, std::this_thread::sleep_for,
     std::chrono::milliseconds;
 
-TEST("create execution") {
+TEST("x create execution") {
   REQUIRE(!laplace::execution {}.error());
 }
 
-TEST("execution copy") {
+TEST("x execution copy") {
   auto foo = laplace::execution {};
   auto bar = laplace::execution {};
   foo      = bar;
@@ -21,7 +21,7 @@ TEST("execution copy") {
   REQUIRE(!bar.error());
 }
 
-TEST("execution move") {
+TEST("x execution move") {
   auto foo = laplace::execution {};
   auto bar = laplace::execution {};
   foo      = std::move(bar);
@@ -29,12 +29,12 @@ TEST("execution move") {
   REQUIRE(bar.error());
 }
 
-TEST("execution get thread count") {
+TEST("x execution get thread count") {
   REQUIRE(laplace::execution {}.thread_count() ==
           laplace::default_thread_count());
 }
 
-TEST("execution set thread count") {
+TEST("x execution set thread count") {
   REQUIRE(laplace::execution {}.set_thread_count(0).thread_count() ==
           0);
   REQUIRE(laplace::execution {}.set_thread_count(1).thread_count() ==
@@ -43,25 +43,25 @@ TEST("execution set thread count") {
           4);
 }
 
-TEST("execution set thread count to zero") {
+TEST("x execution set thread count to zero") {
   REQUIRE(!laplace::execution {}.set_thread_count(0).error());
 }
 
-TEST("execution may fail to set thread count") {
+TEST("x execution may fail to set thread count") {
   auto exe = laplace::execution {};
   REQUIRE(exe.set_thread_count(-1).error());
   REQUIRE(exe.set_thread_count(10000000000).error());
   REQUIRE(exe.set_thread_count(10000).error());
 }
 
-TEST("execution propagate error") {
+TEST("x execution propagate error") {
   REQUIRE(laplace::execution {}
               .set_thread_count(-1)
               .set_thread_count(0)
               .error());
 }
 
-TEST("seq execution queue action") {
+TEST("x seq execution queue action") {
   bool called = false;
 
   auto exe = laplace::execution {}.set_thread_count(0);
@@ -75,7 +75,7 @@ TEST("seq execution queue action") {
   REQUIRE(!called);
 }
 
-TEST("seq execution queue action and schedule") {
+TEST("x seq execution queue action and schedule") {
   bool called = false;
 
   auto exe = laplace::execution {}.set_thread_count(0);
@@ -90,7 +90,7 @@ TEST("seq execution queue action and schedule") {
   REQUIRE(called);
 }
 
-TEST("seq execution queue action and schedule zero") {
+TEST("x seq execution queue action and schedule zero") {
   bool called = false;
 
   auto exe = laplace::execution {}.set_thread_count(0);
@@ -105,7 +105,7 @@ TEST("seq execution queue action and schedule zero") {
   REQUIRE(!called);
 }
 
-TEST("seq execution queue action and access default self") {
+TEST("x seq execution queue action and access default self") {
   bool ok = false;
 
   auto exe = laplace::execution {}.set_thread_count(0);
@@ -121,7 +121,7 @@ TEST("seq execution queue action and access default self") {
   REQUIRE(ok);
 }
 
-TEST("seq execution queue action and access custom self") {
+TEST("x seq execution queue action and access custom self") {
   bool ok = false;
 
   auto exe = laplace::execution {}.set_thread_count(0);
@@ -138,12 +138,12 @@ TEST("seq execution queue action and access custom self") {
   REQUIRE(ok);
 }
 
-TEST("execution read-only") {
+TEST("x execution read-only") {
   REQUIRE(laplace::execution {}.read_only().get_integer(0, 0, -1) ==
           -1);
 }
 
-TEST("execution set state") {
+TEST("x execution set state") {
   REQUIRE(laplace::execution {}
               .set_state(laplace::state {
                   make_shared<laplace::test::test_io_impl>() })
@@ -157,7 +157,7 @@ TEST("execution set state") {
               .get_byte(0, 0, -1) == 24);
 }
 
-TEST("execution state copy") {
+TEST("x execution state copy") {
   auto s      = laplace::state {};
   std::ignore = s.apply(
       laplace::impact { laplace::integer_allocate_into { 0, 1 } });
@@ -169,7 +169,7 @@ TEST("execution state copy") {
   REQUIRE(bar.read_only().get_integer(0, 0, -1) == 0);
 }
 
-TEST("execution state move") {
+TEST("x execution state move") {
   auto s      = laplace::state {};
   std::ignore = s.apply(
       laplace::impact { laplace::integer_allocate_into { 0, 1 } });
@@ -181,7 +181,7 @@ TEST("execution state move") {
   REQUIRE(bar.read_only().get_integer(0, 0, -1) == -1);
 }
 
-TEST("seq execution set value impact") {
+TEST("x seq execution set value impact") {
   auto exe = laplace::execution {}.set_thread_count(0);
 
   exe.queue(laplace::action {}.setup(
@@ -198,7 +198,7 @@ TEST("seq execution set value impact") {
   REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
 }
 
-TEST("seq execution set value impact twice") {
+TEST("x seq execution set value impact twice") {
   auto exe = laplace::execution {}.set_thread_count(0);
 
   exe.queue(laplace::action {}.setup(
@@ -220,7 +220,7 @@ TEST("seq execution set value impact twice") {
   REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
 }
 
-TEST("seq execution set value impact twice with continuation") {
+TEST("x seq execution set value impact twice with continuation") {
   auto exe = laplace::execution {}.set_thread_count(0);
 
   exe.queue(laplace::action {}.setup(
@@ -243,7 +243,7 @@ TEST("seq execution set value impact twice with continuation") {
   REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
 }
 
-TEST("seq execution two actions") {
+TEST("x seq execution two actions") {
   auto exe = laplace::execution {}.set_thread_count(0);
 
   const auto tick = laplace::action::default_tick_duration;
@@ -270,7 +270,7 @@ TEST("seq execution two actions") {
   REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
 }
 
-TEST("seq execution invalid impact") {
+TEST("x seq execution invalid impact") {
   auto exe = laplace::execution {}.set_thread_count(0);
 
   exe.queue(laplace::action {}.setup(
@@ -283,7 +283,7 @@ TEST("seq execution invalid impact") {
   REQUIRE(exe.error());
 }
 
-TEST("seq execution sync impacts applied first") {
+TEST("x seq execution sync impacts applied first") {
   auto exe = laplace::execution {}.set_thread_count(0);
 
   exe.queue(laplace::action {}.setup(
@@ -309,7 +309,7 @@ TEST("seq execution sync impacts applied first") {
   REQUIRE(exe.read_only().get_integer(1, 0, -1) == 43);
 }
 
-TEST("seq execution queue action impact") {
+TEST("x seq execution queue action impact") {
   auto exe = laplace::execution {}.set_thread_count(0);
 
   exe.queue(laplace::action {}.setup(
@@ -331,7 +331,7 @@ TEST("seq execution queue action impact") {
   REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
 }
 
-TEST("seq execution no multithreading") {
+TEST("x seq execution no multithreading") {
   static auto m         = std::mutex {};
   static auto foo_begin = 0;
   static auto foo_end   = 0;
@@ -367,7 +367,7 @@ TEST("seq execution no multithreading") {
   REQUIRE(foo_end + bar_end == 1);
 }
 
-TEST("execution two parallel actions") {
+TEST("x execution two parallel actions") {
   static auto m         = std::mutex {};
   static auto foo_begin = 0;
   static auto foo_end   = 0;
@@ -404,7 +404,7 @@ TEST("execution two parallel actions") {
   REQUIRE(bar_end == 1);
 }
 
-TEST("execution join one") {
+TEST("x execution join one") {
   auto exe = laplace::execution {}.set_thread_count(1);
 
   exe.queue(laplace::action {}.setup(
@@ -422,7 +422,7 @@ TEST("execution join one") {
   REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
 }
 
-TEST("execution join four") {
+TEST("x execution join four") {
   auto exe = laplace::execution {}.set_thread_count(4);
 
   exe.queue(laplace::action {}.setup(
@@ -440,7 +440,7 @@ TEST("execution join four") {
   REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
 }
 
-TEST("execution set value impact") {
+TEST("x execution set value impact") {
   auto exe = laplace::execution {}.set_thread_count(4);
 
   exe.queue(laplace::action {}.setup(
@@ -457,7 +457,7 @@ TEST("execution set value impact") {
   REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
 }
 
-TEST("execution set value impact twice") {
+TEST("x execution set value impact twice") {
   auto exe = laplace::execution {}.set_thread_count(4);
 
   exe.queue(laplace::action {}.setup(
@@ -479,7 +479,7 @@ TEST("execution set value impact twice") {
   REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
 }
 
-TEST("execution set value impact twice with continuation") {
+TEST("x execution set value impact twice with continuation") {
   auto exe = laplace::execution {}.set_thread_count(4);
 
   exe.queue(laplace::action {}.setup(
@@ -502,7 +502,7 @@ TEST("execution set value impact twice with continuation") {
   REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
 }
 
-TEST("execution two actions") {
+TEST("x execution two actions") {
   auto exe = laplace::execution {}.set_thread_count(4);
 
   const auto tick = laplace::action::default_tick_duration;
@@ -529,7 +529,7 @@ TEST("execution two actions") {
   REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
 }
 
-TEST("execution invalid impact") {
+TEST("x execution invalid impact") {
   auto exe = laplace::execution {}.set_thread_count(4);
 
   exe.queue(laplace::action {}.setup(
@@ -542,7 +542,7 @@ TEST("execution invalid impact") {
   REQUIRE(exe.error());
 }
 
-TEST("execution sync impacts applied first") {
+TEST("x execution sync impacts applied first") {
   auto exe = laplace::execution {}.set_thread_count(4);
 
   exe.queue(laplace::action {}.setup(
@@ -568,7 +568,7 @@ TEST("execution sync impacts applied first") {
   REQUIRE(exe.read_only().get_integer(1, 0, -1) == 43);
 }
 
-TEST("execution queue action impact") {
+TEST("x execution queue action impact") {
   auto exe = laplace::execution {}.set_thread_count(4);
 
   exe.queue(laplace::action {}.setup(
@@ -590,7 +590,7 @@ TEST("execution queue action impact") {
   REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
 }
 
-TEST("execution action order") {
+TEST("x execution action order") {
   auto       exe  = laplace::execution {}.set_thread_count(4);
   const auto tick = laplace::action::default_tick_duration;
 

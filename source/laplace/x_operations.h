@@ -1,5 +1,5 @@
-#ifndef LAPLACE_OPERATIONS_H
-#define LAPLACE_OPERATIONS_H
+#ifndef LAPLACE_X_OPERATIONS_H
+#define LAPLACE_X_OPERATIONS_H
 
 #include "options.h"
 #include <cstddef>

@@ -1,5 +1,5 @@
-#ifndef LAPLACE_IMPACT_IMPL_H
-#define LAPLACE_IMPACT_IMPL_H
+#ifndef LAPLACE_X_IMPACT_IMPL_H
+#define LAPLACE_X_IMPACT_IMPL_H
 
 namespace laplace {
   inline impact::impact(noop const &i) noexcept : value(i) { }

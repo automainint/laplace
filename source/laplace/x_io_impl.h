@@ -1,5 +1,5 @@
-#ifndef LAPLACE_IO_IMPL_H
-#define LAPLACE_IO_IMPL_H
+#ifndef LAPLACE_X_IO_IMPL_H
+#define LAPLACE_X_IO_IMPL_H
 
 #include "options.h"
 #include "x_buffer.h"

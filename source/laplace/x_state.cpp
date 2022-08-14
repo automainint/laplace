@@ -1,6 +1,6 @@
-#include "state.h"
+#include "x_state.h"
 
-#include "impact.h"
+#include "x_impact.h"
 
 namespace laplace {
   using std::random_device, std::make_shared, std::shared_ptr;

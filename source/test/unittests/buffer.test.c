@@ -240,8 +240,8 @@ TEST("buffer get value") {
 
 TEST("buffer set invalid id") {
   BUFFER_CREATE(buf, int64_t);
-  handle_t const h = { .id = 0, .generation = -1 };
-  status_t       s;
+  handle_t const   h = { .id = 0, .generation = -1 };
+  laplace_status_t s;
   BUFFER_SET(s, buf, h, 0, 42);
   REQUIRE(s == BUFFER_ERROR_INVALID_HANDLE_ID);
   BUFFER_DESTROY(buf);
@@ -252,7 +252,7 @@ TEST("buffer set invalid generation") {
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 1);
   h.generation--;
-  status_t s;
+  laplace_status_t s;
   BUFFER_SET(s, buf, h, 0, 42);
   REQUIRE(s == BUFFER_ERROR_INVALID_HANDLE_GENERATION);
   BUFFER_DESTROY(buf);
@@ -262,7 +262,7 @@ TEST("buffer set value") {
   BUFFER_CREATE(buf, int64_t);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 1);
-  status_t s;
+  laplace_status_t s;
   BUFFER_SET(s, buf, h, 0, 42);
   REQUIRE(s == STATUS_OK);
   REQUIRE(BUFFER_GET(buf, h, 0, -1) == 0);
@@ -273,7 +273,7 @@ TEST("buffer set value and adjust") {
   BUFFER_CREATE(buf, int64_t);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
-  status_t s;
+  laplace_status_t s;
   BUFFER_SET(s, buf, h, 0, 42);
   REQUIRE(s == STATUS_OK);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
@@ -285,7 +285,7 @@ TEST("buffer set value, deallocate and get value") {
   handle_t foo, bar;
   BUFFER_ALLOCATE(foo, buf, 1);
   BUFFER_ALLOCATE(bar, buf, 1);
-  status_t s;
+  laplace_status_t s;
   BUFFER_SET(s, buf, bar, 0, 42);
   REQUIRE(s == STATUS_OK);
   REQUIRE(BUFFER_DEALLOCATE(buf, foo) == STATUS_OK);
@@ -297,7 +297,7 @@ TEST("buffer set value, deallocate, allocate and get value") {
   BUFFER_CREATE(buf, int64_t);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 1);
-  status_t s;
+  laplace_status_t s;
   BUFFER_SET(s, buf, h, 0, 42);
   REQUIRE(s == STATUS_OK);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
@@ -310,7 +310,7 @@ TEST("buffer add delta and adjust") {
   BUFFER_CREATE(buf, int64_t);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
-  status_t s;
+  laplace_status_t s;
   BUFFER_ADD(s, buf, h, 0, 42);
   REQUIRE(s == STATUS_OK);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
@@ -321,7 +321,7 @@ TEST("buffer add delta twice and adjust") {
   BUFFER_CREATE(buf, int64_t);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
-  status_t s;
+  laplace_status_t s;
   BUFFER_ADD(s, buf, h, 0, 20);
   REQUIRE(s == STATUS_OK);
   BUFFER_ADD(s, buf, h, 0, 22);
@@ -334,7 +334,7 @@ TEST("buffer set value and add delta and adjust") {
   BUFFER_CREATE(buf, int64_t);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
-  status_t s;
+  laplace_status_t s;
   BUFFER_SET(s, buf, h, 0, 20);
   REQUIRE(s == STATUS_OK);
   BUFFER_ADD(s, buf, h, 0, 22);
@@ -348,7 +348,7 @@ TEST("buffer adjust one chunk") {
   REQUIRE(BUFFER_SET_CHUNK_SIZE(buf, 100) == STATUS_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 100);
-  status_t s;
+  laplace_status_t s;
   for (int i = 0; i < 100; ++i) BUFFER_SET(s, buf, h, i, i);
   int running;
   BUFFER_ADJUST(running, buf);
@@ -364,7 +364,7 @@ TEST("buffer adjust by chunks") {
   REQUIRE(BUFFER_SET_CHUNK_SIZE(buf, 100) == STATUS_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 100);
-  status_t s;
+  laplace_status_t s;
   for (int i = 0; i < 100; ++i) BUFFER_SET(s, buf, h, i, i);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
   int ok = 1;
@@ -378,7 +378,7 @@ TEST("buffer adjust by chunks twice") {
   REQUIRE(BUFFER_SET_CHUNK_SIZE(buf, 100) == STATUS_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 100);
-  status_t s;
+  laplace_status_t s;
   for (int i = 0; i < 100; ++i) BUFFER_SET(s, buf, h, i, i);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
   BUFFER_ADJUST_DONE(buf);
@@ -405,7 +405,7 @@ TEST("buffer fill two blocks") {
   handle_t foo, bar;
   BUFFER_ALLOCATE(foo, buf, 10);
   BUFFER_ALLOCATE(bar, buf, 10);
-  status_t s;
+  laplace_status_t s;
   BUFFER_SET(s, buf, foo, 0, 42);
   REQUIRE(s == STATUS_OK);
   BUFFER_SET(s, buf, bar, 0, 42);
@@ -459,7 +459,7 @@ typedef struct {
 
 static void test_int_add_delta(void *p) {
   test_int_buffer_data_t *data = (test_int_buffer_data_t *) p;
-  status_t                s;
+  laplace_status_t        s;
   for (int j = 0; j < 100; j++) {
     BUFFER_ADD(s, data->buf, data->h, 0, 1);
     BUFFER_ADD(s, data->buf, data->h, 0, -1);
@@ -505,7 +505,7 @@ TEST("buffer adjust concurrency") {
   BUFFER_INIT(data.buf, kit_alloc_default());
   BUFFER_SET_CHUNK_SIZE(data.buf, 10);
   BUFFER_ALLOCATE(data.h, data.buf, DATA_SIZE);
-  status_t s;
+  laplace_status_t s;
   for (int i = 0; i < DATA_SIZE; i++)
     BUFFER_SET(s, data.buf, data.h, i, i);
   test_thread_t pool[THREAD_COUNT];
@@ -524,7 +524,7 @@ TEST("int buffer adjust concurrency harder") {
   BUFFER_INIT(data.buf, kit_alloc_default());
   BUFFER_SET_CHUNK_SIZE(data.buf, 1);
   BUFFER_ALLOCATE(data.h, data.buf, DATA_SIZE);
-  status_t s;
+  laplace_status_t s;
   for (int i = 0; i < DATA_SIZE; i++)
     BUFFER_SET(s, data.buf, data.h, i, i);
   test_thread_t pool[THREAD_COUNT];
@@ -556,7 +556,7 @@ TEST("byte buffer adjust concurrency harder") {
   BUFFER_INIT(data.buf, kit_alloc_default());
   BUFFER_SET_CHUNK_SIZE(data.buf, 1);
   BUFFER_ALLOCATE(data.h, data.buf, DATA_SIZE);
-  status_t s;
+  laplace_status_t s;
   for (int i = 0; i < DATA_SIZE; i++)
     BUFFER_SET(s, data.buf, data.h, i, (int8_t) (i % 128));
   test_thread_t pool[THREAD_COUNT];

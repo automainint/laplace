@@ -1,24 +1,24 @@
-#include "../../laplace/access.h"
-#include "../../laplace/impact.h"
+#include "../../laplace/x_access.h"
+#include "../../laplace/x_impact.h"
 
-#define KIT_TEST_FILE access
+#define KIT_TEST_FILE x_access
 #include <kit_test/test.h>
 
-TEST("create access") {
+TEST("x create access") {
   std::ignore = laplace::access {};
 }
 
-TEST("access get will fail") {
+TEST("x access get will fail") {
   REQUIRE(laplace::access {}.get_integer(0, 0, -1) == -1);
   REQUIRE(laplace::access {}.get_byte(0, 0, -1) == -1);
 }
 
-TEST("create access from state") {
+TEST("x create access from state") {
   auto s      = laplace::state {};
   std::ignore = laplace::access { s };
 }
 
-TEST("access get from state") {
+TEST("x access get from state") {
   auto s      = laplace::state {};
   std::ignore = s.apply(
       laplace::impact { laplace::integer_allocate_into { 0, 1 } });
@@ -35,7 +35,7 @@ TEST("access get from state") {
   REQUIRE(a.get_byte(1, 0, -1) == 43);
 }
 
-TEST("access get from destroyed state") {
+TEST("x access get from destroyed state") {
   auto *s     = new laplace::state {};
   std::ignore = s->apply(
       laplace::impact { laplace::integer_allocate_into { 0, 1 } });
