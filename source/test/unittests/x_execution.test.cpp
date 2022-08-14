@@ -3,7 +3,7 @@
 #include <chrono>
 #include <thread>
 
-#define KIT_TEST_FILE execution
+#define KIT_TEST_FILE x_execution
 #include <kit_test/test.h>
 
 using std::make_shared, std::this_thread::sleep_for,

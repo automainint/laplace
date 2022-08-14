@@ -75,13 +75,13 @@ laplace_layout_code_t laplace_layout_codegen(
     str_t const name = { .size   = layout->values[i].name.size,
                          .values = layout->values[i].name.values };
     char        buf[200];
-    str_t const num = { .size   = snprintf(buf, 200, "%04tx", i),
+    str_t const num = { .size   = snprintf(buf, sizeof buf, "%tx", i),
                         .values = buf };
 
     ok = append_sz(&code, " ", indent);
     ok = ok && append_str(&code, prefix, 1);
     ok = ok && append_str(&code, name, 1);
-    ok = ok && append_sz(&code, " = 0x", 1);
+    ok = ok && append_sz(&code, " = ", 1);
     ok = ok && append_str(&code, num, 1);
     ok = ok && append_str(&code, delim, 1);
   }

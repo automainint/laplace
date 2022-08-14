@@ -2,7 +2,7 @@
 #include "../../laplace/x_impact.h"
 #include "x_io_impl.test.h"
 
-#define KIT_TEST_FILE state
+#define KIT_TEST_FILE x_state
 #include <kit_test/test.h>
 
 using std::make_shared;

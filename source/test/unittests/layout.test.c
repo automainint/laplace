@@ -41,7 +41,7 @@ TEST("layout codegen two fields") {
   DA_RESIZE(code, code.size - 1);
 
   REQUIRE(code.size > 0 &&
-          strcmp(code.values, "  n_foo = 0x0000,\n"
-                              "  n_bar = 0x0001,\n") == 0);
+          strcmp(code.values, "  n_foo = 0,\n"
+                              "  n_bar = 1,\n") == 0);
   DA_DESTROY(code);
 }

@@ -1,7 +1,7 @@
 #include "../../laplace/x_action.h"
 #include "../../laplace/x_impact.h"
 
-#define KIT_TEST_FILE action
+#define KIT_TEST_FILE x_action
 #include <kit_test/test.h>
 
 TEST("x create action") {

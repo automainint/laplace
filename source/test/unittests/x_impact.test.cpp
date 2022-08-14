@@ -1,6 +1,6 @@
 #include "../../laplace/x_impact.h"
 
-#define KIT_TEST_FILE impact
+#define KIT_TEST_FILE x_impact
 #include <kit_test/test.h>
 
 TEST("x create impact") {
