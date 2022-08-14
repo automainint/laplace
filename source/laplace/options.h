@@ -2,8 +2,31 @@
 #define LAPLACE_OPTIONS_H
 
 #ifdef __cplusplus
-#  include <cstddef>
-#  include <cstdint>
+extern "C" {
+#endif
+
+#include <stddef.h>
+#include <stdint.h>
+
+typedef int     laplace_status_t;
+typedef int64_t laplace_time_t;
+typedef int64_t laplace_integer_t;
+typedef int8_t  laplace_byte_t;
+
+enum { LAPLACE_STATUS_OK = 0, LAPLACE_ID_UNDEFINED = -1 };
+
+#ifndef LAPLACE_DISABLE_SHORT_NAMES
+#  define ID_UNDEFINED LAPLACE_ID_UNDEFINED
+#  define STATUS_OK LAPLACE_STATUS_OK
+
+#  define status_t laplace_status_t
+#  define time_t laplace_time_t
+#  define integer_t laplace_integer_t
+#  define byte_t laplace_byte_t;
+#endif
+
+#ifdef __cplusplus
+}
 
 namespace laplace {
   using time_type = int64_t;
@@ -27,20 +50,6 @@ namespace laplace {
 
   [[nodiscard]] auto average_fork_count() noexcept -> ptrdiff_t;
 }
-#else
-#  include <stddef.h>
-#  include <stdint.h>
-
-typedef int laplace_status_t;
-
-enum { LAPLACE_STATUS_OK = 0, LAPLACE_ID_UNDEFINED = -1 };
-
-#  ifndef LAPLACE_DISABLE_SHORT_NAMES
-#    define ID_UNDEFINED LAPLACE_ID_UNDEFINED
-#    define STATUS_OK LAPLACE_STATUS_OK
-
-#    define status_t laplace_status_t
-#  endif
 #endif
 
 #endif

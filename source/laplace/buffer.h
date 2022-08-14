@@ -1,7 +1,7 @@
 #ifndef LAPLACE_BUFFER_H
 #define LAPLACE_BUFFER_H
 
-#include "options.h"
+#include "handle.h"
 
 #include <kit/atomic.h>
 #include <kit/dynamic_array.h>
@@ -22,14 +22,6 @@ enum {
   LAPLACE_BUFFER_ERROR_BAD_ALLOC,
   LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE = 8000
 };
-
-typedef struct {
-  ptrdiff_t id;
-  union {
-    laplace_status_t error;
-    ptrdiff_t        generation;
-  };
-} laplace_handle_t;
 
 #define LAPLACE_BUFFER_BLOCK \
   struct {                   \
@@ -252,8 +244,6 @@ laplace_status_t laplace_buffer_check(laplace_buffer_void_t *buffer,
     LAPLACE_BUFFER_ERROR_INVALID_BUFFER
 #  define BUFFER_ERROR_BAD_ALLOC LAPLACE_BUFFER_ERROR_BAD_ALLOC
 #  define BUFFER_DEFAULT_CHUNK_SIZE LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE
-
-#  define handle_t laplace_handle_t
 #endif
 
 #ifdef __cplusplus
