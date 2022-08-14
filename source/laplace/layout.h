@@ -35,7 +35,7 @@ ptrdiff_t laplace_layout_index_of(laplace_layout_t const *layout,
 
 laplace_layout_code_t laplace_layout_codegen(
     laplace_layout_t const *layout, ptrdiff_t indent,
-    kit_str_t prefix, kit_str_t delim, kit_str_t last,
+    kit_str_t prefix, kit_str_t delim,
     kit_allocator_t alloc);
 
 #define LAPLACE_LAYOUT_ADD_FIELD_S(layout_, id_, str_)  \

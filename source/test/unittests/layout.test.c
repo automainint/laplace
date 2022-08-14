@@ -28,17 +28,20 @@ TEST("layout codegen two fields") {
 
   SZ(prefix, "n_");
   SZ(delim, ",\n");
-  SZ(last, "\n");
 
   LAYOUT_ADD_FIELD_S(layout, 1, "foo");
   LAYOUT_ADD_FIELD_S(layout, 2, "bar");
 
-  layout_code_t code = layout_codegen(&layout, 2, prefix, delim, last,
+  layout_code_t code = layout_codegen(&layout, 2, prefix, delim,
                                       kit_alloc_default());
   layout_destroy(&layout);
 
+  DA_RESIZE(code, code.size + 1);
+  code.values[code.size - 1] = '\0';
+  DA_RESIZE(code, code.size - 1);
+
   REQUIRE(code.size > 0 &&
           strcmp(code.values, "  n_foo = 0x0000,\n"
-                              "  n_bar = 0x0001\n") == 0);
+                              "  n_bar = 0x0001,\n") == 0);
   DA_DESTROY(code);
 }
