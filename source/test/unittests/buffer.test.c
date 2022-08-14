@@ -7,12 +7,12 @@
 #  include <pthread.h>
 #endif
 
-/*
 TEST("create int buffer") {
   BUFFER_CREATE(buf, int64_t);
   BUFFER_DESTROY(buf);
 }
 
+/*
 TEST("create byte buffer") {
   BUFFER_CREATE(buf, int8_t);
   BUFFER_DESTROY(buf);
