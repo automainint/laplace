@@ -78,23 +78,12 @@ laplace_layout_code_t laplace_layout_codegen(
     str_t const num = { .size   = snprintf(buf, 200, "%04tx", i),
                         .values = buf };
 
-    printf("\n%s", buf);
     ok = append_sz(&code, " ", indent);
-    printf("\n  A %d", ok);
     ok = ok && append_str(&code, prefix, 1);
-    printf("\n  B %d", ok);
     ok = ok && append_str(&code, name, 1);
-    printf("\n  C %d", ok);
     ok = ok && append_sz(&code, " = 0x", 1);
-    printf("\n  D %d", ok);
     ok = ok && append_str(&code, num, 1);
-    printf("\n  E %d", ok);
     ok = ok && append_str(&code, delim, 1);
-    printf("\n  F %d\n", ok);
-    DA_RESIZE(code, code.size + 1);
-    code.values[code.size - 1] = '\0';
-    DA_RESIZE(code, code.size - 1);
-    printf("\n%d:\n%s\n", (int) code.size, code.values);
   }
   if (!ok)
     DA_RESIZE(code, 0);
