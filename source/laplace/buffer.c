@@ -24,13 +24,21 @@ static ptrdiff_t buffer_alloc(laplace_buffer_void_t *const buffer,
     return LAPLACE_ID_UNDEFINED;
 
   if (offset >= buffer->data.size) {
+    ptrdiff_t i = buffer->data.size;
+
     da_resize((da_void_t *) &buffer->data, cell_size, offset + size);
     if (buffer->data.size != offset + size)
       return LAPLACE_ID_UNDEFINED;
+
+    for (; i < buffer->data.size; i++) {
+      cell_void_t *cell = CELL(buffer, cell_size, i);
+      cell->empty       = 1;
+      cell->offset      = buffer->data.size - i;
+    }
   }
 
   for (ptrdiff_t i = 0; i < size; i++) {
-    cell_void_t *cell = CELL(buffer, cell_size, i);
+    cell_void_t *cell = CELL(buffer, cell_size, offset + i);
     cell->empty       = 0;
     cell->offset      = size - i;
   }
@@ -230,8 +238,8 @@ laplace_status_t laplace_buffer_deallocate(
       buffer->blocks.values[handle.id].generation)
     return LAPLACE_BUFFER_ERROR_INVALID_HANDLE_GENERATION;
 
-  // buffer_free(buffer, cell_size,
-  //             buffer->blocks.values[handle.id].index);
+  buffer_free(buffer, cell_size,
+              buffer->blocks.values[handle.id].index);
 
   buffer->blocks.values[handle.id].index = LAPLACE_ID_UNDEFINED;
 
