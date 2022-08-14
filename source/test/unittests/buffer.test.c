@@ -7,6 +7,7 @@
 #  include <pthread.h>
 #endif
 
+/*
 TEST("create int buffer") {
   BUFFER_CREATE(buf, int64_t);
   BUFFER_DESTROY(buf);
@@ -270,8 +271,8 @@ TEST("buffer set value") {
   REQUIRE(BUFFER_GET(buf, h, 0, -1) == 0);
   BUFFER_DESTROY(buf);
 }
+*/
 
-/*
 TEST("buffer set value and adjust") {
   BUFFER_CREATE(buf, int64_t);
   handle_t h;
@@ -283,6 +284,7 @@ TEST("buffer set value and adjust") {
   REQUIRE(BUFFER_GET(buf, h, 0, -1) == 42);
 }
 
+/*
 TEST("buffer set value, deallocate and get value") {
   BUFFER_CREATE(buf, int64_t);
   handle_t foo, bar;
