@@ -3,12 +3,9 @@
 
 #include "options.h"
 
-#include <stdio.h>
-
 #include <kit/atomic.h>
 #include <kit/dynamic_array.h>
 
-#include <stdatomic.h>
 #include <string.h>
 
 #ifdef __cplusplus
