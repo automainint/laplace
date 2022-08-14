@@ -7,7 +7,6 @@ set(LAPLACE_PROJECT laplace)
 set(LAPLACE_LIBRARY laplace)
 set(LAPLACE_TEST laplace_test)
 set(LAPLACE_TARGETS laplace-targets)
-set(LAPLACE_UNITTESTS laplace-unittests)
 
 if(NOT DEFINED CMAKE_BUILD_PARALLEL_LEVEL)
   set(CMAKE_BUILD_PARALLEL_LEVEL 4)
@@ -87,11 +86,11 @@ if(LAPLACE_ENABLE_TESTING)
   endif()
 
   add_test(
-    NAME ${LAPLACE_UNITTESTS}
+    NAME ${LAPLACE_LIBRARY}_unittests
     COMMAND ${LAPLACE_TEST})
 
   set_tests_properties(
-    ${LAPLACE_UNITTESTS}
+    ${LAPLACE_LIBRARY}_unittests
     PROPERTIES
     TIMEOUT "80")
 endif()
