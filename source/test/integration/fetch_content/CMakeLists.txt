@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 set(NAME laplace-integration-fetch-content)
-project(${NAME} CXX C)
+project(${NAME} C)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -11,7 +11,7 @@ set(LAPLACE_ENABLE_TESTING OFF)
 FetchContent_MakeAvailable(laplace)
 
 add_executable(${NAME})
-target_sources(${NAME} PRIVATE main.cpp)
+target_sources(${NAME} PRIVATE main.c)
 target_link_libraries(${NAME} PRIVATE laplace::laplace)
 
 enable_testing()

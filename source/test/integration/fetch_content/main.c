@@ -1,6 +1,6 @@
 #include <laplace/buffer.h>
 #include <laplace/layout.h>
 
-auto main() -> int {
+int main(int argc, char **argv) {
   return 0;
 }
