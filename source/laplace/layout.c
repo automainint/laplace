@@ -65,7 +65,8 @@ static int append_sz(laplace_layout_code_t const *const code,
 
 laplace_layout_code_t laplace_layout_codegen(
     laplace_layout_t const *const layout, ptrdiff_t const indent,
-    kit_str_t const prefix, kit_allocator_t const alloc) {
+    kit_str_t const prefix, kit_str_t const delim,
+    kit_str_t const last, kit_allocator_t const alloc) {
   laplace_layout_code_t code;
   DA_INIT(code, 0, alloc);
 
@@ -78,12 +79,14 @@ laplace_layout_code_t laplace_layout_codegen(
                         .values = buf };
 
     ok = append_sz(&code, " ", indent);
-    ok = ok && append_sz(&code, "ptrdiff_t ", 1);
     ok = ok && append_str(&code, prefix, 1);
     ok = ok && append_str(&code, name, 1);
     ok = ok && append_sz(&code, " = 0x", 1);
     ok = ok && append_str(&code, num, 1);
-    ok = ok && append_sz(&code, ";\n", 1);
+    if (i + 1 != layout->size)
+      ok = ok && append_str(&code, delim, 1);
+    else
+      ok = ok && append_str(&code, last, 1);
   }
   if (!ok)
     DA_RESIZE(code, 0);
