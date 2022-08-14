@@ -240,7 +240,6 @@ TEST("buffer get value") {
   BUFFER_DESTROY(buf);
 }
 
-/*
 TEST("buffer set invalid id") {
   BUFFER_CREATE(buf, int64_t);
   handle_t const h = { .id = 0, .generation = -1 };
@@ -296,6 +295,7 @@ TEST("buffer set value, deallocate and get value") {
   REQUIRE(BUFFER_GET(buf, bar, 0, -1) == 42);
 }
 
+/*
 TEST("buffer set value, deallocate, allocate and get value") {
   BUFFER_CREATE(buf, int64_t);
   handle_t h;
