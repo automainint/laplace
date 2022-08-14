@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 set(NAME laplace-integration-fetch-content)
-project(${NAME} C)
+project(${NAME} C CXX)
 
 include(FetchContent)
 FetchContent_Declare(
