@@ -13,7 +13,8 @@ typedef struct laplace_read_write laplace_read_write_t;
 typedef void (*laplace_acquire_fn)(void *state);
 typedef void (*laplace_release_fn)(void *state);
 
-typedef laplace_read_write_t (*laplace_clone_fn)(void *state);
+typedef laplace_status_t (*laplace_clone_fn)(
+    void *state, laplace_read_write_t *cloned);
 
 typedef laplace_status_t (*laplace_read_integers_fn)(
     void *state, laplace_handle_t handle, ptrdiff_t index,
@@ -66,7 +67,7 @@ typedef struct {
   laplace_get_byte_fn      get_byte;
 } laplace_read_only_t;
 
-#ifdef LAPLACE_DISABLE_SHORT_NAMES
+#ifndef LAPLACE_DISABLE_SHORT_NAMES
 #  define impact_t laplace_impact_t
 #  define read_write_t laplace_read_write_t
 #  define read_only_t laplace_read_only_t
