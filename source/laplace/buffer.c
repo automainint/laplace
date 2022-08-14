@@ -230,8 +230,8 @@ laplace_status_t laplace_buffer_deallocate(
       buffer->blocks.values[handle.id].generation)
     return LAPLACE_BUFFER_ERROR_INVALID_HANDLE_GENERATION;
 
-  buffer_free(buffer, cell_size,
-              buffer->blocks.values[handle.id].index);
+  // buffer_free(buffer, cell_size,
+  //             buffer->blocks.values[handle.id].index);
 
   buffer->blocks.values[handle.id].index = LAPLACE_ID_UNDEFINED;
 
@@ -244,10 +244,10 @@ laplace_status_t laplace_buffer_deallocate(
 }
 
 laplace_status_t laplace_buffer_check(laplace_buffer_void_t *buffer,
-                                      ptrdiff_t cell_size,
+                                      ptrdiff_t        cell_size,
                                       laplace_handle_t handle,
-                                      ptrdiff_t const         index,
-                                      ptrdiff_t const         size) {
+                                      ptrdiff_t const  index,
+                                      ptrdiff_t const  size) {
   if (handle.id < 0 || handle.id >= buffer->data.size ||
       buffer->blocks.values[handle.id].index == LAPLACE_ID_UNDEFINED)
     return LAPLACE_BUFFER_ERROR_INVALID_HANDLE_ID;
