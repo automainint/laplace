@@ -3,9 +3,7 @@
 #define KIT_TEST_FILE buffer
 #include <kit_test/test.h>
 
-#ifdef __unix__
-#  include <pthread.h>
-#endif
+#include "help_thread.test.h"
 
 TEST("create int buffer") {
   BUFFER_CREATE(buf, int64_t);
@@ -452,7 +450,6 @@ TEST("buffer deallocate efficiency") {
   REQUIRE(buf.data.size == 20);
 }
 
-#ifdef __unix__
 typedef BUFFER_TYPE(int64_t) test_buffer_int_t;
 
 typedef struct {
@@ -460,7 +457,7 @@ typedef struct {
   handle_t          h;
 } test_int_buffer_data_t;
 
-static void *test_int_add_delta(void *p) {
+static void test_int_add_delta(void *p) {
   test_int_buffer_data_t *data = (test_int_buffer_data_t *) p;
   status_t                s;
   for (int j = 0; j < 100; j++) {
@@ -468,7 +465,6 @@ static void *test_int_add_delta(void *p) {
     BUFFER_ADD(s, data->buf, data->h, 0, -1);
   }
   BUFFER_ADD(s, data->buf, data->h, 0, 1);
-  return (void *) 0;
 }
 
 TEST("buffer add delta concurrency") {
@@ -476,10 +472,10 @@ TEST("buffer add delta concurrency") {
   test_int_buffer_data_t data;
   BUFFER_INIT(data.buf, kit_alloc_default());
   BUFFER_ALLOCATE(data.h, data.buf, 1);
-  pthread_t pool[THREAD_COUNT];
+  test_thread_t pool[THREAD_COUNT];
   for (int i = 0; i < THREAD_COUNT; i++)
-    pthread_create(pool + i, NULL, test_int_add_delta, &data);
-  for (int i = 0; i < THREAD_COUNT; i++) pthread_join(pool[i], NULL);
+    test_thread_create(pool + i, test_int_add_delta, &data);
+  for (int i = 0; i < THREAD_COUNT; i++) test_thread_join(pool[i]);
   BUFFER_ADJUST_LOOP(data.buf);
   REQUIRE(BUFFER_GET(data.buf, data.h, 0, -1) == THREAD_COUNT);
 }
@@ -489,19 +485,18 @@ TEST("buffer add delta concurrency harder") {
   test_int_buffer_data_t data;
   BUFFER_INIT(data.buf, kit_alloc_default());
   BUFFER_ALLOCATE(data.h, data.buf, 1);
-  pthread_t pool[THREAD_COUNT];
+  test_thread_t pool[THREAD_COUNT];
   for (int i = 0; i < THREAD_COUNT; i++)
-    pthread_create(pool + i, NULL, test_int_add_delta, &data);
-  for (int i = 0; i < THREAD_COUNT; i++) pthread_join(pool[i], NULL);
+    test_thread_create(pool + i, test_int_add_delta, &data);
+  for (int i = 0; i < THREAD_COUNT; i++) test_thread_join(pool[i]);
   BUFFER_ADJUST_LOOP(data.buf);
   REQUIRE(BUFFER_GET(data.buf, data.h, 0, -1) == THREAD_COUNT);
 }
 
-static void *test_int_adjust(void *p) {
+static void test_int_adjust(void *p) {
   test_int_buffer_data_t *data = (test_int_buffer_data_t *) p;
   int                     _;
   BUFFER_ADJUST(_, data->buf);
-  return (void *) 0;
 }
 
 TEST("buffer adjust concurrency") {
@@ -513,10 +508,10 @@ TEST("buffer adjust concurrency") {
   status_t s;
   for (int i = 0; i < DATA_SIZE; i++)
     BUFFER_SET(s, data.buf, data.h, i, i);
-  pthread_t pool[THREAD_COUNT];
+  test_thread_t pool[THREAD_COUNT];
   for (int i = 0; i < THREAD_COUNT; i++)
-    pthread_create(pool + i, NULL, test_int_adjust, &data);
-  for (int i = 0; i < THREAD_COUNT; i++) pthread_join(pool[i], NULL);
+    test_thread_create(pool + i, test_int_adjust, &data);
+  for (int i = 0; i < THREAD_COUNT; i++) test_thread_join(pool[i]);
   int ok = 1;
   for (int i = 0; i < DATA_SIZE; i++)
     ok = ok && BUFFER_GET(data.buf, data.h, i, -1) == i;
@@ -532,10 +527,10 @@ TEST("int buffer adjust concurrency harder") {
   status_t s;
   for (int i = 0; i < DATA_SIZE; i++)
     BUFFER_SET(s, data.buf, data.h, i, i);
-  pthread_t pool[THREAD_COUNT];
+  test_thread_t pool[THREAD_COUNT];
   for (int i = 0; i < THREAD_COUNT; i++)
-    pthread_create(pool + i, NULL, test_int_adjust, &data);
-  for (int i = 0; i < THREAD_COUNT; i++) pthread_join(pool[i], NULL);
+    test_thread_create(pool + i, test_int_adjust, &data);
+  for (int i = 0; i < THREAD_COUNT; i++) test_thread_join(pool[i]);
   int ok = 1;
   for (int i = 0; i < DATA_SIZE; i++)
     ok = ok && BUFFER_GET(data.buf, data.h, i, -1) == i;
@@ -549,11 +544,10 @@ typedef struct {
   handle_t           h;
 } test_byte_buffer_data_t;
 
-static void *test_byte_adjust(void *p) {
+static void test_byte_adjust(void *p) {
   test_byte_buffer_data_t *data = (test_byte_buffer_data_t *) p;
   int                      _;
   BUFFER_ADJUST(_, data->buf);
-  return (void *) 0;
 }
 
 TEST("byte buffer adjust concurrency harder") {
@@ -565,14 +559,13 @@ TEST("byte buffer adjust concurrency harder") {
   status_t s;
   for (int i = 0; i < DATA_SIZE; i++)
     BUFFER_SET(s, data.buf, data.h, i, (int8_t) (i % 128));
-  pthread_t pool[THREAD_COUNT];
+  test_thread_t pool[THREAD_COUNT];
   for (int i = 0; i < THREAD_COUNT; i++)
-    pthread_create(pool + i, NULL, test_byte_adjust, &data);
-  for (int i = 0; i < THREAD_COUNT; i++) pthread_join(pool[i], NULL);
+    test_thread_create(pool + i, test_byte_adjust, &data);
+  for (int i = 0; i < THREAD_COUNT; i++) test_thread_join(pool[i]);
   int ok = 1;
   for (int i = 0; i < DATA_SIZE; i++)
     ok = ok &&
          BUFFER_GET(data.buf, data.h, i, -1) == (int8_t) (i % 128);
   REQUIRE(ok);
 }
-#endif
