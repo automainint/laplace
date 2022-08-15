@@ -20,26 +20,7 @@ typedef struct {
   laplace_handle_t     self;
 } laplace_action_t;
 
-#define LAPLACE_ACTION(coro_, tick_duration_, self_)     \
-  { .size          = sizeof(AF_TYPE(coro_)),             \
-    .coro          = AF_NAME(coro_),                     \
-    .tick_duration = (tick_duration_),                   \
-    .self          = (self_) };                                   \
-  do {                                                   \
-    if (offsetof(AF_TYPE(coro_), return_value) !=        \
-            offsetof(laplace_promise_t, return_value) || \
-        offsetof(AF_TYPE(coro_), alloc) !=               \
-            offsetof(laplace_promise_t, alloc) ||        \
-        offsetof(AF_TYPE(coro_), access) !=              \
-            offsetof(laplace_promise_t, access) ||       \
-        offsetof(AF_TYPE(coro_), self) !=                \
-            offsetof(laplace_promise_t, self))           \
-      abort();                                           \
-  } while (0)
-
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
-#  define ACTION LAPLACE_ACTION
-
 #  define promise_t laplace_promise_t
 #  define action_t laplace_action_t
 #  define action_starter_fn laplace_action_starter_fn
