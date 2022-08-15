@@ -48,6 +48,7 @@ static void buffer_free(laplace_buffer_void_t *const buffer,
   ptrdiff_t end   = begin;
 
   while (end < buffer->data.size) {
+    assert(end >= 0 && end < LAPLACE_BUF_INFO_(*buffer).size);
     end += LAPLACE_BUF_INFO_(*buffer).values[end].offset;
     if (end < buffer->data.size &&
         !LAPLACE_BUF_INFO_(*buffer).values[end].empty)
@@ -104,15 +105,19 @@ laplace_handle_t laplace_buffer_allocate(
     }
 
     for (; i < buffer->blocks.size; i++) {
+      assert(i >= 0 && i < buffer->blocks.size);
       buffer->blocks.values[i].index      = LAPLACE_ID_UNDEFINED;
       buffer->blocks.values[i].generation = -1;
     }
   }
 
+  assert(block >= 0 && block < buffer->blocks.size);
   buffer->blocks.values[block].index = offset;
   buffer->blocks.values[block].generation++;
   buffer->blocks.values[block].size = size;
 
+  assert(buffer->next_block >= 0 &&
+         buffer->next_block <= buffer->blocks.size);
   while (buffer->next_block < buffer->blocks.size &&
          buffer->blocks.values[buffer->next_block].index !=
              LAPLACE_ID_UNDEFINED)
@@ -173,6 +178,7 @@ laplace_handle_t laplace_buffer_allocate_into(
     }
 
     for (; i < buffer->blocks.size; i++) {
+      assert(i >= 0 && i < buffer->blocks.size);
       buffer->blocks.values[i].index      = LAPLACE_ID_UNDEFINED;
       buffer->blocks.values[i].generation = -1;
     }
@@ -182,6 +188,8 @@ laplace_handle_t laplace_buffer_allocate_into(
   buffer->blocks.values[handle.id].generation++;
   buffer->blocks.values[handle.id].size = size;
 
+  assert(buffer->next_block >= 0 &&
+         buffer->next_block <= buffer->blocks.size);
   while (buffer->next_block < buffer->blocks.size &&
          buffer->blocks.values[buffer->next_block].index !=
              LAPLACE_ID_UNDEFINED)
@@ -226,7 +234,7 @@ laplace_buffer_realloc_result_t laplace_buffer_reallocate(
   result.previous_size   = buffer->blocks.values[handle.id].size;
 
   buffer_free(buffer, buffer->blocks.values[handle.id].index);
-  
+
   buffer->blocks.values[handle.id].index = offset;
   buffer->blocks.values[handle.id].size  = size;
 
@@ -247,6 +255,7 @@ laplace_status_t laplace_buffer_reserve(
       return LAPLACE_BUFFER_ERROR_BAD_ALLOC;
 
     for (; i < buffer->blocks.size; i++) {
+      assert(i >= 0 && i < buffer->blocks.size);
       buffer->blocks.values[i].index      = LAPLACE_ID_UNDEFINED;
       buffer->blocks.values[i].generation = -1;
     }
@@ -257,6 +266,8 @@ laplace_status_t laplace_buffer_reserve(
   if (buffer->next_block < size)
     buffer->next_block = size;
 
+  assert(buffer->next_block >= 0 &&
+         buffer->next_block <= buffer->blocks.size);
   while (buffer->next_block < buffer->blocks.size &&
          buffer->blocks.values[buffer->next_block].index ==
              LAPLACE_ID_UNDEFINED)

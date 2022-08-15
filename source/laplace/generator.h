@@ -3,6 +3,8 @@
 
 #include "impact.h"
 
+#include <assert.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,21 +40,20 @@ laplace_impact_list_t laplace_generator_run(
 laplace_generator_status_t laplace_generator_status(
     laplace_generator_t generator);
 
-#define LAPLACE_ACTION(coro_, tick_duration_, self_)     \
-  { .size          = sizeof(AF_TYPE(coro_)),             \
-    .coro          = AF_NAME(coro_),                     \
-    .tick_duration = (tick_duration_),                   \
-    .self          = (self_) };                                   \
-  do {                                                   \
-    if (offsetof(AF_TYPE(coro_), return_value) !=        \
-            offsetof(laplace_promise_t, return_value) || \
-        offsetof(AF_TYPE(coro_), alloc) !=               \
-            offsetof(laplace_promise_t, alloc) ||        \
-        offsetof(AF_TYPE(coro_), access) !=              \
-            offsetof(laplace_promise_t, access) ||       \
-        offsetof(AF_TYPE(coro_), self) !=                \
-            offsetof(laplace_promise_t, self))           \
-      abort();                                           \
+#define LAPLACE_ACTION(coro_, tick_duration_, self_)   \
+  { .size          = sizeof(AF_TYPE(coro_)),           \
+    .coro          = AF_NAME(coro_),                   \
+    .tick_duration = (tick_duration_),                 \
+    .self          = (self_) };                                 \
+  do {                                                 \
+    assert(offsetof(AF_TYPE(coro_), return_value) ==   \
+           offsetof(laplace_promise_t, return_value)); \
+    assert(offsetof(AF_TYPE(coro_), alloc) ==          \
+           offsetof(laplace_promise_t, alloc));        \
+    assert(offsetof(AF_TYPE(coro_), access) ==         \
+           offsetof(laplace_promise_t, access));       \
+    assert(offsetof(AF_TYPE(coro_), self) ==           \
+           offsetof(laplace_promise_t, self));         \
   } while (0)
 
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
