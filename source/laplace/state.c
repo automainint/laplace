@@ -59,8 +59,8 @@ static void release(void *p) {
       (s) = LAPLACE_STATE_ERROR_BAD_ALLOC;                           \
     else {                                                           \
       for (ptrdiff_t i_ = 0; i_ < n_; i_++) {                        \
-        (dst).data.values[i_].empty  = (src).data.values[i_].empty;  \
-        (dst).data.values[i_].offset = (src).data.values[i_].offset; \
+        (dst).info.values[i_].empty  = (src).info.values[i_].empty;  \
+        (dst).info.values[i_].offset = (src).info.values[i_].offset; \
         atomic_store_explicit(                                       \
             &(dst).data.values[i_].value,                            \
             atomic_load_explicit(&(src).data.values[i_].value,       \

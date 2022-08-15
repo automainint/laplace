@@ -1,23 +1,15 @@
 #include "buffer.h"
 
-#define CELL(buf_, cell_size_, index_)                  \
-  ((cell_void_t *) (((uint8_t *) (buf_)->data.values) + \
-                    (index_) * (cell_size_)))
-
-typedef struct {
-  LAPLACE_BUFFER_CELL_DATA;
-} cell_void_t;
-
 static ptrdiff_t buffer_alloc(laplace_buffer_void_t *const buffer,
                               ptrdiff_t const              cell_size,
                               ptrdiff_t const              size) {
   ptrdiff_t offset = 0;
 
   while (offset < buffer->data.size) {
-    cell_void_t *cell = CELL(buffer, cell_size, offset);
-    if (cell->empty && cell->offset >= size)
+    laplace_buf_info_t_ *info = LAPLACE_BUF_INFO_(*buffer).values + offset;
+    if (info->empty && info->offset >= size)
       break;
-    offset += cell->offset;
+    offset += info->offset;
   }
 
   if (size >= PTRDIFF_MAX - offset)
@@ -26,43 +18,40 @@ static ptrdiff_t buffer_alloc(laplace_buffer_void_t *const buffer,
   if (offset >= buffer->data.size) {
     ptrdiff_t i = buffer->data.size;
 
+    DA_RESIZE(buffer->info, offset + size);
+    if (buffer->info.size != offset + size)
+      return LAPLACE_ID_UNDEFINED;
+
     da_resize((da_void_t *) &buffer->data, cell_size, offset + size);
     if (buffer->data.size != offset + size)
       return LAPLACE_ID_UNDEFINED;
-
-    // for (; i < buffer->data.size; i++) {
-    //   cell_void_t *cell = CELL(buffer, cell_size, i);
-    //   cell->empty       = 1;
-    //   cell->offset      = buffer->data.size - i;
-    // }
   }
 
   for (ptrdiff_t i = 0; i < size; i++) {
-    cell_void_t *cell = CELL(buffer, cell_size, offset + i);
-    cell->empty       = 0;
-    cell->offset      = size - i;
+    laplace_buf_info_t_ *info = LAPLACE_BUF_INFO_(*buffer).values + offset + i;
+    info->empty  = 0;
+    info->offset = size - i;
   }
 
   return offset;
 }
 
 static void buffer_free(laplace_buffer_void_t *const buffer,
-                        ptrdiff_t const              cell_size,
                         ptrdiff_t const              offset) {
   ptrdiff_t begin = offset;
   ptrdiff_t end   = begin;
 
   while (end < buffer->data.size) {
-    end += CELL(buffer, cell_size, end)->offset;
+    end += LAPLACE_BUF_INFO_(*buffer).values[end].offset;
     if (end < buffer->data.size &&
-        !CELL(buffer, cell_size, end)->empty)
+        !LAPLACE_BUF_INFO_(*buffer).values[end].empty)
       break;
   }
 
   for (ptrdiff_t i = begin; i < end; i++) {
-    cell_void_t *cell = CELL(buffer, cell_size, i);
-    cell->empty       = 1;
-    cell->offset      = end - i;
+    laplace_buf_info_t_ *info = LAPLACE_BUF_INFO_(*buffer).values + i;
+    info->empty  = 1;
+    info->offset = end - i;
   }
 }
 
@@ -102,7 +91,7 @@ laplace_handle_t laplace_buffer_allocate(
     DA_RESIZE(buffer->blocks, block + 1);
 
     if (buffer->blocks.size != block + 1) {
-      buffer_free(buffer, cell_size, offset);
+      buffer_free(buffer, offset);
       h.id    = LAPLACE_ID_UNDEFINED,
       h.error = LAPLACE_BUFFER_ERROR_BAD_ALLOC;
       return h;
@@ -156,8 +145,7 @@ laplace_handle_t laplace_buffer_allocate_into(
 
   if (handle.id < buffer->blocks.size &&
       buffer->blocks.values[handle.id].index != LAPLACE_ID_UNDEFINED)
-    buffer_free(buffer, cell_size,
-                buffer->blocks.values[handle.id].index);
+    buffer_free(buffer, buffer->blocks.values[handle.id].index);
 
   ptrdiff_t const offset = buffer_alloc(buffer, cell_size, size);
 
@@ -172,7 +160,7 @@ laplace_handle_t laplace_buffer_allocate_into(
     DA_RESIZE(buffer->blocks, handle.id + 1);
 
     if (buffer->blocks.size != handle.id + 1) {
-      buffer_free(buffer, cell_size, offset);
+      buffer_free(buffer, offset);
       h.id    = LAPLACE_ID_UNDEFINED;
       h.error = LAPLACE_BUFFER_ERROR_BAD_ALLOC;
       return h;
@@ -280,8 +268,7 @@ laplace_status_t laplace_buffer_deallocate(
       buffer->blocks.values[handle.id].generation)
     return LAPLACE_BUFFER_ERROR_INVALID_HANDLE_GENERATION;
 
-  buffer_free(buffer, cell_size,
-              buffer->blocks.values[handle.id].index);
+  buffer_free(buffer, buffer->blocks.values[handle.id].index);
 
   buffer->blocks.values[handle.id].index = LAPLACE_ID_UNDEFINED;
 
