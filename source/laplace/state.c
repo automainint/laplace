@@ -2,16 +2,16 @@
 
 #include "buffer.h"
 #include "impact.h"
-#include "rng.h"
 
 #include <kit/atomic.h>
+#include <kit/mersenne_twister_64.h>
 
 typedef struct {
   ATOMIC(ptrdiff_t) ref_count;
   kit_allocator_t alloc;
   LAPLACE_BUFFER_TYPE(laplace_integer_t) integers;
   LAPLACE_BUFFER_TYPE(laplace_byte_t) bytes;
-  laplace_rng_state_t random_state;
+  kit_mt64_state_t mt64;
 } state_internal_t;
 
 static void acquire(void *p) {
@@ -167,6 +167,13 @@ static laplace_byte_t get_byte(void *p, laplace_handle_t handle,
 DA_TYPE(integers_t, laplace_integer_t);
 DA_TYPE(bytes_t, laplace_byte_t);
 
+static int64_t rng(mt64_state_t *const mt64, int64_t const min,
+                   int64_t const max) {
+  uint64_t x = mt64_generate(mt64);
+  uint64_t n = (uint64_t) (max - min + 1);
+  return min + (int64_t) (x % n);
+}
+
 static laplace_status_t apply(void *const                   p,
                               laplace_impact_t const *const impact) {
   state_internal_t *internal = (state_internal_t *) p;
@@ -239,17 +246,16 @@ static laplace_status_t apply(void *const                   p,
     CASES_T(INTEGER, integer);
     CASES_T(BYTE, byte);
     case LAPLACE_IMPACT_INTEGER_SEED:
-      laplace_rng_init(&internal->random_state,
-                       impact->integer_seed.seed);
+      mt64_init(&internal->mt64, impact->integer_seed.seed);
       break;
     case LAPLACE_IMPACT_INTEGER_RANDOM: {
       DA(nums, laplace_integer_t);
       DA_INIT(nums, impact->integer_random.return_size,
               internal->alloc);
       for (ptrdiff_t i = 0; i < nums.size; i++)
-        nums.values[i] = laplace_rng(&internal->random_state,
-                                     impact->integer_random.min,
-                                     impact->integer_random.max);
+        nums.values[i] = rng(&internal->mt64,
+                             impact->integer_random.min,
+                             impact->integer_random.max);
       LAPLACE_BUFFER_SET_N(s, internal->integers,
                            impact->integer_random.return_handle,
                            impact->integer_random.return_index,
@@ -260,8 +266,8 @@ static laplace_status_t apply(void *const                   p,
       DA(nums, laplace_byte_t);
       DA_INIT(nums, impact->byte_random.return_size, internal->alloc);
       for (ptrdiff_t i = 0; i < nums.size; i++)
-        nums.values[i] = (laplace_byte_t) laplace_rng(
-            &internal->random_state, impact->byte_random.min,
+        nums.values[i] = (laplace_byte_t) rng(
+            &internal->mt64, impact->byte_random.min,
             impact->byte_random.max);
       LAPLACE_BUFFER_SET_N(
           s, internal->bytes, impact->byte_random.return_handle,
@@ -306,7 +312,7 @@ laplace_status_t laplace_state_init(laplace_read_write_t *const p,
   atomic_store_explicit(&internal->ref_count, 0,
                         memory_order_relaxed);
   internal->alloc = alloc;
-  laplace_rng_init(&internal->random_state, laplace_rng_seed());
+  mt64_init(&internal->mt64, mt64_seed());
 
   LAPLACE_BUFFER_INIT(internal->integers, alloc);
   LAPLACE_BUFFER_INIT(internal->bytes, alloc);
