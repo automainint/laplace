@@ -12,9 +12,7 @@
 extern "C" {
 #endif
 
-enum {
-  LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE = 8000
-};
+enum { LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE = 8000 };
 
 #define LAPLACE_BUFFER_BLOCK \
   struct {                   \
@@ -175,7 +173,7 @@ laplace_status_t laplace_buffer_check(laplace_buffer_void_t *buffer,
       }                                                              \
       LAPLACE_BUFFER_ZERO((buf_), (handle_),                         \
                           res_.offset + res_.previous_size,          \
-                          (size_));                                  \
+                          (size_) -res_.previous_size);              \
     }                                                                \
     (status_) = res_.status;                                         \
   } while (0)

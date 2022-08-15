@@ -30,11 +30,11 @@ static ptrdiff_t buffer_alloc(laplace_buffer_void_t *const buffer,
     if (buffer->data.size != offset + size)
       return LAPLACE_ID_UNDEFINED;
 
-    for (; i < buffer->data.size; i++) {
-      cell_void_t *cell = CELL(buffer, cell_size, i);
-      cell->empty       = 1;
-      cell->offset      = buffer->data.size - i;
-    }
+    // for (; i < buffer->data.size; i++) {
+    //   cell_void_t *cell = CELL(buffer, cell_size, i);
+    //   cell->empty       = 1;
+    //   cell->offset      = buffer->data.size - i;
+    // }
   }
 
   for (ptrdiff_t i = 0; i < size; i++) {
@@ -89,6 +89,7 @@ laplace_handle_t laplace_buffer_allocate(
   }
 
   ptrdiff_t const offset = buffer_alloc(buffer, cell_size, size);
+
   if (offset == LAPLACE_ID_UNDEFINED) {
     h.id    = LAPLACE_ID_UNDEFINED,
     h.error = LAPLACE_BUFFER_ERROR_BAD_ALLOC;
@@ -159,6 +160,7 @@ laplace_handle_t laplace_buffer_allocate_into(
                 buffer->blocks.values[handle.id].index);
 
   ptrdiff_t const offset = buffer_alloc(buffer, cell_size, size);
+
   if (offset == LAPLACE_ID_UNDEFINED) {
     h.id    = LAPLACE_ID_UNDEFINED;
     h.error = LAPLACE_BUFFER_ERROR_BAD_ALLOC;
@@ -219,6 +221,7 @@ laplace_buffer_realloc_result_t laplace_buffer_reallocate(
   }
 
   ptrdiff_t const offset = buffer_alloc(buffer, cell_size, size);
+
   if (offset == LAPLACE_ID_UNDEFINED) {
     result.status = LAPLACE_BUFFER_ERROR_BAD_ALLOC;
     return result;

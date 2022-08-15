@@ -2,7 +2,7 @@
 
 #include "buffer.h"
 #include "impact.h"
-#include "random.h"
+#include "rng.h"
 
 #include <kit/atomic.h>
 
@@ -11,7 +11,7 @@ typedef struct {
   kit_allocator_t alloc;
   LAPLACE_BUFFER_TYPE(laplace_integer_t) integers;
   LAPLACE_BUFFER_TYPE(laplace_byte_t) bytes;
-  laplace_random_state_t random_state;
+  laplace_rng_state_t random_state;
 } state_internal_t;
 
 static void acquire(void *p) {
@@ -239,17 +239,17 @@ static laplace_status_t apply(void *const                   p,
     CASES_T(INTEGER, integer);
     CASES_T(BYTE, byte);
     case LAPLACE_IMPACT_INTEGER_SEED:
-      laplace_random_init(&internal->random_state,
-                          impact->integer_seed.seed);
+      laplace_rng_init(&internal->random_state,
+                       impact->integer_seed.seed);
       break;
     case LAPLACE_IMPACT_INTEGER_RANDOM: {
       DA(nums, laplace_integer_t);
       DA_INIT(nums, impact->integer_random.return_size,
               internal->alloc);
       for (ptrdiff_t i = 0; i < nums.size; i++)
-        nums.values[i] = laplace_random(&internal->random_state,
-                                        impact->integer_random.min,
-                                        impact->integer_random.max);
+        nums.values[i] = laplace_rng(&internal->random_state,
+                                     impact->integer_random.min,
+                                     impact->integer_random.max);
       LAPLACE_BUFFER_SET_N(s, internal->integers,
                            impact->integer_random.return_handle,
                            impact->integer_random.return_index,
@@ -260,7 +260,7 @@ static laplace_status_t apply(void *const                   p,
       DA(nums, laplace_byte_t);
       DA_INIT(nums, impact->byte_random.return_size, internal->alloc);
       for (ptrdiff_t i = 0; i < nums.size; i++)
-        nums.values[i] = (laplace_byte_t) laplace_random(
+        nums.values[i] = (laplace_byte_t) laplace_rng(
             &internal->random_state, impact->byte_random.min,
             impact->byte_random.max);
       LAPLACE_BUFFER_SET_N(
@@ -305,8 +305,8 @@ laplace_status_t laplace_state_init(laplace_read_write_t *const p,
 
   atomic_store_explicit(&internal->ref_count, 0,
                         memory_order_relaxed);
-  internal->alloc        = alloc;
-  internal->random_state = laplace_random_seed();
+  internal->alloc = alloc;
+  laplace_rng_init(&internal->random_state, laplace_rng_seed());
 
   LAPLACE_BUFFER_INIT(internal->integers, alloc);
   LAPLACE_BUFFER_INIT(internal->bytes, alloc);
