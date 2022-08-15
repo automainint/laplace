@@ -4,16 +4,17 @@
 
 laplace_status_t laplace_generator_init(
     laplace_generator_t *generator, laplace_action_t action,
-    laplace_read_only_t access) {
+    laplace_read_only_t access, kit_allocator_t alloc) {
   memset(generator, 0, sizeof *generator);
-  generator->promise = (laplace_promise_t *) action.alloc.allocate(
-      action.alloc.state, action.size);
+  generator->promise = (laplace_promise_t *) alloc.allocate(
+      alloc.state, action.size);
   if (generator->promise == NULL)
     return LAPLACE_GENERATOR_ERROR_BAD_ALLOC;
+  laplace_status_t s = action.starter(generator->promise, alloc,
+                                      action.self, access);
+  if (s != LAPLACE_STATUS_OK)
+    alloc.deallocate(alloc.state, generator->promise);
   generator->tick_duration = action.tick_duration;
-  laplace_status_t s = action.starter(generator->promise, action.data,
-                                      action.alloc, access);
-  action.alloc.deallocate(action.alloc.state, action.data);
   return s;
 }
 

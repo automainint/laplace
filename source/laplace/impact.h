@@ -1,7 +1,6 @@
 #ifndef LAPLACE_IMPACT_H
 #define LAPLACE_IMPACT_H
 
-#include "access.h"
 #include "action.h"
 #include <kit/dynamic_array.h>
 

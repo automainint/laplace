@@ -5,24 +5,26 @@
 #include <kit_test/test.h>
 
 CORO(impact_list_t, test_impact_gen, kit_allocator_t alloc;
-     read_only_t access; int arg;) {
+     handle_t self; read_only_t access;) {
   impact_list_t list;
 
   DA_INIT(list, 1, af alloc);
   list.values[0].type = IMPACT_NOOP;
   AF_YIELD(list);
 
-  DA_INIT(list, af arg, af alloc);
-  for (int i = 0; i < af arg; i++) list.values[i].type = IMPACT_NOOP;
+  DA_INIT(list, 2, af alloc);
+  list.values[0].type = IMPACT_NOOP;
+  list.values[1].type = IMPACT_NOOP;
   AF_RETURN(list);
 }
 CORO_END
 
-static laplace_status_t test_starter(void *coro, void *data,
-                                     kit_allocator_t alloc,
-                                     read_only_t     access) {
+static laplace_status_t test_starter(laplace_promise_t *coro,
+                                     kit_allocator_t    alloc,
+                                     handle_t           self,
+                                     read_only_t        access) {
   AF_INIT(*(AF_TYPE(test_impact_gen) *) coro, test_impact_gen,
-          .alloc = alloc, .access = access, .arg = *(int *) data);
+          .alloc = alloc, .self = self, .access = access);
   return STATUS_OK;
 }
 
@@ -46,20 +48,17 @@ TEST("generator example") {
                             .allocate   = allocate,
                             .deallocate = deallocate };
 
-  int *data = (int *) alloc.allocate(alloc.state, sizeof(int));
-  *data     = 2;
-
   action_t action = { .size    = sizeof(AF_TYPE(test_impact_gen)),
-                      .data    = data,
-                      .alloc   = alloc,
                       .starter = test_starter,
-                      .tick_duration = 1 };
+                      .tick_duration = 1,
+                      .self          = { .id = 0, .generation = 0 } };
 
   laplace_read_only_t access;
   memset(&access, 0, sizeof access);
 
   laplace_generator_t gen;
-  REQUIRE(laplace_generator_init(&gen, action, access) == STATUS_OK);
+  REQUIRE(laplace_generator_init(&gen, action, access, alloc) ==
+          STATUS_OK);
   REQUIRE(laplace_generator_status(gen) == GENERATOR_RUNNING);
 
   impact_list_t foo = generator_run(gen);
