@@ -19,7 +19,7 @@ CORO(impact_list_t, test_impact_gen, kit_allocator_t alloc;
 }
 CORO_END
 
-int alloc_count, free_count;
+static int alloc_count, free_count;
 
 static void *allocate(void *_, size_t size) {
   alloc_count++;
