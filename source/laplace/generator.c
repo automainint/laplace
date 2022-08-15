@@ -12,8 +12,8 @@ laplace_status_t laplace_generator_init(
     return LAPLACE_GENERATOR_ERROR_BAD_ALLOC;
   AF_INIT_EXPLICIT(*generator->promise, action.size, action.coro);
   generator->promise->alloc  = alloc;
-  generator->promise->self   = action.self;
   generator->promise->access = access;
+  generator->promise->self   = action.self;
   generator->tick_duration   = action.tick_duration;
   return LAPLACE_STATUS_OK;
 }
