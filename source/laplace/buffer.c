@@ -1,12 +1,17 @@
 #include "buffer.h"
 
+/*  TODO
+ *  buffer_realloc
+ */
+
 static ptrdiff_t buffer_alloc(laplace_buffer_void_t *const buffer,
                               ptrdiff_t const              cell_size,
                               ptrdiff_t const              size) {
   ptrdiff_t offset = 0;
 
   while (offset < buffer->data.size) {
-    laplace_buf_info_t_ *info = LAPLACE_BUF_INFO_(*buffer).values + offset;
+    laplace_buf_info_t_ *info = LAPLACE_BUF_INFO_(*buffer).values +
+                                offset;
     if (info->empty && info->offset >= size)
       break;
     offset += info->offset;
@@ -28,7 +33,8 @@ static ptrdiff_t buffer_alloc(laplace_buffer_void_t *const buffer,
   }
 
   for (ptrdiff_t i = 0; i < size; i++) {
-    laplace_buf_info_t_ *info = LAPLACE_BUF_INFO_(*buffer).values + offset + i;
+    laplace_buf_info_t_ *info = LAPLACE_BUF_INFO_(*buffer).values +
+                                offset + i;
     info->empty  = 0;
     info->offset = size - i;
   }
@@ -50,8 +56,8 @@ static void buffer_free(laplace_buffer_void_t *const buffer,
 
   for (ptrdiff_t i = begin; i < end; i++) {
     laplace_buf_info_t_ *info = LAPLACE_BUF_INFO_(*buffer).values + i;
-    info->empty  = 1;
-    info->offset = end - i;
+    info->empty               = 1;
+    info->offset              = end - i;
   }
 }
 
@@ -219,6 +225,8 @@ laplace_buffer_realloc_result_t laplace_buffer_reallocate(
   result.previous_offset = buffer->blocks.values[handle.id].index;
   result.previous_size   = buffer->blocks.values[handle.id].size;
 
+  buffer_free(buffer, buffer->blocks.values[handle.id].index);
+  
   buffer->blocks.values[handle.id].index = offset;
   buffer->blocks.values[handle.id].size  = size;
 
