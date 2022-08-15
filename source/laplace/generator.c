@@ -10,12 +10,12 @@ laplace_status_t laplace_generator_init(
       alloc.state, action.size);
   if (generator->promise == NULL)
     return LAPLACE_GENERATOR_ERROR_BAD_ALLOC;
-  laplace_status_t s = action.starter(generator->promise, alloc,
-                                      action.self, access);
-  if (s != LAPLACE_STATUS_OK)
-    alloc.deallocate(alloc.state, generator->promise);
-  generator->tick_duration = action.tick_duration;
-  return s;
+  AF_INIT_EXPLICIT(*generator->promise, action.size, action.coro);
+  generator->promise->alloc  = alloc;
+  generator->promise->self   = action.self;
+  generator->promise->access = access;
+  generator->tick_duration   = action.tick_duration;
+  return LAPLACE_STATUS_OK;
 }
 
 void laplace_generator_destroy(laplace_generator_t generator) {

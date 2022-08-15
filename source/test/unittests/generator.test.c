@@ -4,8 +4,8 @@
 #define KIT_TEST_FILE buffer
 #include <kit_test/test.h>
 
-CORO(impact_list_t, test_impact_gen, kit_allocator_t alloc;
-     handle_t self; read_only_t access;) {
+CORO(impact_list_t, test_impact_gen, handle_t self;
+     read_only_t access; kit_allocator_t alloc;) {
   impact_list_t list;
 
   DA_INIT(list, 1, af alloc);
@@ -18,15 +18,6 @@ CORO(impact_list_t, test_impact_gen, kit_allocator_t alloc;
   AF_RETURN(list);
 }
 CORO_END
-
-static laplace_status_t test_starter(laplace_promise_t *coro,
-                                     kit_allocator_t    alloc,
-                                     handle_t           self,
-                                     read_only_t        access) {
-  AF_INIT(*(AF_TYPE(test_impact_gen) *) coro, test_impact_gen,
-          .alloc = alloc, .self = self, .access = access);
-  return STATUS_OK;
-}
 
 int alloc_count, free_count;
 
@@ -48,10 +39,8 @@ TEST("generator example") {
                             .allocate   = allocate,
                             .deallocate = deallocate };
 
-  action_t action = { .size    = sizeof(AF_TYPE(test_impact_gen)),
-                      .starter = test_starter,
-                      .tick_duration = 1,
-                      .self          = { .id = 0, .generation = 0 } };
+  handle_t self   = { .id = 0, .generation = 0 };
+  action_t action = ACTION(test_impact_gen, 1, self);
 
   laplace_read_only_t access;
   memset(&access, 0, sizeof access);

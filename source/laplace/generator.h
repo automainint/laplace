@@ -17,9 +17,9 @@ typedef enum {
 struct laplace_promise {
   KIT_AF_STATE_DATA;
   laplace_impact_list_t return_value;
-  kit_allocator_t       alloc;
   laplace_handle_t      self;
   laplace_read_only_t   access;
+  kit_allocator_t       alloc;
 };
 
 typedef struct {

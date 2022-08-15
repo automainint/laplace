@@ -3,6 +3,7 @@ Checks: >
   -llvmlibc-*,
   -fuchsia-*,
   -altera-*,
+  -clang-analyzer-security.insecureAPI.*,
   -*-identifier-length,
   -*-avoid-underscore-in-googletest-name,
   -*-avoid-c-arrays,
