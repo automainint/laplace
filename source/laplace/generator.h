@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-enum { LAPLACE_GENERATOR_ERROR_BAD_ALLOC = 1 };
-
 typedef enum {
   LAPLACE_GENERATOR_RUNNING  = 0,
   LAPLACE_GENERATOR_FINISHED = 1

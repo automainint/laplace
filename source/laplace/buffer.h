@@ -13,13 +13,6 @@ extern "C" {
 #endif
 
 enum {
-  LAPLACE_BUFFER_ERROR_INVALID_CHUNK_SIZE = 1,
-  LAPLACE_BUFFER_ERROR_INVALID_HANDLE_ID,
-  LAPLACE_BUFFER_ERROR_INVALID_HANDLE_GENERATION,
-  LAPLACE_BUFFER_ERROR_INVALID_INDEX,
-  LAPLACE_BUFFER_ERROR_INVALID_SIZE,
-  LAPLACE_BUFFER_ERROR_INVALID_BUFFER,
-  LAPLACE_BUFFER_ERROR_BAD_ALLOC,
   LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE = 8000
 };
 
@@ -93,6 +86,17 @@ laplace_handle_t laplace_buffer_allocate_into(
     laplace_buffer_void_t *buffer, ptrdiff_t cell_size,
     ptrdiff_t size, laplace_handle_t handle);
 
+typedef struct {
+  laplace_status_t status;
+  ptrdiff_t        offset;
+  ptrdiff_t        previous_offset;
+  ptrdiff_t        previous_size;
+} laplace_buffer_realloc_result_t;
+
+laplace_buffer_realloc_result_t laplace_buffer_reallocate(
+    laplace_buffer_void_t *buffer, ptrdiff_t cell_size,
+    ptrdiff_t size, laplace_handle_t handle);
+
 laplace_status_t laplace_buffer_reserve(laplace_buffer_void_t *buffer,
                                         ptrdiff_t              size);
 
@@ -110,27 +114,27 @@ laplace_status_t laplace_buffer_check(laplace_buffer_void_t *buffer,
   laplace_buffer_set_chunk_size((laplace_buffer_void_t *) &(buf_), \
                                 (chunk_size_))
 
-#define LAPLACE_BUFFER_ZERO(buf_, handle_)                      \
+#define LAPLACE_BUFFER_ZERO(buf_, handle_, offset_, size_)      \
   do {                                                          \
     if ((handle_).id != LAPLACE_ID_UNDEFINED) {                 \
       ptrdiff_t const begin_ =                                  \
-          (buf_).blocks.values[(handle_).id].index;             \
-      ptrdiff_t const end_ =                                    \
-          begin_ + (buf_).blocks.values[(handle_).id].size;     \
+          (buf_).blocks.values[(handle_).id].index + (offset_); \
+      ptrdiff_t const end_ = begin_ + (size_);                  \
       for (ptrdiff_t i_ = begin_; i_ < end_; i_++) {            \
-        (buf_).data.values[i_].value = 0;                       \
+        atomic_store_explicit(&(buf_).data.values[i_].value, 0, \
+                              memory_order_relaxed);            \
         atomic_store_explicit(&(buf_).data.values[i_].delta, 0, \
                               memory_order_relaxed);            \
       }                                                         \
     }                                                           \
   } while (0)
 
-#define LAPLACE_BUFFER_ALLOCATE(return_, buf_, size_) \
-  do {                                                \
-    (return_) = laplace_buffer_allocate(              \
-        (laplace_buffer_void_t *) &(buf_),            \
-        sizeof((buf_).data.values[0]), (size_));      \
-    LAPLACE_BUFFER_ZERO((buf_), (return_));           \
+#define LAPLACE_BUFFER_ALLOCATE(return_, buf_, size_)   \
+  do {                                                  \
+    (return_) = laplace_buffer_allocate(                \
+        (laplace_buffer_void_t *) &(buf_),              \
+        sizeof((buf_).data.values[0]), (size_));        \
+    LAPLACE_BUFFER_ZERO((buf_), (return_), 0, (size_)); \
   } while (0)
 
 #define LAPLACE_BUFFER_ALLOCATE_INTO(return_, buf_, size_, handle_) \
@@ -138,7 +142,42 @@ laplace_status_t laplace_buffer_check(laplace_buffer_void_t *buffer,
     (return_) = laplace_buffer_allocate_into(                       \
         (laplace_buffer_void_t *) &(buf_),                          \
         sizeof((buf_).data.values[0]), (size_), (handle_));         \
-    LAPLACE_BUFFER_ZERO((buf_), (return_));                         \
+    LAPLACE_BUFFER_ZERO((buf_), (return_), 0, (size_));             \
+  } while (0)
+
+#define LAPLACE_BUFFER_REALLOCATE(status_, buf_, size_, handle_)     \
+  do {                                                               \
+    laplace_buffer_realloc_result_t res_ =                           \
+        laplace_buffer_reallocate((laplace_buffer_void_t *) &(buf_), \
+                                  sizeof((buf_).data.values[0]),     \
+                                  (size_), (handle_));               \
+    if (res_.status == LAPLACE_STATUS_OK) {                          \
+      if (res_.offset != res_.previous_offset) {                     \
+        for (ptrdiff_t i_ = 0;                                       \
+             i_ < res_.previous_size && i_ < (size_); i_++) {        \
+          atomic_store_explicit(                                     \
+              &(buf_).data.values[res_.offset + i_].value,           \
+              atomic_load_explicit(                                  \
+                  &(buf_)                                            \
+                       .data.values[res_.previous_offset + i_]       \
+                       .value,                                       \
+                  memory_order_relaxed),                             \
+              memory_order_relaxed);                                 \
+          atomic_store_explicit(                                     \
+              &(buf_).data.values[res_.offset + i_].delta,           \
+              atomic_load_explicit(                                  \
+                  &(buf_)                                            \
+                       .data.values[res_.previous_offset + i_]       \
+                       .delta,                                       \
+                  memory_order_relaxed),                             \
+              memory_order_relaxed);                                 \
+        }                                                            \
+      }                                                              \
+      LAPLACE_BUFFER_ZERO((buf_), (handle_),                         \
+                          res_.offset + res_.previous_size,          \
+                          (size_));                                  \
+    }                                                                \
+    (status_) = res_.status;                                         \
   } while (0)
 
 #define LAPLACE_BUFFER_RESERVE(buf_, size_) \
@@ -158,6 +197,26 @@ laplace_status_t laplace_buffer_check(laplace_buffer_void_t *buffer,
            .value,                                            \
       memory_order_relaxed)
 
+#define LAPLACE_BUFFER_SET_UNSAFE(buf_, handle_, index_, value_) \
+  do {                                                           \
+    ptrdiff_t const offset_ =                                    \
+        (buf_).blocks.values[(handle_).id].index + (index_);     \
+    atomic_fetch_add_explicit(                                   \
+        &(buf_).data.values[offset_].delta,                      \
+        (value_) -atomic_load_explicit(                          \
+            &(buf_).data.values[offset_].value,                  \
+            memory_order_relaxed),                               \
+        memory_order_relaxed);                                   \
+  } while (0)
+
+#define LAPLACE_BUFFER_ADD_UNSAFE(buf_, handle_, index_, delta_)  \
+  do {                                                            \
+    ptrdiff_t const offset_ =                                     \
+        (buf_).blocks.values[(handle_).id].index + (index_);      \
+    atomic_fetch_add_explicit(&(buf_).data.values[offset_].delta, \
+                              (delta_), memory_order_relaxed);    \
+  } while (0)
+
 #define LAPLACE_BUFFER_GET(buf_, handle_, index_, invalid_)       \
   (laplace_buffer_check((laplace_buffer_void_t *) &(buf_),        \
                         sizeof((buf_).data.values[0]), (handle_), \
@@ -170,29 +229,43 @@ laplace_status_t laplace_buffer_check(laplace_buffer_void_t *buffer,
     (status_) = laplace_buffer_check(                              \
         (laplace_buffer_void_t *) &(buf_),                         \
         sizeof((buf_).data.values[0]), (handle_), (index_), 1);    \
-    if ((status_) == LAPLACE_STATUS_OK) {                          \
-      ptrdiff_t const offset_ =                                    \
-          (buf_).blocks.values[(handle_).id].index + (index_);     \
-      atomic_fetch_add_explicit(                                   \
-          &(buf_).data.values[offset_].delta,                      \
-          (value_) -atomic_load_explicit(                          \
-              &(buf_).data.values[offset_].value,                  \
-              memory_order_relaxed),                               \
-          memory_order_relaxed);                                   \
-    }                                                              \
+    if ((status_) == LAPLACE_STATUS_OK)                            \
+      LAPLACE_BUFFER_SET_UNSAFE(buf_, handle_, index_, value_);    \
   } while (0)
 
-#define LAPLACE_BUFFER_ADD(status_, buf_, handle_, index_, delta_)  \
+#define LAPLACE_BUFFER_ADD(status_, buf_, handle_, index_, delta_) \
+  do {                                                             \
+    (status_) = laplace_buffer_check(                              \
+        (laplace_buffer_void_t *) &(buf_),                         \
+        sizeof((buf_).data.values[0]), (handle_), (index_), 1);    \
+    if ((status_) == LAPLACE_STATUS_OK)                            \
+      LAPLACE_BUFFER_ADD_UNSAFE(buf_, handle_, index_, delta_);    \
+  } while (0)
+
+#define LAPLACE_BUFFER_SET_N(status_, buf_, handle_, index_, size_, \
+                             values_)                               \
   do {                                                              \
     (status_) = laplace_buffer_check(                               \
         (laplace_buffer_void_t *) &(buf_),                          \
-        sizeof((buf_).data.values[0]), (handle_), (index_), 1);     \
-    if ((status_) == LAPLACE_STATUS_OK) {                           \
-      ptrdiff_t const offset_ =                                     \
-          (buf_).blocks.values[(handle_).id].index + (index_);      \
-      atomic_fetch_add_explicit(&(buf_).data.values[offset_].delta, \
-                                (delta_), memory_order_relaxed);    \
-    }                                                               \
+        sizeof((buf_).data.values[0]), (handle_), (index_),         \
+        (size_));                                                   \
+    if ((status_) == LAPLACE_STATUS_OK)                             \
+      for (ptrdiff_t i_ = 0; i_ < (size_); i_++)                    \
+        LAPLACE_BUFFER_SET_UNSAFE(buf_, handle_, (index_) + i_,     \
+                                  (values_)[i_]);                   \
+  } while (0)
+
+#define LAPLACE_BUFFER_ADD_N(status_, buf_, handle_, index_, size_, \
+                             deltas_)                               \
+  do {                                                              \
+    (status_) = laplace_buffer_check(                               \
+        (laplace_buffer_void_t *) &(buf_),                          \
+        sizeof((buf_).data.values[0]), (handle_), (index_),         \
+        (size_));                                                   \
+    if ((status_) == LAPLACE_STATUS_OK)                             \
+      for (ptrdiff_t i_ = 0; i_ < (size_); i_++)                    \
+        LAPLACE_BUFFER_ADD_UNSAFE(buf_, handle_, (index_) + i_,     \
+                                  (deltas_)[i_]);                   \
   } while (0)
 
 #define LAPLACE_BUFFER_ADJUST(return_, buffer_)                      \
@@ -231,6 +304,7 @@ laplace_status_t laplace_buffer_check(laplace_buffer_void_t *buffer,
 #  define BUFFER_SET_CHUNK_SIZE LAPLACE_BUFFER_SET_CHUNK_SIZE
 #  define BUFFER_ALLOCATE LAPLACE_BUFFER_ALLOCATE
 #  define BUFFER_ALLOCATE_INTO LAPLACE_BUFFER_ALLOCATE_INTO
+#  define BUFFER_REALLOCATE LAPLACE_BUFFER_REALLOCATE
 #  define BUFFER_RESERVE LAPLACE_BUFFER_RESERVE
 #  define BUFFER_DEALLOCATE LAPLACE_BUFFER_DEALLOCATE
 #  define BUFFER_GET LAPLACE_BUFFER_GET

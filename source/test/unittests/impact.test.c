@@ -171,6 +171,7 @@ TEST("impact list allocations") {
   impact_t b = INTEGER_WRITE_DELTAS(h, 0, id);
   impact_t c = BYTE_WRITE_VALUES(h, 0, bv);
   impact_t d = BYTE_WRITE_DELTAS(h, 0, bd);
+  impact_t e = NOOP();
 
   impact_list_t list;
   DA_INIT(list, 0, alloc);
@@ -179,6 +180,7 @@ TEST("impact list allocations") {
   DA_INSERT(list, list.size, b);
   DA_INSERT(list, list.size, c);
   DA_INSERT(list, list.size, d);
+  DA_INSERT(list, list.size, e);
 
   laplace_impact_list_destroy(&list);
 

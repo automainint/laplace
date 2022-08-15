@@ -278,6 +278,7 @@ TEST("buffer set value and adjust") {
   REQUIRE(s == STATUS_OK);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
   REQUIRE(BUFFER_GET(buf, h, 0, -1) == 42);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer set value, deallocate and get value") {
@@ -291,6 +292,7 @@ TEST("buffer set value, deallocate and get value") {
   REQUIRE(BUFFER_DEALLOCATE(buf, foo) == STATUS_OK);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
   REQUIRE(BUFFER_GET(buf, bar, 0, -1) == 42);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer set value, deallocate, allocate and get value") {
@@ -304,6 +306,7 @@ TEST("buffer set value, deallocate, allocate and get value") {
   REQUIRE(BUFFER_DEALLOCATE(buf, h) == STATUS_OK);
   BUFFER_ALLOCATE(h, buf, 1);
   REQUIRE(BUFFER_GET(buf, h, 0, -1) == 0);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer add delta and adjust") {
@@ -315,6 +318,7 @@ TEST("buffer add delta and adjust") {
   REQUIRE(s == STATUS_OK);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
   REQUIRE(BUFFER_GET(buf, h, 0, -1) == 42);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer add delta twice and adjust") {
@@ -328,6 +332,7 @@ TEST("buffer add delta twice and adjust") {
   REQUIRE(s == STATUS_OK);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
   REQUIRE(BUFFER_GET(buf, h, 0, -1) == 42);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer set value and add delta and adjust") {
@@ -341,6 +346,7 @@ TEST("buffer set value and add delta and adjust") {
   REQUIRE(s == STATUS_OK);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
   REQUIRE(BUFFER_GET(buf, h, 0, -1) == 42);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer adjust one chunk") {
@@ -357,6 +363,7 @@ TEST("buffer adjust one chunk") {
   for (int i = 0; i < 100; ++i)
     ok = ok && BUFFER_GET(buf, h, i, -1) == i;
   REQUIRE(ok);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer adjust by chunks") {
@@ -371,6 +378,7 @@ TEST("buffer adjust by chunks") {
   for (int i = 0; i < 100; ++i)
     ok = ok && BUFFER_GET(buf, h, i, -1) == i;
   REQUIRE(ok);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer adjust by chunks twice") {
@@ -388,6 +396,7 @@ TEST("buffer adjust by chunks twice") {
   for (int i = 0; i < 100; ++i)
     ok = ok && BUFFER_GET(buf, h, i, -1) == i * 2;
   REQUIRE(ok);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer allocate two blocks") {
@@ -398,6 +407,7 @@ TEST("buffer allocate two blocks") {
   REQUIRE(foo.id != ID_UNDEFINED);
   REQUIRE(bar.id != ID_UNDEFINED);
   REQUIRE(foo.id != bar.id);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer fill two blocks") {
@@ -413,6 +423,7 @@ TEST("buffer fill two blocks") {
   BUFFER_ADJUST_LOOP(buf);
   REQUIRE(BUFFER_GET(buf, foo, 0, -1) == 42);
   REQUIRE(BUFFER_GET(buf, bar, 0, -1) == 42);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer size with 2 blocks") {
@@ -421,6 +432,7 @@ TEST("buffer size with 2 blocks") {
   BUFFER_ALLOCATE(h, buf, 20);
   BUFFER_ALLOCATE(h, buf, 22);
   REQUIRE(buf.data.size == 42);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer size after deallocate one") {
@@ -429,6 +441,7 @@ TEST("buffer size after deallocate one") {
   BUFFER_ALLOCATE(h, buf, 10);
   REQUIRE(BUFFER_DEALLOCATE(buf, h) == STATUS_OK);
   REQUIRE(buf.data.size == 10);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer size after deallocate and allocate into one") {
@@ -438,6 +451,7 @@ TEST("buffer size after deallocate and allocate into one") {
   REQUIRE(BUFFER_DEALLOCATE(buf, h) == STATUS_OK);
   BUFFER_ALLOCATE(h, buf, 10);
   REQUIRE(buf.data.size == 10);
+  BUFFER_DESTROY(buf);
 }
 
 TEST("buffer deallocate efficiency") {
@@ -448,6 +462,19 @@ TEST("buffer deallocate efficiency") {
   REQUIRE(BUFFER_DEALLOCATE(buf, b) == STATUS_OK);
   BUFFER_ALLOCATE(b, buf, 10);
   REQUIRE(buf.data.size == 20);
+  BUFFER_DESTROY(buf);
+}
+
+TEST("buffer reallocate") {
+  BUFFER_CREATE(buf, int64_t);
+  handle_t h;
+  BUFFER_ALLOCATE(h, buf, 10);
+  REQUIRE(buf.blocks.values[h.id].size == 10);
+  laplace_status_t s;
+  BUFFER_REALLOCATE(s, buf, 20, h);
+  REQUIRE(s == STATUS_OK);
+  REQUIRE(buf.blocks.values[h.id].size == 20);
+  BUFFER_DESTROY(buf);
 }
 
 typedef BUFFER_TYPE(int64_t) test_buffer_int_t;
@@ -478,6 +505,7 @@ TEST("buffer add delta concurrency") {
   for (int i = 0; i < THREAD_COUNT; i++) test_thread_join(pool[i]);
   BUFFER_ADJUST_LOOP(data.buf);
   REQUIRE(BUFFER_GET(data.buf, data.h, 0, -1) == THREAD_COUNT);
+  BUFFER_DESTROY(data.buf);
 }
 
 TEST("buffer add delta concurrency harder") {
@@ -491,6 +519,7 @@ TEST("buffer add delta concurrency harder") {
   for (int i = 0; i < THREAD_COUNT; i++) test_thread_join(pool[i]);
   BUFFER_ADJUST_LOOP(data.buf);
   REQUIRE(BUFFER_GET(data.buf, data.h, 0, -1) == THREAD_COUNT);
+  BUFFER_DESTROY(data.buf);
 }
 
 static void test_int_adjust(void *p) {
@@ -516,6 +545,7 @@ TEST("buffer adjust concurrency") {
   for (int i = 0; i < DATA_SIZE; i++)
     ok = ok && BUFFER_GET(data.buf, data.h, i, -1) == i;
   REQUIRE(ok);
+  BUFFER_DESTROY(data.buf);
 }
 
 TEST("int buffer adjust concurrency harder") {
@@ -535,6 +565,7 @@ TEST("int buffer adjust concurrency harder") {
   for (int i = 0; i < DATA_SIZE; i++)
     ok = ok && BUFFER_GET(data.buf, data.h, i, -1) == i;
   REQUIRE(ok);
+  BUFFER_DESTROY(data.buf);
 }
 
 typedef BUFFER_TYPE(int8_t) test_buffer_byte_t;
@@ -568,4 +599,5 @@ TEST("byte buffer adjust concurrency harder") {
     ok = ok &&
          BUFFER_GET(data.buf, data.h, i, -1) == (int8_t) (i % 128);
   REQUIRE(ok);
+  BUFFER_DESTROY(data.buf);
 }

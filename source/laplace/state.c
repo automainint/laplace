@@ -1,6 +1,8 @@
 #include "state.h"
 
 #include "buffer.h"
+#include "impact.h"
+#include "random.h"
 
 #include <kit/atomic.h>
 
@@ -9,6 +11,7 @@ typedef struct {
   kit_allocator_t alloc;
   LAPLACE_BUFFER_TYPE(laplace_integer_t) integers;
   LAPLACE_BUFFER_TYPE(laplace_byte_t) bytes;
+  laplace_random_state_t random_state;
 } state_internal_t;
 
 static void acquire(void *p) {
@@ -89,6 +92,29 @@ static laplace_status_t clone(void *p, laplace_read_write_t *cloned) {
   return LAPLACE_STATUS_OK;
 }
 
+static ptrdiff_t integers_size(void *p, laplace_handle_t handle) {
+  state_internal_t *internal = (state_internal_t *) p;
+
+  if (laplace_buffer_check(
+          (laplace_buffer_void_t *) &internal->integers,
+          sizeof internal->integers.data.values[0], handle, 0,
+          0) != LAPLACE_STATUS_OK)
+    return 0;
+
+  return internal->integers.blocks.values[handle.id].size;
+}
+
+static ptrdiff_t bytes_size(void *p, laplace_handle_t handle) {
+  state_internal_t *internal = (state_internal_t *) p;
+
+  if (laplace_buffer_check((laplace_buffer_void_t *) &internal->bytes,
+                           sizeof internal->bytes.data.values[0],
+                           handle, 0, 0) != LAPLACE_STATUS_OK)
+    return 0;
+
+  return internal->bytes.blocks.values[handle.id].size;
+}
+
 static laplace_status_t read_integers(
     void *p, laplace_handle_t handle, ptrdiff_t index, ptrdiff_t size,
     laplace_integer_t *destination) {
@@ -138,10 +164,117 @@ static laplace_byte_t get_byte(void *p, laplace_handle_t handle,
   return LAPLACE_BUFFER_GET(internal->bytes, handle, index, invalid);
 }
 
-static laplace_status_t apply(void                   *p,
-                              laplace_impact_t const *impact) {
+DA_TYPE(integers_t, laplace_integer_t);
+DA_TYPE(bytes_t, laplace_byte_t);
+
+static laplace_status_t apply(void *const                   p,
+                              laplace_impact_t const *const impact) {
   state_internal_t *internal = (state_internal_t *) p;
-  return LAPLACE_STATUS_OK;
+  laplace_status_t  s        = LAPLACE_STATUS_OK;
+
+#define CASES_T(TYPE_CAPS_, type_)                                  \
+  case LAPLACE_IMPACT_##TYPE_CAPS_##_SET:                           \
+    LAPLACE_BUFFER_SET(                                             \
+        s, internal->type_##s, impact->type_##_set.handle,          \
+        impact->type_##_set.index, impact->type_##_set.value);      \
+    break;                                                          \
+  case LAPLACE_IMPACT_##TYPE_CAPS_##_ADD:                           \
+    LAPLACE_BUFFER_ADD(                                             \
+        s, internal->type_##s, impact->type_##_add.handle,          \
+        impact->type_##_add.index, impact->type_##_add.delta);      \
+    break;                                                          \
+  case LAPLACE_IMPACT_##TYPE_CAPS_##_WRITE_VALUES:                  \
+    LAPLACE_BUFFER_SET_N(                                           \
+        s, internal->type_##s, impact->type_##_write_values.handle, \
+        impact->type_##_write_values.index,                         \
+        impact->type_##_write_values.values.size,                   \
+        impact->type_##_write_values.values.values);                \
+    break;                                                          \
+  case LAPLACE_IMPACT_##TYPE_CAPS_##_WRITE_DELTAS:                  \
+    LAPLACE_BUFFER_ADD_N(                                           \
+        s, internal->type_##s, impact->type_##_write_deltas.handle, \
+        impact->type_##_write_deltas.index,                         \
+        impact->type_##_write_deltas.deltas.size,                   \
+        impact->type_##_write_deltas.deltas.values);                \
+    break;                                                          \
+  case LAPLACE_IMPACT_##TYPE_CAPS_##_RESERVE:                       \
+    s = LAPLACE_BUFFER_RESERVE(internal->type_##s,                  \
+                               impact->type_##_reserve.count);      \
+    break;                                                          \
+  case LAPLACE_IMPACT_##TYPE_CAPS_##_ALLOCATE_INTO: {               \
+    laplace_handle_t h;                                             \
+    LAPLACE_BUFFER_ALLOCATE_INTO(                                   \
+        h, internal->type_##s, impact->type_##_allocate_into.size,  \
+        impact->type_##_allocate_into.handle);                      \
+    if (h.id == LAPLACE_ID_UNDEFINED)                               \
+      s = h.error;                                                  \
+  } break;                                                          \
+  case LAPLACE_IMPACT_##TYPE_CAPS_##_ALLOCATE: {                    \
+    laplace_handle_t h;                                             \
+    LAPLACE_BUFFER_ALLOCATE(h, internal->type_##s,                  \
+                            impact->type_##_allocate.size);         \
+    if (h.id != LAPLACE_ID_UNDEFINED) {                             \
+      LAPLACE_BUFFER_SET(s, internal->integers,                     \
+                         impact->type_##_allocate.return_handle,    \
+                         impact->type_##_allocate.return_index,     \
+                         h.id);                                     \
+      LAPLACE_BUFFER_SET(s, internal->integers,                     \
+                         impact->type_##_allocate.return_handle,    \
+                         impact->type_##_allocate.return_index + 1, \
+                         h.generation);                             \
+    } else                                                          \
+      s = h.error;                                                  \
+  } break;                                                          \
+  case LAPLACE_IMPACT_##TYPE_CAPS_##_REALLOCATE:                    \
+    LAPLACE_BUFFER_REALLOCATE(s, internal->type_##s,                \
+                              impact->type_##_reallocate.size,      \
+                              impact->type_##_reallocate.handle);   \
+    break;                                                          \
+  case LAPLACE_IMPACT_##TYPE_CAPS_##_DEALLOCATE:                    \
+    s = LAPLACE_BUFFER_DEALLOCATE(                                  \
+        internal->type_##s, impact->type_##_deallocate.handle);     \
+    break
+
+  switch (impact->type) {
+    CASES_T(INTEGER, integer);
+    CASES_T(BYTE, byte);
+    case LAPLACE_IMPACT_INTEGER_SEED:
+      laplace_random_init(&internal->random_state,
+                          impact->integer_seed.seed);
+      break;
+    case LAPLACE_IMPACT_INTEGER_RANDOM: {
+      DA(nums, laplace_integer_t);
+      DA_INIT(nums, impact->integer_random.return_size,
+              internal->alloc);
+      for (ptrdiff_t i = 0; i < nums.size; i++)
+        nums.values[i] = laplace_random(&internal->random_state,
+                                        impact->integer_random.min,
+                                        impact->integer_random.max);
+      LAPLACE_BUFFER_SET_N(s, internal->integers,
+                           impact->integer_random.return_handle,
+                           impact->integer_random.return_index,
+                           nums.size, nums.values);
+      DA_DESTROY(nums);
+    } break;
+    case LAPLACE_IMPACT_BYTE_RANDOM: {
+      DA(nums, laplace_byte_t);
+      DA_INIT(nums, impact->byte_random.return_size, internal->alloc);
+      for (ptrdiff_t i = 0; i < nums.size; i++)
+        nums.values[i] = (laplace_byte_t) laplace_random(
+            &internal->random_state, impact->byte_random.min,
+            impact->byte_random.max);
+      LAPLACE_BUFFER_SET_N(
+          s, internal->bytes, impact->byte_random.return_handle,
+          impact->byte_random.return_index, nums.size, nums.values);
+      DA_DESTROY(nums);
+    } break;
+    case LAPLACE_IMPACT_NOOP: break;
+    default: s = LAPLACE_STATE_ERROR_WRONG_IMPACT;
+  }
+
+#undef CASES_T
+
+  return s;
 }
 
 static void adjust_loop(void *p) {
@@ -172,7 +305,8 @@ laplace_status_t laplace_state_init(laplace_read_write_t *const p,
 
   atomic_store_explicit(&internal->ref_count, 0,
                         memory_order_relaxed);
-  internal->alloc = alloc;
+  internal->alloc        = alloc;
+  internal->random_state = laplace_random_seed();
 
   LAPLACE_BUFFER_INIT(internal->integers, alloc);
   LAPLACE_BUFFER_INIT(internal->bytes, alloc);
@@ -181,6 +315,8 @@ laplace_status_t laplace_state_init(laplace_read_write_t *const p,
   p->acquire       = acquire;
   p->release       = release;
   p->clone         = clone;
+  p->integers_size = integers_size;
+  p->bytes_size    = bytes_size;
   p->read_integers = read_integers;
   p->read_bytes    = read_bytes;
   p->get_integer   = get_integer;

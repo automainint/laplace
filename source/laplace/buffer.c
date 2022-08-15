@@ -196,6 +196,45 @@ laplace_handle_t laplace_buffer_allocate_into(
   return h;
 }
 
+laplace_buffer_realloc_result_t laplace_buffer_reallocate(
+    laplace_buffer_void_t *buffer, ptrdiff_t cell_size,
+    ptrdiff_t size, laplace_handle_t handle) {
+  laplace_buffer_realloc_result_t result;
+  memset(&result, 0, sizeof result);
+
+  if (size <= 0) {
+    result.status = LAPLACE_BUFFER_ERROR_INVALID_SIZE;
+    return result;
+  }
+
+  if (handle.id < 0 || handle.id >= buffer->blocks.size) {
+    result.status = LAPLACE_BUFFER_ERROR_INVALID_HANDLE_ID;
+    return result;
+  }
+
+  if (handle.generation !=
+      buffer->blocks.values[handle.id].generation) {
+    result.status = LAPLACE_BUFFER_ERROR_INVALID_HANDLE_GENERATION;
+    return result;
+  }
+
+  ptrdiff_t const offset = buffer_alloc(buffer, cell_size, size);
+  if (offset == LAPLACE_ID_UNDEFINED) {
+    result.status = LAPLACE_BUFFER_ERROR_BAD_ALLOC;
+    return result;
+  }
+
+  result.offset          = offset;
+  result.previous_offset = buffer->blocks.values[handle.id].index;
+  result.previous_size   = buffer->blocks.values[handle.id].size;
+
+  buffer->blocks.values[handle.id].index = offset;
+  buffer->blocks.values[handle.id].size  = size;
+
+  result.status = LAPLACE_STATUS_OK;
+  return result;
+}
+
 laplace_status_t laplace_buffer_reserve(
     laplace_buffer_void_t *const buffer, ptrdiff_t const size) {
   if (size < 0)
@@ -256,13 +295,15 @@ laplace_status_t laplace_buffer_check(laplace_buffer_void_t *buffer,
                                       laplace_handle_t handle,
                                       ptrdiff_t const  index,
                                       ptrdiff_t const  size) {
-  if (handle.id < 0 || handle.id >= buffer->data.size ||
+  if (handle.id < 0 || handle.id >= buffer->blocks.size ||
       buffer->blocks.values[handle.id].index == LAPLACE_ID_UNDEFINED)
     return LAPLACE_BUFFER_ERROR_INVALID_HANDLE_ID;
   if (buffer->blocks.values[handle.id].generation !=
       handle.generation)
     return LAPLACE_BUFFER_ERROR_INVALID_HANDLE_GENERATION;
-  if (size <= 0)
+  if (size == 0)
+    return LAPLACE_STATUS_OK;
+  if (size < 0)
     return LAPLACE_BUFFER_ERROR_INVALID_SIZE;
   if (index < 0 ||
       index + size > buffer->blocks.values[handle.id].size)

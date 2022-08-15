@@ -40,6 +40,7 @@ typedef enum {
   LAPLACE_IMPACT_INTEGER_RESERVE = LAPLACE_IMPACT_FIRST_SYNC_,
   LAPLACE_IMPACT_INTEGER_ALLOCATE_INTO,
   LAPLACE_IMPACT_INTEGER_ALLOCATE,
+  LAPLACE_IMPACT_INTEGER_REALLOCATE,
   LAPLACE_IMPACT_INTEGER_DEALLOCATE,
 
   /*  Byte sync operations.
@@ -47,6 +48,7 @@ typedef enum {
   LAPLACE_IMPACT_BYTE_RESERVE,
   LAPLACE_IMPACT_BYTE_ALLOCATE_INTO,
   LAPLACE_IMPACT_BYTE_ALLOCATE,
+  LAPLACE_IMPACT_BYTE_REALLOCATE,
   LAPLACE_IMPACT_BYTE_DEALLOCATE,
 
   /*  Random sync operations.
@@ -91,6 +93,11 @@ typedef struct {
 
 typedef struct {
   laplace_handle_t handle;
+  ptrdiff_t        size;
+} laplace_integer_reallocate_t;
+
+typedef struct {
+  laplace_handle_t handle;
 } laplace_integer_deallocate_t;
 
 typedef struct {
@@ -131,6 +138,11 @@ typedef struct {
   laplace_handle_t return_handle;
   ptrdiff_t        return_index;
 } laplace_byte_allocate_t;
+
+typedef struct {
+  laplace_handle_t handle;
+  ptrdiff_t        size;
+} laplace_byte_reallocate_t;
 
 typedef struct {
   laplace_handle_t handle;
@@ -192,6 +204,7 @@ struct laplace_impact {
     laplace_integer_reserve_t       integer_reserve;
     laplace_integer_allocate_into_t integer_allocate_into;
     laplace_integer_allocate_t      integer_allocate;
+    laplace_integer_reallocate_t    integer_reallocate;
     laplace_integer_deallocate_t    integer_deallocate;
     laplace_integer_set_t           integer_set;
     laplace_integer_add_t           integer_add;
@@ -200,6 +213,7 @@ struct laplace_impact {
     laplace_byte_reserve_t          byte_reserve;
     laplace_byte_allocate_into_t    byte_allocate_into;
     laplace_byte_allocate_t         byte_allocate;
+    laplace_byte_reallocate_t       byte_reallocate;
     laplace_byte_deallocate_t       byte_deallocate;
     laplace_byte_set_t              byte_set;
     laplace_byte_add_t              byte_add;
