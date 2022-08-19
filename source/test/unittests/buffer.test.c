@@ -49,6 +49,15 @@ TEST("buffer allocate") {
   BUFFER_DESTROY(buf);
 }
 
+TEST("buffer get size") {
+  BUFFER_CREATE(buf, int64_t);
+  handle_t h;
+  BUFFER_ALLOCATE(h, buf, 10);
+  REQUIRE(h.id != ID_UNDEFINED);
+  REQUIRE(BUFFER_SIZE(buf, h) == 10);
+  BUFFER_DESTROY(buf);
+}
+
 TEST("buffer allocate negative size will fail") {
   BUFFER_CREATE(buf, int64_t);
   handle_t h;
@@ -602,4 +611,85 @@ TEST("byte buffer adjust concurrency harder") {
          BUFFER_GET(data.buf, data.h, i, -1) == (int8_t) (i % 128);
   REQUIRE(ok);
   BUFFER_DESTROY(data.buf);
+}
+
+typedef struct {
+  ATOMIC(int) done;
+  test_buffer_int_t buf;
+  handle_t          h;
+} read_concurrency_data_t;
+
+static int test_read_concurrency_run(void *p) {
+  read_concurrency_data_t *data = (read_concurrency_data_t *) p;
+
+  while (atomic_load_explicit(&data->done, memory_order_acquire) ==
+         0) {
+    ptrdiff_t size = BUFFER_SIZE(data->buf, data->h);
+    ptrdiff_t x;
+    for (ptrdiff_t i = 0; i < size; i++) {
+      x = BUFFER_GET(data->buf, data->h, i, -1);
+    }
+    thrd_yield();
+  }
+
+  return 0;
+}
+
+TEST("buffer read concurrency") {
+  int ok = 1;
+
+  for (ptrdiff_t k = 0; k < 500; k++) {
+    read_concurrency_data_t data;
+    atomic_store_explicit(&data.done, 0, memory_order_relaxed);
+
+    BUFFER_INIT(data.buf, kit_alloc_default());
+    data.h.id         = 0;
+    data.h.generation = 0;
+
+    thrd_t t;
+    thrd_create(&t, test_read_concurrency_run, &data);
+
+    struct timespec delay = { .tv_sec = 0, .tv_nsec = 1000000 };
+
+    ok = ok && thrd_sleep(&delay, NULL) == thrd_success;
+
+    handle_t h = { .id = 0, .generation = -1 };
+    BUFFER_ALLOCATE_INTO(h, data.buf, 500, h);
+    ok = ok && h.id != ID_UNDEFINED;
+
+    ok = ok && thrd_sleep(&delay, NULL) == thrd_success;
+
+    laplace_status_t s;
+    BUFFER_REALLOCATE(s, data.buf, 200, h);
+    ok = ok && s == STATUS_OK;
+
+    ok = ok && thrd_sleep(&delay, NULL) == thrd_success;
+
+    BUFFER_REALLOCATE(s, data.buf, 1000, h);
+    ok = ok && s == STATUS_OK;
+
+    ok = ok && thrd_sleep(&delay, NULL) == thrd_success;
+
+    BUFFER_REALLOCATE(s, data.buf, 500, h);
+    ok = ok && s == STATUS_OK;
+
+    ok = ok && thrd_sleep(&delay, NULL) == thrd_success;
+
+    BUFFER_REALLOCATE(s, data.buf, 1000, h);
+    ok = ok && s == STATUS_OK;
+
+    ok = ok && thrd_sleep(&delay, NULL) == thrd_success;
+
+    BUFFER_REALLOCATE(s, data.buf, 100, h);
+    ok = ok && s == STATUS_OK;
+
+    ok = ok && thrd_sleep(&delay, NULL) == thrd_success;
+
+    atomic_store_explicit(&data.done, 1, memory_order_release);
+    thrd_join(t, NULL);
+
+    BUFFER_DESTROY(data.buf);
+  }
+
+  REQUIRE(ok);
 }

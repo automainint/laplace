@@ -96,8 +96,7 @@ static ptrdiff_t integers_size(void *p, laplace_handle_t handle) {
   state_internal_t *internal = (state_internal_t *) p;
 
   if (laplace_buffer_check(
-          (laplace_buffer_void_t *) &internal->integers,
-          sizeof internal->integers.data.values[0], handle, 0,
+          (laplace_buffer_void_t *) &internal->integers, handle, 0,
           0) != LAPLACE_STATUS_OK)
     return 0;
 
@@ -108,7 +107,6 @@ static ptrdiff_t bytes_size(void *p, laplace_handle_t handle) {
   state_internal_t *internal = (state_internal_t *) p;
 
   if (laplace_buffer_check((laplace_buffer_void_t *) &internal->bytes,
-                           sizeof internal->bytes.data.values[0],
                            handle, 0, 0) != LAPLACE_STATUS_OK)
     return 0;
 
@@ -121,8 +119,8 @@ static laplace_status_t read_integers(
   state_internal_t *internal = (state_internal_t *) p;
 
   laplace_status_t s = laplace_buffer_check(
-      (laplace_buffer_void_t *) &internal->integers,
-      sizeof internal->integers.data.values[0], handle, index, size);
+      (laplace_buffer_void_t *) &internal->integers, handle, index,
+      size);
 
   if (s != LAPLACE_STATUS_OK)
     return s;
@@ -138,8 +136,8 @@ static laplace_status_t read_bytes(void *p, laplace_handle_t handle,
   state_internal_t *internal = (state_internal_t *) p;
 
   laplace_status_t s = laplace_buffer_check(
-      (laplace_buffer_void_t *) &internal->bytes,
-      sizeof internal->bytes.data.values[0], handle, index, size);
+      (laplace_buffer_void_t *) &internal->bytes, handle, index,
+      size);
 
   if (s != LAPLACE_STATUS_OK)
     return s;

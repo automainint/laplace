@@ -185,7 +185,7 @@ TEST("state apply add int") {
   a.release(a.state);
 }
 
-TEST("get byte may fail") {
+TEST("state get byte may fail") {
   read_write_t a;
   state_init(&a, kit_alloc_default());
   a.acquire(a.state);

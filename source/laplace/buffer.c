@@ -109,6 +109,9 @@ laplace_handle_t laplace_buffer_allocate(
       buffer->blocks.values[i].index      = LAPLACE_ID_UNDEFINED;
       buffer->blocks.values[i].generation = -1;
     }
+
+    atomic_store_explicit(&buffer->blocks_size, block + 1,
+                          memory_order_relaxed);
   }
 
   assert(block >= 0 && block < buffer->blocks.size);
@@ -182,6 +185,9 @@ laplace_handle_t laplace_buffer_allocate_into(
       buffer->blocks.values[i].index      = LAPLACE_ID_UNDEFINED;
       buffer->blocks.values[i].generation = -1;
     }
+
+    atomic_store_explicit(&buffer->blocks_size, handle.id + 1,
+                          memory_order_relaxed);
   }
 
   buffer->blocks.values[handle.id].index = offset;
@@ -233,7 +239,7 @@ laplace_buffer_realloc_result_t laplace_buffer_reallocate(
   result.previous_offset = buffer->blocks.values[handle.id].index;
   result.previous_size   = buffer->blocks.values[handle.id].size;
 
-  buffer_free(buffer, buffer->blocks.values[handle.id].index);
+  buffer_free(buffer, result.previous_offset);
 
   buffer->blocks.values[handle.id].index = offset;
   buffer->blocks.values[handle.id].size  = size;
@@ -259,6 +265,9 @@ laplace_status_t laplace_buffer_reserve(
       buffer->blocks.values[i].index      = LAPLACE_ID_UNDEFINED;
       buffer->blocks.values[i].generation = -1;
     }
+
+    atomic_store_explicit(&buffer->blocks_size, size,
+                          memory_order_relaxed);
   }
 
   buffer->reserved = size;
@@ -300,11 +309,12 @@ laplace_status_t laplace_buffer_deallocate(
 }
 
 laplace_status_t laplace_buffer_check(laplace_buffer_void_t *buffer,
-                                      ptrdiff_t        cell_size,
-                                      laplace_handle_t handle,
-                                      ptrdiff_t const  index,
-                                      ptrdiff_t const  size) {
-  if (handle.id < 0 || handle.id >= buffer->blocks.size ||
+                                      laplace_handle_t       handle,
+                                      ptrdiff_t const        index,
+                                      ptrdiff_t const        size) {
+  if (handle.id < 0 ||
+      handle.id >= atomic_load_explicit(&buffer->blocks_size,
+                                        memory_order_relaxed) ||
       buffer->blocks.values[handle.id].index == LAPLACE_ID_UNDEFINED)
     return LAPLACE_BUFFER_ERROR_INVALID_HANDLE_ID;
   if (buffer->blocks.values[handle.id].generation !=
@@ -318,4 +328,12 @@ laplace_status_t laplace_buffer_check(laplace_buffer_void_t *buffer,
       index + size > buffer->blocks.values[handle.id].size)
     return LAPLACE_BUFFER_ERROR_INVALID_INDEX;
   return LAPLACE_STATUS_OK;
+}
+
+ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
+                              laplace_handle_t       handle) {
+  if (laplace_buffer_check(buffer, handle, 0, 0) != LAPLACE_STATUS_OK)
+    return 0;
+
+  return buffer->blocks.values[handle.id].size;
 }
