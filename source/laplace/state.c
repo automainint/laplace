@@ -8,10 +8,10 @@
 
 typedef struct {
   ATOMIC(ptrdiff_t) ref_count;
-  kit_allocator_t alloc;
+  kit_allocator_t  alloc;
+  kit_mt64_state_t mt64;
   LAPLACE_BUFFER_TYPE(laplace_integer_t) integers;
   LAPLACE_BUFFER_TYPE(laplace_byte_t) bytes;
-  kit_mt64_state_t mt64;
 } state_internal_t;
 
 static void acquire(void *p) {
