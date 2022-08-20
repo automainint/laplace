@@ -6,14 +6,14 @@
   if (mtx_lock(&execution->_lock) != thrd_success) {  \
     execution->status = LAPLACE_ERROR_BAD_MUTEX_LOCK; \
     execution->_done  = 1;                            \
-    return;                                           \
+    return execution->status;                         \
   }
 
 #define UNLOCK_                                         \
   if (mtx_unlock(&execution->_lock) != thrd_success) {  \
     execution->status = LAPLACE_ERROR_BAD_MUTEX_UNLOCK; \
     execution->_done  = 1;                              \
-    return;                                             \
+    return execution->status;                           \
   }
 
 #define BROADCAST_(_var)                                    \
@@ -22,7 +22,7 @@
     execution->status = LAPLACE_ERROR_BAD_CNDVAR_BROADCAST; \
     execution->_done  = 1;                                  \
     (void) mtx_unlock(&execution->_lock);                   \
-    return;                                                 \
+    return execution->status;                               \
   }
 
 #define WAIT_(_var)                                    \
@@ -32,7 +32,7 @@
     execution->status = LAPLACE_ERROR_BAD_CNDVAR_WAIT; \
     execution->_done  = 1;                             \
     (void) mtx_unlock(&execution->_lock);              \
-    return;                                            \
+    return execution->status;                          \
   }
 
 #define ONCE_BEGIN_                                          \
@@ -188,6 +188,9 @@ static laplace_status_t sync_routine_(
       DA_RESIZE(execution->_forks, 0);
     }
 
+    /*  FIXME
+     *  Move this algorithm to kit.
+     */
     ptrdiff_t n = execution->_queue.size;
     for (ptrdiff_t i = 0; i < n;) {
       if (laplace_generator_status(
@@ -213,9 +216,17 @@ static laplace_status_t sync_routine_(
   return LAPLACE_STATUS_OK;
 }
 
-static void routine_(laplace_execution_t *const execution) {
-  ONCE_BEGIN_
-  ONCE_END_
+static int routine_(laplace_execution_t *const execution) {
+  // ONCE_BEGIN_
+  // ONCE_END_
+  LOCK_
+  while (!execution->_done) {
+    UNLOCK_
+    thrd_yield();
+    LOCK_
+  }
+  UNLOCK_
+  return 0;
 }
 
 static laplace_status_t append_tick_(
@@ -277,12 +288,24 @@ laplace_status_t laplace_execution_set_thread_count(
     laplace_execution_t *const execution,
     ptrdiff_t const            thread_count) {
 
+  if (thread_count == 0) {
+    LOCK_
+    execution->_done = 1;
+    UNLOCK_
+  }
+
   laplace_status_t const s = execution->_thread_pool.resize(
       execution->_thread_pool.state, thread_count, routine_,
       execution);
 
   if (s != LAPLACE_STATUS_OK)
     return s;
+
+  if (thread_count == 0) {
+    LOCK_
+    execution->_done = 0;
+    UNLOCK_
+  }
 
   execution->thread_count = thread_count;
 

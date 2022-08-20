@@ -16,7 +16,7 @@ extern "C" {
 
 typedef struct laplace_execution laplace_execution_t;
 
-typedef void (*laplace_pool_routine_fn)(
+typedef int (*laplace_pool_routine_fn)(
     laplace_execution_t *execution);
 
 typedef laplace_status_t (*laplace_pool_resize_fn)(
@@ -95,6 +95,7 @@ laplace_status_t laplace_execution_schedule_and_join(
 #  define thread_pool_t laplace_thread_pool_t
 
 #  define execution_init laplace_execution_init
+#  define execution_destroy laplace_execution_destroy
 #  define execution_set_thread_count \
     laplace_execution_set_thread_count
 #  define execution_read_only laplace_execution_read_only
