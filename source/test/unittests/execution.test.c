@@ -43,7 +43,6 @@ TEST("execution init and destroy") {
   execution_destroy(&exe);
 }
 
-/*
 TEST("execution get thread count") {
   laplace_thread_pool_t pool;
   memset(&pool, 0, sizeof pool);
@@ -87,4 +86,3 @@ TEST("execution set thread count to zero") {
   execution_destroy(&exe);
   DA_DESTROY(pool_.threads);
 }
-*/
