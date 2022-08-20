@@ -57,12 +57,10 @@ laplace_generator_status_t laplace_generator_status(
   } while (0)
 
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
-#  define GENERATOR_ERROR_BAD_ALLOC LAPLACE_GENERATOR_ERROR_BAD_ALLOC
 #  define GENERATOR_RUNNING LAPLACE_GENERATOR_RUNNING
 #  define GENERATOR_FINISHED LAPLACE_GENERATOR_FINISHED
 #  define ACTION LAPLACE_ACTION
 
-#  define generator_status_t laplace_generator_status_t
 #  define generator_t laplace_generator_t
 
 #  define generator_init laplace_generator_init

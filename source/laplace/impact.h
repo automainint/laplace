@@ -224,6 +224,7 @@ struct laplace_impact {
     laplace_byte_random_t           byte_random;
     laplace_queue_action_t          queue_action;
   };
+  ptrdiff_t order;
 };
 
 KIT_DA_TYPE(laplace_impact_list_t, laplace_impact_t);
@@ -236,199 +237,195 @@ laplace_impact_mode_t laplace_impact_mode_of(
     laplace_impact_t const *impact);
 
 #define LAPLACE_NOOP() \
-  { .type = LAPLACE_IMPACT_NOOP }
+  { .type = LAPLACE_IMPACT_NOOP, .order = 0 }
 
 #define LAPLACE_TICK_CONTINUE() \
-  { .type = LAPLACE_IMPACT_TICK_CONTINUE }
+  { .type = LAPLACE_IMPACT_TICK_CONTINUE, .order = 0 }
 
-#define LAPLACE_INTEGER_RESERVE(count_)                          \
-  {                                                              \
-    .type = LAPLACE_IMPACT_INTEGER_RESERVE, .integer_reserve = { \
-      .count = (count_)                                          \
-    }                                                            \
+#define LAPLACE_INTEGER_RESERVE(count_)                  \
+  {                                                      \
+    .type            = LAPLACE_IMPACT_INTEGER_RESERVE,   \
+    .integer_reserve = { .count = (count_) }, .order = 0 \
   }
 
 #define LAPLACE_INTEGER_ALLOCATE_INTO(handle_, size_)              \
   {                                                                \
     .type                  = LAPLACE_IMPACT_INTEGER_ALLOCATE_INTO, \
-    .integer_allocate_into = {                                     \
-      .handle = (handle_),                                         \
-      .size   = (size_)                                            \
-    }                                                              \
+    .integer_allocate_into = { .handle = (handle_),                \
+                               .size   = (size_) },                  \
+    .order                 = 0                                     \
   }
 
-#define LAPLACE_INTEGER_ALLOCATE(size_, return_handle_,            \
-                                 return_index_)                    \
+#define LAPLACE_INTEGER_ALLOCATE(size_, return_handle_,      \
+                                 return_index_)              \
+  {                                                          \
+    .type             = LAPLACE_IMPACT_INTEGER_ALLOCATE,     \
+    .integer_allocate = { .size          = (size_),          \
+                          .return_handle = (return_handle_), \
+                          .return_index  = (return_index_) }, \
+    .order            = 0                                    \
+  }
+
+#define LAPLACE_INTEGER_DEALLOCATE(handle_)                   \
+  {                                                           \
+    .type               = LAPLACE_IMPACT_INTEGER_DEALLOCATE,  \
+    .integer_deallocate = { .handle = (handle_) }, .order = 0 \
+  }
+
+#define LAPLACE_INTEGER_SET(handle_, index_, value_) \
+  {                                                  \
+    .type        = LAPLACE_IMPACT_INTEGER_SET,       \
+    .integer_set = { .handle = (handle_),            \
+                     .index  = (index_),             \
+                     .value  = (value_) },            \
+    .order       = 0                                 \
+  }
+
+#define LAPLACE_INTEGER_ADD(handle_, index_, delta_) \
+  {                                                  \
+    .type        = LAPLACE_IMPACT_INTEGER_ADD,       \
+    .integer_add = { .handle = (handle_),            \
+                     .index  = (index_),             \
+                     .delta  = (delta_) },            \
+    .order       = 0                                 \
+  }
+
+#define LAPLACE_INTEGER_WRITE_VALUES(handle_, index_, values_)     \
   {                                                                \
-    .type = LAPLACE_IMPACT_INTEGER_ALLOCATE, .integer_allocate = { \
-      .size          = (size_),                                    \
-      .return_handle = (return_handle_),                           \
-      .return_index  = (return_index_)                             \
-    }                                                              \
+    .type                 = LAPLACE_IMPACT_INTEGER_WRITE_VALUES,   \
+    .integer_write_values = { .handle = (handle_),                 \
+                              .index  = (index_),                  \
+                              .values = { .capacity =              \
+                                              (values_).capacity,  \
+                                          .size = (values_).size,  \
+                                          .values =                \
+                                              (values_).values,    \
+                                          .alloc =                 \
+                                              (values_).alloc } }, \
+    .order                = 0                                      \
   }
 
-#define LAPLACE_INTEGER_DEALLOCATE(handle_)                  \
-  {                                                          \
-    .type               = LAPLACE_IMPACT_INTEGER_DEALLOCATE, \
-    .integer_deallocate = {                                  \
-      .handle = (handle_)                                    \
-    }                                                        \
+#define LAPLACE_INTEGER_WRITE_DELTAS(handle_, index_, deltas_)     \
+  {                                                                \
+    .type                 = LAPLACE_IMPACT_INTEGER_WRITE_DELTAS,   \
+    .integer_write_deltas = { .handle = (handle_),                 \
+                              .index  = (index_),                  \
+                              .deltas = { .capacity =              \
+                                              (deltas_).capacity,  \
+                                          .size = (deltas_).size,  \
+                                          .values =                \
+                                              (deltas_).values,    \
+                                          .alloc =                 \
+                                              (deltas_).alloc } }, \
+    .order                = 0                                      \
   }
 
-#define LAPLACE_INTEGER_SET(handle_, index_, value_)     \
-  {                                                      \
-    .type = LAPLACE_IMPACT_INTEGER_SET, .integer_set = { \
-      .handle = (handle_),                               \
-      .index  = (index_),                                \
-      .value  = (value_)                                 \
-    }                                                    \
+#define LAPLACE_BYTE_RESERVE(count_)                  \
+  {                                                   \
+    .type         = LAPLACE_IMPACT_BYTE_RESERVE,      \
+    .byte_reserve = { .count = (count_) }, .order = 0 \
   }
 
-#define LAPLACE_INTEGER_ADD(handle_, index_, delta_)     \
-  {                                                      \
-    .type = LAPLACE_IMPACT_INTEGER_ADD, .integer_add = { \
-      .handle = (handle_),                               \
-      .index  = (index_),                                \
-      .delta  = (delta_)                                 \
-    }                                                    \
-  }
-
-#define LAPLACE_INTEGER_WRITE_VALUES(handle_, index_, values_)   \
-  {                                                              \
-    .type                 = LAPLACE_IMPACT_INTEGER_WRITE_VALUES, \
-    .integer_write_values = {                                    \
-      .handle = (handle_),                                       \
-      .index  = (index_),                                        \
-      .values = { .capacity = (values_).capacity,                \
-                  .size     = (values_).size,                    \
-                  .values   = (values_).values,                  \
-                  .alloc    = (values_).alloc }                  \
-    }                                                            \
-  }
-
-#define LAPLACE_INTEGER_WRITE_DELTAS(handle_, index_, deltas_)   \
-  {                                                              \
-    .type                 = LAPLACE_IMPACT_INTEGER_WRITE_DELTAS, \
-    .integer_write_deltas = {                                    \
-      .handle = (handle_),                                       \
-      .index  = (index_),                                        \
-      .deltas = { .capacity = (deltas_).capacity,                \
-                  .size     = (deltas_).size,                    \
-                  .values   = (deltas_).values,                  \
-                  .alloc    = (deltas_).alloc }                  \
-    }                                                            \
-  }
-
-#define LAPLACE_BYTE_RESERVE(count_)                       \
-  {                                                        \
-    .type = LAPLACE_IMPACT_BYTE_RESERVE, .byte_reserve = { \
-      .count = (count_)                                    \
-    }                                                      \
-  }
-
-#define LAPLACE_BYTE_ALLOCATE_INTO(handle_, size_)           \
-  {                                                          \
-    .type               = LAPLACE_IMPACT_BYTE_ALLOCATE_INTO, \
-    .byte_allocate_into = {                                  \
-      .handle = (handle_),                                   \
-      .size   = (size_)                                      \
-    }                                                        \
+#define LAPLACE_BYTE_ALLOCATE_INTO(handle_, size_)                  \
+  {                                                                 \
+    .type               = LAPLACE_IMPACT_BYTE_ALLOCATE_INTO,        \
+    .byte_allocate_into = { .handle = (handle_), .size = (size_) }, \
+    .order              = 0                                         \
   }
 
 #define LAPLACE_BYTE_ALLOCATE(size_, return_handle_, return_index_) \
   {                                                                 \
-    .type = LAPLACE_IMPACT_BYTE_ALLOCATE, .byte_allocate = {        \
-      .size          = (size_),                                     \
-      .return_handle = (return_handle_),                            \
-      .return_index  = (return_index_)                              \
-    }                                                               \
+    .type          = LAPLACE_IMPACT_BYTE_ALLOCATE,                  \
+    .byte_allocate = { .size          = (size_),                    \
+                       .return_handle = (return_handle_),           \
+                       .return_index  = (return_index_) },           \
+    .order         = 0                                              \
   }
 
-#define LAPLACE_BYTE_DEALLOCATE(handle_)                         \
-  {                                                              \
-    .type = LAPLACE_IMPACT_BYTE_DEALLOCATE, .byte_deallocate = { \
-      .handle = (handle_)                                        \
-    }                                                            \
+#define LAPLACE_BYTE_DEALLOCATE(handle_)                   \
+  {                                                        \
+    .type            = LAPLACE_IMPACT_BYTE_DEALLOCATE,     \
+    .byte_deallocate = { .handle = (handle_) }, .order = 0 \
   }
 
-#define LAPLACE_BYTE_SET(handle_, index_, value_)  \
-  {                                                \
-    .type = LAPLACE_IMPACT_BYTE_SET, .byte_set = { \
-      .handle = (handle_),                         \
-      .index  = (index_),                          \
-      .value  = (value_)                           \
-    }                                              \
+#define LAPLACE_BYTE_SET(handle_, index_, value_) \
+  {                                               \
+    .type     = LAPLACE_IMPACT_BYTE_SET,          \
+    .byte_set = { .handle = (handle_),            \
+                  .index  = (index_),             \
+                  .value  = (value_) },            \
+    .order    = 0                                 \
   }
 
-#define LAPLACE_BYTE_ADD(handle_, index_, delta_)  \
-  {                                                \
-    .type = LAPLACE_IMPACT_BYTE_ADD, .byte_add = { \
-      .handle = (handle_),                         \
-      .index  = (index_),                          \
-      .delta  = (delta_)                           \
-    }                                              \
+#define LAPLACE_BYTE_ADD(handle_, index_, delta_) \
+  {                                               \
+    .type     = LAPLACE_IMPACT_BYTE_ADD,          \
+    .byte_add = { .handle = (handle_),            \
+                  .index  = (index_),             \
+                  .delta  = (delta_) },            \
+    .order    = 0                                 \
   }
 
 #define LAPLACE_BYTE_WRITE_VALUES(handle_, index_, values_)          \
   {                                                                  \
-    .type = LAPLACE_IMPACT_BYTE_WRITE_VALUES, .byte_write_values = { \
-      .handle = (handle_),                                           \
-      .index  = (index_),                                            \
-      .values = { .capacity = (values_).capacity,                    \
-                  .size     = (values_).size,                        \
-                  .values   = (values_).values,                      \
-                  .alloc    = (values_).alloc }                      \
-    }                                                                \
+    .type              = LAPLACE_IMPACT_BYTE_WRITE_VALUES,           \
+    .byte_write_values = { .handle = (handle_),                      \
+                           .index  = (index_),                       \
+                           .values = { .capacity =                   \
+                                           (values_).capacity,       \
+                                       .size   = (values_).size,     \
+                                       .values = (values_).values,   \
+                                       .alloc  = (values_).alloc } }, \
+    .order             = 0                                           \
   }
 
 #define LAPLACE_BYTE_WRITE_DELTAS(handle_, index_, deltas_)          \
   {                                                                  \
-    .type = LAPLACE_IMPACT_BYTE_WRITE_DELTAS, .byte_write_deltas = { \
-      .handle = (handle_),                                           \
-      .index  = (index_),                                            \
-      .deltas = { .capacity = (deltas_).capacity,                    \
-                  .size     = (deltas_).size,                        \
-                  .values   = (deltas_).values,                      \
-                  .alloc    = (deltas_).alloc }                      \
-    }                                                                \
+    .type              = LAPLACE_IMPACT_BYTE_WRITE_DELTAS,           \
+    .byte_write_deltas = { .handle = (handle_),                      \
+                           .index  = (index_),                       \
+                           .deltas = { .capacity =                   \
+                                           (deltas_).capacity,       \
+                                       .size   = (deltas_).size,     \
+                                       .values = (deltas_).values,   \
+                                       .alloc  = (deltas_).alloc } }, \
+    .order             = 0                                           \
   }
 
-#define LAPLACE_INTEGER_SEED(seed_)                        \
-  {                                                        \
-    .type = LAPLACE_IMPACT_INTEGER_SEED, .integer_seed = { \
-      .seed = (seed_)                                      \
-    }                                                      \
+#define LAPLACE_INTEGER_SEED(seed_)                 \
+  {                                                 \
+    .type         = LAPLACE_IMPACT_INTEGER_SEED,    \
+    .integer_seed = { .seed = (seed_) }, .order = 0 \
   }
 
-#define LAPLACE_INTEGER_RANDOM(min_, max_, return_handle_,     \
-                               return_index_, return_size_)    \
-  {                                                            \
-    .type = LAPLACE_IMPACT_INTEGER_RANDOM, .integer_random = { \
-      .min           = (min_),                                 \
-      .max           = (max_),                                 \
-      .return_handle = (return_handle_),                       \
-      .return_index  = (return_index_),                        \
-      .return_size   = (return_size_)                          \
-    }                                                          \
+#define LAPLACE_INTEGER_RANDOM(min_, max_, return_handle_,  \
+                               return_index_, return_size_) \
+  {                                                         \
+    .type           = LAPLACE_IMPACT_INTEGER_RANDOM,        \
+    .integer_random = { .min           = (min_),            \
+                        .max           = (max_),            \
+                        .return_handle = (return_handle_),  \
+                        .return_index  = (return_index_),   \
+                        .return_size   = (return_size_) },    \
+    .order          = 0                                     \
   }
 
 #define LAPLACE_BYTE_RANDOM(min_, max_, return_handle_,  \
                             return_index_, return_size_) \
   {                                                      \
-    .type = LAPLACE_IMPACT_BYTE_RANDOM, .byte_random = { \
-      .min           = (min_),                           \
-      .max           = (max_),                           \
-      .return_handle = (return_handle_),                 \
-      .return_index  = (return_index_),                  \
-      .return_size   = (return_size_)                    \
-    }                                                    \
+    .type        = LAPLACE_IMPACT_BYTE_RANDOM,           \
+    .byte_random = { .min           = (min_),            \
+                     .max           = (max_),            \
+                     .return_handle = (return_handle_),  \
+                     .return_index  = (return_index_),   \
+                     .return_size   = (return_size_) },    \
+    .order       = 0                                     \
   }
 
-#define LAPLACE_QUEUE_ACTION(action_)                      \
-  {                                                        \
-    .type = LAPLACE_IMPACT_QUEUE_ACTION, .queue_action = { \
-      .action = (action_)                                  \
-    }                                                      \
+#define LAPLACE_QUEUE_ACTION(action_)                   \
+  {                                                     \
+    .type         = LAPLACE_IMPACT_QUEUE_ACTION,        \
+    .queue_action = { .action = (action_) }, .order = 0 \
   }
 
 #define LAPLACE_IMPACT_MODE_OF(type_)                          \

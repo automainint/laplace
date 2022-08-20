@@ -52,7 +52,7 @@ TEST("state apply may fail") {
   read_write_t a;
   state_init(&a, kit_alloc_default());
   a.acquire(a.state);
-  REQUIRE(a.apply(a.state, &i) == STATE_ERROR_WRONG_IMPACT);
+  REQUIRE(a.apply(a.state, &i) == ERROR_WRONG_IMPACT);
   a.release(a.state);
 }
 

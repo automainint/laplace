@@ -65,9 +65,9 @@ static void buffer_free(laplace_buffer_void_t *const buffer,
 laplace_status_t laplace_buffer_set_chunk_size(
     laplace_buffer_void_t *const buffer, ptrdiff_t const chunk_size) {
   if (buffer == NULL)
-    return LAPLACE_BUFFER_ERROR_INVALID_BUFFER;
+    return LAPLACE_ERROR_INVALID_BUFFER;
   if (chunk_size <= 0)
-    return LAPLACE_BUFFER_ERROR_INVALID_CHUNK_SIZE;
+    return LAPLACE_ERROR_INVALID_CHUNK_SIZE;
 
   buffer->chunk_size = chunk_size;
   return STATUS_OK;
@@ -79,16 +79,14 @@ laplace_handle_t laplace_buffer_allocate(
   laplace_handle_t h;
 
   if (size <= 0) {
-    h.id    = LAPLACE_ID_UNDEFINED,
-    h.error = LAPLACE_BUFFER_ERROR_INVALID_SIZE;
+    h.id = LAPLACE_ID_UNDEFINED, h.error = LAPLACE_ERROR_INVALID_SIZE;
     return h;
   }
 
   ptrdiff_t const offset = buffer_alloc(buffer, cell_size, size);
 
   if (offset == LAPLACE_ID_UNDEFINED) {
-    h.id    = LAPLACE_ID_UNDEFINED,
-    h.error = LAPLACE_BUFFER_ERROR_BAD_ALLOC;
+    h.id = LAPLACE_ID_UNDEFINED, h.error = LAPLACE_ERROR_BAD_ALLOC;
     return h;
   }
 
@@ -99,8 +97,7 @@ laplace_handle_t laplace_buffer_allocate(
 
     if (buffer->blocks.size != block + 1) {
       buffer_free(buffer, offset);
-      h.id    = LAPLACE_ID_UNDEFINED,
-      h.error = LAPLACE_BUFFER_ERROR_BAD_ALLOC;
+      h.id = LAPLACE_ID_UNDEFINED, h.error = LAPLACE_ERROR_BAD_ALLOC;
       return h;
     }
 
@@ -138,7 +135,7 @@ laplace_handle_t laplace_buffer_allocate_into(
 
   if (handle.id < 0) {
     h.id    = LAPLACE_ID_UNDEFINED;
-    h.error = LAPLACE_BUFFER_ERROR_INVALID_HANDLE_ID;
+    h.error = LAPLACE_ERROR_INVALID_HANDLE_ID;
     return h;
   }
 
@@ -147,13 +144,13 @@ laplace_handle_t laplace_buffer_allocate_into(
            handle.generation) ||
       (handle.id >= buffer->blocks.size && handle.generation != -1)) {
     h.id    = LAPLACE_ID_UNDEFINED;
-    h.error = LAPLACE_BUFFER_ERROR_INVALID_HANDLE_GENERATION;
+    h.error = LAPLACE_ERROR_INVALID_HANDLE_GENERATION;
     return h;
   }
 
   if (size <= 0) {
     h.id    = LAPLACE_ID_UNDEFINED;
-    h.error = LAPLACE_BUFFER_ERROR_INVALID_SIZE;
+    h.error = LAPLACE_ERROR_INVALID_SIZE;
     return h;
   }
 
@@ -165,7 +162,7 @@ laplace_handle_t laplace_buffer_allocate_into(
 
   if (offset == LAPLACE_ID_UNDEFINED) {
     h.id    = LAPLACE_ID_UNDEFINED;
-    h.error = LAPLACE_BUFFER_ERROR_BAD_ALLOC;
+    h.error = LAPLACE_ERROR_BAD_ALLOC;
     return h;
   }
 
@@ -176,7 +173,7 @@ laplace_handle_t laplace_buffer_allocate_into(
     if (buffer->blocks.size != handle.id + 1) {
       buffer_free(buffer, offset);
       h.id    = LAPLACE_ID_UNDEFINED;
-      h.error = LAPLACE_BUFFER_ERROR_BAD_ALLOC;
+      h.error = LAPLACE_ERROR_BAD_ALLOC;
       return h;
     }
 
@@ -213,25 +210,25 @@ laplace_buffer_realloc_result_t laplace_buffer_reallocate(
   memset(&result, 0, sizeof result);
 
   if (size <= 0) {
-    result.status = LAPLACE_BUFFER_ERROR_INVALID_SIZE;
+    result.status = LAPLACE_ERROR_INVALID_SIZE;
     return result;
   }
 
   if (handle.id < 0 || handle.id >= buffer->blocks.size) {
-    result.status = LAPLACE_BUFFER_ERROR_INVALID_HANDLE_ID;
+    result.status = LAPLACE_ERROR_INVALID_HANDLE_ID;
     return result;
   }
 
   if (handle.generation !=
       buffer->blocks.values[handle.id].generation) {
-    result.status = LAPLACE_BUFFER_ERROR_INVALID_HANDLE_GENERATION;
+    result.status = LAPLACE_ERROR_INVALID_HANDLE_GENERATION;
     return result;
   }
 
   ptrdiff_t const offset = buffer_alloc(buffer, cell_size, size);
 
   if (offset == LAPLACE_ID_UNDEFINED) {
-    result.status = LAPLACE_BUFFER_ERROR_BAD_ALLOC;
+    result.status = LAPLACE_ERROR_BAD_ALLOC;
     return result;
   }
 
@@ -251,14 +248,14 @@ laplace_buffer_realloc_result_t laplace_buffer_reallocate(
 laplace_status_t laplace_buffer_reserve(
     laplace_buffer_void_t *const buffer, ptrdiff_t const size) {
   if (size < 0)
-    return LAPLACE_BUFFER_ERROR_INVALID_SIZE;
+    return LAPLACE_ERROR_INVALID_SIZE;
 
   if (buffer->blocks.size < size) {
     ptrdiff_t i = buffer->blocks.size;
 
     DA_RESIZE(buffer->blocks, size);
     if (buffer->blocks.size != size)
-      return LAPLACE_BUFFER_ERROR_BAD_ALLOC;
+      return LAPLACE_ERROR_BAD_ALLOC;
 
     for (; i < buffer->blocks.size; i++) {
       assert(i >= 0 && i < buffer->blocks.size);
@@ -290,11 +287,11 @@ laplace_status_t laplace_buffer_deallocate(
     laplace_handle_t handle) {
   if (handle.id < 0 || handle.id >= buffer->blocks.size ||
       buffer->blocks.values[handle.id].index == LAPLACE_ID_UNDEFINED)
-    return LAPLACE_BUFFER_ERROR_INVALID_HANDLE_ID;
+    return LAPLACE_ERROR_INVALID_HANDLE_ID;
 
   if (handle.generation !=
       buffer->blocks.values[handle.id].generation)
-    return LAPLACE_BUFFER_ERROR_INVALID_HANDLE_GENERATION;
+    return LAPLACE_ERROR_INVALID_HANDLE_GENERATION;
 
   buffer_free(buffer, buffer->blocks.values[handle.id].index);
 
@@ -316,17 +313,17 @@ laplace_status_t laplace_buffer_check(laplace_buffer_void_t *buffer,
       handle.id >= atomic_load_explicit(&buffer->blocks_size,
                                         memory_order_relaxed) ||
       buffer->blocks.values[handle.id].index == LAPLACE_ID_UNDEFINED)
-    return LAPLACE_BUFFER_ERROR_INVALID_HANDLE_ID;
+    return LAPLACE_ERROR_INVALID_HANDLE_ID;
   if (buffer->blocks.values[handle.id].generation !=
       handle.generation)
-    return LAPLACE_BUFFER_ERROR_INVALID_HANDLE_GENERATION;
+    return LAPLACE_ERROR_INVALID_HANDLE_GENERATION;
   if (size == 0)
     return LAPLACE_STATUS_OK;
   if (size < 0)
-    return LAPLACE_BUFFER_ERROR_INVALID_SIZE;
+    return LAPLACE_ERROR_INVALID_SIZE;
   if (index < 0 ||
       index + size > buffer->blocks.values[handle.id].size)
-    return LAPLACE_BUFFER_ERROR_INVALID_INDEX;
+    return LAPLACE_ERROR_INVALID_INDEX;
   return LAPLACE_STATUS_OK;
 }
 

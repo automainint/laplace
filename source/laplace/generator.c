@@ -9,7 +9,7 @@ laplace_status_t laplace_generator_init(
   generator->promise = (laplace_promise_t *) alloc.allocate(
       alloc.state, action.size);
   if (generator->promise == NULL)
-    return LAPLACE_GENERATOR_ERROR_BAD_ALLOC;
+    return LAPLACE_ERROR_BAD_ALLOC;
   AF_INIT_EXPLICIT(*generator->promise, action.size, action.coro);
   generator->promise->alloc  = alloc;
   generator->promise->access = access;

@@ -49,14 +49,14 @@ static void release(void *p) {
     ptrdiff_t n_ = (src).blocks.size;                                \
     DA_RESIZE((src).blocks, n_);                                     \
     if ((src).blocks.size != n_)                                     \
-      (s) = LAPLACE_STATE_ERROR_BAD_ALLOC;                           \
+      (s) = LAPLACE_ERROR_BAD_ALLOC;                                 \
     else                                                             \
       memcpy((src).blocks.values, (src).blocks.values,               \
              sizeof((src).blocks.values[0]) * n_);                   \
     n_ = (src).data.size;                                            \
     DA_RESIZE((src).data, n_);                                       \
     if ((src).data.size != n_)                                       \
-      (s) = LAPLACE_STATE_ERROR_BAD_ALLOC;                           \
+      (s) = LAPLACE_ERROR_BAD_ALLOC;                                 \
     else {                                                           \
       for (ptrdiff_t i_ = 0; i_ < n_; i_++) {                        \
         (dst).info.values[i_].empty  = (src).info.values[i_].empty;  \
@@ -273,7 +273,7 @@ static laplace_status_t apply(void *const                   p,
       DA_DESTROY(nums);
     } break;
     case LAPLACE_IMPACT_NOOP: break;
-    default: s = LAPLACE_STATE_ERROR_WRONG_IMPACT;
+    default: s = LAPLACE_ERROR_WRONG_IMPACT;
   }
 
 #undef CASES_T
@@ -305,7 +305,7 @@ laplace_status_t laplace_state_init(laplace_read_write_t *const p,
       alloc.state, sizeof(state_internal_t));
 
   if (internal == NULL)
-    return LAPLACE_STATE_ERROR_BAD_ALLOC;
+    return LAPLACE_ERROR_BAD_ALLOC;
 
   atomic_store_explicit(&internal->ref_count, 0,
                         memory_order_relaxed);

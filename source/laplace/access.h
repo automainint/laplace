@@ -53,7 +53,7 @@ struct laplace_read_write {
   laplace_clone_fn   clone;
 
   laplace_integers_size_fn integers_size;
-  laplace_integers_size_fn bytes_size;
+  laplace_bytes_size_fn    bytes_size;
   laplace_read_integers_fn read_integers;
   laplace_read_bytes_fn    read_bytes;
   laplace_get_integer_fn   get_integer;

@@ -8,13 +8,13 @@
 extern "C" {
 #endif
 
-enum { LAYOUT_FIELD_NAME_SIZE = 40 };
+enum { LAPLACE_LAYOUT_FIELD_NAME_SIZE = 40 };
 
 typedef struct {
   ptrdiff_t id;
   struct {
     ptrdiff_t size;
-    char      values[LAYOUT_FIELD_NAME_SIZE];
+    char      values[LAPLACE_LAYOUT_FIELD_NAME_SIZE];
   } name;
 } laplace_layout_field_t;
 
@@ -35,8 +35,7 @@ ptrdiff_t laplace_layout_index_of(laplace_layout_t const *layout,
 
 laplace_layout_code_t laplace_layout_codegen(
     laplace_layout_t const *layout, ptrdiff_t indent,
-    kit_str_t prefix, kit_str_t delim,
-    kit_allocator_t alloc);
+    kit_str_t prefix, kit_str_t delim, kit_allocator_t alloc);
 
 #define LAPLACE_LAYOUT_ADD_FIELD_S(layout_, id_, str_)  \
   do {                                                  \
@@ -45,6 +44,7 @@ laplace_layout_code_t laplace_layout_codegen(
   } while (0)
 
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
+#  define LAYOUT_FIELD_NAME_SIZE LAPLACE_LAYOUT_FIELD_NAME_SIZE
 #  define LAYOUT_ADD_FIELD_S LAPLACE_LAYOUT_ADD_FIELD_S
 
 #  define layout_field_t laplace_layout_field_t

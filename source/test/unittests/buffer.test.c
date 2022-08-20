@@ -36,8 +36,7 @@ TEST("buffer set chunk size") {
 
 TEST("buffer set chunk size may fail") {
   BUFFER_CREATE(buf, int64_t);
-  REQUIRE(BUFFER_SET_CHUNK_SIZE(buf, -1) ==
-          BUFFER_ERROR_INVALID_CHUNK_SIZE);
+  REQUIRE(BUFFER_SET_CHUNK_SIZE(buf, -1) == ERROR_INVALID_CHUNK_SIZE);
   BUFFER_DESTROY(buf);
 }
 
@@ -123,7 +122,7 @@ TEST("buffer allocate into undefined will fail") {
   handle_t b;
   BUFFER_ALLOCATE_INTO(b, buf, 10, a);
   REQUIRE(b.id == ID_UNDEFINED);
-  REQUIRE(b.error == BUFFER_ERROR_INVALID_HANDLE_ID);
+  REQUIRE(b.error == ERROR_INVALID_HANDLE_ID);
   BUFFER_DESTROY(buf);
 }
 
@@ -133,7 +132,7 @@ TEST("buffer allocate into wrong generation will fail") {
   handle_t b;
   BUFFER_ALLOCATE_INTO(b, buf, 10, a);
   REQUIRE(b.id == ID_UNDEFINED);
-  REQUIRE(b.error == BUFFER_ERROR_INVALID_HANDLE_GENERATION);
+  REQUIRE(b.error == ERROR_INVALID_HANDLE_GENERATION);
   BUFFER_DESTROY(buf);
 }
 
@@ -143,7 +142,7 @@ TEST("buffer allocate into invalid size will fail") {
   handle_t b;
   BUFFER_ALLOCATE_INTO(b, buf, -1, a);
   REQUIRE(b.id == ID_UNDEFINED);
-  REQUIRE(b.error == BUFFER_ERROR_INVALID_SIZE);
+  REQUIRE(b.error == ERROR_INVALID_SIZE);
   BUFFER_DESTROY(buf);
 }
 
@@ -159,7 +158,7 @@ TEST("buffer reserve and allocate") {
 
 TEST("buffer reserve may fail") {
   BUFFER_CREATE(buf, int64_t);
-  REQUIRE(BUFFER_RESERVE(buf, -1) == BUFFER_ERROR_INVALID_SIZE);
+  REQUIRE(BUFFER_RESERVE(buf, -1) == ERROR_INVALID_SIZE);
   BUFFER_DESTROY(buf);
 }
 
@@ -174,8 +173,7 @@ TEST("buffer deallocate") {
 TEST("buffer deallocate invalid handle id") {
   handle_t h = { .id = 42, .generation = -1 };
   BUFFER_CREATE(buf, int64_t);
-  REQUIRE(BUFFER_DEALLOCATE(buf, h) ==
-          BUFFER_ERROR_INVALID_HANDLE_ID);
+  REQUIRE(BUFFER_DEALLOCATE(buf, h) == ERROR_INVALID_HANDLE_ID);
   BUFFER_DESTROY(buf);
 }
 
@@ -185,7 +183,7 @@ TEST("buffer deallocate invalid handle generation") {
   BUFFER_ALLOCATE(h, buf, 10);
   h.generation--;
   REQUIRE(BUFFER_DEALLOCATE(buf, h) ==
-          BUFFER_ERROR_INVALID_HANDLE_GENERATION);
+          ERROR_INVALID_HANDLE_GENERATION);
   BUFFER_DESTROY(buf);
 }
 
@@ -194,8 +192,7 @@ TEST("buffer deallocate twice will fail") {
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
   REQUIRE(BUFFER_DEALLOCATE(buf, h) == STATUS_OK);
-  REQUIRE(BUFFER_DEALLOCATE(buf, h) ==
-          BUFFER_ERROR_INVALID_HANDLE_ID);
+  REQUIRE(BUFFER_DEALLOCATE(buf, h) == ERROR_INVALID_HANDLE_ID);
   BUFFER_DESTROY(buf);
 }
 
@@ -251,7 +248,7 @@ TEST("buffer set invalid id") {
   handle_t const   h = { .id = 0, .generation = -1 };
   laplace_status_t s;
   BUFFER_SET(s, buf, h, 0, 42);
-  REQUIRE(s == BUFFER_ERROR_INVALID_HANDLE_ID);
+  REQUIRE(s == ERROR_INVALID_HANDLE_ID);
   BUFFER_DESTROY(buf);
 }
 
@@ -262,7 +259,7 @@ TEST("buffer set invalid generation") {
   h.generation--;
   laplace_status_t s;
   BUFFER_SET(s, buf, h, 0, 42);
-  REQUIRE(s == BUFFER_ERROR_INVALID_HANDLE_GENERATION);
+  REQUIRE(s == ERROR_INVALID_HANDLE_GENERATION);
   BUFFER_DESTROY(buf);
 }
 
