@@ -216,7 +216,9 @@ static laplace_status_t sync_routine_(
   return LAPLACE_STATUS_OK;
 }
 
-static int routine_(laplace_execution_t *const execution) {
+static int routine_(void *const p) {
+  laplace_execution_t *const execution = (laplace_execution_t *) p;
+
   // ONCE_BEGIN_
   // ONCE_END_
   LOCK_

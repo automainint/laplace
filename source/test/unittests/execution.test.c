@@ -26,8 +26,8 @@ static laplace_status_t pool_resize_(void *state, ptrdiff_t size,
   if (p->threads.size != size)
     return ERROR_BAD_ALLOC;
   for (ptrdiff_t i = n; i < size; i++)
-    if (thrd_create(p->threads.values + i, (thrd_start_t) routine,
-                    execution) != thrd_success)
+    if (thrd_create(p->threads.values + i, routine, execution) !=
+        thrd_success)
       return ERROR_BAD_THREAD_CREATE;
   return STATUS_OK;
 }
@@ -67,6 +67,7 @@ TEST("execution set thread count") {
   REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
   REQUIRE(exe.thread_count == 4);
   execution_destroy(&exe);
+  DA_DESTROY(pool_.threads);
 }
 
 TEST("execution set thread count to zero") {
@@ -83,4 +84,5 @@ TEST("execution set thread count to zero") {
   REQUIRE(execution_set_thread_count(&exe, 0) == STATUS_OK);
   REQUIRE(exe.thread_count == 0);
   execution_destroy(&exe);
+  DA_DESTROY(pool_.threads);
 }

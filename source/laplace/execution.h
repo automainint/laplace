@@ -16,8 +16,7 @@ extern "C" {
 
 typedef struct laplace_execution laplace_execution_t;
 
-typedef int (*laplace_pool_routine_fn)(
-    laplace_execution_t *execution);
+typedef int (*laplace_pool_routine_fn)(void *execution);
 
 typedef laplace_status_t (*laplace_pool_resize_fn)(
     void *state, ptrdiff_t size, laplace_pool_routine_fn routine,
