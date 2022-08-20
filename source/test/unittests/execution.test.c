@@ -86,3 +86,28 @@ TEST("execution set thread count to zero") {
   execution_destroy(&exe);
   DA_DESTROY(pool_.threads);
 }
+
+static int action_called_ = 0;
+
+CORO(laplace_impact_list_t, test_exe_action_, kit_allocator_t alloc;
+     read_only_t access; handle_t self;) {
+  action_called_++;
+}
+CORO_END
+
+TEST("seq execution queue action") {
+  action_called_ = 0;
+
+  laplace_thread_pool_t pool;
+  memset(&pool, 0, sizeof pool);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, pool, kit_alloc_default()) ==
+          STATUS_OK);
+  handle_t self   = { .id = 0, .generation = 0 };
+  action_t action = ACTION(test_exe_action_, 1, self);
+  execution_queue(&exe, action);
+  execution_destroy(&exe);
+
+  REQUIRE(!action_called_);
+}

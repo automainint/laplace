@@ -216,9 +216,7 @@ static laplace_status_t sync_routine_(
   return LAPLACE_STATUS_OK;
 }
 
-static int routine_(void *const p) {
-  laplace_execution_t *const execution = (laplace_execution_t *) p;
-
+static int routine_(laplace_execution_t *const execution) {
   // ONCE_BEGIN_
   // ONCE_END_
   LOCK_
@@ -251,7 +249,7 @@ laplace_status_t laplace_execution_init(
 
   if (mtx_init(&execution->_lock, mtx_plain) != thrd_success)
     return LAPLACE_ERROR_BAD_MUTEX_LOCK;
-  
+
   execution->_thread_pool = thread_pool;
   execution->_alloc       = alloc;
 
@@ -297,8 +295,8 @@ laplace_status_t laplace_execution_set_thread_count(
   }
 
   laplace_status_t const s = execution->_thread_pool.resize(
-      execution->_thread_pool.state, thread_count, routine_,
-      execution);
+      execution->_thread_pool.state, thread_count,
+      (laplace_pool_routine_fn) routine_, execution);
 
   if (s != LAPLACE_STATUS_OK)
     return s;

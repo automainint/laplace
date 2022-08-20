@@ -4,7 +4,7 @@
 #define KIT_TEST_FILE buffer
 #include <kit_test/test.h>
 
-CORO(impact_list_t, test_impact_gen, kit_allocator_t alloc;
+CORO(impact_list_t, test_impact_gen_, kit_allocator_t alloc;
      read_only_t access; handle_t self;) {
   impact_list_t list;
 
@@ -40,7 +40,7 @@ TEST("generator example") {
                             .deallocate = deallocate };
 
   handle_t self   = { .id = 0, .generation = 0 };
-  action_t action = ACTION(test_impact_gen, 1, self);
+  action_t action = ACTION(test_impact_gen_, 1, self);
 
   read_only_t access;
   memset(&access, 0, sizeof access);
