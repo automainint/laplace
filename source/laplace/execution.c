@@ -247,11 +247,11 @@ static laplace_status_t append_tick_(
 laplace_status_t laplace_execution_init(
     laplace_execution_t *const  execution,
     laplace_thread_pool_t const thread_pool, kit_allocator_t alloc) {
-  if (mtx_init(&execution->_lock, mtx_plain) != thrd_success)
-    return LAPLACE_ERROR_BAD_MUTEX_LOCK;
-
   memset(execution, 0, sizeof *execution);
 
+  if (mtx_init(&execution->_lock, mtx_plain) != thrd_success)
+    return LAPLACE_ERROR_BAD_MUTEX_LOCK;
+  
   execution->_thread_pool = thread_pool;
   execution->_alloc       = alloc;
 
