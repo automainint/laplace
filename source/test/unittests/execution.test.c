@@ -54,6 +54,7 @@ TEST("execution get thread count") {
   execution_destroy(&exe);
 }
 
+/*
 TEST("execution set thread count") {
   pool_state_t_ pool_;
   DA_INIT(pool_.threads, 0, kit_alloc_default());
@@ -86,3 +87,4 @@ TEST("execution set thread count to zero") {
   execution_destroy(&exe);
   DA_DESTROY(pool_.threads);
 }
+*/
