@@ -69,8 +69,6 @@ typedef struct {
     (buf_).chunk_size =                                  \
         LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE /              \
         sizeof(LAPLACE_BUF_DATA_(buf_).values[0].value); \
-    atomic_store_explicit(&(buf_).next_block, 0,         \
-                          memory_order_relaxed);         \
     atomic_store_explicit(&(buf_).blocks_size, 0,        \
                           memory_order_relaxed);         \
     KIT_DA_INIT((buf_).blocks, 0, (alloc_));             \
