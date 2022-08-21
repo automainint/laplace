@@ -18,20 +18,17 @@
     return execution->status;                           \
   }
 
-#define BROADCAST_(_var)                                      \
-  {                                                           \
-    execution->_thrd_error = cnd_broadcast(&execution->_var); \
-    if (execution->_thrd_error != thrd_success) {             \
-      (void) mtx_lock(&execution->_lock);                     \
-      execution->status = LAPLACE_ERROR_BAD_CNDVAR_BROADCAST; \
-      execution->_done  = 1;                                  \
-      (void) mtx_unlock(&execution->_lock);                   \
-      return execution->status;                               \
-    }                                                         \
+#define BROADCAST_(var_)                                    \
+  if (cnd_broadcast(&execution->var_) != thrd_success) {    \
+    (void) mtx_lock(&execution->_lock);                     \
+    execution->status = LAPLACE_ERROR_BAD_CNDVAR_BROADCAST; \
+    execution->_done  = 1;                                  \
+    (void) mtx_unlock(&execution->_lock);                   \
+    return execution->status;                               \
   }
 
-#define WAIT_(_var)                                    \
-  if (cnd_wait(&execution->_var, &execution->_lock) != \
+#define WAIT_(var_)                                    \
+  if (cnd_wait(&execution->var_, &execution->_lock) != \
       thrd_success) {                                  \
     (void) mtx_lock(&execution->_lock);                \
     execution->status = LAPLACE_ERROR_BAD_CNDVAR_WAIT; \
@@ -260,7 +257,25 @@ laplace_status_t laplace_execution_init(
   memset(execution, 0, sizeof *execution);
 
   if (mtx_init(&execution->_lock, mtx_plain) != thrd_success)
-    return LAPLACE_ERROR_BAD_MUTEX_LOCK;
+    return LAPLACE_ERROR_BAD_MUTEX_INIT;
+
+  if (cnd_init(&execution->_on_tick) != thrd_success) {
+    mtx_destroy(&execution->_lock);
+    return LAPLACE_ERROR_BAD_CNDVAR_INIT;
+  }
+
+  if (cnd_init(&execution->_on_join) != thrd_success) {
+    mtx_destroy(&execution->_lock);
+    cnd_destroy(&execution->_on_tick);
+    return LAPLACE_ERROR_BAD_CNDVAR_INIT;
+  }
+
+  if (cnd_init(&execution->_on_fence) != thrd_success) {
+    mtx_destroy(&execution->_lock);
+    cnd_destroy(&execution->_on_tick);
+    cnd_destroy(&execution->_on_join);
+    return LAPLACE_ERROR_BAD_CNDVAR_INIT;
+  }
 
   if (access.acquire != NULL)
     access.acquire(access.state);
@@ -289,6 +304,9 @@ void laplace_execution_destroy(laplace_execution_t *const execution) {
     execution->_thread_pool.join(execution->_thread_pool.state);
 
   mtx_destroy(&execution->_lock);
+  cnd_destroy(&execution->_on_tick);
+  cnd_destroy(&execution->_on_join);
+  cnd_destroy(&execution->_on_fence);
 
   if (execution->_access.release != NULL)
     execution->_access.release(execution->_access.state);
@@ -316,7 +334,7 @@ laplace_status_t laplace_execution_set_thread_count(
     LOCK_
     execution->_done = 1;
     UNLOCK_
-    BROADCAST_(_on_tick);
+    BROADCAST_(_on_tick)
 
     execution->_thread_pool.join(execution->_thread_pool.state);
 

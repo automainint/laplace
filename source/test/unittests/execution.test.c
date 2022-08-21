@@ -4,8 +4,6 @@
 #define KIT_TEST_FILE execution
 #include <kit_test/test.h>
 
-#include <stdio.h>
-
 typedef struct {
   DA(threads, thrd_t);
 } pool_state_t_;
@@ -94,11 +92,7 @@ TEST("execution set thread count to zero") {
   REQUIRE(execution_init(&exe, state, pool, kit_alloc_default()) ==
           STATUS_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
-  laplace_status_t s = execution_set_thread_count(&exe, 0);
-  printf("\nRESULT: %d", s);
-  printf("\nSTATUS: %d", exe.status);
-  printf("\nTHRD:   %d\n", exe._thrd_error);
-  REQUIRE(s == STATUS_OK);
+  REQUIRE(execution_set_thread_count(&exe, 0) == STATUS_OK);
   REQUIRE(exe.thread_count == 0);
   execution_destroy(&exe);
   DA_DESTROY(pool_.threads);

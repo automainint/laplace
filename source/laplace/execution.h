@@ -38,8 +38,6 @@ typedef struct {
 } laplace_action_state_t;
 
 struct laplace_execution {
-  int _thrd_error;
-  
   laplace_status_t status;
   ptrdiff_t        thread_count;
 
@@ -59,6 +57,7 @@ struct laplace_execution {
   ptrdiff_t      _fence_out;
   ptrdiff_t      _queue_index;
   ptrdiff_t      _async_index;
+
   mtx_t          _lock;
   cnd_t          _on_tick;
   cnd_t          _on_join;
