@@ -156,18 +156,20 @@ static laplace_status_t sync_routine_(
           action->clock = action->tick_duration;
       }
 
-      for (ptrdiff_t i = 0; i < execution->_sync.size; i++) {
-        laplace_status_t s = execution->access.apply(
-            execution->access.state, execution->_sync.values + i);
-        if (s != LAPLACE_STATUS_OK)
-          return s;
-      }
+      if (execution->_access.apply != NULL) {
+        for (ptrdiff_t i = 0; i < execution->_sync.size; i++) {
+          laplace_status_t s = execution->_access.apply(
+              execution->_access.state, execution->_sync.values + i);
+          if (s != LAPLACE_STATUS_OK)
+            return s;
+        }
 
-      for (ptrdiff_t i = 0; i < execution->_async.size; i++) {
-        laplace_status_t s = execution->access.apply(
-            execution->access.state, execution->_async.values + i);
-        if (s != LAPLACE_STATUS_OK)
-          return s;
+        for (ptrdiff_t i = 0; i < execution->_async.size; i++) {
+          laplace_status_t s = execution->_access.apply(
+              execution->_access.state, execution->_async.values + i);
+          if (s != LAPLACE_STATUS_OK)
+            return s;
+        }
       }
 
       for (ptrdiff_t i = 0; i < execution->_forks.size; i++)
@@ -224,6 +226,7 @@ static int routine_(laplace_execution_t *const execution) {
     UNLOCK_
     thrd_yield();
     LOCK_
+    WAIT_(_on_tick);
   }
   UNLOCK_
   return 0;
@@ -244,12 +247,17 @@ static laplace_status_t append_tick_(
 
 laplace_status_t laplace_execution_init(
     laplace_execution_t *const  execution,
+    laplace_read_write_t const  access,
     laplace_thread_pool_t const thread_pool, kit_allocator_t alloc) {
   memset(execution, 0, sizeof *execution);
 
   if (mtx_init(&execution->_lock, mtx_plain) != thrd_success)
     return LAPLACE_ERROR_BAD_MUTEX_LOCK;
 
+  if (access.acquire != NULL)
+    access.acquire(access.state);
+
+  execution->_access      = access;
   execution->_thread_pool = thread_pool;
   execution->_alloc       = alloc;
 
@@ -267,10 +275,15 @@ void laplace_execution_destroy(laplace_execution_t *const execution) {
     (void) mtx_unlock(&execution->_lock);
   }
 
+  (void) cnd_broadcast(&execution->_on_tick);
+
   if (execution->_thread_pool.join != NULL)
     execution->_thread_pool.join(execution->_thread_pool.state);
 
   mtx_destroy(&execution->_lock);
+
+  if (execution->_access.release != NULL)
+    execution->_access.release(execution->_access.state);
 
   for (ptrdiff_t i = 0; i < execution->_queue.size; i++)
     laplace_generator_destroy(execution->_queue.values[i].generator);
@@ -288,10 +301,11 @@ laplace_status_t laplace_execution_set_thread_count(
     laplace_execution_t *const execution,
     ptrdiff_t const            thread_count) {
 
-  if (thread_count == 0) {
+  if (thread_count < execution->thread_count) {
     LOCK_
     execution->_done = 1;
     UNLOCK_
+    BROADCAST_(_on_tick);
   }
 
   laplace_status_t const s = execution->_thread_pool.resize(
@@ -301,7 +315,7 @@ laplace_status_t laplace_execution_set_thread_count(
   if (s != LAPLACE_STATUS_OK)
     return s;
 
-  if (thread_count == 0) {
+  if (thread_count < execution->thread_count) {
     LOCK_
     execution->_done = 0;
     UNLOCK_
@@ -316,15 +330,15 @@ laplace_read_only_t laplace_execution_read_only(
     laplace_execution_t const *const execution) {
 
   laplace_read_only_t read_only = {
-    .state         = execution->access.state,
-    .acquire       = execution->access.acquire,
-    .release       = execution->access.release,
-    .integers_size = execution->access.integers_size,
-    .bytes_size    = execution->access.bytes_size,
-    .get_integer   = execution->access.get_integer,
-    .get_byte      = execution->access.get_byte,
-    .read_integers = execution->access.read_integers,
-    .read_bytes    = execution->access.read_bytes
+    .state         = execution->_access.state,
+    .acquire       = execution->_access.acquire,
+    .release       = execution->_access.release,
+    .integers_size = execution->_access.integers_size,
+    .bytes_size    = execution->_access.bytes_size,
+    .get_integer   = execution->_access.get_integer,
+    .get_byte      = execution->_access.get_byte,
+    .read_integers = execution->_access.read_integers,
+    .read_bytes    = execution->_access.read_bytes
   };
 
   return read_only;

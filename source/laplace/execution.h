@@ -38,10 +38,10 @@ typedef struct {
 } laplace_action_state_t;
 
 struct laplace_execution {
-  laplace_status_t     status;
-  laplace_read_write_t access;
-  ptrdiff_t            thread_count;
+  laplace_status_t status;
+  ptrdiff_t        thread_count;
 
+  laplace_read_write_t  _access;
   laplace_thread_pool_t _thread_pool;
   kit_allocator_t       _alloc;
 
@@ -64,8 +64,8 @@ struct laplace_execution {
 };
 
 laplace_status_t laplace_execution_init(
-    laplace_execution_t *execution, laplace_thread_pool_t thread_pool,
-    kit_allocator_t alloc);
+    laplace_execution_t *execution, laplace_read_write_t access,
+    laplace_thread_pool_t thread_pool, kit_allocator_t alloc);
 
 void laplace_execution_destroy(laplace_execution_t *execution);
 

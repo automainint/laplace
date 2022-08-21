@@ -15,8 +15,15 @@ typedef struct {
   };
 } laplace_handle_t;
 
+#define LAPLACE_HANDLE_NULL \
+  { .id = LAPLACE_ID_UNDEFINED, .error = LAPLACE_STATUS_OK }
+
+extern laplace_handle_t const laplace_handle_null;
+
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
+#  define HANDLE_NULL LAPLACE_HANDLE_NULL
 #  define handle_t laplace_handle_t
+#  define handle_null laplace_handle_null
 #endif
 
 #ifdef __cplusplus

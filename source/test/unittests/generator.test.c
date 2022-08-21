@@ -39,8 +39,7 @@ TEST("generator example") {
                             .allocate   = allocate,
                             .deallocate = deallocate };
 
-  handle_t self   = { .id = 0, .generation = 0 };
-  action_t action = ACTION(test_impact_gen_, 1, self);
+  action_t action = ACTION(test_impact_gen_, 1, handle_null);
 
   read_only_t access;
   memset(&access, 0, sizeof access);
