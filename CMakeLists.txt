@@ -17,13 +17,12 @@ project(
   ${LAPLACE_PROJECT}
   VERSION 0.1.1
   DESCRIPTION "Laplace"
-  LANGUAGES CXX C)
+  LANGUAGES C)
 
 include(FetchContent)
 
 find_package(Threads)
 find_package(kit QUIET)
-find_package(coro QUIET)
 
 if(NOT kit_FOUND)
   FetchContent_Declare(
@@ -34,24 +33,15 @@ if(NOT kit_FOUND)
   FetchContent_MakeAvailable(kit)
 endif()
 
-if(NOT coro_FOUND)
-  FetchContent_Declare(
-    coro
-    GIT_REPOSITORY https://github.com/automainint/coro.git
-    GIT_TAG dev)
-  set(CORO_ENABLE_TESTING OFF)
-  FetchContent_MakeAvailable(coro)
-endif()
-
 add_library(${LAPLACE_LIBRARY} STATIC)
 add_library(${LAPLACE_PROJECT}::${LAPLACE_LIBRARY} ALIAS ${LAPLACE_LIBRARY})
 target_include_directories(
   ${LAPLACE_LIBRARY} INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source>)
 target_compile_features(${LAPLACE_LIBRARY} PUBLIC c_std_11)
-target_link_libraries(${LAPLACE_LIBRARY} PUBLIC Threads::Threads coro::coro kit::kit)
+target_link_libraries(${LAPLACE_LIBRARY} PUBLIC Threads::Threads kit::kit)
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   #target_compile_options(${LAPLACE_LIBRARY} PUBLIC -pedantic -Wall -Werror)
 endif()
 
@@ -70,7 +60,7 @@ if(LAPLACE_ENABLE_TESTING)
   target_compile_features(${LAPLACE_TEST} PRIVATE c_std_11)
   target_link_libraries(${LAPLACE_TEST} PRIVATE ${LAPLACE_LIBRARY} kit::kit_test Threads::Threads)
 
-  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(
       ${LAPLACE_LIBRARY} PUBLIC
       -fsanitize=undefined#,address
