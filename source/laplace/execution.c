@@ -2,8 +2,6 @@
 
 #include <kit/lower_bound.h>
 
-#include <stdio.h>
-
 #define LOCK_                                         \
   if (mtx_lock(&execution->_lock) != thrd_success) {  \
     execution->status = LAPLACE_ERROR_BAD_MUTEX_LOCK; \
@@ -222,31 +220,22 @@ static laplace_status_t sync_routine_(
 
 static int routine_(laplace_execution_t *const execution) {
   static int thread_count_ = 0;
-  
+
   int thread_index;
   LOCK_
   thread_index = ++thread_count_;
   UNLOCK_
-  
+
   // ONCE_BEGIN_
   // ONCE_END_
-  printf(" ** %d LOCKING...\n", thread_index);
-  fflush(stdout);
   LOCK_
-  printf(" ** %d LOCKED\n", thread_index);
-  fflush(stdout);
   while (!execution->_done) {
     UNLOCK_
     thrd_yield();
-    printf(" ** %d LOCKING...\n", thread_index);
-    fflush(stdout);
     LOCK_
-    printf(" ** %d LOCKED\n", thread_index);
-    fflush(stdout);
 
-    printf(" ** %d WAIT...\n", thread_index);
-    fflush(stdout);
-    WAIT_(_on_tick);
+    if (!execution->_done)
+      WAIT_(_on_tick)
   }
   UNLOCK_
   return 0;
@@ -290,21 +279,13 @@ laplace_status_t laplace_execution_init(
 }
 
 void laplace_execution_destroy(laplace_execution_t *const execution) {
-  printf("\n");
-
-  printf(" %% LOCKING...\n");
-  fflush(stdout);
   if (mtx_lock(&execution->_lock) == thrd_success) {
-    printf(" %% LOCKED\n");
-    fflush(stdout);
     execution->_done = 1;
     (void) mtx_unlock(&execution->_lock);
   }
 
   (void) cnd_broadcast(&execution->_on_tick);
 
-  printf(" %% JOIN THREADS\n");
-  fflush(stdout);
   if (execution->_thread_pool.join != NULL)
     execution->_thread_pool.join(execution->_thread_pool.state);
 
@@ -328,38 +309,23 @@ void laplace_execution_destroy(laplace_execution_t *const execution) {
 laplace_status_t laplace_execution_set_thread_count(
     laplace_execution_t *const execution,
     ptrdiff_t const            thread_count) {
-  printf("\n");
-
   if (execution->_thread_pool.resize == NULL ||
       execution->_thread_pool.join == NULL)
     return LAPLACE_ERROR_NO_THREAD_POOL;
 
   if (thread_count < execution->thread_count) {
-    printf(" %% LOCKING...\n");
-    fflush(stdout);
-
     LOCK_
-    printf(" %% LOCKED\n");
-    fflush(stdout);
     execution->_done = 1;
     UNLOCK_
     BROADCAST_(_on_tick);
 
-    printf(" %% JOIN THREADS\n");
-    fflush(stdout);
     execution->_thread_pool.join(execution->_thread_pool.state);
 
-    printf(" %% LOCKING...\n");
-    fflush(stdout);
     LOCK_
-    printf(" %% LOCKED\n");
-    fflush(stdout);
     execution->_done = 0;
     UNLOCK_
   }
 
-  printf(" %% RESIZE POOL\n");
-  fflush(stdout);
   laplace_status_t const s = execution->_thread_pool.resize(
       execution->_thread_pool.state, thread_count,
       (laplace_pool_routine_fn) routine_, execution);

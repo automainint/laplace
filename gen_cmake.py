@@ -39,7 +39,7 @@ def print_list(s: list, offset: int):
 
 def print_sources(folder: str, target_name: str):
   buf = ''
-  srcs = get_files(folder, '*.c') + get_files(folder, '*.cpp')
+  srcs = get_files(folder, '*.c')
   hdrs = get_files(folder, '*.h')
   if len(srcs) > 0 or len(hdrs) > 0:
     buf += 'target_sources(\n  ' + target_name

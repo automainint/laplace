@@ -45,7 +45,7 @@ AlignConsecutiveDeclarations: Consecutive
 AlignEscapedNewlines: Left
 AllowShortLambdasOnASingleLine: All
 AllowShortFunctionsOnASingleLine: Empty
-AllowShortBlocksOnASingleLine: Always
+AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 AllowAllArgumentsOnNextLine: true

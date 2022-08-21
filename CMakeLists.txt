@@ -16,7 +16,7 @@ endif()
 project(
   ${LAPLACE_PROJECT}
   VERSION 0.1.1
-  DESCRIPTION "Kit"
+  DESCRIPTION "Laplace"
   LANGUAGES CXX C)
 
 include(FetchContent)
