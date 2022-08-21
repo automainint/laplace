@@ -19,13 +19,8 @@ static laplace_status_t pool_resize_(void *state, ptrdiff_t size,
                                      execution_t    *execution) {
   if (size < 0)
     return ERROR_INVALID_SIZE;
-  pool_state_t_ *p = (pool_state_t_ *) state;
-  ptrdiff_t      n = p->threads.size;
-  if (size < n) {
-    for (ptrdiff_t i = 0; i < n; i++)
-      (void) thrd_join(p->threads.values[i], NULL);
-    n = 0;
-  }
+  pool_state_t_  *p = (pool_state_t_ *) state;
+  ptrdiff_t const n = size < p->threads.size ? 0 : p->threads.size;
   DA_RESIZE(p->threads, size);
   if (p->threads.size != size)
     return ERROR_BAD_ALLOC;

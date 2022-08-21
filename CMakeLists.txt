@@ -83,7 +83,7 @@ if(LAPLACE_ENABLE_TESTING)
 
   add_test(
     NAME ${LAPLACE_LIBRARY}_unittests
-    COMMAND ${LAPLACE_TEST})
+    COMMAND ${LAPLACE_TEST} --no-carriage-return)
 
   set_tests_properties(
     ${LAPLACE_LIBRARY}_unittests
