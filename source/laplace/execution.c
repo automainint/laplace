@@ -1,8 +1,7 @@
 #include "execution.h"
 
 #include <kit/lower_bound.h>
-
-#include <stdio.h>
+#include <kit/move_back.h>
 
 #define LOCK_                                         \
   if (mtx_lock(&execution->_lock) != thrd_success) {  \
@@ -76,6 +75,12 @@ int action_state_less_(laplace_action_state_t *left,
 
 int impact_less_(laplace_impact_t *left, ptrdiff_t right) {
   return left->order < right;
+}
+
+static int check_generator_status_(
+    laplace_action_state_t const *const action,
+    laplace_generator_status_t const    status) {
+  return laplace_generator_status(action->generator) == status;
 }
 
 static laplace_status_t sync_routine_(
@@ -193,24 +198,9 @@ static laplace_status_t sync_routine_(
       DA_RESIZE(execution->_forks, 0);
     }
 
-    /*  FIXME
-     *  Move this algorithm to kit.
-     */
-    ptrdiff_t n = execution->_queue.size;
-    for (ptrdiff_t i = 0; i < n;) {
-      if (laplace_generator_status(
-              execution->_queue.values[i].generator) ==
-          GENERATOR_FINISHED) {
-        n--;
-        if (i < n) {
-          laplace_generator_destroy(
-              execution->_queue.values[i].generator);
-          execution->_queue.values[i] = execution->_queue.values[n];
-        }
-      } else
-        i++;
-    }
-    DA_RESIZE(execution->_queue, n);
+    MOVE_BACK_REF(execution->_queue.size, execution->_queue,
+                  LAPLACE_GENERATOR_FINISHED,
+                  check_generator_status_);
 
     for (ptrdiff_t i = 0; i < execution->_queue.size; i++) {
       execution->_queue.values[i].order = i;
@@ -230,7 +220,7 @@ static int routine_(laplace_execution_t *const execution) {
     thrd_yield();
     LOCK_
 
-    if (!execution->_done)
+    while (!execution->_done && execution->_ticks == 0)
       WAIT_(_on_tick)
   }
   UNLOCK_

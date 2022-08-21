@@ -4,7 +4,7 @@ TabWidth: 2
 IndentWidth: 2
 
 Language: Cpp
-Standard: c++20
+Standard: Auto
 
 ColumnLimit: 70
 MaxEmptyLinesToKeep: 1
