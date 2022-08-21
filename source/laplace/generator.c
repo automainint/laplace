@@ -24,13 +24,13 @@ void laplace_generator_destroy(laplace_generator_t generator) {
 }
 
 laplace_impact_list_t laplace_generator_run(
-    laplace_generator_t generator) {
-  AF_EXECUTE(generator.promise);
-  return generator.promise->return_value;
+    laplace_generator_t const *const generator) {
+  AF_EXECUTE(generator->promise);
+  return generator->promise->return_value;
 }
 
 laplace_generator_status_t laplace_generator_status(
-    laplace_generator_t generator) {
-  return AF_FINISHED(*generator.promise) ? LAPLACE_GENERATOR_FINISHED
-                                         : LAPLACE_GENERATOR_RUNNING;
+    laplace_generator_t const *const generator) {
+  return AF_FINISHED(*generator->promise) ? LAPLACE_GENERATOR_FINISHED
+                                          : LAPLACE_GENERATOR_RUNNING;
 }

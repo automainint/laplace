@@ -80,7 +80,7 @@ int impact_less_(laplace_impact_t *left, ptrdiff_t right) {
 static int check_generator_status_(
     laplace_action_state_t const *const action,
     laplace_generator_status_t const    status) {
-  return laplace_generator_status(action->generator) == status;
+  return laplace_generator_status(&action->generator) == status;
 }
 
 static laplace_status_t sync_routine_(
@@ -92,7 +92,7 @@ static laplace_status_t sync_routine_(
       for (ptrdiff_t i = 0; i < execution->_queue.size; i++) {
         laplace_action_state_t *action = execution->_queue.values + i;
 
-        if (laplace_generator_status(action->generator) ==
+        if (laplace_generator_status(&action->generator) ==
                 LAPLACE_GENERATOR_FINISHED ||
             action->clock != 0)
           continue;
@@ -100,7 +100,7 @@ static laplace_status_t sync_routine_(
         int is_continue = 0;
 
         laplace_impact_list_t list = laplace_generator_run(
-            action->generator);
+            &action->generator);
 
         for (ptrdiff_t j = 0; j < list.size; j++) {
           laplace_impact_t *impact = list.values + j;

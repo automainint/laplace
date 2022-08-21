@@ -46,17 +46,17 @@ TEST("generator example") {
 
   generator_t gen;
   REQUIRE(generator_init(&gen, action, access, alloc) == STATUS_OK);
-  REQUIRE(generator_status(gen) == GENERATOR_RUNNING);
+  REQUIRE(generator_status(&gen) == GENERATOR_RUNNING);
 
-  impact_list_t foo = generator_run(gen);
+  impact_list_t foo = generator_run(&gen);
   REQUIRE(foo.size == 1);
   DA_DESTROY(foo);
 
-  impact_list_t bar = generator_run(gen);
+  impact_list_t bar = generator_run(&gen);
   REQUIRE(bar.size == 2);
   DA_DESTROY(bar);
 
-  REQUIRE(generator_status(gen) == GENERATOR_FINISHED);
+  REQUIRE(generator_status(&gen) == GENERATOR_FINISHED);
   generator_destroy(gen);
 
   REQUIRE(alloc_count == free_count);
