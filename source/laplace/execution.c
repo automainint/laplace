@@ -18,13 +18,16 @@
     return execution->status;                           \
   }
 
-#define BROADCAST_(_var)                                    \
-  if (cnd_broadcast(&execution->_var) != thrd_success) {    \
-    (void) mtx_lock(&execution->_lock);                     \
-    execution->status = LAPLACE_ERROR_BAD_CNDVAR_BROADCAST; \
-    execution->_done  = 1;                                  \
-    (void) mtx_unlock(&execution->_lock);                   \
-    return execution->status;                               \
+#define BROADCAST_(_var)                                      \
+  {                                                           \
+    execution->_thrd_error = cnd_broadcast(&execution->_var); \
+    if (execution->_thrd_error != thrd_success) {             \
+      (void) mtx_lock(&execution->_lock);                     \
+      execution->status = LAPLACE_ERROR_BAD_CNDVAR_BROADCAST; \
+      execution->_done  = 1;                                  \
+      (void) mtx_unlock(&execution->_lock);                   \
+      return execution->status;                               \
+    }                                                         \
   }
 
 #define WAIT_(_var)                                    \
