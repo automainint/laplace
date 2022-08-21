@@ -2,6 +2,8 @@
 
 #include <kit/lower_bound.h>
 
+#include <stdio.h>
+
 #define LOCK_                                         \
   if (mtx_lock(&execution->_lock) != thrd_success) {  \
     execution->status = LAPLACE_ERROR_BAD_MUTEX_LOCK; \
@@ -182,8 +184,9 @@ static laplace_status_t sync_routine_(
       if (execution->_queue.size != n + s)
         return LAPLACE_ERROR_BAD_ALLOC;
 
-      memcpy(execution->_queue.values + n, execution->_forks.values,
-             s);
+      if (s != 0)
+        memcpy(execution->_queue.values + n, execution->_forks.values,
+               s);
 
       DA_RESIZE(execution->_sync, 0);
       DA_RESIZE(execution->_async, 0);
@@ -219,13 +222,6 @@ static laplace_status_t sync_routine_(
 }
 
 static int routine_(laplace_execution_t *const execution) {
-  static int thread_count_ = 0;
-
-  int thread_index;
-  LOCK_
-  thread_index = ++thread_count_;
-  UNLOCK_
-
   // ONCE_BEGIN_
   // ONCE_END_
   LOCK_
