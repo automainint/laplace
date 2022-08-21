@@ -108,7 +108,7 @@ laplace_handle_t laplace_buffer_allocate(
     }
 
     atomic_store_explicit(&buffer->blocks_size, block + 1,
-                          memory_order_relaxed);
+                          memory_order_release);
   }
 
   assert(block >= 0 && block < buffer->blocks.size);
@@ -184,7 +184,7 @@ laplace_handle_t laplace_buffer_allocate_into(
     }
 
     atomic_store_explicit(&buffer->blocks_size, handle.id + 1,
-                          memory_order_relaxed);
+                          memory_order_release);
   }
 
   buffer->blocks.values[handle.id].index = offset;
@@ -264,7 +264,7 @@ laplace_status_t laplace_buffer_reserve(
     }
 
     atomic_store_explicit(&buffer->blocks_size, size,
-                          memory_order_relaxed);
+                          memory_order_release);
   }
 
   buffer->reserved = size;
@@ -311,7 +311,7 @@ laplace_status_t laplace_buffer_check(laplace_buffer_void_t *buffer,
                                       ptrdiff_t const        size) {
   if (handle.id < 0 ||
       handle.id >= atomic_load_explicit(&buffer->blocks_size,
-                                        memory_order_relaxed) ||
+                                        memory_order_acquire) ||
       buffer->blocks.values[handle.id].index == LAPLACE_ID_UNDEFINED)
     return LAPLACE_ERROR_INVALID_HANDLE_ID;
   if (buffer->blocks.values[handle.id].generation !=
