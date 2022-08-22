@@ -8,24 +8,30 @@ typedef struct {
   DA(threads, thrd_t);
 } pool_state_t_;
 
+static void pool_release_(void *state) {
+  pool_state_t_ *p = (pool_state_t_ *) state;
+  DA_DESTROY(p->threads);
+}
+
 static void pool_join_(void *state) {
   pool_state_t_ *p = (pool_state_t_ *) state;
   for (ptrdiff_t i = 0; i < p->threads.size; i++)
     (void) thrd_join(p->threads.values[i], NULL);
+  DA_RESIZE(p->threads, 0);
 }
 
-static laplace_status_t pool_resize_(void *state, ptrdiff_t size,
-                                     pool_routine_fn routine,
-                                     execution_t    *execution) {
-  if (size < 0)
+static laplace_status_t pool_run_(void *state, ptrdiff_t count,
+                                  pool_routine_fn routine,
+                                  execution_t    *execution) {
+  if (count <= 0)
     return ERROR_INVALID_SIZE;
   pool_state_t_  *p = (pool_state_t_ *) state;
-  ptrdiff_t const n = size < p->threads.size ? 0 : p->threads.size;
-  DA_RESIZE(p->threads, size);
-  if (p->threads.size != size)
+  ptrdiff_t const n = p->threads.size;
+  DA_RESIZE(p->threads, n + count);
+  if (p->threads.size != n + count)
     return ERROR_BAD_ALLOC;
-  for (ptrdiff_t i = n; i < size; i++)
-    if (thrd_create(p->threads.values + i, routine, execution) !=
+  for (ptrdiff_t i = 0; i < count; i++)
+    if (thrd_create(p->threads.values + n + i, routine, execution) !=
         thrd_success)
       return ERROR_BAD_THREAD_CREATE;
   return STATUS_OK;
@@ -65,9 +71,10 @@ TEST("execution set thread count") {
 
   pool_state_t_ pool_;
   DA_INIT(pool_.threads, 0, kit_alloc_default());
-  laplace_thread_pool_t pool = { .state  = &pool_,
-                                 .resize = pool_resize_,
-                                 .join   = pool_join_ };
+  laplace_thread_pool_t pool = { .state   = &pool_,
+                                 .release = pool_release_,
+                                 .run     = pool_run_,
+                                 .join    = pool_join_ };
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, kit_alloc_default()) ==
@@ -75,7 +82,6 @@ TEST("execution set thread count") {
   REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
   REQUIRE(exe.thread_count == 4);
   execution_destroy(&exe);
-  DA_DESTROY(pool_.threads);
 }
 
 TEST("execution set thread count to zero") {
@@ -84,9 +90,10 @@ TEST("execution set thread count to zero") {
 
   pool_state_t_ pool_;
   DA_INIT(pool_.threads, 0, kit_alloc_default());
-  laplace_thread_pool_t pool = { .state  = &pool_,
-                                 .resize = pool_resize_,
-                                 .join   = pool_join_ };
+  laplace_thread_pool_t pool = { .state   = &pool_,
+                                 .release = pool_release_,
+                                 .run     = pool_run_,
+                                 .join    = pool_join_ };
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, kit_alloc_default()) ==
@@ -95,7 +102,6 @@ TEST("execution set thread count to zero") {
   REQUIRE(execution_set_thread_count(&exe, 0) == STATUS_OK);
   REQUIRE(exe.thread_count == 0);
   execution_destroy(&exe);
-  DA_DESTROY(pool_.threads);
 }
 
 static int action_status_ = 0;

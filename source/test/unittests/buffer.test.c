@@ -235,6 +235,14 @@ TEST("buffer get invalid generation") {
   BUFFER_DESTROY(buf);
 }
 
+TEST("buffer get size") {
+  BUFFER_CREATE(buf, int64_t);
+  handle_t h;
+  BUFFER_ALLOCATE(h, buf, 1);
+  REQUIRE(BUFFER_SIZE(buf, h) == 1);
+  BUFFER_DESTROY(buf);
+}
+
 TEST("buffer get value") {
   BUFFER_CREATE(buf, int64_t);
   handle_t h;

@@ -270,6 +270,9 @@ laplace_status_t laplace_execution_init(
   if (access.acquire != NULL)
     access.acquire(access.state);
 
+  if (thread_pool.acquire != NULL)
+    thread_pool.acquire(thread_pool.state);
+
   execution->_access      = access;
   execution->_thread_pool = thread_pool;
   execution->_alloc       = alloc;
@@ -301,6 +304,9 @@ void laplace_execution_destroy(laplace_execution_t *const execution) {
   if (execution->_access.release != NULL)
     execution->_access.release(execution->_access.state);
 
+  if (execution->_thread_pool.release != NULL)
+    execution->_thread_pool.release(execution->_thread_pool.state);
+
   for (ptrdiff_t i = 0; i < execution->_queue.size; i++)
     laplace_generator_destroy(execution->_queue.values[i].generator);
 
@@ -316,7 +322,7 @@ void laplace_execution_destroy(laplace_execution_t *const execution) {
 laplace_status_t laplace_execution_set_thread_count(
     laplace_execution_t *const execution,
     ptrdiff_t const            thread_count) {
-  if (execution->_thread_pool.resize == NULL ||
+  if (execution->_thread_pool.run == NULL ||
       execution->_thread_pool.join == NULL)
     return LAPLACE_ERROR_NO_THREAD_POOL;
 
@@ -331,14 +337,24 @@ laplace_status_t laplace_execution_set_thread_count(
     LOCK_
     execution->_done = 0;
     UNLOCK_
+
+    if (thread_count != 0) {
+      laplace_status_t const s = execution->_thread_pool.run(
+          execution->_thread_pool.state, thread_count,
+          (laplace_pool_routine_fn) routine_, execution);
+
+      if (s != LAPLACE_STATUS_OK)
+        return s;
+    }
+  } else {
+    laplace_status_t const s = execution->_thread_pool.run(
+        execution->_thread_pool.state,
+        thread_count - execution->thread_count,
+        (laplace_pool_routine_fn) routine_, execution);
+
+    if (s != LAPLACE_STATUS_OK)
+      return s;
   }
-
-  laplace_status_t const s = execution->_thread_pool.resize(
-      execution->_thread_pool.state, thread_count,
-      (laplace_pool_routine_fn) routine_, execution);
-
-  if (s != LAPLACE_STATUS_OK)
-    return s;
 
   execution->thread_count = thread_count;
 

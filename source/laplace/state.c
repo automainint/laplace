@@ -36,42 +36,6 @@ static void release(void *p) {
     destroy(internal);
 }
 
-#define CLONE_BUF(s, src, dst)                                       \
-  do {                                                               \
-    (dst).chunk_size = (src).chunk_size;                             \
-    (dst).reserved   = (src).reserved;                               \
-    (dst).next_block = (src).next_block;                             \
-    atomic_store_explicit(                                           \
-        &(dst).next_chunk,                                           \
-        atomic_load_explicit(&(src).next_chunk,                      \
-                             memory_order_relaxed),                  \
-        memory_order_relaxed);                                       \
-    ptrdiff_t n_ = (src).blocks.size;                                \
-    DA_RESIZE((src).blocks, n_);                                     \
-    if ((src).blocks.size != n_)                                     \
-      (s) = LAPLACE_ERROR_BAD_ALLOC;                                 \
-    else                                                             \
-      memcpy((src).blocks.values, (src).blocks.values,               \
-             sizeof((src).blocks.values[0]) * n_);                   \
-    n_ = (src).data.size;                                            \
-    DA_RESIZE((src).data, n_);                                       \
-    if ((src).data.size != n_)                                       \
-      (s) = LAPLACE_ERROR_BAD_ALLOC;                                 \
-    else {                                                           \
-      for (ptrdiff_t i_ = 0; i_ < n_; i_++) {                        \
-        (dst).info.values[i_].empty  = (src).info.values[i_].empty;  \
-        (dst).info.values[i_].offset = (src).info.values[i_].offset; \
-        atomic_store_explicit(                                       \
-            &(dst).data.values[i_].value,                            \
-            atomic_load_explicit(&(src).data.values[i_].value,       \
-                                 memory_order_relaxed),              \
-            memory_order_relaxed);                                   \
-        atomic_store_explicit(&(dst).data.values[i_].delta, 0,       \
-                              memory_order_relaxed);                 \
-      }                                                              \
-    }                                                                \
-  } while (0)
-
 static laplace_status_t clone(void *p, laplace_read_write_t *cloned) {
   state_internal_t *self = (state_internal_t *) p;
 
@@ -81,8 +45,14 @@ static laplace_status_t clone(void *p, laplace_read_write_t *cloned) {
 
   state_internal_t *clone_self = (state_internal_t *) cloned->state;
 
-  CLONE_BUF(s, self->integers, clone_self->integers);
-  CLONE_BUF(s, self->bytes, clone_self->bytes);
+  LAPLACE_BUFFER_CLONE(s, clone_self->integers, self->integers);
+
+  if (s != LAPLACE_STATUS_OK) {
+    destroy(clone_self);
+    return s;
+  }
+
+  LAPLACE_BUFFER_CLONE(s, clone_self->bytes, self->bytes);
 
   if (s != LAPLACE_STATUS_OK) {
     destroy(clone_self);

@@ -23,11 +23,14 @@ enum { LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE = 8000 };
 #define LAPLACE_BUF_CELL_SIZE_(buf_) \
   sizeof(LAPLACE_BUF_DATA_(buf_).values[0])
 
-#define LAPLACE_BUF_BLOCK_ \
-  struct {                 \
-    ptrdiff_t index;       \
-    ptrdiff_t generation;  \
-    ptrdiff_t size;        \
+/*  FIXME
+ *  Are atomics essential here?
+ */
+#define LAPLACE_BUF_BLOCK_            \
+  struct {                            \
+    KIT_ATOMIC(ptrdiff_t) index;      \
+    KIT_ATOMIC(ptrdiff_t) generation; \
+    KIT_ATOMIC(ptrdiff_t) size;       \
   }
 
 typedef struct {
@@ -42,6 +45,7 @@ typedef struct {
     ptrdiff_t next_block;               \
     KIT_ATOMIC(ptrdiff_t) next_chunk;   \
     KIT_ATOMIC(ptrdiff_t) blocks_size;  \
+    KIT_ATOMIC(ptrdiff_t) data_size;    \
     KIT_DA(blocks, LAPLACE_BUF_BLOCK_); \
     KIT_DA(info, laplace_buf_info_t_);  \
   }
@@ -70,6 +74,8 @@ typedef struct {
         LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE /              \
         sizeof(LAPLACE_BUF_DATA_(buf_).values[0].value); \
     atomic_store_explicit(&(buf_).blocks_size, 0,        \
+                          memory_order_relaxed);         \
+    atomic_store_explicit(&(buf_).data_size, 0,          \
                           memory_order_relaxed);         \
     KIT_DA_INIT((buf_).blocks, 0, (alloc_));             \
     KIT_DA_INIT((buf_).info, 0, (alloc_));               \
@@ -328,6 +334,56 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
   atomic_store_explicit(&(buffer_).next_chunk, 0, \
                         memory_order_relaxed)
 
+/*  TODO
+ *  Add tests for this.
+ */
+#define LAPLACE_BUFFER_CLONE(s, dst, src)                      \
+  do {                                                         \
+    ptrdiff_t const blocks_size_ = atomic_load_explicit(       \
+        &(src).blocks_size, memory_order_acquire);             \
+    ptrdiff_t const data_size_ = atomic_load_explicit(         \
+        &(src).data_size, memory_order_acquire);               \
+    (dst).chunk_size = (src).chunk_size;                       \
+    (dst).reserved   = (src).reserved;                         \
+    (dst).next_block = (src).next_block;                       \
+    atomic_store_explicit(&(dst).next_chunk, 0,                \
+                          memory_order_relaxed);               \
+    atomic_store_explicit(&(dst).blocks_size, blocks_size_,    \
+                          memory_order_relaxed);               \
+    atomic_store_explicit(&(dst).data_size, data_size_,        \
+                          memory_order_relaxed);               \
+    DA_RESIZE((dst).blocks, blocks_size_);                     \
+    if ((dst).blocks.size != blocks_size_)                     \
+      (s) = LAPLACE_ERROR_BAD_ALLOC;                           \
+    else                                                       \
+      memcpy((dst).blocks.values, (src).blocks.values,         \
+             sizeof((src).blocks.values[0]) * blocks_size_);   \
+    DA_RESIZE((dst).info, data_size_);                         \
+    if ((dst).info.size != data_size_)                         \
+      (s) = LAPLACE_ERROR_BAD_ALLOC;                           \
+    else                                                       \
+      memcpy((dst).info.values, (src).info.values,             \
+             sizeof((src).info.values[0]) * data_size_);       \
+    DA_RESIZE((dst).data, data_size_);                         \
+    if ((dst).data.size != data_size_)                         \
+      (s) = LAPLACE_ERROR_BAD_ALLOC;                           \
+    else {                                                     \
+      for (ptrdiff_t i_ = 0; i_ < data_size_; i_++) {          \
+        atomic_store_explicit(                                 \
+            &(dst).data.values[i_].value,                      \
+            atomic_load_explicit(&(src).data.values[i_].value, \
+                                 memory_order_relaxed),        \
+            memory_order_relaxed);                             \
+        atomic_store_explicit(                                 \
+            &(dst).data.values[i_].delta,                      \
+            atomic_load_explicit(&(src).data.values[i_].delta, \
+                                 memory_order_relaxed),        \
+            memory_order_relaxed);                             \
+      }                                                        \
+    }                                                          \
+    (s) = LAPLACE_STATUS_OK;                                   \
+  } while (0)
+
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
 #  define BUFFER_TYPE LAPLACE_BUFFER_TYPE
 #  define BUFFER_INIT LAPLACE_BUFFER_INIT
@@ -347,6 +403,7 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
 #  define BUFFER_ADJUST LAPLACE_BUFFER_ADJUST
 #  define BUFFER_ADJUST_LOOP LAPLACE_BUFFER_ADJUST_LOOP
 #  define BUFFER_ADJUST_DONE LAPLACE_BUFFER_ADJUST_DONE
+#  define BUFFER_CLONE LAPLACE_BUFFER_CLONE
 
 #  define BUFFER_DEFAULT_CHUNK_SIZE LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE
 #endif

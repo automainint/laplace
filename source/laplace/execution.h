@@ -18,16 +18,18 @@ typedef struct laplace_execution laplace_execution_t;
 
 typedef int (*laplace_pool_routine_fn)(void *execution);
 
-typedef laplace_status_t (*laplace_pool_resize_fn)(
-    void *state, ptrdiff_t size, laplace_pool_routine_fn routine,
+typedef laplace_status_t (*laplace_pool_run_fn)(
+    void *state, ptrdiff_t count, laplace_pool_routine_fn routine,
     laplace_execution_t *execution);
 
 typedef void (*laplace_pool_join_fn)(void *state);
 
 typedef struct {
-  void                  *state;
-  laplace_pool_resize_fn resize;
-  laplace_pool_join_fn   join;
+  void                *state;
+  laplace_acquire_fn   acquire;
+  laplace_release_fn   release;
+  laplace_pool_run_fn  run;
+  laplace_pool_join_fn join;
 } laplace_thread_pool_t;
 
 typedef struct {
@@ -58,10 +60,10 @@ struct laplace_execution {
   ptrdiff_t      _queue_index;
   ptrdiff_t      _async_index;
 
-  mtx_t          _lock;
-  cnd_t          _on_tick;
-  cnd_t          _on_join;
-  cnd_t          _on_fence;
+  mtx_t _lock;
+  cnd_t _on_tick;
+  cnd_t _on_join;
+  cnd_t _on_fence;
 };
 
 laplace_status_t laplace_execution_init(
