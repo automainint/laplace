@@ -46,6 +46,7 @@ typedef struct {
     ptrdiff_t reserved;                 \
     ptrdiff_t next_block;               \
     mtx_t     read_lock;                \
+    cnd_t     read_sync;                \
     ptrdiff_t read_count;               \
     KIT_ATOMIC(ptrdiff_t) next_chunk;   \
     KIT_DA(info, laplace_buf_info_t_);  \
@@ -79,6 +80,9 @@ typedef struct {
         sizeof(LAPLACE_BUF_DATA_(buf_).values[0].value);          \
     if (mtx_init(&(buf_).read_lock, mtx_plain) != thrd_success) { \
       (status_) = LAPLACE_ERROR_BAD_MUTEX_INIT;                   \
+    } else if (cnd_init(&(buf_).read_sync) != thrd_success) {     \
+      (void) mtx_destroy(&(buf_).read_lock);                      \
+      (status_) = LAPLACE_ERROR_BAD_CNDVAR_INIT;                  \
     } else {                                                      \
       (buf_).read_count = 0;                                      \
       KIT_DA_INIT((buf_).info, 0, (alloc_));                      \
@@ -91,20 +95,19 @@ typedef struct {
   LAPLACE_BUFFER_TYPE(element_type_) name_;                  \
   LAPLACE_BUFFER_INIT(status_, name_, kit_alloc_default())
 
-#define LAPLACE_BUFFER_DESTROY(buffer_)                     \
-  do {                                                      \
-    for (int done_ = 0; !done_;) {                          \
-      if (mtx_lock(&(buffer_).read_lock) == thrd_success) { \
-        if ((buffer_).read_count == 0)                      \
-          done_ = 1;                                        \
-        (void) mtx_unlock(&(buffer_).read_lock);            \
-      } else                                                \
-        done_ = 1;                                          \
-    }                                                       \
-    mtx_destroy(&(buffer_).read_lock);                      \
-    KIT_DA_DESTROY((buffer_).info);                         \
-    KIT_DA_DESTROY((buffer_).blocks);                       \
-    KIT_DA_DESTROY((buffer_).data);                         \
+#define LAPLACE_BUFFER_DESTROY(buffer_)                              \
+  do {                                                               \
+    if (mtx_lock(&(buffer_).read_lock) == thrd_success) {            \
+      while ((buffer_).read_count != 0 &&                            \
+             cnd_wait(&(buffer_).read_sync, &(buffer_).read_lock) == \
+                 thrd_success) { }                                   \
+      (void) mtx_unlock(&(buffer_).read_lock);                       \
+    }                                                                \
+    mtx_destroy(&(buffer_).read_lock);                               \
+    cnd_destroy(&(buffer_).read_sync);                               \
+    KIT_DA_DESTROY((buffer_).info);                                  \
+    KIT_DA_DESTROY((buffer_).blocks);                                \
+    KIT_DA_DESTROY((buffer_).data);                                  \
   } while (0)
 
 laplace_status_t laplace_buffer_set_chunk_size(
@@ -265,8 +268,11 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
       if (mtx_lock(&(buf_).read_lock) != thrd_success) {           \
         (status_) = LAPLACE_ERROR_BAD_MUTEX_LOCK;                  \
       } else {                                                     \
-        (buf_).read_count--;                                       \
+        ptrdiff_t const count_ = --(buf_).read_count;              \
         (void) mtx_unlock(&(buf_).read_lock);                      \
+        if (count_ == 0 &&                                         \
+            cnd_broadcast(&(buf_).read_sync) != thrd_success)      \
+          (status_) = LAPLACE_ERROR_BAD_CNDVAR_BROADCAST;          \
       }                                                            \
     }                                                              \
   } while (0)

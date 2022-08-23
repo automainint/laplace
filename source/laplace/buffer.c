@@ -30,17 +30,15 @@ static ptrdiff_t buffer_alloc(laplace_buffer_void_t *const buffer,
   if (offset >= buffer->data.size) {
     int success = 1;
 
-    for (int done = 0; !done;) {
-      if (mtx_lock(&buffer->read_lock) == thrd_success) {
-        if (buffer->read_count == 0)
-          done = 1;
-        else
+    if (mtx_lock(&buffer->read_lock) == thrd_success) {
+      while (success && buffer->read_count != 0)
+        if (cnd_wait(&buffer->read_sync, &buffer->read_lock) !=
+            thrd_success) {
           (void) mtx_unlock(&buffer->read_lock);
-      } else {
-        success = 0;
-        done    = 1;
-      }
-    }
+          success = 0;
+        }
+    } else
+      success = 0;
 
     if (success) {
       DA_RESIZE(buffer->info, offset + size);
@@ -123,26 +121,28 @@ laplace_handle_t laplace_buffer_allocate(
   if (block >= buffer->blocks.size) {
     ptrdiff_t i = buffer->blocks.size;
 
-    for (int done = 0; !done;) {
-      if (mtx_lock(&buffer->read_lock) == thrd_success) {
-        if (buffer->read_count == 0)
-          done = 1;
-        else
+    if (mtx_lock(&buffer->read_lock) == thrd_success) {
+      while (buffer->read_count != 0)
+        if (cnd_wait(&buffer->read_sync, &buffer->read_lock) !=
+            thrd_success) {
           (void) mtx_unlock(&buffer->read_lock);
-      } else {
-        h.id    = LAPLACE_ID_UNDEFINED;
-        h.error = LAPLACE_ERROR_BAD_MUTEX_LOCK;
-        return h;
-      }
+          h.id    = LAPLACE_ID_UNDEFINED;
+          h.error = LAPLACE_ERROR_BAD_CNDVAR_WAIT;
+          return h;
+        }
+    } else {
+      h.id    = LAPLACE_ID_UNDEFINED;
+      h.error = LAPLACE_ERROR_BAD_MUTEX_LOCK;
+      return h;
     }
 
     DA_RESIZE(buffer->blocks, block + 1);
 
     if (buffer->blocks.size != block + 1) {
       buffer_free(buffer, offset);
+      (void) mtx_unlock(&buffer->read_lock);
       h.id    = LAPLACE_ID_UNDEFINED;
       h.error = LAPLACE_ERROR_BAD_ALLOC;
-      (void) mtx_unlock(&buffer->read_lock);
       return h;
     }
 
@@ -230,26 +230,28 @@ laplace_handle_t laplace_buffer_allocate_into(
   if (handle.id >= buffer->blocks.size) {
     ptrdiff_t i = buffer->blocks.size;
 
-    for (int done = 0; !done;) {
-      if (mtx_lock(&buffer->read_lock) == thrd_success) {
-        if (buffer->read_count == 0)
-          done = 1;
-        else
+    if (mtx_lock(&buffer->read_lock) == thrd_success) {
+      while (buffer->read_count != 0)
+        if (cnd_wait(&buffer->read_sync, &buffer->read_lock) !=
+            thrd_success) {
           (void) mtx_unlock(&buffer->read_lock);
-      } else {
-        h.id    = LAPLACE_ID_UNDEFINED;
-        h.error = LAPLACE_ERROR_BAD_MUTEX_LOCK;
-        return h;
-      }
+          h.id    = LAPLACE_ID_UNDEFINED;
+          h.error = LAPLACE_ERROR_BAD_CNDVAR_WAIT;
+          return h;
+        }
+    } else {
+      h.id    = LAPLACE_ID_UNDEFINED;
+      h.error = LAPLACE_ERROR_BAD_MUTEX_LOCK;
+      return h;
     }
 
     DA_RESIZE(buffer->blocks, handle.id + 1);
 
     if (buffer->blocks.size != handle.id + 1) {
       buffer_free(buffer, offset);
+      (void) mtx_unlock(&buffer->read_lock);
       h.id    = LAPLACE_ID_UNDEFINED;
       h.error = LAPLACE_ERROR_BAD_ALLOC;
-      (void) mtx_unlock(&buffer->read_lock);
       return h;
     }
 
@@ -333,15 +335,15 @@ laplace_status_t laplace_buffer_reserve(
   if (buffer->blocks.size < size) {
     ptrdiff_t i = buffer->blocks.size;
 
-    for (int done = 0; !done;) {
-      if (mtx_lock(&buffer->read_lock) == thrd_success) {
-        if (buffer->read_count == 0)
-          done = 1;
-        else
+    if (mtx_lock(&buffer->read_lock) == thrd_success) {
+      while (buffer->read_count != 0)
+        if (cnd_wait(&buffer->read_sync, &buffer->read_lock) !=
+            thrd_success) {
           (void) mtx_unlock(&buffer->read_lock);
-      } else
-        return LAPLACE_ERROR_BAD_MUTEX_LOCK;
-    }
+          return LAPLACE_ERROR_BAD_CNDVAR_WAIT;
+        }
+    } else
+      return LAPLACE_ERROR_BAD_MUTEX_LOCK;
 
     DA_RESIZE(buffer->blocks, size);
 
@@ -445,8 +447,10 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
     assert(0);
     return 0;
   } else {
-    buffer->read_count--;
+    ptrdiff_t const count = --buffer->read_count;
     (void) mtx_unlock(&buffer->read_lock);
+    if (count == 0)
+      (void) cnd_broadcast(&buffer->read_sync);
   }
 
   return size;
