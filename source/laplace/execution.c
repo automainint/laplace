@@ -193,6 +193,12 @@ static laplace_status_t sync_routine_(
         memcpy(execution->_queue.values + n, execution->_forks.values,
                s);
 
+      if (execution->_access.adjust_loop != NULL)
+        execution->_access.adjust_loop(execution->_access.state);
+
+      if (execution->_access.adjust_done != NULL)
+        execution->_access.adjust_done(execution->_access.state);
+
       DA_RESIZE(execution->_sync, 0);
       DA_RESIZE(execution->_async, 0);
       DA_RESIZE(execution->_forks, 0);

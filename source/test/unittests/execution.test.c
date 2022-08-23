@@ -242,3 +242,577 @@ TEST("seq execution custom state") {
                                 -1) == 42);
   execution_destroy(&exe);
 }
+
+CORO(impact_list_t, test_exe_alloc_set_, kit_allocator_t alloc;
+     read_only_t access; handle_t self;) {
+  static handle_t const h0 = { .id = 0, .generation = -1 };
+  static handle_t const h  = { .id = 0, .generation = 0 };
+
+  DA_INIT(af return_value, 2, af alloc);
+  impact_t i0[] = { INTEGER_ALLOCATE_INTO(h0, 1),
+                    INTEGER_SET(h, 0, 42) };
+
+  af return_value.values[0] = i0[0];
+  af return_value.values[1] = i0[1];
+  AF_YIELD_VOID;
+
+  DA_INIT(af return_value, 1, af alloc);
+  impact_t i1[] = { INTEGER_SET(h, 0, 43) };
+
+  af return_value.values[0] = i1[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+TEST("seq execution set value impact") {
+  laplace_thread_pool_t pool;
+  memset(&pool, 0, sizeof pool);
+
+  kit_allocator_t alloc = kit_alloc_default();
+  read_write_t    state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+
+  action_t action = ACTION(test_exe_alloc_set_, 1, HANDLE_NULL);
+
+  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+
+  handle_t h = { .id = 0, .generation = 0 };
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
+
+  execution_destroy(&exe);
+}
+
+TEST("seq execution set value impact twice") {
+  const laplace_time_t tick = 10;
+
+  laplace_thread_pool_t pool;
+  memset(&pool, 0, sizeof pool);
+
+  kit_allocator_t alloc = kit_alloc_default();
+  read_write_t    state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+
+  action_t action = ACTION(test_exe_alloc_set_, tick, HANDLE_NULL);
+
+  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+  handle_t h = { .id = 0, .generation = 0 };
+
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
+
+  REQUIRE(execution_schedule_and_join(&exe, tick) == STATUS_OK);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
+
+  execution_destroy(&exe);
+}
+
+CORO(impact_list_t, test_exe_alloc_set_continue_,
+     kit_allocator_t alloc;
+     read_only_t access; handle_t self;) {
+  static handle_t const h0 = { .id = 0, .generation = -1 };
+  static handle_t const h  = { .id = 0, .generation = 0 };
+
+  DA_INIT(af return_value, 3, af alloc);
+  impact_t i0[] = { INTEGER_ALLOCATE_INTO(h0, 1),
+                    INTEGER_SET(h, 0, 42), TICK_CONTINUE() };
+
+  af return_value.values[0] = i0[0];
+  af return_value.values[1] = i0[1];
+  af return_value.values[2] = i0[2];
+  AF_YIELD_VOID;
+
+  DA_INIT(af return_value, 1, af alloc);
+  impact_t i1[] = { INTEGER_SET(h, 0, 43) };
+
+  af return_value.values[0] = i1[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+TEST("seq execution set value impact twice with continuation") {
+  const laplace_time_t tick = 10;
+
+  laplace_thread_pool_t pool;
+  memset(&pool, 0, sizeof pool);
+
+  kit_allocator_t alloc = kit_alloc_default();
+  read_write_t    state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+
+  action_t action = ACTION(test_exe_alloc_set_continue_, tick,
+                           HANDLE_NULL);
+
+  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+  handle_t h = { .id = 0, .generation = 0 };
+
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
+
+  REQUIRE(execution_schedule_and_join(&exe, tick) == STATUS_OK);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
+
+  execution_destroy(&exe);
+}
+
+CORO(impact_list_t, test_exe_allocate_into_, kit_allocator_t alloc;
+     read_only_t access; handle_t self;) {
+  DA_INIT(af return_value, 1, af alloc);
+  handle_t h   = { .id = 0, .generation = -1 };
+  impact_t i[] = { INTEGER_ALLOCATE_INTO(h, 1) };
+
+  af return_value.values[0] = i[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+CORO(impact_list_t, test_exe_add_18_, kit_allocator_t alloc;
+     read_only_t access; handle_t self;) {
+  DA_INIT(af return_value, 1, af alloc);
+  handle_t h   = { .id = 0, .generation = 0 };
+  impact_t i[] = { INTEGER_ADD(h, 0, 18) };
+
+  af return_value.values[0] = i[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+CORO(impact_list_t, test_exe_add_24_, kit_allocator_t alloc;
+     read_only_t access; handle_t self;) {
+  DA_INIT(af return_value, 1, af alloc);
+  handle_t h   = { .id = 0, .generation = 0 };
+  impact_t i[] = { INTEGER_ADD(h, 0, 24) };
+
+  af return_value.values[0] = i[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+TEST("seq execution two actions") {
+  laplace_thread_pool_t pool;
+  memset(&pool, 0, sizeof pool);
+
+  kit_allocator_t alloc = kit_alloc_default();
+  read_write_t    state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+
+  action_t a0 = ACTION(test_exe_allocate_into_, 1, HANDLE_NULL);
+  REQUIRE(execution_queue(&exe, a0) == STATUS_OK);
+
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+
+  action_t a1 = ACTION(test_exe_add_18_, 1, HANDLE_NULL);
+  action_t a2 = ACTION(test_exe_add_24_, 1, HANDLE_NULL);
+  REQUIRE(execution_queue(&exe, a1) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a2) == STATUS_OK);
+
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+
+  handle_t h = { .id = 0, .generation = 0 };
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
+
+  execution_destroy(&exe);
+}
+
+CORO(impact_list_t, test_exe_set_42_, kit_allocator_t alloc;
+     read_only_t access; handle_t self;) {
+  DA_INIT(af return_value, 1, af alloc);
+  handle_t h   = { .id = 1, .generation = 0 };
+  impact_t i[] = { INTEGER_SET(h, 0, 42) };
+
+  af return_value.values[0] = i[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+TEST("seq execution invalid impact") {
+  laplace_thread_pool_t pool;
+  memset(&pool, 0, sizeof pool);
+
+  kit_allocator_t alloc = kit_alloc_default();
+  read_write_t    state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+
+  action_t action = ACTION(test_exe_set_42_, 1, HANDLE_NULL);
+  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+
+  REQUIRE(execution_schedule_and_join(&exe, 1) ==
+          ERROR_INVALID_HANDLE_ID);
+
+  execution_destroy(&exe);
+}
+
+/*
+TEST("x seq execution sync impacts applied first") {
+  auto exe = laplace::execution {}.set_thread_count(0);
+
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact {
+          laplace::integer_set { .id = 0, .index = 0, .value = 42 }
+        } + laplace::impact { laplace::integer_allocate_into {
+                .id = 0, .size = 1 } };
+      }));
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact { laplace::integer_set {
+            .id = 1, .index = 0, .value = 43 } };
+      }));
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact { laplace::integer_allocate_into {
+            .id = 1, .size = 1 } };
+      }));
+  exe.schedule_and_join(1);
+
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  REQUIRE(exe.read_only().get_integer(1, 0, -1) == 43);
+}
+
+TEST("x seq execution queue action impact") {
+  auto exe = laplace::execution {}.set_thread_count(0);
+
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact { laplace::queue_action {
+            laplace::action {}.setup(
+                [](laplace::entity)
+                    -> coro::generator<laplace::impact_list> {
+                  co_yield laplace::impact {
+                    laplace::integer_allocate_into { .id   = 0,
+                                                     .size = 1 }
+                  } + laplace::impact { laplace::integer_set {
+                          .id = 0, .index = 0, .value = 42 } };
+                }) } };
+      }));
+
+  exe.schedule_and_join(1);
+
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+}
+
+TEST("x seq execution no multithreading") {
+  static auto m         = std::mutex {};
+  static auto foo_begin = 0;
+  static auto foo_end   = 0;
+  static auto bar_begin = 0;
+  static auto bar_end   = 0;
+
+  auto exe = laplace::execution {}.set_thread_count(0);
+
+  exe.queue(laplace::action {}.setup(
+      [&](laplace::entity) -> coro::generator<laplace::impact_list> {
+        m.lock();
+        foo_begin++;
+        m.unlock();
+        sleep_for(milliseconds(300));
+        m.lock();
+        foo_end = bar_begin;
+        m.unlock();
+        co_yield laplace::impact { laplace::noop {} };
+      }));
+  exe.queue(laplace::action {}.setup(
+      [&](laplace::entity) -> coro::generator<laplace::impact_list> {
+        m.lock();
+        bar_begin++;
+        m.unlock();
+        sleep_for(milliseconds(300));
+        m.lock();
+        bar_end = foo_begin;
+        m.unlock();
+        co_yield laplace::impact { laplace::noop {} };
+      }));
+  exe.schedule_and_join(1);
+
+  REQUIRE(foo_end + bar_end == 1);
+}
+
+TEST("x execution two parallel actions") {
+  static auto m         = std::mutex {};
+  static auto foo_begin = 0;
+  static auto foo_end   = 0;
+  static auto bar_begin = 0;
+  static auto bar_end   = 0;
+
+  auto exe = laplace::execution {}.set_thread_count(4);
+
+  exe.queue(laplace::action {}.setup(
+      [&](laplace::entity) -> coro::generator<laplace::impact_list> {
+        m.lock();
+        foo_begin++;
+        m.unlock();
+        sleep_for(milliseconds(300));
+        m.lock();
+        foo_end = bar_begin;
+        m.unlock();
+        co_yield laplace::impact { laplace::noop {} };
+      }));
+  exe.queue(laplace::action {}.setup(
+      [&](laplace::entity) -> coro::generator<laplace::impact_list> {
+        m.lock();
+        bar_begin++;
+        m.unlock();
+        sleep_for(milliseconds(300));
+        m.lock();
+        bar_end = foo_begin;
+        m.unlock();
+        co_yield laplace::impact { laplace::noop {} };
+      }));
+  exe.schedule_and_join(1);
+
+  REQUIRE(foo_end == 1);
+  REQUIRE(bar_end == 1);
+}
+
+TEST("x execution join one") {
+  auto exe = laplace::execution {}.set_thread_count(1);
+
+  exe.queue(laplace::action {}.setup(
+      [&](laplace::entity) -> coro::generator<laplace::impact_list> {
+        sleep_for(milliseconds(100));
+        co_yield laplace::impact {
+          laplace::integer_allocate_into { .id = 0, .size = 1 }
+        } + laplace::impact { laplace::integer_set {
+                .id = 0, .index = 0, .value = 42 } };
+      }));
+
+  exe.schedule(1);
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == -1);
+  exe.join();
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+}
+
+TEST("x execution join four") {
+  auto exe = laplace::execution {}.set_thread_count(4);
+
+  exe.queue(laplace::action {}.setup(
+      [&](laplace::entity) -> coro::generator<laplace::impact_list> {
+        sleep_for(milliseconds(100));
+        co_yield laplace::impact {
+          laplace::integer_allocate_into { .id = 0, .size = 1 }
+        } + laplace::impact { laplace::integer_set {
+                .id = 0, .index = 0, .value = 42 } };
+      }));
+
+  exe.schedule(1);
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == -1);
+  exe.join();
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+}
+
+TEST("x execution set value impact") {
+  auto exe = laplace::execution {}.set_thread_count(4);
+
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact {
+          laplace::integer_allocate_into { .id = 0, .size = 1 }
+        } + laplace::impact { laplace::integer_set {
+                .id = 0, .index = 0, .value = 42 } };
+        co_yield laplace::impact { laplace::integer_set {
+            .id = 0, .index = 0, .value = 43 } };
+      }));
+
+  exe.schedule_and_join(1);
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+}
+
+TEST("x execution set value impact twice") {
+  auto exe = laplace::execution {}.set_thread_count(4);
+
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact {
+          laplace::integer_allocate_into { .id = 0, .size = 1 }
+        } + laplace::impact { laplace::integer_set {
+                .id = 0, .index = 0, .value = 42 } };
+        co_yield laplace::impact { laplace::integer_set {
+            .id = 0, .index = 0, .value = 43 } };
+      }));
+
+  const auto tick = laplace::action::default_tick_duration;
+
+  exe.schedule_and_join(1);
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+
+  exe.schedule_and_join(tick);
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
+}
+
+TEST("x execution set value impact twice with continuation") {
+  auto exe = laplace::execution {}.set_thread_count(4);
+
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact { laplace::integer_allocate_into {
+            .id = 0, .size = 1 } } +
+            laplace::impact { laplace::integer_set {
+                .id = 0, .index = 0, .value = 42 } } +
+            laplace::impact { laplace::tick_continue {} };
+        co_yield laplace::impact { laplace::integer_set {
+            .id = 0, .index = 0, .value = 43 } };
+      }));
+
+  const auto tick = laplace::action::default_tick_duration;
+
+  exe.schedule_and_join(1);
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
+
+  exe.schedule_and_join(tick);
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
+}
+
+TEST("x execution two actions") {
+  auto exe = laplace::execution {}.set_thread_count(4);
+
+  const auto tick = laplace::action::default_tick_duration;
+
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact { laplace::integer_allocate_into {
+            .id = 0, .size = 1 } };
+      }));
+  exe.schedule_and_join(1);
+
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact { laplace::integer_add {
+            .id = 0, .index = 0, .delta = 18 } };
+      }));
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact { laplace::integer_add {
+            .id = 0, .index = 0, .delta = 24 } };
+      }));
+  exe.schedule_and_join(tick);
+
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+}
+
+TEST("x execution invalid impact") {
+  auto exe = laplace::execution {}.set_thread_count(4);
+
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact { laplace::integer_set {
+            .id = 1, .index = 0, .value = 42 } };
+      }));
+  exe.schedule_and_join(1);
+
+  REQUIRE(exe.error());
+}
+
+TEST("x execution sync impacts applied first") {
+  auto exe = laplace::execution {}.set_thread_count(4);
+
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact {
+          laplace::integer_set { .id = 0, .index = 0, .value = 42 }
+        } + laplace::impact { laplace::integer_allocate_into {
+                .id = 0, .size = 1 } };
+      }));
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact { laplace::integer_set {
+            .id = 1, .index = 0, .value = 43 } };
+      }));
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact { laplace::integer_allocate_into {
+            .id = 1, .size = 1 } };
+      }));
+  exe.schedule_and_join(1);
+
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  REQUIRE(exe.read_only().get_integer(1, 0, -1) == 43);
+}
+
+TEST("x execution queue action impact") {
+  auto exe = laplace::execution {}.set_thread_count(4);
+
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact { laplace::queue_action {
+            laplace::action {}.setup(
+                [](laplace::entity)
+                    -> coro::generator<laplace::impact_list> {
+                  co_yield laplace::impact {
+                    laplace::integer_allocate_into { .id   = 0,
+                                                     .size = 1 }
+                  } + laplace::impact { laplace::integer_set {
+                          .id = 0, .index = 0, .value = 42 } };
+                }) } };
+      }));
+
+  exe.schedule_and_join(1);
+
+  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+}
+
+TEST("x execution action order") {
+  auto       exe  = laplace::execution {}.set_thread_count(4);
+  const auto tick = laplace::action::default_tick_duration;
+
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact { laplace::noop {} };
+        sleep_for(milliseconds(20));
+        co_yield laplace::impact {
+          laplace::queue_action { laplace::action {}.setup(
+              { [](laplace::entity)
+                    -> coro::generator<laplace::impact_list> {
+                sleep_for(milliseconds(20));
+                co_yield laplace::impact {
+                  laplace::queue_action { laplace::action {}.setup(
+                      { [](laplace::entity)
+                            -> coro::generator<laplace::impact_list> {
+                        sleep_for(milliseconds(20));
+                        co_yield laplace::impact {
+                          laplace::integer_allocate_into { .id   = 0,
+                                                           .size = 1 }
+                        };
+                      } }) }
+                };
+              } }) }
+        };
+      }));
+  exe.queue(laplace::action {}.setup(
+      [](laplace::entity) -> coro::generator<laplace::impact_list> {
+        co_yield laplace::impact { laplace::noop {} };
+        co_yield laplace::impact {
+          laplace::queue_action { laplace::action {}.setup(
+              { [](laplace::entity)
+                    -> coro::generator<laplace::impact_list> {
+                co_yield laplace::impact {
+                  laplace::queue_action { laplace::action {}.setup(
+                      { [](laplace::entity)
+                            -> coro::generator<laplace::impact_list> {
+                        co_yield laplace::impact {
+                          laplace::integer_deallocate { .id = 0 }
+                        };
+                      } }) }
+                };
+              } }) }
+        };
+      }));
+  exe.schedule_and_join(1 + tick);
+
+  REQUIRE(!exe.error());
+}
+ */

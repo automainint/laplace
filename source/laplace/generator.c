@@ -26,7 +26,10 @@ void laplace_generator_destroy(laplace_generator_t generator) {
 laplace_impact_list_t laplace_generator_run(
     laplace_generator_t const *const generator) {
   AF_EXECUTE(generator->promise);
-  return generator->promise->return_value;
+  laplace_impact_list_t list = generator->promise->return_value;
+  memset(&generator->promise->return_value, 0,
+         sizeof generator->promise->return_value);
+  return list;
 }
 
 laplace_generator_status_t laplace_generator_status(

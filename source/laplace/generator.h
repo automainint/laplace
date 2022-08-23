@@ -40,14 +40,14 @@ laplace_impact_list_t laplace_generator_run(
 laplace_generator_status_t laplace_generator_status(
     laplace_generator_t const *generator);
 
-#define LAPLACE_ACTION_UNSAFE(coro_, tick_duration_, self_) \
+#define LAPLACE_ACTION_UNSAFE(coro_, tick_duration_, ...)   \
   {                                                         \
     .size = sizeof(AF_TYPE(coro_)), .coro = AF_NAME(coro_), \
-    .tick_duration = (tick_duration_), .self = self_        \
+    .tick_duration = (tick_duration_), .self = __VA_ARGS__  \
   }
 
-#define LAPLACE_ACTION(coro_, tick_duration_, self_)           \
-  LAPLACE_ACTION_UNSAFE(coro_, (tick_duration_), self_);       \
+#define LAPLACE_ACTION(coro_, tick_duration_, ...)             \
+  LAPLACE_ACTION_UNSAFE(coro_, (tick_duration_), __VA_ARGS__); \
   static_assert(offsetof(AF_TYPE(coro_), return_value) ==      \
                     offsetof(laplace_promise_t, return_value), \
                 "Wrong return_value offset");                  \
