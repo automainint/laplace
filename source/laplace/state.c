@@ -85,51 +85,60 @@ static ptrdiff_t bytes_size(void *p, laplace_handle_t handle) {
 
 static laplace_status_t read_integers(
     void *p, laplace_handle_t handle, ptrdiff_t index, ptrdiff_t size,
-    laplace_integer_t *destination) {
+    laplace_integer_t *restrict destination) {
   state_internal_t *internal = (state_internal_t *) p;
 
-  laplace_status_t s = laplace_buffer_check(
-      (laplace_buffer_void_t *) &internal->integers, handle, index,
-      size);
+  laplace_status_t s;
 
-  if (s != LAPLACE_STATUS_OK)
-    return s;
+  LAPLACE_BUFFER_READ(s, internal->integers, handle, index, size,
+                      destination);
 
-  for (ptrdiff_t i = 0; i < size; i++)
-    destination[i] = LAPLACE_BUFFER_GET_UNSAFE(internal->integers,
-                                               handle, index + i);
+  return s;
 }
 
-static laplace_status_t read_bytes(void *p, laplace_handle_t handle,
-                                   ptrdiff_t index, ptrdiff_t size,
-                                   laplace_byte_t *destination) {
+static laplace_status_t read_bytes(
+    void *p, laplace_handle_t handle, ptrdiff_t index, ptrdiff_t size,
+    laplace_byte_t *restrict destination) {
   state_internal_t *internal = (state_internal_t *) p;
 
-  laplace_status_t s = laplace_buffer_check(
-      (laplace_buffer_void_t *) &internal->bytes, handle, index,
-      size);
+  laplace_status_t s;
 
-  if (s != LAPLACE_STATUS_OK)
-    return s;
+  LAPLACE_BUFFER_READ(s, internal->bytes, handle, index, size,
+                      destination);
 
-  for (ptrdiff_t i = 0; i < size; i++)
-    destination[i] = LAPLACE_BUFFER_GET_UNSAFE(internal->bytes,
-                                               handle, index + i);
+  return s;
 }
 
 static laplace_integer_t get_integer(void *p, laplace_handle_t handle,
                                      ptrdiff_t         index,
                                      laplace_integer_t invalid) {
   state_internal_t *internal = (state_internal_t *) p;
-  return LAPLACE_BUFFER_GET(internal->integers, handle, index,
-                            invalid);
+
+  laplace_status_t  s;
+  laplace_integer_t x;
+
+  LAPLACE_BUFFER_READ(s, internal->integers, handle, index, 1, &x);
+
+  if (s != LAPLACE_STATUS_OK)
+    return invalid;
+
+  return x;
 }
 
 static laplace_byte_t get_byte(void *p, laplace_handle_t handle,
                                ptrdiff_t      index,
                                laplace_byte_t invalid) {
   state_internal_t *internal = (state_internal_t *) p;
-  return LAPLACE_BUFFER_GET(internal->bytes, handle, index, invalid);
+
+  laplace_status_t s;
+  laplace_byte_t   x;
+
+  LAPLACE_BUFFER_READ(s, internal->bytes, handle, index, 1, &x);
+
+  if (s != LAPLACE_STATUS_OK)
+    return invalid;
+
+  return x;
 }
 
 DA_TYPE(integers_t, laplace_integer_t);
@@ -282,8 +291,19 @@ laplace_status_t laplace_state_init(laplace_read_write_t *const p,
   internal->alloc = alloc;
   mt64_init(&internal->mt64, mt64_seed());
 
-  LAPLACE_BUFFER_INIT(internal->integers, alloc);
-  LAPLACE_BUFFER_INIT(internal->bytes, alloc);
+  laplace_status_t s;
+
+  LAPLACE_BUFFER_INIT(s, internal->integers, alloc);
+
+  if (s != LAPLACE_STATUS_OK)
+    return s;
+
+  LAPLACE_BUFFER_INIT(s, internal->bytes, alloc);
+
+  if (s != LAPLACE_STATUS_OK) {
+    LAPLACE_BUFFER_DESTROY(internal->integers);
+    return s;
+  }
 
   p->state         = internal;
   p->acquire       = acquire;
