@@ -40,10 +40,10 @@ laplace_impact_list_t laplace_generator_run(
 laplace_generator_status_t laplace_generator_status(
     laplace_generator_t const *generator);
 
-#define LAPLACE_ACTION_UNSAFE(coro_, tick_duration_, ...)   \
-  {                                                         \
-    .size = sizeof(AF_TYPE(coro_)), .coro = AF_NAME(coro_), \
-    .tick_duration = (tick_duration_), .self = __VA_ARGS__  \
+#define LAPLACE_ACTION_UNSAFE(coro_, tick_duration_, ...)  \
+  {                                                        \
+    .size = sizeof(AF_TYPE(coro_)), .coro = (coro_),       \
+    .tick_duration = (tick_duration_), .self = __VA_ARGS__ \
   }
 
 #define LAPLACE_ACTION(coro_, tick_duration_, ...)             \

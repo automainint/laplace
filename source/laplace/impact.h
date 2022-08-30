@@ -422,10 +422,10 @@ laplace_impact_mode_t laplace_impact_mode_of(
     .order       = 0                                     \
   }
 
-#define LAPLACE_QUEUE_ACTION(action_)                   \
-  {                                                     \
-    .type         = LAPLACE_IMPACT_QUEUE_ACTION,        \
-    .queue_action = { .action = (action_) }, .order = 0 \
+#define LAPLACE_QUEUE_ACTION(...)                         \
+  {                                                       \
+    .type         = LAPLACE_IMPACT_QUEUE_ACTION,          \
+    .queue_action = { .action = __VA_ARGS__ }, .order = 0 \
   }
 
 #define LAPLACE_IMPACT_MODE_OF(type_)                          \

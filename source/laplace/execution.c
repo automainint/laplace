@@ -68,15 +68,6 @@
     }                                                             \
   }
 
-int action_state_less_(laplace_action_state_t *left,
-                       ptrdiff_t               right) {
-  return left->order < right;
-}
-
-int impact_less_(laplace_impact_t *left, ptrdiff_t right) {
-  return left->order < right;
-}
-
 static int check_generator_status_(
     laplace_action_state_t const *const action,
     laplace_generator_status_t const    status) {
@@ -92,9 +83,9 @@ static laplace_status_t sync_routine_(
       for (ptrdiff_t i = 0; i < execution->_queue.size; i++) {
         laplace_action_state_t *action = execution->_queue.values + i;
 
-        if (laplace_generator_status(&action->generator) ==
-                LAPLACE_GENERATOR_FINISHED ||
-            action->clock != 0)
+        if (action->clock != 0 ||
+            laplace_generator_status(&action->generator) ==
+                LAPLACE_GENERATOR_FINISHED)
           continue;
 
         int is_continue = 0;
@@ -113,8 +104,9 @@ static laplace_status_t sync_routine_(
 
             case LAPLACE_IMPACT_QUEUE_ACTION: {
               ptrdiff_t n;
-              LOWER_BOUND_REF(n, execution->_forks, action->order,
-                              action_state_less_);
+              LOWER_BOUND_INL(n, execution->_forks.size,
+                              execution->_forks.values[index_].order <
+                                  action->order);
 
               laplace_action_state_t fork = {
                 .order = 0,
@@ -132,14 +124,18 @@ static laplace_status_t sync_routine_(
               DA_INSERT(execution->_forks, n, fork);
               if (execution->_forks.size != s + 1)
                 return LAPLACE_ERROR_BAD_ALLOC;
+
+              done = 0;
             } break;
 
             default:
               if (laplace_impact_mode_of(impact) ==
                   LAPLACE_IMPACT_SYNC) {
                 ptrdiff_t n;
-                LOWER_BOUND_REF(n, execution->_sync, action->order,
-                                impact_less_);
+                LOWER_BOUND_INL(
+                    n, execution->_sync.size,
+                    execution->_sync.values[index_].order <
+                        action->order);
 
                 laplace_impact_t x = *impact;
                 x.order            = action->order;
@@ -191,7 +187,7 @@ static laplace_status_t sync_routine_(
 
       if (s != 0)
         memcpy(execution->_queue.values + n, execution->_forks.values,
-               s);
+               s * sizeof *execution->_queue.values);
 
       if (execution->_access.adjust_loop != NULL)
         execution->_access.adjust_loop(execution->_access.state);
@@ -204,9 +200,10 @@ static laplace_status_t sync_routine_(
       DA_RESIZE(execution->_forks, 0);
     }
 
-    MOVE_BACK_REF(execution->_queue.size, execution->_queue,
-                  LAPLACE_GENERATOR_FINISHED,
-                  check_generator_status_);
+    MOVE_BACK_INL(execution->_queue.size, execution->_queue,
+                  laplace_generator_status(
+                      &execution->_queue.values[index_].generator) ==
+                      LAPLACE_GENERATOR_FINISHED);
 
     for (ptrdiff_t i = 0; i < execution->_queue.size; i++) {
       execution->_queue.values[i].order = i;

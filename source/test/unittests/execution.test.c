@@ -106,15 +106,16 @@ TEST("execution set thread count to zero") {
 
 static int action_status_ = 0;
 
-CORO(laplace_impact_list_t, test_exe_noop_, kit_allocator_t alloc;
-     read_only_t access; handle_t self;) {
+STATIC_CORO(laplace_impact_list_t, test_exe_noop_,
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   action_status_++;
 }
 CORO_END
 
-CORO(laplace_impact_list_t, test_exe_null_self_,
-     kit_allocator_t alloc;
-     read_only_t access; handle_t self;) {
+STATIC_CORO(laplace_impact_list_t, test_exe_null_self_,
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   action_status_ = (int) af access.integers_size(af access.state,
                                                  af self);
 }
@@ -243,8 +244,8 @@ TEST("seq execution custom state") {
   execution_destroy(&exe);
 }
 
-CORO(impact_list_t, test_exe_alloc_set_, kit_allocator_t alloc;
-     read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_alloc_set_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   static handle_t const h0 = { .id = 0, .generation = -1 };
   static handle_t const h  = { .id = 0, .generation = 0 };
 
@@ -313,9 +314,9 @@ TEST("seq execution set value impact twice") {
   execution_destroy(&exe);
 }
 
-CORO(impact_list_t, test_exe_alloc_set_continue_,
-     kit_allocator_t alloc;
-     read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_alloc_set_continue_,
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   static handle_t const h0 = { .id = 0, .generation = -1 };
   static handle_t const h  = { .id = 0, .generation = 0 };
 
@@ -364,8 +365,9 @@ TEST("seq execution set value impact twice with continuation") {
   execution_destroy(&exe);
 }
 
-CORO(impact_list_t, test_exe_allocate_into_, kit_allocator_t alloc;
-     read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_allocate_into_,
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   DA_INIT(af return_value, 1, af alloc);
   handle_t h   = { .id = 0, .generation = -1 };
   impact_t i[] = { INTEGER_ALLOCATE_INTO(h, 1) };
@@ -375,8 +377,8 @@ CORO(impact_list_t, test_exe_allocate_into_, kit_allocator_t alloc;
 }
 CORO_END
 
-CORO(impact_list_t, test_exe_add_18_, kit_allocator_t alloc;
-     read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_add_18_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   DA_INIT(af return_value, 1, af alloc);
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { INTEGER_ADD(h, 0, 18) };
@@ -386,8 +388,8 @@ CORO(impact_list_t, test_exe_add_18_, kit_allocator_t alloc;
 }
 CORO_END
 
-CORO(impact_list_t, test_exe_add_24_, kit_allocator_t alloc;
-     read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_add_24_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   DA_INIT(af return_value, 1, af alloc);
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { INTEGER_ADD(h, 0, 24) };
@@ -426,8 +428,8 @@ TEST("seq execution two actions") {
   execution_destroy(&exe);
 }
 
-CORO(impact_list_t, test_exe_set_42_, kit_allocator_t alloc;
-     read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_set_42_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   DA_INIT(af return_value, 1, af alloc);
   handle_t h   = { .id = 1, .generation = 0 };
   impact_t i[] = { INTEGER_SET(h, 0, 42) };
@@ -457,55 +459,105 @@ TEST("seq execution invalid impact") {
   execution_destroy(&exe);
 }
 
+STATIC_CORO(impact_list_t, test_exe_0_alloc_set_42_,
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  DA_INIT(af return_value, 2, af alloc);
+  handle_t h0  = { .id = 0, .generation = -1 };
+  handle_t h   = { .id = 0, .generation = 0 };
+  impact_t i[] = { INTEGER_SET(h, 0, 42),
+                   INTEGER_ALLOCATE_INTO(h0, 1) };
+
+  af return_value.values[0] = i[0];
+  af return_value.values[1] = i[1];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+STATIC_CORO(impact_list_t, test_exe_1_set_43_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  DA_INIT(af return_value, 1, af alloc);
+  handle_t h   = { .id = 1, .generation = 0 };
+  impact_t i[] = { INTEGER_SET(h, 0, 43) };
+
+  af return_value.values[0] = i[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+STATIC_CORO(impact_list_t, test_exe_1_alloc_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  DA_INIT(af return_value, 1, af alloc);
+  handle_t h   = { .id = 1, .generation = -1 };
+  impact_t i[] = { INTEGER_ALLOCATE_INTO(h, 1) };
+
+  af return_value.values[0] = i[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+TEST("seq execution sync impacts applied first") {
+  laplace_thread_pool_t pool;
+  memset(&pool, 0, sizeof pool);
+
+  kit_allocator_t alloc = kit_alloc_default();
+  read_write_t    state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+
+  action_t a[] = { ACTION_UNSAFE(test_exe_0_alloc_set_42_, 1,
+                                 HANDLE_NULL),
+                   ACTION_UNSAFE(test_exe_1_set_43_, 1, HANDLE_NULL),
+                   ACTION_UNSAFE(test_exe_1_alloc_, 1, HANDLE_NULL) };
+  REQUIRE(execution_queue(&exe, a[0]) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a[1]) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a[2]) == STATUS_OK);
+
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+
+  handle_t h[] = { { .id = 0, .generation = 0 },
+                   { .id = 1, .generation = 0 } };
+  REQUIRE(state.get_integer(state.state, h[0], 0, -1) == 42);
+  REQUIRE(state.get_integer(state.state, h[1], 0, -1) == 43);
+
+  execution_destroy(&exe);
+}
+
+STATIC_CORO(impact_list_t, test_exe_queue_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  impact_t i[] = { QUEUE_ACTION(
+      ACTION_UNSAFE(test_exe_0_alloc_set_42_, 1, HANDLE_NULL)) };
+
+  DA_INIT(af return_value, 1, af alloc);
+  af return_value.values[0] = i[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+TEST("seq execution queue action impact") {
+  laplace_thread_pool_t pool;
+  memset(&pool, 0, sizeof pool);
+
+  kit_allocator_t alloc = kit_alloc_default();
+  read_write_t    state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+
+  action_t a = ACTION(test_exe_queue_, 1, HANDLE_NULL);
+  handle_t h = { .id = 0, .generation = 0 };
+
+  REQUIRE(execution_queue(&exe, a) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
+
+  execution_destroy(&exe);
+}
+
 /*
-TEST("x seq execution sync impacts applied first") {
-  auto exe = laplace::execution {}.set_thread_count(0);
-
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact {
-          laplace::integer_set { .id = 0, .index = 0, .value = 42 }
-        } + laplace::impact { laplace::integer_allocate_into {
-                .id = 0, .size = 1 } };
-      }));
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact { laplace::integer_set {
-            .id = 1, .index = 0, .value = 43 } };
-      }));
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact { laplace::integer_allocate_into {
-            .id = 1, .size = 1 } };
-      }));
-  exe.schedule_and_join(1);
-
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
-  REQUIRE(exe.read_only().get_integer(1, 0, -1) == 43);
-}
-
-TEST("x seq execution queue action impact") {
-  auto exe = laplace::execution {}.set_thread_count(0);
-
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact { laplace::queue_action {
-            laplace::action {}.setup(
-                [](laplace::entity)
-                    -> coro::generator<laplace::impact_list> {
-                  co_yield laplace::impact {
-                    laplace::integer_allocate_into { .id   = 0,
-                                                     .size = 1 }
-                  } + laplace::impact { laplace::integer_set {
-                          .id = 0, .index = 0, .value = 42 } };
-                }) } };
-      }));
-
-  exe.schedule_and_join(1);
-
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
-}
-
 TEST("x seq execution no multithreading") {
   static auto m         = std::mutex {};
   static auto foo_begin = 0;

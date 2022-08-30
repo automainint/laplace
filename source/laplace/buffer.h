@@ -379,28 +379,28 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
  */
 #define LAPLACE_BUFFER_CLONE(s, dst, src)                         \
   do {                                                            \
-    (dst).cell_size  = (src).cell_size;                           \
-    (dst).chunk_size = (src).chunk_size;                          \
-    (dst).reserved   = (src).reserved;                            \
-    (dst).next_block = (src).next_block;                          \
+    laplace_status_t status_ = LAPLACE_STATUS_OK;                 \
+    (dst).cell_size          = (src).cell_size;                   \
+    (dst).chunk_size         = (src).chunk_size;                  \
+    (dst).reserved           = (src).reserved;                    \
+    (dst).next_block         = (src).next_block;                  \
     atomic_store_explicit(&(dst).next_chunk, 0,                   \
                           memory_order_relaxed);                  \
-    KIT_DA_INIT((dst).info, (src).info.size, (src).info.alloc);   \
+    KIT_DA_RESIZE((dst).info, (src).info.size);                   \
     if ((dst).info.size != (src).info.size)                       \
-      (s) = LAPLACE_ERROR_BAD_ALLOC;                              \
+      status_ = LAPLACE_ERROR_BAD_ALLOC;                          \
     else                                                          \
       memcpy((dst).info.values, (src).info.values,                \
              sizeof((src).info.values[0]) * (src).info.size);     \
-    KIT_DA_INIT((dst).blocks, (src).blocks.size,                  \
-                (src).blocks.alloc);                              \
+    KIT_DA_RESIZE((dst).blocks, (src).blocks.size);               \
     if ((dst).blocks.size != (src).blocks.size)                   \
-      (s) = LAPLACE_ERROR_BAD_ALLOC;                              \
+      status_ = LAPLACE_ERROR_BAD_ALLOC;                          \
     else                                                          \
       memcpy((dst).blocks.values, (src).blocks.values,            \
              sizeof((src).blocks.values[0]) * (src).blocks.size); \
-    KIT_DA_INIT((dst).data, (src).data.size, (src).data.alloc);   \
+    KIT_DA_RESIZE((dst).data, (src).data.size);                   \
     if ((dst).data.size != (src).data.size)                       \
-      (s) = LAPLACE_ERROR_BAD_ALLOC;                              \
+      status_ = LAPLACE_ERROR_BAD_ALLOC;                          \
     else {                                                        \
       for (ptrdiff_t i_ = 0; i_ < (src).data.size; i_++) {        \
         atomic_store_explicit(                                    \
@@ -412,7 +412,7 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
                               memory_order_relaxed);              \
       }                                                           \
     }                                                             \
-    (s) = LAPLACE_STATUS_OK;                                      \
+    (s) = status_;                                                \
   } while (0)
 
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
