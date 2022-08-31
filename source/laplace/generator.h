@@ -23,19 +23,22 @@ struct laplace_promise {
 };
 
 typedef struct {
-  laplace_promise_t *promise;
-  laplace_time_t     tick_duration;
-  laplace_time_t     clock;
+  union {
+    laplace_promise_t promise;
+    struct {
+      char _padding[LAPLACE_COROUTINE_SIZE];
+    };
+  };
+  laplace_time_t tick_duration;
+  laplace_time_t clock;
 } laplace_generator_t;
 
 laplace_status_t laplace_generator_init(
     laplace_generator_t *generator, laplace_action_t action,
     laplace_read_only_t access, kit_allocator_t alloc);
 
-void laplace_generator_destroy(laplace_generator_t generator);
-
 laplace_impact_list_t laplace_generator_run(
-    laplace_generator_t const *generator);
+    laplace_generator_t *generator);
 
 laplace_generator_status_t laplace_generator_status(
     laplace_generator_t const *generator);
@@ -51,9 +54,6 @@ laplace_generator_status_t laplace_generator_status(
   static_assert(offsetof(AF_TYPE(coro_), return_value) ==      \
                     offsetof(laplace_promise_t, return_value), \
                 "Wrong return_value offset");                  \
-  static_assert(offsetof(AF_TYPE(coro_), alloc) ==             \
-                    offsetof(laplace_promise_t, alloc),        \
-                "Wrong alloc offset");                         \
   static_assert(offsetof(AF_TYPE(coro_), access) ==            \
                     offsetof(laplace_promise_t, access),       \
                 "Wrong access offset");                        \
@@ -70,7 +70,6 @@ laplace_generator_status_t laplace_generator_status(
 #  define generator_t laplace_generator_t
 
 #  define generator_init laplace_generator_init
-#  define generator_destroy laplace_generator_destroy
 #  define generator_run laplace_generator_run
 #  define generator_status laplace_generator_status
 #endif

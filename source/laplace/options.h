@@ -12,7 +12,7 @@ typedef int64_t laplace_time_t;
 typedef int64_t laplace_integer_t;
 typedef int8_t  laplace_byte_t;
 
-enum { LAPLACE_ID_UNDEFINED = -1 };
+enum { LAPLACE_ID_UNDEFINED = -1, LAPLACE_COROUTINE_SIZE = 400 };
 
 typedef enum {
   LAPLACE_STATUS_OK = 0,
@@ -36,6 +36,7 @@ typedef enum {
 
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
 #  define ID_UNDEFINED LAPLACE_ID_UNDEFINED
+#  define COROUTINE_SIZE LAPLACE_COROUTINE_SIZE
 #  define STATUS_OK LAPLACE_STATUS_OK
 #  define ERROR_BAD_ALLOC LAPLACE_ERROR_BAD_ALLOC
 #  define ERROR_BAD_MUTEX_INIT LAPLACE_ERROR_BAD_MUTEX_INIT

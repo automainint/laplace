@@ -1,10 +1,6 @@
 name: Code coverage
 
 on:
-  push:
-    branches: [ stable ]
-  pull_request:
-    branches: [ stable ]
   schedule:
     - cron: '0 0 */16 * *'
   workflow_dispatch:

@@ -625,48 +625,46 @@ TEST("seq execution no multithreading") {
   REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
 
   REQUIRE(foo_end + bar_end == 1);
-  
+
+  execution_destroy(&exe);
+}
+
+TEST("execution two parallel actions") {
+  atomic_store_explicit(&foo_begin, 0, memory_order_relaxed);
+  atomic_store_explicit(&foo_end, 0, memory_order_relaxed);
+  atomic_store_explicit(&bar_begin, 0, memory_order_relaxed);
+  atomic_store_explicit(&bar_end, 0, memory_order_relaxed);
+
+  kit_allocator_t alloc = kit_alloc_default();
+
+  pool_state_t_ pool_;
+  DA_INIT(pool_.threads, 0, alloc);
+  laplace_thread_pool_t pool = { .state   = &pool_,
+                                 .release = pool_release_,
+                                 .run     = pool_run_,
+                                 .join    = pool_join_ };
+
+  read_write_t state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+
+  action_t a[] = { ACTION_UNSAFE(test_exe_foo_, 1, HANDLE_NULL),
+                   ACTION_UNSAFE(test_exe_bar_, 1, HANDLE_NULL) };
+
+  REQUIRE(execution_queue(&exe, a[0]) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a[1]) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+
+  REQUIRE(foo_end == 1);
+  REQUIRE(bar_end == 1);
+
   execution_destroy(&exe);
 }
 
 /*
-TEST("x execution two parallel actions") {
-  static auto m         = std::mutex {};
-  static auto foo_begin = 0;
-  static auto foo_end   = 0;
-  static auto bar_begin = 0;
-  static auto bar_end   = 0;
-
-  auto exe = laplace::execution {}.set_thread_count(4);
-
-  exe.queue(laplace::action {}.setup(
-      [&](laplace::entity) -> coro::generator<laplace::impact_list> {
-        m.lock();
-        foo_begin++;
-        m.unlock();
-        sleep_for(milliseconds(300));
-        m.lock();
-        foo_end = bar_begin;
-        m.unlock();
-        co_yield laplace::impact { laplace::noop {} };
-      }));
-  exe.queue(laplace::action {}.setup(
-      [&](laplace::entity) -> coro::generator<laplace::impact_list> {
-        m.lock();
-        bar_begin++;
-        m.unlock();
-        sleep_for(milliseconds(300));
-        m.lock();
-        bar_end = foo_begin;
-        m.unlock();
-        co_yield laplace::impact { laplace::noop {} };
-      }));
-  exe.schedule_and_join(1);
-
-  REQUIRE(foo_end == 1);
-  REQUIRE(bar_end == 1);
-}
-
 TEST("x execution join one") {
   auto exe = laplace::execution {}.set_thread_count(1);
 

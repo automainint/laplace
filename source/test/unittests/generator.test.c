@@ -57,7 +57,6 @@ TEST("generator example") {
   DA_DESTROY(bar);
 
   REQUIRE(generator_status(&gen) == GENERATOR_FINISHED);
-  generator_destroy(gen);
 
   REQUIRE(alloc_count == free_count);
 }
