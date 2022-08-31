@@ -4,6 +4,8 @@
 #define KIT_TEST_FILE execution
 #include <kit_test/test.h>
 
+enum { default_tick = 10 };
+
 typedef struct {
   DA(threads, thrd_t);
 } pool_state_t_;
@@ -287,8 +289,6 @@ TEST("seq execution set value impact") {
 }
 
 TEST("seq execution set value impact twice") {
-  const laplace_time_t tick = 10;
-
   laplace_thread_pool_t pool;
   memset(&pool, 0, sizeof pool);
 
@@ -299,7 +299,8 @@ TEST("seq execution set value impact twice") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
 
-  action_t action = ACTION(test_exe_alloc_set_, tick, HANDLE_NULL);
+  action_t action = ACTION(test_exe_alloc_set_, default_tick,
+                           HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == STATUS_OK);
   handle_t h = { .id = 0, .generation = 0 };
@@ -307,7 +308,8 @@ TEST("seq execution set value impact twice") {
   REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
 
-  REQUIRE(execution_schedule_and_join(&exe, tick) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, default_tick) ==
+          STATUS_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
 
   execution_destroy(&exe);
@@ -337,8 +339,6 @@ STATIC_CORO(impact_list_t, test_exe_alloc_set_continue_,
 CORO_END
 
 TEST("seq execution set value impact twice with continuation") {
-  const laplace_time_t tick = 10;
-
   laplace_thread_pool_t pool;
   memset(&pool, 0, sizeof pool);
 
@@ -349,7 +349,7 @@ TEST("seq execution set value impact twice with continuation") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
 
-  action_t action = ACTION(test_exe_alloc_set_continue_, tick,
+  action_t action = ACTION(test_exe_alloc_set_continue_, default_tick,
                            HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == STATUS_OK);
@@ -358,7 +358,8 @@ TEST("seq execution set value impact twice with continuation") {
   REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
 
-  REQUIRE(execution_schedule_and_join(&exe, tick) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, default_tick) ==
+          STATUS_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
 
   execution_destroy(&exe);
@@ -664,241 +665,418 @@ TEST("execution two parallel actions") {
   execution_destroy(&exe);
 }
 
-/*
-TEST("x execution join one") {
-  auto exe = laplace::execution {}.set_thread_count(1);
+STATIC_CORO(impact_list_t, test_exe_delay_alloc_set_42_,
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  struct timespec t = { .tv_sec = 0, .tv_nsec = 100000000 };
+  thrd_sleep(&t, NULL);
 
-  exe.queue(laplace::action {}.setup(
-      [&](laplace::entity) -> coro::generator<laplace::impact_list> {
-        sleep_for(milliseconds(100));
-        co_yield laplace::impact {
-          laplace::integer_allocate_into { .id = 0, .size = 1 }
-        } + laplace::impact { laplace::integer_set {
-                .id = 0, .index = 0, .value = 42 } };
-      }));
+  DA_INIT(af return_value, 2, af alloc);
+  handle_t h0  = { .id = 0, .generation = -1 };
+  handle_t h   = { .id = 0, .generation = 0 };
+  impact_t i[] = { INTEGER_SET(h, 0, 42),
+                   INTEGER_ALLOCATE_INTO(h0, 1) };
 
-  exe.schedule(1);
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == -1);
-  exe.join();
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  af return_value.values[0] = i[0];
+  af return_value.values[1] = i[1];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+TEST("execution join one") {
+  kit_allocator_t alloc = kit_alloc_default();
+
+  pool_state_t_ pool_;
+  DA_INIT(pool_.threads, 0, alloc);
+  laplace_thread_pool_t pool = { .state   = &pool_,
+                                 .release = pool_release_,
+                                 .run     = pool_run_,
+                                 .join    = pool_join_ };
+
+  read_write_t state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_set_thread_count(&exe, 1) == STATUS_OK);
+
+  action_t a = ACTION(test_exe_delay_alloc_set_42_, 1, HANDLE_NULL);
+  handle_t h = { .id = 0, .generation = 0 };
+
+  REQUIRE(execution_queue(&exe, a) == STATUS_OK);
+  REQUIRE(execution_schedule(&exe, 1) == STATUS_OK);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == -1);
+  execution_join(&exe);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
+
+  execution_destroy(&exe);
 }
 
-TEST("x execution join four") {
-  auto exe = laplace::execution {}.set_thread_count(4);
+TEST("execution join four") {
+  kit_allocator_t alloc = kit_alloc_default();
 
-  exe.queue(laplace::action {}.setup(
-      [&](laplace::entity) -> coro::generator<laplace::impact_list> {
-        sleep_for(milliseconds(100));
-        co_yield laplace::impact {
-          laplace::integer_allocate_into { .id = 0, .size = 1 }
-        } + laplace::impact { laplace::integer_set {
-                .id = 0, .index = 0, .value = 42 } };
-      }));
+  pool_state_t_ pool_;
+  DA_INIT(pool_.threads, 0, alloc);
+  laplace_thread_pool_t pool = { .state   = &pool_,
+                                 .release = pool_release_,
+                                 .run     = pool_run_,
+                                 .join    = pool_join_ };
 
-  exe.schedule(1);
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == -1);
-  exe.join();
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  read_write_t state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+
+  action_t a = ACTION(test_exe_delay_alloc_set_42_, 1, HANDLE_NULL);
+  handle_t h = { .id = 0, .generation = 0 };
+
+  REQUIRE(execution_queue(&exe, a) == STATUS_OK);
+  REQUIRE(execution_schedule(&exe, 1) == STATUS_OK);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == -1);
+  execution_join(&exe);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
+
+  execution_destroy(&exe);
 }
 
-TEST("x execution set value impact") {
-  auto exe = laplace::execution {}.set_thread_count(4);
+TEST("execution set value impact") {
+  kit_allocator_t alloc = kit_alloc_default();
 
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact {
-          laplace::integer_allocate_into { .id = 0, .size = 1 }
-        } + laplace::impact { laplace::integer_set {
-                .id = 0, .index = 0, .value = 42 } };
-        co_yield laplace::impact { laplace::integer_set {
-            .id = 0, .index = 0, .value = 43 } };
-      }));
+  pool_state_t_ pool_;
+  DA_INIT(pool_.threads, 0, alloc);
+  laplace_thread_pool_t pool = { .state   = &pool_,
+                                 .release = pool_release_,
+                                 .run     = pool_run_,
+                                 .join    = pool_join_ };
 
-  exe.schedule_and_join(1);
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  read_write_t state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+
+  action_t action = ACTION(test_exe_alloc_set_, 1, HANDLE_NULL);
+
+  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+
+  handle_t h = { .id = 0, .generation = 0 };
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
+
+  execution_destroy(&exe);
 }
 
-TEST("x execution set value impact twice") {
-  auto exe = laplace::execution {}.set_thread_count(4);
+TEST("execution set value impact twice") {
+  kit_allocator_t alloc = kit_alloc_default();
 
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact {
-          laplace::integer_allocate_into { .id = 0, .size = 1 }
-        } + laplace::impact { laplace::integer_set {
-                .id = 0, .index = 0, .value = 42 } };
-        co_yield laplace::impact { laplace::integer_set {
-            .id = 0, .index = 0, .value = 43 } };
-      }));
+  pool_state_t_ pool_;
+  DA_INIT(pool_.threads, 0, alloc);
+  laplace_thread_pool_t pool = { .state   = &pool_,
+                                 .release = pool_release_,
+                                 .run     = pool_run_,
+                                 .join    = pool_join_ };
 
-  const auto tick = laplace::action::default_tick_duration;
+  read_write_t state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
 
-  exe.schedule_and_join(1);
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
 
-  exe.schedule_and_join(tick);
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
+  action_t action = ACTION(test_exe_alloc_set_, default_tick,
+                           HANDLE_NULL);
+
+  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+  handle_t h = { .id = 0, .generation = 0 };
+
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
+
+  REQUIRE(execution_schedule_and_join(&exe, default_tick) ==
+          STATUS_OK);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
+
+  execution_destroy(&exe);
 }
 
-TEST("x execution set value impact twice with continuation") {
-  auto exe = laplace::execution {}.set_thread_count(4);
+TEST("execution set value impact twice with continuation") {
+  kit_allocator_t alloc = kit_alloc_default();
 
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact { laplace::integer_allocate_into {
-            .id = 0, .size = 1 } } +
-            laplace::impact { laplace::integer_set {
-                .id = 0, .index = 0, .value = 42 } } +
-            laplace::impact { laplace::tick_continue {} };
-        co_yield laplace::impact { laplace::integer_set {
-            .id = 0, .index = 0, .value = 43 } };
-      }));
+  pool_state_t_ pool_;
+  DA_INIT(pool_.threads, 0, alloc);
+  laplace_thread_pool_t pool = { .state   = &pool_,
+                                 .release = pool_release_,
+                                 .run     = pool_run_,
+                                 .join    = pool_join_ };
 
-  const auto tick = laplace::action::default_tick_duration;
+  read_write_t state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
 
-  exe.schedule_and_join(1);
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
 
-  exe.schedule_and_join(tick);
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 43);
+  action_t action = ACTION(test_exe_alloc_set_continue_, default_tick,
+                           HANDLE_NULL);
+
+  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+  handle_t h = { .id = 0, .generation = 0 };
+
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
+
+  REQUIRE(execution_schedule_and_join(&exe, default_tick) ==
+          STATUS_OK);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
+
+  execution_destroy(&exe);
 }
 
-TEST("x execution two actions") {
-  auto exe = laplace::execution {}.set_thread_count(4);
+TEST("execution two actions") {
+  kit_allocator_t alloc = kit_alloc_default();
 
-  const auto tick = laplace::action::default_tick_duration;
+  pool_state_t_ pool_;
+  DA_INIT(pool_.threads, 0, alloc);
+  laplace_thread_pool_t pool = { .state   = &pool_,
+                                 .release = pool_release_,
+                                 .run     = pool_run_,
+                                 .join    = pool_join_ };
 
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact { laplace::integer_allocate_into {
-            .id = 0, .size = 1 } };
-      }));
-  exe.schedule_and_join(1);
+  read_write_t state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
 
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact { laplace::integer_add {
-            .id = 0, .index = 0, .delta = 18 } };
-      }));
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact { laplace::integer_add {
-            .id = 0, .index = 0, .delta = 24 } };
-      }));
-  exe.schedule_and_join(tick);
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
 
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  action_t a0 = ACTION(test_exe_allocate_into_, 1, HANDLE_NULL);
+  REQUIRE(execution_queue(&exe, a0) == STATUS_OK);
+
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+
+  action_t a1 = ACTION(test_exe_add_18_, 1, HANDLE_NULL);
+  action_t a2 = ACTION(test_exe_add_24_, 1, HANDLE_NULL);
+  REQUIRE(execution_queue(&exe, a1) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a2) == STATUS_OK);
+
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+
+  handle_t h = { .id = 0, .generation = 0 };
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
+
+  execution_destroy(&exe);
 }
 
-TEST("x execution invalid impact") {
-  auto exe = laplace::execution {}.set_thread_count(4);
+TEST("execution invalid impact") {
+  kit_allocator_t alloc = kit_alloc_default();
 
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact { laplace::integer_set {
-            .id = 1, .index = 0, .value = 42 } };
-      }));
-  exe.schedule_and_join(1);
+  pool_state_t_ pool_;
+  DA_INIT(pool_.threads, 0, alloc);
+  laplace_thread_pool_t pool = { .state   = &pool_,
+                                 .release = pool_release_,
+                                 .run     = pool_run_,
+                                 .join    = pool_join_ };
 
-  REQUIRE(exe.error());
+  read_write_t state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+
+  action_t action = ACTION(test_exe_set_42_, 1, HANDLE_NULL);
+  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+
+  REQUIRE(execution_schedule_and_join(&exe, 1) ==
+          ERROR_INVALID_HANDLE_ID);
+
+  execution_destroy(&exe);
 }
 
-TEST("x execution sync impacts applied first") {
-  auto exe = laplace::execution {}.set_thread_count(4);
+TEST("execution sync impacts applied first") {
+  kit_allocator_t alloc = kit_alloc_default();
 
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact {
-          laplace::integer_set { .id = 0, .index = 0, .value = 42 }
-        } + laplace::impact { laplace::integer_allocate_into {
-                .id = 0, .size = 1 } };
-      }));
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact { laplace::integer_set {
-            .id = 1, .index = 0, .value = 43 } };
-      }));
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact { laplace::integer_allocate_into {
-            .id = 1, .size = 1 } };
-      }));
-  exe.schedule_and_join(1);
+  pool_state_t_ pool_;
+  DA_INIT(pool_.threads, 0, alloc);
+  laplace_thread_pool_t pool = { .state   = &pool_,
+                                 .release = pool_release_,
+                                 .run     = pool_run_,
+                                 .join    = pool_join_ };
 
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
-  REQUIRE(exe.read_only().get_integer(1, 0, -1) == 43);
+  read_write_t state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+
+  action_t a[] = { ACTION_UNSAFE(test_exe_0_alloc_set_42_, 1,
+                                 HANDLE_NULL),
+                   ACTION_UNSAFE(test_exe_1_set_43_, 1, HANDLE_NULL),
+                   ACTION_UNSAFE(test_exe_1_alloc_, 1, HANDLE_NULL) };
+  REQUIRE(execution_queue(&exe, a[0]) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a[1]) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a[2]) == STATUS_OK);
+
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+
+  handle_t h[] = { { .id = 0, .generation = 0 },
+                   { .id = 1, .generation = 0 } };
+  REQUIRE(state.get_integer(state.state, h[0], 0, -1) == 42);
+  REQUIRE(state.get_integer(state.state, h[1], 0, -1) == 43);
+
+  execution_destroy(&exe);
 }
 
-TEST("x execution queue action impact") {
-  auto exe = laplace::execution {}.set_thread_count(4);
+TEST("execution queue action impact") {
+  kit_allocator_t alloc = kit_alloc_default();
 
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact { laplace::queue_action {
-            laplace::action {}.setup(
-                [](laplace::entity)
-                    -> coro::generator<laplace::impact_list> {
-                  co_yield laplace::impact {
-                    laplace::integer_allocate_into { .id   = 0,
-                                                     .size = 1 }
-                  } + laplace::impact { laplace::integer_set {
-                          .id = 0, .index = 0, .value = 42 } };
-                }) } };
-      }));
+  pool_state_t_ pool_;
+  DA_INIT(pool_.threads, 0, alloc);
+  laplace_thread_pool_t pool = { .state   = &pool_,
+                                 .release = pool_release_,
+                                 .run     = pool_run_,
+                                 .join    = pool_join_ };
 
-  exe.schedule_and_join(1);
+  read_write_t state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
 
-  REQUIRE(exe.read_only().get_integer(0, 0, -1) == 42);
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+
+  action_t a = ACTION(test_exe_queue_, 1, HANDLE_NULL);
+  handle_t h = { .id = 0, .generation = 0 };
+
+  REQUIRE(execution_queue(&exe, a) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
+
+  execution_destroy(&exe);
 }
 
-TEST("x execution action order") {
-  auto       exe  = laplace::execution {}.set_thread_count(4);
-  const auto tick = laplace::action::default_tick_duration;
+STATIC_CORO(impact_list_t, test_exe_order_alloc_2_,
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  struct timespec t = { .tv_sec = 0, .tv_nsec = 20000000 };
+  thrd_sleep(&t, NULL);
 
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact { laplace::noop {} };
-        sleep_for(milliseconds(20));
-        co_yield laplace::impact {
-          laplace::queue_action { laplace::action {}.setup(
-              { [](laplace::entity)
-                    -> coro::generator<laplace::impact_list> {
-                sleep_for(milliseconds(20));
-                co_yield laplace::impact {
-                  laplace::queue_action { laplace::action {}.setup(
-                      { [](laplace::entity)
-                            -> coro::generator<laplace::impact_list> {
-                        sleep_for(milliseconds(20));
-                        co_yield laplace::impact {
-                          laplace::integer_allocate_into { .id   = 0,
-                                                           .size = 1 }
-                        };
-                      } }) }
-                };
-              } }) }
-        };
-      }));
-  exe.queue(laplace::action {}.setup(
-      [](laplace::entity) -> coro::generator<laplace::impact_list> {
-        co_yield laplace::impact { laplace::noop {} };
-        co_yield laplace::impact {
-          laplace::queue_action { laplace::action {}.setup(
-              { [](laplace::entity)
-                    -> coro::generator<laplace::impact_list> {
-                co_yield laplace::impact {
-                  laplace::queue_action { laplace::action {}.setup(
-                      { [](laplace::entity)
-                            -> coro::generator<laplace::impact_list> {
-                        co_yield laplace::impact {
-                          laplace::integer_deallocate { .id = 0 }
-                        };
-                      } }) }
-                };
-              } }) }
-        };
-      }));
-  exe.schedule_and_join(1 + tick);
+  handle_t h   = { .id = 0, .generation = -1 };
+  impact_t i[] = { INTEGER_ALLOCATE_INTO(h, 1) };
 
-  REQUIRE(!exe.error());
+  DA_INIT(af return_value, 1, af alloc);
+  af return_value.values[0] = i[0];
+  AF_RETURN_VOID;
 }
- */
+CORO_END
+
+STATIC_CORO(impact_list_t, test_exe_order_alloc_1_,
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  struct timespec t = { .tv_sec = 0, .tv_nsec = 20000000 };
+  thrd_sleep(&t, NULL);
+
+  impact_t i[] = { QUEUE_ACTION(
+      ACTION_UNSAFE(test_exe_order_alloc_2_, 1, HANDLE_NULL)) };
+
+  DA_INIT(af return_value, 1, af alloc);
+  af return_value.values[0] = i[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+STATIC_CORO(impact_list_t, test_exe_order_alloc_0_,
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  impact_t i0[] = { NOOP() };
+
+  DA_INIT(af return_value, 1, af alloc);
+  af return_value.values[0] = i0[0];
+  AF_YIELD_VOID;
+
+  struct timespec t = { .tv_sec = 0, .tv_nsec = 20000000 };
+  thrd_sleep(&t, NULL);
+
+  impact_t i1[] = { QUEUE_ACTION(
+      ACTION_UNSAFE(test_exe_order_alloc_1_, 1, HANDLE_NULL)) };
+
+  DA_INIT(af return_value, 1, af alloc);
+  af return_value.values[0] = i1[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+STATIC_CORO(impact_list_t, test_exe_order_dealloc_2_,
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  handle_t h   = { .id = 0, .generation = 0 };
+  impact_t i[] = { INTEGER_DEALLOCATE(h) };
+
+  DA_INIT(af return_value, 1, af alloc);
+  af return_value.values[0] = i[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+STATIC_CORO(impact_list_t, test_exe_order_dealloc_1_,
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  impact_t i[] = { QUEUE_ACTION(
+      ACTION_UNSAFE(test_exe_order_dealloc_2_, 1, HANDLE_NULL)) };
+
+  DA_INIT(af return_value, 1, af alloc);
+  af return_value.values[0] = i[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+STATIC_CORO(impact_list_t, test_exe_order_dealloc_0_,
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  impact_t i0[] = { NOOP() };
+
+  DA_INIT(af return_value, 1, af alloc);
+  af return_value.values[0] = i0[0];
+  AF_YIELD_VOID;
+
+  impact_t i1[] = { QUEUE_ACTION(
+      ACTION_UNSAFE(test_exe_order_dealloc_1_, 1, HANDLE_NULL)) };
+
+  DA_INIT(af return_value, 1, af alloc);
+  af return_value.values[0] = i1[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+TEST("execution action order") {
+  kit_allocator_t alloc = kit_alloc_default();
+
+  pool_state_t_ pool_;
+  DA_INIT(pool_.threads, 0, alloc);
+  laplace_thread_pool_t pool = { .state   = &pool_,
+                                 .release = pool_release_,
+                                 .run     = pool_run_,
+                                 .join    = pool_join_ };
+
+  read_write_t state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+
+  action_t a[] = {
+    ACTION_UNSAFE(test_exe_order_alloc_0_, 1, HANDLE_NULL),
+    ACTION_UNSAFE(test_exe_order_dealloc_0_, 1, HANDLE_NULL)
+  };
+
+  REQUIRE(execution_queue(&exe, a[0]) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a[1]) == STATUS_OK);
+
+  REQUIRE(execution_schedule_and_join(&exe, 2) == STATUS_OK);
+
+  execution_destroy(&exe);
+}

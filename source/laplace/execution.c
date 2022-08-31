@@ -3,18 +3,26 @@
 #include <kit/lower_bound.h>
 #include <kit/move_back.h>
 
-#define LOCK_                                         \
-  if (mtx_lock(&execution->_lock) != thrd_success) {  \
-    execution->status = LAPLACE_ERROR_BAD_MUTEX_LOCK; \
-    execution->_done  = 1;                            \
-    return execution->status;                         \
+#define LOCK_                                           \
+  {                                                     \
+    assert(!locked_);                                   \
+    locked_ = 1;                                        \
+    if (mtx_lock(&execution->_lock) != thrd_success) {  \
+      execution->status = LAPLACE_ERROR_BAD_MUTEX_LOCK; \
+      execution->_done  = 1;                            \
+      return execution->status;                         \
+    }                                                   \
   }
 
-#define UNLOCK_                                         \
-  if (mtx_unlock(&execution->_lock) != thrd_success) {  \
-    execution->status = LAPLACE_ERROR_BAD_MUTEX_UNLOCK; \
-    execution->_done  = 1;                              \
-    return execution->status;                           \
+#define UNLOCK_                                           \
+  {                                                       \
+    assert(locked_);                                      \
+    locked_ = 0;                                          \
+    if (mtx_unlock(&execution->_lock) != thrd_success) {  \
+      execution->status = LAPLACE_ERROR_BAD_MUTEX_UNLOCK; \
+      execution->_done  = 1;                              \
+      return execution->status;                           \
+    }                                                     \
   }
 
 #define BROADCAST_(var_)                                    \
@@ -43,30 +51,35 @@
       UNLOCK_                                                \
     BROADCAST_(_on_fence)
 
-#define ONCE_END_                                             \
-  LOCK_                                                       \
-  }                                                           \
-  else {                                                      \
-    WAIT_(_on_fence)                                          \
-  }                                                           \
-  }                                                           \
-  else {                                                      \
-    UNLOCK_                                                   \
-    BROADCAST_(_on_fence)                                     \
-  }                                                           \
-  if (!execution->_done) {                                    \
-    if (++execution->_fence_out == execution->thread_count) { \
-      execution->_fence_in  = 0;                              \
-      execution->_fence_out = 0;                              \
-      UNLOCK_                                                 \
-      BROADCAST_(_on_fence)                                   \
-    } else {                                                  \
-      WAIT_(_on_fence)                                        \
-      UNLOCK_                                                 \
-    }                                                         \
-  } else {                                                    \
-    UNLOCK_                                                   \
-    BROADCAST_(_on_fence)                                     \
+#define ONCE_END_                                               \
+  LOCK_                                                         \
+  }                                                             \
+  else {                                                        \
+    while (!execution->_done && execution->_fence_in != 0 &&    \
+           execution->_fence_in != execution->thread_count)     \
+      WAIT_(_on_fence)                                          \
+  }                                                             \
+  }                                                             \
+  else {                                                        \
+    UNLOCK_                                                     \
+    BROADCAST_(_on_fence)                                       \
+    LOCK_                                                       \
+  }                                                             \
+  if (!execution->_done) {                                      \
+    if (++execution->_fence_out == execution->thread_count) {   \
+      execution->_fence_in  = 0;                                \
+      execution->_fence_out = 0;                                \
+      UNLOCK_                                                   \
+      BROADCAST_(_on_fence)                                     \
+    } else {                                                    \
+      while (!execution->_done && execution->_fence_out != 0 && \
+             execution->_fence_out != execution->thread_count)  \
+        WAIT_(_on_fence)                                        \
+      UNLOCK_                                                   \
+    }                                                           \
+  } else {                                                      \
+    UNLOCK_                                                     \
+    BROADCAST_(_on_fence)                                       \
   }
 
 static laplace_status_t sync_routine_(
@@ -211,16 +224,27 @@ static laplace_status_t sync_routine_(
 
 static laplace_status_t routine_internal_(
     laplace_execution_t *const execution) {
+  int locked_ = 0;
+
   LOCK_
   while (!execution->_done) {
     while (!execution->_done && execution->_ticks == 0)
       WAIT_(_on_tick)
 
-    while (execution->_ticks != 0) {
+    while (!execution->_done && execution->_ticks != 0) {
       UNLOCK_
 
-      for (int done = 0; !done;) {
-        done = 1;
+      ONCE_BEGIN_
+      execution->_tick_done = 0;
+      ONCE_END_
+
+      LOCK_
+      while (!execution->_tick_done) {
+        UNLOCK_
+
+        ONCE_BEGIN_
+        execution->_tick_done = 1;
+        ONCE_END_
 
         LOCK_
         while (execution->_queue_index < execution->_queue.size) {
@@ -232,8 +256,10 @@ static laplace_status_t routine_internal_(
 
           if (action->clock != 0 ||
               laplace_generator_status(&action->generator) ==
-                  LAPLACE_GENERATOR_FINISHED)
+                  LAPLACE_GENERATOR_FINISHED) {
+            LOCK_
             continue;
+          }
 
           int is_continue = 0;
 
@@ -246,7 +272,9 @@ static laplace_status_t routine_internal_(
             switch (impact->type) {
               case LAPLACE_IMPACT_TICK_CONTINUE:
                 is_continue = 1;
-                done        = 0;
+                LOCK_
+                execution->_tick_done = 0;
+                UNLOCK_
                 break;
 
               case LAPLACE_IMPACT_QUEUE_ACTION: {
@@ -276,7 +304,9 @@ static laplace_status_t routine_internal_(
                 if (!ok_)
                   return LAPLACE_ERROR_BAD_ALLOC;
 
-                done = 0;
+                LOCK_
+                execution->_tick_done = 0;
+                UNLOCK_
               } break;
 
               default:
@@ -324,6 +354,8 @@ static laplace_status_t routine_internal_(
         laplace_status_t res = LAPLACE_STATUS_OK;
 
         ONCE_BEGIN_
+        execution->_queue_index = 0;
+
         if (execution->_access.apply != NULL)
           for (ptrdiff_t i = 0; i < execution->_sync.size; i++)
             res = execution->_access.apply(execution->_access.state,
@@ -378,7 +410,10 @@ static laplace_status_t routine_internal_(
         if (execution->_access.adjust_done != NULL)
           execution->_access.adjust_done(execution->_access.state);
         ONCE_END_
+
+        LOCK_
       }
+      UNLOCK_
 
       ONCE_BEGIN_
       MOVE_BACK_INL(
@@ -390,7 +425,6 @@ static laplace_status_t routine_internal_(
         execution->_queue.values[i].order = i;
         execution->_queue.values[i].clock--;
       }
-      execution->_queue_index = 0;
       if (--execution->_ticks == 0)
         BROADCAST_(_on_join);
       ONCE_END_
@@ -404,6 +438,8 @@ static laplace_status_t routine_internal_(
 }
 
 static int routine_(laplace_execution_t *const execution) {
+  int locked_ = 0;
+
   laplace_status_t s = routine_internal_(execution);
 
   if (s != LAPLACE_STATUS_OK) {
@@ -485,6 +521,7 @@ void laplace_execution_destroy(laplace_execution_t *const execution) {
   }
 
   (void) cnd_broadcast(&execution->_on_tick);
+  (void) cnd_broadcast(&execution->_on_fence);
 
   if (execution->_thread_pool.join != NULL)
     execution->_thread_pool.join(execution->_thread_pool.state);
@@ -509,6 +546,8 @@ void laplace_execution_destroy(laplace_execution_t *const execution) {
 laplace_status_t laplace_execution_set_thread_count(
     laplace_execution_t *const execution,
     ptrdiff_t const            thread_count) {
+  int locked_ = 0;
+
   if (execution->_thread_pool.run == NULL ||
       execution->_thread_pool.join == NULL)
     return LAPLACE_ERROR_NO_THREAD_POOL;
@@ -517,7 +556,9 @@ laplace_status_t laplace_execution_set_thread_count(
     LOCK_
     execution->_done = 1;
     UNLOCK_
+
     BROADCAST_(_on_tick)
+    BROADCAST_(_on_fence)
 
     execution->_thread_pool.join(execution->_thread_pool.state);
 
@@ -575,7 +616,7 @@ laplace_status_t laplace_execution_queue(
   if (execution->_queue.size != n + 1)
     return LAPLACE_ERROR_BAD_ALLOC;
 
-  execution->_queue.values[n].order         = 0;
+  execution->_queue.values[n].order         = n;
   execution->_queue.values[n].clock         = 0;
   execution->_queue.values[n].tick_duration = action.tick_duration;
 
@@ -616,5 +657,5 @@ laplace_status_t laplace_execution_schedule_and_join(
 
   laplace_execution_join(execution);
 
-  return LAPLACE_STATUS_OK;
+  return execution->status;
 }
