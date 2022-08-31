@@ -7,7 +7,8 @@
 
 #include <kit/allocator.h>
 #include <kit/atomic.h>
-#include <kit/threads.h>
+#include <kit/condition_variable.h>
+#include <kit/mutex.h>
 #include <stddef.h>
 
 #ifdef __cplusplus

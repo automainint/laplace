@@ -30,8 +30,7 @@ TEST("buffer get chunk size") {
   laplace_status_t s;
   BUFFER_CREATE(s, buf, int64_t);
   REQUIRE(s == STATUS_OK);
-  REQUIRE(buf.chunk_size ==
-          BUFFER_DEFAULT_CHUNK_SIZE / sizeof(int64_t));
+  REQUIRE(buf.chunk_size == BUFFER_DEFAULT_CHUNK_SIZE);
   BUFFER_DESTROY(buf);
 }
 

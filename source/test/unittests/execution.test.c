@@ -220,9 +220,8 @@ TEST("seq execution read only") {
   execution_destroy(&exe);
 }
 
-laplace_integer_t test_state_get_integer_(void *_, handle_t h,
-                                          ptrdiff_t         index,
-                                          laplace_integer_t invalid) {
+static laplace_integer_t test_state_get_integer_(
+    void *_, handle_t h, ptrdiff_t index, laplace_integer_t invalid) {
   return 42;
 }
 
@@ -557,43 +556,80 @@ TEST("seq execution queue action impact") {
   execution_destroy(&exe);
 }
 
-/*
-TEST("x seq execution no multithreading") {
-  static auto m         = std::mutex {};
-  static auto foo_begin = 0;
-  static auto foo_end   = 0;
-  static auto bar_begin = 0;
-  static auto bar_end   = 0;
+static ATOMIC(int) foo_begin;
+static ATOMIC(int) foo_end;
+static ATOMIC(int) bar_begin;
+static ATOMIC(int) bar_end;
 
-  auto exe = laplace::execution {}.set_thread_count(0);
+STATIC_CORO(impact_list_t, test_exe_foo_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  atomic_fetch_add_explicit(&foo_begin, 1, memory_order_acq_rel);
 
-  exe.queue(laplace::action {}.setup(
-      [&](laplace::entity) -> coro::generator<laplace::impact_list> {
-        m.lock();
-        foo_begin++;
-        m.unlock();
-        sleep_for(milliseconds(300));
-        m.lock();
-        foo_end = bar_begin;
-        m.unlock();
-        co_yield laplace::impact { laplace::noop {} };
-      }));
-  exe.queue(laplace::action {}.setup(
-      [&](laplace::entity) -> coro::generator<laplace::impact_list> {
-        m.lock();
-        bar_begin++;
-        m.unlock();
-        sleep_for(milliseconds(300));
-        m.lock();
-        bar_end = foo_begin;
-        m.unlock();
-        co_yield laplace::impact { laplace::noop {} };
-      }));
-  exe.schedule_and_join(1);
+  struct timespec t = { .tv_sec = 0, .tv_nsec = 300000000 };
+  thrd_sleep(&t, NULL);
+
+  atomic_store_explicit(
+      &foo_end,
+      atomic_load_explicit(&bar_begin, memory_order_acquire),
+      memory_order_release);
+
+  impact_t i[] = { NOOP() };
+
+  DA_INIT(af return_value, 1, af alloc);
+  af return_value.values[0] = i[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+STATIC_CORO(impact_list_t, test_exe_bar_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  atomic_fetch_add_explicit(&bar_begin, 1, memory_order_acq_rel);
+
+  struct timespec t = { .tv_sec = 0, .tv_nsec = 300000000 };
+  thrd_sleep(&t, NULL);
+
+  atomic_store_explicit(
+      &bar_end,
+      atomic_load_explicit(&foo_begin, memory_order_acquire),
+      memory_order_release);
+
+  impact_t i[] = { NOOP() };
+
+  DA_INIT(af return_value, 1, af alloc);
+  af return_value.values[0] = i[0];
+  AF_RETURN_VOID;
+}
+CORO_END
+
+TEST("seq execution no multithreading") {
+  atomic_store_explicit(&foo_begin, 0, memory_order_relaxed);
+  atomic_store_explicit(&foo_end, 0, memory_order_relaxed);
+  atomic_store_explicit(&bar_begin, 0, memory_order_relaxed);
+  atomic_store_explicit(&bar_end, 0, memory_order_relaxed);
+
+  laplace_thread_pool_t pool;
+  memset(&pool, 0, sizeof pool);
+
+  kit_allocator_t alloc = kit_alloc_default();
+  read_write_t    state;
+  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+
+  action_t a[] = { ACTION_UNSAFE(test_exe_foo_, 1, HANDLE_NULL),
+                   ACTION_UNSAFE(test_exe_bar_, 1, HANDLE_NULL) };
+
+  REQUIRE(execution_queue(&exe, a[0]) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a[1]) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
 
   REQUIRE(foo_end + bar_end == 1);
+  
+  execution_destroy(&exe);
 }
 
+/*
 TEST("x execution two parallel actions") {
   static auto m         = std::mutex {};
   static auto foo_begin = 0;

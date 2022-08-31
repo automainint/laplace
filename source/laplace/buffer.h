@@ -4,8 +4,9 @@
 #include "handle.h"
 
 #include <kit/atomic.h>
+#include <kit/condition_variable.h>
 #include <kit/dynamic_array.h>
-#include <kit/threads.h>
+#include <kit/mutex.h>
 
 #include <assert.h>
 #include <string.h>
@@ -16,7 +17,7 @@
 extern "C" {
 #endif
 
-enum { LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE = 8000 };
+enum { LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE = 400 };
 
 #define LAPLACE_BUF_INFO_(buf_) (buf_).info
 #define LAPLACE_BUF_DATA_(buf_) (buf_).data
@@ -74,10 +75,8 @@ typedef struct {
   do {                                                            \
     (status_) = LAPLACE_STATUS_OK;                                \
     memset(&(buf_), 0, sizeof(buf_));                             \
-    (buf_).cell_size = LAPLACE_BUF_CELL_SIZE_(buf_);              \
-    (buf_).chunk_size =                                           \
-        LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE /                       \
-        sizeof(LAPLACE_BUF_DATA_(buf_).values[0].value);          \
+    (buf_).cell_size  = LAPLACE_BUF_CELL_SIZE_(buf_);             \
+    (buf_).chunk_size = LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE;        \
     if (mtx_init(&(buf_).read_lock, mtx_plain) != thrd_success) { \
       (status_) = LAPLACE_ERROR_BAD_MUTEX_INIT;                   \
     } else if (cnd_init(&(buf_).read_sync) != thrd_success) {     \
