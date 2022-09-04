@@ -1080,3 +1080,42 @@ TEST("execution action order") {
 
   execution_destroy(&exe);
 }
+
+TEST("execution queue concurrency") {
+  int ok = 1;
+
+  for (int i = 0; i < 400; i++) {
+    kit_allocator_t alloc = kit_alloc_default();
+
+    pool_state_t_ pool_;
+    DA_INIT(pool_.threads, 0, alloc);
+    laplace_thread_pool_t pool = { .state   = &pool_,
+                                   .release = pool_release_,
+                                   .run     = pool_run_,
+                                   .join    = pool_join_ };
+
+    read_write_t state;
+    ok = ok && (state_init(&state, alloc) == STATUS_OK);
+
+    execution_t exe;
+    ok = ok &&
+         (execution_init(&exe, state, pool, alloc) == STATUS_OK);
+    ok = ok && (execution_set_thread_count(&exe, 4) == STATUS_OK);
+
+    action_t action = ACTION(test_exe_alloc_set_, 1, HANDLE_NULL);
+    handle_t h      = { .id = 0, .generation = 0 };
+
+    ok = ok && (execution_schedule(&exe, 1) == STATUS_OK);
+
+    ok = ok && (execution_queue(&exe, action) == STATUS_OK);
+    ok = ok && (state.get_integer(state.state, h, 0, -1) == -1);
+    execution_join(&exe);
+    ok = ok && (state.get_integer(state.state, h, 0, -1) == -1);
+    ok = ok && (execution_schedule_and_join(&exe, 1) == STATUS_OK);
+    ok = ok && (state.get_integer(state.state, h, 0, -1) == 42);
+
+    execution_destroy(&exe);
+  }
+
+  REQUIRE(ok);
+}

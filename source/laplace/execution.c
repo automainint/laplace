@@ -5,8 +5,6 @@
 
 #define LOCK_                                           \
   {                                                     \
-    assert(!locked_);                                   \
-    locked_ = 1;                                        \
     if (mtx_lock(&execution->_lock) != thrd_success) {  \
       execution->status = LAPLACE_ERROR_BAD_MUTEX_LOCK; \
       execution->_done  = 1;                            \
@@ -16,8 +14,6 @@
 
 #define UNLOCK_                                           \
   {                                                       \
-    assert(locked_);                                      \
-    locked_ = 0;                                          \
     if (mtx_unlock(&execution->_lock) != thrd_success) {  \
       execution->status = LAPLACE_ERROR_BAD_MUTEX_UNLOCK; \
       execution->_done  = 1;                              \
@@ -224,8 +220,6 @@ static laplace_status_t sync_routine_(
 
 static laplace_status_t routine_internal_(
     laplace_execution_t *const execution) {
-  int locked_ = 0;
-
   LOCK_
   while (!execution->_done) {
     while (!execution->_done && execution->_ticks == 0)
@@ -353,15 +347,16 @@ static laplace_status_t routine_internal_(
 
         laplace_status_t res = LAPLACE_STATUS_OK;
 
-        ONCE_BEGIN_
-        execution->_queue_index = 0;
+        ONCE_BEGIN_ {
+          execution->_queue_index = 0;
 
-        if (execution->_access.apply != NULL)
-          for (ptrdiff_t i = 0; i < execution->_sync.size; i++)
-            res = execution->_access.apply(execution->_access.state,
-                                           execution->_sync.values +
-                                               i);
-        DA_RESIZE(execution->_sync, 0);
+          if (execution->_access.apply != NULL)
+            for (ptrdiff_t i = 0; i < execution->_sync.size; i++)
+              res = execution->_access.apply(execution->_access.state,
+                                             execution->_sync.values +
+                                                 i);
+          DA_RESIZE(execution->_sync, 0);
+        }
         ONCE_END_
 
         if (res != LAPLACE_STATUS_OK)
@@ -384,23 +379,24 @@ static laplace_status_t routine_internal_(
           }
         UNLOCK_
 
-        ONCE_BEGIN_
-        execution->_async_index = 0;
-        DA_RESIZE(execution->_async, 0);
+        ONCE_BEGIN_ {
+          execution->_async_index = 0;
+          DA_RESIZE(execution->_async, 0);
 
-        for (ptrdiff_t i = 0; i < execution->_forks.size; i++)
-          execution->_forks.values[i].order = execution->_queue.size +
-                                              i;
-        ptrdiff_t const n = execution->_queue.size;
-        ptrdiff_t const s = execution->_forks.size;
-        DA_RESIZE(execution->_queue, n + s);
-        if (execution->_queue.size != n + s)
-          return LAPLACE_ERROR_BAD_ALLOC;
-        if (s != 0)
-          memcpy(execution->_queue.values + n,
-                 execution->_forks.values,
-                 s * sizeof *execution->_queue.values);
-        DA_RESIZE(execution->_forks, 0);
+          for (ptrdiff_t i = 0; i < execution->_forks.size; i++)
+            execution->_forks.values[i].order =
+                execution->_queue.size + i;
+          ptrdiff_t const n = execution->_queue.size;
+          ptrdiff_t const s = execution->_forks.size;
+          DA_RESIZE(execution->_queue, n + s);
+          if (execution->_queue.size != n + s)
+            return LAPLACE_ERROR_BAD_ALLOC;
+          if (s != 0)
+            memcpy(execution->_queue.values + n,
+                   execution->_forks.values,
+                   s * sizeof *execution->_queue.values);
+          DA_RESIZE(execution->_forks, 0);
+        }
         ONCE_END_
 
         if (execution->_access.adjust_loop != NULL)
@@ -415,18 +411,24 @@ static laplace_status_t routine_internal_(
       }
       UNLOCK_
 
-      ONCE_BEGIN_
-      MOVE_BACK_INL(
-          execution->_queue.size, execution->_queue,
-          laplace_generator_status(
-              &execution->_queue.values[index_].generator) ==
-              LAPLACE_GENERATOR_FINISHED);
-      for (ptrdiff_t i = 0; i < execution->_queue.size; i++) {
-        execution->_queue.values[i].order = i;
-        execution->_queue.values[i].clock--;
+      ONCE_BEGIN_ {
+        MOVE_BACK_INL(
+            execution->_queue.size, execution->_queue,
+            laplace_generator_status(
+                &execution->_queue.values[index_].generator) ==
+                LAPLACE_GENERATOR_FINISHED);
+
+        LOCK_
+        for (ptrdiff_t i = 0; i < execution->_queue.size; i++) {
+          execution->_queue.values[i].order = i;
+          execution->_queue.values[i].clock--;
+        }
+        int joined = (--execution->_ticks == 0);
+        UNLOCK_
+
+        if (joined)
+          BROADCAST_(_on_join)
       }
-      if (--execution->_ticks == 0)
-        BROADCAST_(_on_join);
       ONCE_END_
 
       LOCK_
@@ -438,8 +440,6 @@ static laplace_status_t routine_internal_(
 }
 
 static int routine_(laplace_execution_t *const execution) {
-  int locked_ = 0;
-
   laplace_status_t s = routine_internal_(execution);
 
   if (s != LAPLACE_STATUS_OK) {
@@ -546,8 +546,6 @@ void laplace_execution_destroy(laplace_execution_t *const execution) {
 laplace_status_t laplace_execution_set_thread_count(
     laplace_execution_t *const execution,
     ptrdiff_t const            thread_count) {
-  int locked_ = 0;
-
   if (execution->_thread_pool.run == NULL ||
       execution->_thread_pool.join == NULL)
     return LAPLACE_ERROR_NO_THREAD_POOL;
@@ -610,21 +608,28 @@ laplace_read_only_t laplace_execution_read_only(
 laplace_status_t laplace_execution_queue(
     laplace_execution_t *const execution,
     laplace_action_t const     action) {
+  LOCK_
+
   ptrdiff_t const n = execution->_queue.size;
 
   DA_RESIZE(execution->_queue, n + 1);
-  if (execution->_queue.size != n + 1)
+
+  if (execution->_queue.size != n + 1) {
+    UNLOCK_
     return LAPLACE_ERROR_BAD_ALLOC;
+  }
 
   execution->_queue.values[n].order         = n;
-  execution->_queue.values[n].clock         = 0;
+  execution->_queue.values[n].clock         = execution->_ticks;
   execution->_queue.values[n].tick_duration = action.tick_duration;
 
-  laplace_generator_init(
+  laplace_status_t s = laplace_generator_init(
       &execution->_queue.values[n].generator, action,
       laplace_execution_read_only(execution), execution->_alloc);
 
-  return LAPLACE_STATUS_OK;
+  UNLOCK_
+
+  return s;
 }
 
 laplace_status_t laplace_execution_schedule(
