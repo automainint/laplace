@@ -17,6 +17,10 @@
 extern "C" {
 #endif
 
+/*  TODO
+ *  Implement lock-free data allocation.
+ */
+
 enum { LAPLACE_BUFFER_DEFAULT_CHUNK_SIZE = 400 };
 
 #define LAPLACE_BUF_INFO_(buf_) (buf_).info
@@ -241,41 +245,41 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
 /*  Read buffer data block.
  *  May occur concurrently with buffer data reallocation.
  */
-#define LAPLACE_BUFFER_READ(status_, buf_, handle_, index_, size_, \
-                            dst_)                                  \
-  do {                                                             \
-    if (mtx_lock(&(buf_).read_lock) != thrd_success) {             \
-      (status_) = LAPLACE_ERROR_BAD_MUTEX_LOCK;                    \
-    } else {                                                       \
-      (buf_).read_count++;                                         \
-      (void) mtx_unlock(&(buf_).read_lock);                        \
-      (status_) = laplace_buffer_check(                            \
-          (laplace_buffer_void_t *) &(buf_), (handle_), (index_),  \
-          (size_));                                                \
-      if ((status_) == LAPLACE_STATUS_OK) {                        \
-        ptrdiff_t const begin_ =                                   \
-            atomic_load_explicit(                                  \
-                &(buf_).blocks.values[(handle_).id].index,         \
-                memory_order_acquire) +                            \
-            (index_);                                              \
-        for (ptrdiff_t i_ = 0; i_ < (size_); i_++) {               \
-          assert(begin_ >= 0 &&                                    \
-                 begin_ + i_ < LAPLACE_BUF_DATA_(buf_).size);      \
-          (dst_)[i_] = atomic_load_explicit(                       \
-              &LAPLACE_BUF_DATA_(buf_).values[begin_ + i_].value,  \
-              memory_order_relaxed);                               \
-        }                                                          \
-      }                                                            \
-      if (mtx_lock(&(buf_).read_lock) != thrd_success) {           \
-        (status_) = LAPLACE_ERROR_BAD_MUTEX_LOCK;                  \
-      } else {                                                     \
-        ptrdiff_t const count_ = --(buf_).read_count;              \
-        (void) mtx_unlock(&(buf_).read_lock);                      \
-        if (count_ == 0 &&                                         \
-            cnd_broadcast(&(buf_).read_sync) != thrd_success)      \
-          (status_) = LAPLACE_ERROR_BAD_CNDVAR_BROADCAST;          \
-      }                                                            \
-    }                                                              \
+#define LAPLACE_BUFFER_READ_THREAD_SAFE(status_, buf_, handle_,   \
+                                        index_, size_, dst_)      \
+  do {                                                            \
+    if (mtx_lock(&(buf_).read_lock) != thrd_success) {            \
+      (status_) = LAPLACE_ERROR_BAD_MUTEX_LOCK;                   \
+    } else {                                                      \
+      (buf_).read_count++;                                        \
+      (void) mtx_unlock(&(buf_).read_lock);                       \
+      (status_) = laplace_buffer_check(                           \
+          (laplace_buffer_void_t *) &(buf_), (handle_), (index_), \
+          (size_));                                               \
+      if ((status_) == LAPLACE_STATUS_OK) {                       \
+        ptrdiff_t const begin_ =                                  \
+            atomic_load_explicit(                                 \
+                &(buf_).blocks.values[(handle_).id].index,        \
+                memory_order_acquire) +                           \
+            (index_);                                             \
+        for (ptrdiff_t i_ = 0; i_ < (size_); i_++) {              \
+          assert(begin_ >= 0 &&                                   \
+                 begin_ + i_ < LAPLACE_BUF_DATA_(buf_).size);     \
+          (dst_)[i_] = atomic_load_explicit(                      \
+              &LAPLACE_BUF_DATA_(buf_).values[begin_ + i_].value, \
+              memory_order_relaxed);                              \
+        }                                                         \
+      }                                                           \
+      if (mtx_lock(&(buf_).read_lock) != thrd_success) {          \
+        (status_) = LAPLACE_ERROR_BAD_MUTEX_LOCK;                 \
+      } else {                                                    \
+        ptrdiff_t const count_ = --(buf_).read_count;             \
+        (void) mtx_unlock(&(buf_).read_lock);                     \
+        if (count_ == 0 &&                                        \
+            cnd_broadcast(&(buf_).read_sync) != thrd_success)     \
+          (status_) = LAPLACE_ERROR_BAD_CNDVAR_BROADCAST;         \
+      }                                                           \
+    }                                                             \
   } while (0)
 
 #define LAPLACE_BUFFER_SET_UNSAFE(buf_, handle_, index_, value_)    \
@@ -428,7 +432,7 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
 #  define BUFFER_RESERVE LAPLACE_BUFFER_RESERVE
 #  define BUFFER_DEALLOCATE LAPLACE_BUFFER_DEALLOCATE
 #  define BUFFER_SIZE LAPLACE_BUFFER_SIZE
-#  define BUFFER_READ LAPLACE_BUFFER_READ
+#  define BUFFER_READ_THREAD_SAFE LAPLACE_BUFFER_READ_THREAD_SAFE
 #  define BUFFER_SET LAPLACE_BUFFER_SET
 #  define BUFFER_ADD LAPLACE_BUFFER_ADD
 #  define BUFFER_ADJUST LAPLACE_BUFFER_ADJUST

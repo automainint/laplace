@@ -90,7 +90,7 @@ static laplace_status_t read_integers(
 
   laplace_status_t s;
 
-  LAPLACE_BUFFER_READ(s, internal->integers, handle, index, size,
+  LAPLACE_BUFFER_READ_THREAD_SAFE(s, internal->integers, handle, index, size,
                       destination);
 
   return s;
@@ -103,7 +103,7 @@ static laplace_status_t read_bytes(
 
   laplace_status_t s;
 
-  LAPLACE_BUFFER_READ(s, internal->bytes, handle, index, size,
+  LAPLACE_BUFFER_READ_THREAD_SAFE(s, internal->bytes, handle, index, size,
                       destination);
 
   return s;
@@ -117,7 +117,7 @@ static laplace_integer_t get_integer(void *p, laplace_handle_t handle,
   laplace_status_t  s;
   laplace_integer_t x;
 
-  LAPLACE_BUFFER_READ(s, internal->integers, handle, index, 1, &x);
+  LAPLACE_BUFFER_READ_THREAD_SAFE(s, internal->integers, handle, index, 1, &x);
 
   if (s != LAPLACE_STATUS_OK)
     return invalid;
@@ -133,7 +133,7 @@ static laplace_byte_t get_byte(void *p, laplace_handle_t handle,
   laplace_status_t s;
   laplace_byte_t   x;
 
-  LAPLACE_BUFFER_READ(s, internal->bytes, handle, index, 1, &x);
+  LAPLACE_BUFFER_READ_THREAD_SAFE(s, internal->bytes, handle, index, 1, &x);
 
   if (s != LAPLACE_STATUS_OK)
     return invalid;

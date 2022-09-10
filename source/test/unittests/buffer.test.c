@@ -264,7 +264,7 @@ TEST("buffer get value") {
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 1);
   int64_t x;
-  BUFFER_READ(s, buf, h, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, buf, h, 0, 1, &x);
   REQUIRE(s == STATUS_OK);
   REQUIRE(x == 0);
   BUFFER_DESTROY(buf);
@@ -276,7 +276,7 @@ TEST("buffer get invalid id") {
   REQUIRE(s == STATUS_OK);
   handle_t const h = { .id = 0, .generation = -1 };
   int64_t        x;
-  BUFFER_READ(s, buf, h, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, buf, h, 0, 1, &x);
   REQUIRE(s == ERROR_INVALID_HANDLE_ID);
   BUFFER_DESTROY(buf);
 }
@@ -289,7 +289,7 @@ TEST("buffer get invalid generation") {
   BUFFER_ALLOCATE(h, buf, 1);
   h.generation--;
   int64_t x;
-  BUFFER_READ(s, buf, h, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, buf, h, 0, 1, &x);
   REQUIRE(s == ERROR_INVALID_HANDLE_GENERATION);
   BUFFER_DESTROY(buf);
 }
@@ -311,7 +311,7 @@ TEST("buffer get invalid index") {
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 1);
   int64_t x;
-  BUFFER_READ(s, buf, h, 1, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, buf, h, 1, 1, &x);
   REQUIRE(s == ERROR_INVALID_INDEX);
   BUFFER_DESTROY(buf);
 }
@@ -347,7 +347,7 @@ TEST("buffer set value") {
   BUFFER_SET(s, buf, h, 0, 42);
   REQUIRE(s == STATUS_OK);
   int64_t x;
-  BUFFER_READ(s, buf, h, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, buf, h, 0, 1, &x);
   REQUIRE(s == STATUS_OK);
   REQUIRE(x == 0);
   BUFFER_DESTROY(buf);
@@ -363,7 +363,7 @@ TEST("buffer set value and adjust") {
   REQUIRE(s == STATUS_OK);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
   int64_t x;
-  BUFFER_READ(s, buf, h, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, buf, h, 0, 1, &x);
   REQUIRE(s == STATUS_OK);
   REQUIRE(x == 42);
   BUFFER_DESTROY(buf);
@@ -381,7 +381,7 @@ TEST("buffer set value, deallocate and get value") {
   REQUIRE(BUFFER_DEALLOCATE(buf, foo) == STATUS_OK);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
   int64_t x;
-  BUFFER_READ(s, buf, bar, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, buf, bar, 0, 1, &x);
   REQUIRE(s == STATUS_OK);
   REQUIRE(x == 42);
   BUFFER_DESTROY(buf);
@@ -399,7 +399,7 @@ TEST("buffer set value, deallocate, allocate and get value") {
   REQUIRE(BUFFER_DEALLOCATE(buf, h) == STATUS_OK);
   BUFFER_ALLOCATE(h, buf, 1);
   int64_t x;
-  BUFFER_READ(s, buf, h, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, buf, h, 0, 1, &x);
   REQUIRE(s == STATUS_OK);
   REQUIRE(x == 0);
   BUFFER_DESTROY(buf);
@@ -415,7 +415,7 @@ TEST("buffer add delta and adjust") {
   REQUIRE(s == STATUS_OK);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
   int64_t x;
-  BUFFER_READ(s, buf, h, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, buf, h, 0, 1, &x);
   REQUIRE(s == STATUS_OK);
   REQUIRE(x == 42);
   BUFFER_DESTROY(buf);
@@ -433,7 +433,7 @@ TEST("buffer add delta twice and adjust") {
   REQUIRE(s == STATUS_OK);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
   int64_t x;
-  BUFFER_READ(s, buf, h, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, buf, h, 0, 1, &x);
   REQUIRE(s == STATUS_OK);
   REQUIRE(x == 42);
   BUFFER_DESTROY(buf);
@@ -451,7 +451,7 @@ TEST("buffer set value and add delta and adjust") {
   REQUIRE(s == STATUS_OK);
   for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
   int64_t x;
-  BUFFER_READ(s, buf, h, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, buf, h, 0, 1, &x);
   REQUIRE(s == STATUS_OK);
   REQUIRE(x == 42);
   BUFFER_DESTROY(buf);
@@ -471,7 +471,7 @@ TEST("buffer adjust one chunk") {
   int ok = 1;
   for (int i = 0; i < 100; ++i) {
     int64_t x;
-    BUFFER_READ(s, buf, h, i, 1, &x);
+    BUFFER_READ_THREAD_SAFE(s, buf, h, i, 1, &x);
     ok = ok && s == STATUS_OK;
     ok = ok && x == i;
   }
@@ -491,7 +491,7 @@ TEST("buffer adjust by chunks") {
   int ok = 1;
   for (int i = 0; i < 100; ++i) {
     int64_t x;
-    BUFFER_READ(s, buf, h, i, 1, &x);
+    BUFFER_READ_THREAD_SAFE(s, buf, h, i, 1, &x);
     ok = ok && s == STATUS_OK;
     ok = ok && x == i;
   }
@@ -514,7 +514,7 @@ TEST("buffer adjust by chunks twice") {
   int ok = 1;
   for (int i = 0; i < 100; ++i) {
     int64_t x;
-    BUFFER_READ(s, buf, h, i, 1, &x);
+    BUFFER_READ_THREAD_SAFE(s, buf, h, i, 1, &x);
     ok = ok && s == STATUS_OK;
     ok = ok && x == i * 2;
   }
@@ -548,10 +548,10 @@ TEST("buffer fill two blocks") {
   REQUIRE(s == STATUS_OK);
   BUFFER_ADJUST_LOOP(buf);
   int64_t x;
-  BUFFER_READ(s, buf, foo, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, buf, foo, 0, 1, &x);
   REQUIRE(s == STATUS_OK);
   REQUIRE(x == 42);
-  BUFFER_READ(s, buf, bar, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, buf, bar, 0, 1, &x);
   REQUIRE(s == STATUS_OK);
   REQUIRE(x == 42);
   BUFFER_DESTROY(buf);
@@ -648,7 +648,7 @@ TEST("buffer add delta concurrency") {
   for (int i = 0; i < THREAD_COUNT; i++) thrd_join(pool[i], NULL);
   BUFFER_ADJUST_LOOP(data.buf);
   int64_t x;
-  BUFFER_READ(s, data.buf, data.h, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, data.buf, data.h, 0, 1, &x);
   REQUIRE(s == STATUS_OK);
   REQUIRE(x == THREAD_COUNT);
   BUFFER_DESTROY(data.buf);
@@ -667,7 +667,7 @@ TEST("buffer add delta concurrency harder") {
   for (int i = 0; i < THREAD_COUNT; i++) thrd_join(pool[i], NULL);
   BUFFER_ADJUST_LOOP(data.buf);
   int64_t x;
-  BUFFER_READ(s, data.buf, data.h, 0, 1, &x);
+  BUFFER_READ_THREAD_SAFE(s, data.buf, data.h, 0, 1, &x);
   REQUIRE(s == STATUS_OK);
   REQUIRE(x == THREAD_COUNT);
   BUFFER_DESTROY(data.buf);
@@ -698,7 +698,7 @@ TEST("buffer adjust concurrency") {
   int ok = 1;
   for (int i = 0; i < DATA_SIZE; i++) {
     int64_t x;
-    BUFFER_READ(s, data.buf, data.h, i, 1, &x);
+    BUFFER_READ_THREAD_SAFE(s, data.buf, data.h, i, 1, &x);
     ok = ok && s == STATUS_OK;
     ok = ok && x == i;
   }
@@ -723,7 +723,7 @@ TEST("int buffer adjust concurrency harder") {
   int ok = 1;
   for (int i = 0; i < DATA_SIZE; i++) {
     int64_t x;
-    BUFFER_READ(s, data.buf, data.h, i, 1, &x);
+    BUFFER_READ_THREAD_SAFE(s, data.buf, data.h, i, 1, &x);
     ok = ok && s == STATUS_OK;
     ok = ok && x == i;
   }
@@ -763,7 +763,7 @@ TEST("byte buffer adjust concurrency harder") {
   int ok = 1;
   for (int i = 0; i < DATA_SIZE; i++) {
     int8_t x;
-    BUFFER_READ(s, data.buf, data.h, i, 1, &x);
+    BUFFER_READ_THREAD_SAFE(s, data.buf, data.h, i, 1, &x);
     ok = ok && s == STATUS_OK;
     ok = ok && x == (int8_t) (i % 128);
   }
@@ -786,7 +786,7 @@ static int test_read_concurrency_run(void *p) {
     int64_t   x;
     for (ptrdiff_t i = 0; i < size; i++) {
       laplace_status_t s;
-      BUFFER_READ(s, data->buf, data->h, i, 1, &x);
+      BUFFER_READ_THREAD_SAFE(s, data->buf, data->h, i, 1, &x);
     }
     thrd_yield();
   }
