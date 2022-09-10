@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
-option(LAPLACE_ENABLE_LIBRARY "Enable library" ON)
 option(LAPLACE_ENABLE_TESTING "Enable testing" ON)
 
 set(LAPLACE_PROJECT laplace)
@@ -42,7 +41,7 @@ target_compile_features(${LAPLACE_LIBRARY} PUBLIC c_std_11)
 target_link_libraries(${LAPLACE_LIBRARY} PUBLIC Threads::Threads kit::kit)
 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-  #target_compile_options(${LAPLACE_LIBRARY} PUBLIC -pedantic -Wall -Werror)
+  target_compile_options(${LAPLACE_LIBRARY} PUBLIC -pedantic -Wall -Werror)
 endif()
 
 add_executable(${LAPLACE_CODEGEN})
@@ -63,11 +62,11 @@ if(LAPLACE_ENABLE_TESTING)
   if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(
       ${LAPLACE_LIBRARY} PUBLIC
-      -fsanitize=undefined#,address
+      -fsanitize=undefined,address
       --coverage -O0 -g)
     target_link_options(
       ${LAPLACE_LIBRARY} PUBLIC
-      -fsanitize=undefined#,address
+      -fsanitize=undefined,address
       --coverage)
   endif()
 
@@ -83,63 +82,61 @@ endif()
 
 add_subdirectory(source)
 
-if(LAPLACE_ENABLE_LIBRARY)
-  include(GNUInstallDirs)
+include(GNUInstallDirs)
 
-  file(
-    GLOB_RECURSE headers_
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/source/laplace
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/laplace/*.h)
+file(
+  GLOB_RECURSE headers_
+  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/source/laplace
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/laplace/*.h)
 
-  foreach(path_ ${headers_})
-    get_filename_component(dir_ "${path_}" DIRECTORY)
-
-    install(
-      FILES ${CMAKE_CURRENT_SOURCE_DIR}/source/laplace/${path_}
-      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/laplace/${dir_})
-  endforeach()
-
-  unset(headers_)
-  unset(path_)
-  unset(dir_)
+foreach(path_ ${headers_})
+  get_filename_component(dir_ "${path_}" DIRECTORY)
 
   install(
-    TARGETS ${LAPLACE_LIBRARY} ${LAPLACE_TEST_LIBRARY}
-    EXPORT ${LAPLACE_TARGETS}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    FILES ${CMAKE_CURRENT_SOURCE_DIR}/source/laplace/${path_}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/laplace/${dir_})
+endforeach()
 
-  install(
-    EXPORT ${LAPLACE_TARGETS}
-    FILE ${LAPLACE_TARGETS}.cmake
-    NAMESPACE ${PROJECT_NAME}::
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+unset(headers_)
+unset(path_)
+unset(dir_)
 
-  export(
-    EXPORT ${LAPLACE_TARGETS}
-    FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/${LAPLACE_TARGETS}.cmake"
-    NAMESPACE ${PROJECT_NAME}::)
+install(
+  TARGETS ${LAPLACE_LIBRARY} ${LAPLACE_TEST_LIBRARY}
+  EXPORT ${LAPLACE_TARGETS}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-  include(CMakePackageConfigHelpers)
+install(
+  EXPORT ${LAPLACE_TARGETS}
+  FILE ${LAPLACE_TARGETS}.cmake
+  NAMESPACE ${PROJECT_NAME}::
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
-  string(TOLOWER ${PROJECT_NAME} project_lower_)
+export(
+  EXPORT ${LAPLACE_TARGETS}
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/${LAPLACE_TARGETS}.cmake"
+  NAMESPACE ${PROJECT_NAME}::)
 
-  configure_package_config_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.in
-    "${CMAKE_CURRENT_BINARY_DIR}/${project_lower_}-config.cmake"
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+include(CMakePackageConfigHelpers)
 
-  write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/${project_lower_}-config-version.cmake"
-    VERSION "${PROJECT_VERSION}"
-    COMPATIBILITY AnyNewerVersion)
+string(TOLOWER ${PROJECT_NAME} project_lower_)
 
-  install(
-    FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/${project_lower_}-config.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/${project_lower_}-config-version.cmake"
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+configure_package_config_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/${project_lower_}-config.cmake"
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
-  unset(project_lower_)
-endif()
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${project_lower_}-config-version.cmake"
+  VERSION "${PROJECT_VERSION}"
+  COMPATIBILITY AnyNewerVersion)
+
+install(
+  FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/${project_lower_}-config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${project_lower_}-config-version.cmake"
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
+unset(project_lower_)

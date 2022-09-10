@@ -46,6 +46,7 @@ TEST("buffer set chunk size") {
 TEST("buffer set chunk size may fail") {
   laplace_status_t s;
   BUFFER_CREATE(s, buf, int64_t);
+  REQUIRE(s == STATUS_OK);
   REQUIRE(BUFFER_SET_CHUNK_SIZE(buf, -1) == ERROR_INVALID_CHUNK_SIZE);
   BUFFER_DESTROY(buf);
 }
@@ -570,6 +571,7 @@ TEST("buffer size with 2 blocks") {
 TEST("buffer size after deallocate one") {
   laplace_status_t s;
   BUFFER_CREATE(s, buf, int64_t);
+  REQUIRE(s == STATUS_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
   REQUIRE(BUFFER_DEALLOCATE(buf, h) == STATUS_OK);
@@ -675,6 +677,7 @@ static int test_int_adjust(void *p) {
   test_int_buffer_data_t *data = (test_int_buffer_data_t *) p;
   int                     _;
   BUFFER_ADJUST(_, data->buf);
+  (void) _;
   return 0;
 }
 
@@ -739,6 +742,7 @@ static int test_byte_adjust(void *p) {
   test_byte_buffer_data_t *data = (test_byte_buffer_data_t *) p;
   int                      _;
   BUFFER_ADJUST(_, data->buf);
+  (void) _;
   return 0;
 }
 

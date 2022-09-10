@@ -253,14 +253,16 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
           (laplace_buffer_void_t *) &(buf_), (handle_), (index_),  \
           (size_));                                                \
       if ((status_) == LAPLACE_STATUS_OK) {                        \
+        ptrdiff_t const begin_ =                                   \
+            atomic_load_explicit(                                  \
+                &(buf_).blocks.values[(handle_).id].index,         \
+                memory_order_acquire) +                            \
+            (index_);                                              \
         for (ptrdiff_t i_ = 0; i_ < (size_); i_++) {               \
+          assert(begin_ >= 0 &&                                    \
+                 begin_ + i_ < LAPLACE_BUF_DATA_(buf_).size);      \
           (dst_)[i_] = atomic_load_explicit(                       \
-              &(buf_)                                              \
-                   .data                                           \
-                   .values                                         \
-                       [(buf_).blocks.values[(handle_).id].index + \
-                        (index_) + i_]                             \
-                   .value,                                         \
+              &LAPLACE_BUF_DATA_(buf_).values[begin_ + i_].value,  \
               memory_order_relaxed);                               \
         }                                                          \
       }                                                            \

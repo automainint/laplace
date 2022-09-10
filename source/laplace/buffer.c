@@ -117,24 +117,24 @@ laplace_handle_t laplace_buffer_allocate(
     return h;
   }
 
+  if (mtx_lock(&buffer->read_lock) == thrd_success) {
+    while (buffer->read_count != 0)
+      if (cnd_wait(&buffer->read_sync, &buffer->read_lock) !=
+          thrd_success) {
+        (void) mtx_unlock(&buffer->read_lock);
+        h.id    = LAPLACE_ID_UNDEFINED;
+        h.error = LAPLACE_ERROR_BAD_CNDVAR_WAIT;
+        return h;
+      }
+  } else {
+    h.id    = LAPLACE_ID_UNDEFINED;
+    h.error = LAPLACE_ERROR_BAD_MUTEX_LOCK;
+    return h;
+  }
+
   ptrdiff_t const block = buffer->next_block;
   if (block >= buffer->blocks.size) {
     ptrdiff_t i = buffer->blocks.size;
-
-    if (mtx_lock(&buffer->read_lock) == thrd_success) {
-      while (buffer->read_count != 0)
-        if (cnd_wait(&buffer->read_sync, &buffer->read_lock) !=
-            thrd_success) {
-          (void) mtx_unlock(&buffer->read_lock);
-          h.id    = LAPLACE_ID_UNDEFINED;
-          h.error = LAPLACE_ERROR_BAD_CNDVAR_WAIT;
-          return h;
-        }
-    } else {
-      h.id    = LAPLACE_ID_UNDEFINED;
-      h.error = LAPLACE_ERROR_BAD_MUTEX_LOCK;
-      return h;
-    }
 
     DA_RESIZE(buffer->blocks, block + 1);
 
@@ -153,12 +153,13 @@ laplace_handle_t laplace_buffer_allocate(
       STORE_(&buffer->blocks.values[i].generation, -1, RLS_);
       STORE_(&buffer->blocks.values[i].size, 0, RLS_);
     }
-
-    (void) mtx_unlock(&buffer->read_lock);
   }
 
   assert(block >= 0 && block < buffer->blocks.size);
   STORE_(&buffer->blocks.values[block].index, offset, RLS_);
+
+  (void) mtx_unlock(&buffer->read_lock);
+
   ptrdiff_t const generation = ADD_(
       &buffer->blocks.values[block].generation, 1, RLS_);
   STORE_(&buffer->blocks.values[block].size, size, RLS_);
@@ -227,23 +228,23 @@ laplace_handle_t laplace_buffer_allocate_into(
     return h;
   }
 
+  if (mtx_lock(&buffer->read_lock) == thrd_success) {
+    while (buffer->read_count != 0)
+      if (cnd_wait(&buffer->read_sync, &buffer->read_lock) !=
+          thrd_success) {
+        (void) mtx_unlock(&buffer->read_lock);
+        h.id    = LAPLACE_ID_UNDEFINED;
+        h.error = LAPLACE_ERROR_BAD_CNDVAR_WAIT;
+        return h;
+      }
+  } else {
+    h.id    = LAPLACE_ID_UNDEFINED;
+    h.error = LAPLACE_ERROR_BAD_MUTEX_LOCK;
+    return h;
+  }
+
   if (handle.id >= buffer->blocks.size) {
     ptrdiff_t i = buffer->blocks.size;
-
-    if (mtx_lock(&buffer->read_lock) == thrd_success) {
-      while (buffer->read_count != 0)
-        if (cnd_wait(&buffer->read_sync, &buffer->read_lock) !=
-            thrd_success) {
-          (void) mtx_unlock(&buffer->read_lock);
-          h.id    = LAPLACE_ID_UNDEFINED;
-          h.error = LAPLACE_ERROR_BAD_CNDVAR_WAIT;
-          return h;
-        }
-    } else {
-      h.id    = LAPLACE_ID_UNDEFINED;
-      h.error = LAPLACE_ERROR_BAD_MUTEX_LOCK;
-      return h;
-    }
 
     DA_RESIZE(buffer->blocks, handle.id + 1);
 
@@ -262,11 +263,12 @@ laplace_handle_t laplace_buffer_allocate_into(
       STORE_(&buffer->blocks.values[i].generation, -1, RLS_);
       STORE_(&buffer->blocks.values[i].size, 0, RLS_);
     }
-
-    (void) mtx_unlock(&buffer->read_lock);
   }
 
   STORE_(&buffer->blocks.values[handle.id].index, offset, RLS_);
+
+  (void) mtx_unlock(&buffer->read_lock);
+
   STORE_(&buffer->blocks.values[handle.id].generation, generation + 1,
          RLS_);
   STORE_(&buffer->blocks.values[handle.id].size, size, RLS_);
@@ -320,7 +322,23 @@ laplace_buffer_realloc_result_t laplace_buffer_reallocate(
 
   buffer_free(buffer, result.previous_offset);
 
+  if (mtx_lock(&buffer->read_lock) == thrd_success) {
+    while (buffer->read_count != 0)
+      if (cnd_wait(&buffer->read_sync, &buffer->read_lock) !=
+          thrd_success) {
+        (void) mtx_unlock(&buffer->read_lock);
+        result.status = LAPLACE_ERROR_BAD_CNDVAR_WAIT;
+        return result;
+      }
+  } else {
+    result.status = LAPLACE_ERROR_BAD_MUTEX_LOCK;
+    return result;
+  }
+
   STORE_(&buffer->blocks.values[handle.id].index, offset, RLS_);
+
+  (void) mtx_unlock(&buffer->read_lock);
+
   STORE_(&buffer->blocks.values[handle.id].size, size, RLS_);
 
   result.status = LAPLACE_STATUS_OK;
@@ -427,6 +445,7 @@ laplace_status_t laplace_buffer_check(
       index + size >
           LOAD_(&buffer->blocks.values[handle.id].size, ACQ_))
     return LAPLACE_ERROR_INVALID_INDEX;
+
   return LAPLACE_STATUS_OK;
 }
 

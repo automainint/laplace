@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-set(NAME laplace-integration-find-package)
+set(NAME laplace_integration_find_package)
 project(${NAME} C)
 
 find_package(laplace REQUIRED)
