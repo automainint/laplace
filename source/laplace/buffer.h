@@ -269,6 +269,8 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
               &LAPLACE_BUF_DATA_(buf_).values[begin_ + i_].value, \
               memory_order_relaxed);                              \
         }                                                         \
+      } else {                                                    \
+        memset((dst_), 0, (size_) * sizeof *(dst_));              \
       }                                                           \
       if (mtx_lock(&(buf_).read_lock) != thrd_success) {          \
         (status_) = LAPLACE_ERROR_BAD_MUTEX_LOCK;                 \
