@@ -126,8 +126,10 @@ static laplace_status_t sync_routine_(
 
               ptrdiff_t s = execution->_forks.size;
               DA_INSERT(execution->_forks, n, fork);
-              if (execution->_forks.size != s + 1)
+              if (execution->_forks.size != s + 1) {
+                DA_DESTROY(list);
                 return LAPLACE_ERROR_BAD_ALLOC;
+              }
 
               done = 0;
             } break;
@@ -146,18 +148,24 @@ static laplace_status_t sync_routine_(
 
                 ptrdiff_t s = execution->_sync.size;
                 DA_INSERT(execution->_sync, n, x);
-                if (execution->_sync.size != s + 1)
+                if (execution->_sync.size != s + 1) {
+                  DA_DESTROY(list);
                   return LAPLACE_ERROR_BAD_ALLOC;
+                }
               } else {
                 ptrdiff_t const n = execution->_async.size;
                 DA_RESIZE(execution->_async, n + 1);
-                if (execution->_async.size != n + 1)
+                if (execution->_async.size != n + 1) {
+                  DA_DESTROY(list);
                   return LAPLACE_ERROR_BAD_ALLOC;
+                }
 
                 execution->_async.values[n] = *impact;
               }
           }
         }
+
+        DA_DESTROY(list);
 
         if (!is_continue)
           action->clock = action->tick_duration;
@@ -295,8 +303,10 @@ static laplace_status_t routine_internal_(
                 int ok_ = execution->_forks.size == s + 1;
                 UNLOCK_
 
-                if (!ok_)
+                if (!ok_) {
+                  DA_DESTROY(list);
                   return LAPLACE_ERROR_BAD_ALLOC;
+                }
 
                 LOCK_
                 execution->_tick_done = 0;
@@ -320,8 +330,10 @@ static laplace_status_t routine_internal_(
                   int ok_ = execution->_sync.size == s + 1;
                   UNLOCK_
 
-                  if (!ok_)
+                  if (!ok_) {
+                    DA_DESTROY(list);
                     return LAPLACE_ERROR_BAD_ALLOC;
+                  }
 
                 } else {
                   LOCK_
@@ -330,13 +342,17 @@ static laplace_status_t routine_internal_(
                   int ok_ = execution->_async.size == n + 1;
                   UNLOCK_
 
-                  if (!ok_)
+                  if (!ok_) {
+                    DA_DESTROY(list);
                     return LAPLACE_ERROR_BAD_ALLOC;
+                  }
 
                   execution->_async.values[n] = *impact;
                 }
             }
           }
+
+          DA_DESTROY(list);
 
           if (!is_continue)
             action->clock = action->tick_duration;
