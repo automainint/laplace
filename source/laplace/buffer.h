@@ -249,6 +249,7 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
                                         index_, size_, dst_)      \
   do {                                                            \
     if (mtx_lock(&(buf_).read_lock) != thrd_success) {            \
+      memset((dst_), 0, (size_) * sizeof *(dst_));                \
       (status_) = LAPLACE_ERROR_BAD_MUTEX_LOCK;                   \
     } else {                                                      \
       (buf_).read_count++;                                        \
