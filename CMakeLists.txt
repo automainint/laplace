@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
+
+if(NOT DEFINED CMAKE_BUILD_PARALLEL_LEVEL)
+  set(CMAKE_BUILD_PARALLEL_LEVEL 4 CACHE STRING "" FORCE)
+endif()
+
 option(LAPLACE_ENABLE_TESTING "Enable testing" ON)
 
 set(LAPLACE_PROJECT laplace)
@@ -7,10 +13,6 @@ set(LAPLACE_LIBRARY laplace)
 set(LAPLACE_CODEGEN laplace_codegen)
 set(LAPLACE_TEST laplace_test)
 set(LAPLACE_TARGETS laplace-targets)
-
-if(NOT DEFINED CMAKE_BUILD_PARALLEL_LEVEL)
-  set(CMAKE_BUILD_PARALLEL_LEVEL 4)
-endif()
 
 project(
   ${LAPLACE_PROJECT}
@@ -28,7 +30,7 @@ if(NOT kit_FOUND)
     kit
     GIT_REPOSITORY https://github.com/automainint/kit.git
     GIT_TAG dev)
-  set(KIT_ENABLE_TESTING OFF)
+  set(KIT_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
   FetchContent_MakeAvailable(kit)
 endif()
 

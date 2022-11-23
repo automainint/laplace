@@ -1,7 +1,4 @@
 #   The Laplace engine
-[![build_and_test][build_badge]][build_link]
-[![codecov][codecov_badge]][codecov_link]
-
 The quality of a real-time strategy game relies on low-latency responsiveness and vertical scalability.
 Vertical scalability requires parallelism on the local instance and lockstep networking.
 Lockstep systems require a totally deterministic engine. In addition, extensibility is a useful feature.
@@ -26,7 +23,3 @@ cmake --build build --config Release
 Laplace CMake configuration options:
 - `LAPLACE_ENABLE_TESTING` - enable testing. `ON` by default.
 
-[build_badge]:    https://github.com/automainint/laplace/actions/workflows/build_and_test.yml/badge.svg?branch=dev
-[build_link]:     https://github.com/automainint/laplace/actions/workflows/build_and_test.yml
-[codecov_badge]:  https://codecov.io/gh/automainint/laplace/branch/dev/graph/badge.svg?token=HJF3BUA46B
-[codecov_link]:   https://codecov.io/gh/automainint/laplace/branch/dev

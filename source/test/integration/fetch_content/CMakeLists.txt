@@ -7,7 +7,7 @@ FetchContent_Declare(
   laplace
   GIT_REPOSITORY https://github.com/automainint/laplace.git
   GIT_TAG dev)
-set(LAPLACE_ENABLE_TESTING OFF)
+set(LAPLACE_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(laplace)
 
 add_executable(${NAME})
