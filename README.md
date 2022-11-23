@@ -9,12 +9,14 @@ with concurrency support and lockstep synchronization.
     Work in progress...
     The project is far from complete.
 
+##  Related repositories
+- [kit](https://github.com/automainint/kit) - collection of C libraries.
+- [eval](https://github.com/automainint/eval) - deterministic math and algorithms.
+- [peer](https://github.com/automainint/peer) - network synchronization library.
+- [unival](https://github.com/automainint/unival) - universal data container and file format.
+- [quadwar](https://github.com/automainint/quadwar) - playground for new features and experiments.
+
 ##  How to build
-To build the project CMake 3.16 and Git are required.
-
-### With CMake
-- Configure and build the project.
-
 ```shell
 cmake -D CMAKE_BUILD_TYPE=Release -B build -S .
 cmake --build build --config Release
