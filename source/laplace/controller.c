@@ -51,24 +51,24 @@ kit_status_t controller_queue(controller_t *const controller,
   return KIT_OK;
 }
 
-kit_status_t controller_rewind(controller_t *const controller,
-                               execution_t *const  execution,
-                               time_t const        time) {
+kit_status_t controller_rewind(controller_t *const  controller,
+                               execution_t *const   execution,
+                               laplace_time_t const time) {
   if (time < 0)
     return ERROR_INVALID_EVENT_TIME;
 
   return ERROR_NOT_IMPLEMENTED;
 }
 
-kit_status_t schedule(controller_t *const controller,
-                      execution_t *const  execution,
-                      time_t const        time_elapsed) {
+kit_status_t schedule(controller_t *const  controller,
+                      execution_t *const   execution,
+                      laplace_time_t const time_elapsed) {
   return ERROR_NOT_IMPLEMENTED;
 }
 
-kit_status_t schedule_and_join(controller_t *const controller,
-                               execution_t *const  execution,
-                               time_t const        time_elapsed) {
+kit_status_t schedule_and_join(controller_t *const  controller,
+                               execution_t *const   execution,
+                               laplace_time_t const time_elapsed) {
   return ERROR_NOT_IMPLEMENTED;
 }
 
