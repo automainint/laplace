@@ -13,7 +13,7 @@ typedef struct laplace_read_write laplace_read_write_t;
 typedef void (*laplace_acquire_fn)(void *state);
 typedef void (*laplace_release_fn)(void *state);
 
-typedef laplace_status_t (*laplace_clone_fn)(
+typedef kit_status_t (*laplace_clone_fn)(
     void *state, laplace_read_write_t *cloned);
 
 typedef ptrdiff_t (*laplace_integers_size_fn)(
@@ -22,11 +22,11 @@ typedef ptrdiff_t (*laplace_integers_size_fn)(
 typedef ptrdiff_t (*laplace_bytes_size_fn)(void            *state,
                                            laplace_handle_t handle);
 
-typedef laplace_status_t (*laplace_read_integers_fn)(
+typedef kit_status_t (*laplace_read_integers_fn)(
     void *state, laplace_handle_t handle, ptrdiff_t index,
     ptrdiff_t size, laplace_integer_t *destination);
 
-typedef laplace_status_t (*laplace_read_bytes_fn)(
+typedef kit_status_t (*laplace_read_bytes_fn)(
     void *state, laplace_handle_t handle, ptrdiff_t index,
     ptrdiff_t size, laplace_byte_t *destination);
 
@@ -39,7 +39,7 @@ typedef laplace_byte_t (*laplace_get_byte_fn)(void            *state,
                                               ptrdiff_t        index,
                                               laplace_byte_t invalid);
 
-typedef laplace_status_t (*laplace_apply_fn)(
+typedef kit_status_t (*laplace_apply_fn)(
     void *state, laplace_impact_t const *impact);
 
 typedef void (*laplace_adjust_loop_fn)(void *state);

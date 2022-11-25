@@ -22,9 +22,9 @@ static void pool_join_(void *state) {
   DA_RESIZE(p->threads, 0);
 }
 
-static laplace_status_t pool_run_(void *state, ptrdiff_t count,
-                                  pool_routine_fn routine,
-                                  execution_t    *execution) {
+static kit_status_t pool_run_(void *state, ptrdiff_t count,
+                              pool_routine_fn routine,
+                              execution_t    *execution) {
   if (count <= 0)
     return ERROR_INVALID_SIZE;
   pool_state_t_  *p = (pool_state_t_ *) state;
@@ -36,7 +36,7 @@ static laplace_status_t pool_run_(void *state, ptrdiff_t count,
     if (thrd_create(p->threads.values + n + i, routine, execution) !=
         thrd_success)
       return ERROR_BAD_THREAD_CREATE;
-  return STATUS_OK;
+  return KIT_OK;
 }
 
 TEST("execution init and destroy") {
@@ -48,8 +48,8 @@ TEST("execution init and destroy") {
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, kit_alloc_default()) ==
-          STATUS_OK);
-  REQUIRE(exe.status == STATUS_OK);
+          KIT_OK);
+  REQUIRE(exe.status == KIT_OK);
   execution_destroy(&exe);
 }
 
@@ -62,7 +62,7 @@ TEST("execution get thread count") {
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, kit_alloc_default()) ==
-          STATUS_OK);
+          KIT_OK);
   REQUIRE(exe.thread_count == 0);
   execution_destroy(&exe);
 }
@@ -80,8 +80,8 @@ TEST("execution set thread count") {
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, kit_alloc_default()) ==
-          STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+          KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
   REQUIRE(exe.thread_count == 4);
   execution_destroy(&exe);
 }
@@ -99,9 +99,9 @@ TEST("execution set thread count to zero") {
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, kit_alloc_default()) ==
-          STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 0) == STATUS_OK);
+          KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 0) == KIT_OK);
   REQUIRE(exe.thread_count == 0);
   execution_destroy(&exe);
 }
@@ -139,8 +139,8 @@ TEST("seq execution queue action") {
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, kit_alloc_default()) ==
-          STATUS_OK);
-  REQUIRE(execution_queue(&exe, test_noop_) == STATUS_OK);
+          KIT_OK);
+  REQUIRE(execution_queue(&exe, test_noop_) == KIT_OK);
   execution_destroy(&exe);
 
   REQUIRE(!action_status_);
@@ -157,9 +157,9 @@ TEST("seq execution queue action and schedule") {
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, kit_alloc_default()) ==
-          STATUS_OK);
-  REQUIRE(execution_queue(&exe, test_noop_) == STATUS_OK);
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+          KIT_OK);
+  REQUIRE(execution_queue(&exe, test_noop_) == KIT_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
   execution_destroy(&exe);
 
   REQUIRE(action_status_);
@@ -176,9 +176,9 @@ TEST("seq execution queue action and schedule zero") {
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, kit_alloc_default()) ==
-          STATUS_OK);
-  REQUIRE(execution_queue(&exe, test_noop_) == STATUS_OK);
-  REQUIRE(execution_schedule_and_join(&exe, 0) == STATUS_OK);
+          KIT_OK);
+  REQUIRE(execution_queue(&exe, test_noop_) == KIT_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 0) == KIT_OK);
   execution_destroy(&exe);
 
   REQUIRE(!action_status_);
@@ -192,13 +192,13 @@ TEST("seq execution queue action and access null self") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  REQUIRE(execution_queue(&exe, test_null_self_) == STATUS_OK);
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, test_null_self_) == KIT_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
   execution_destroy(&exe);
 
   REQUIRE(action_status_ == 0);
@@ -210,10 +210,10 @@ TEST("seq execution read only") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   read_only_t read_only = execution_read_only(&exe);
   read_only.acquire(read_only.state);
   REQUIRE(read_only.get_integer(read_only.state, handle_null, 0,
@@ -238,7 +238,7 @@ TEST("seq execution custom state") {
   kit_allocator_t alloc = kit_alloc_default();
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   read_only_t read_only = execution_read_only(&exe);
   REQUIRE(read_only.get_integer(read_only.state, handle_null, 0,
                                 -1) == 42);
@@ -272,15 +272,15 @@ TEST("seq execution set value impact") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
   action_t action = ACTION(test_exe_alloc_set_, 1, HANDLE_NULL);
 
-  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, action) == KIT_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
   handle_t h = { .id = 0, .generation = 0 };
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
@@ -294,22 +294,21 @@ TEST("seq execution set value impact twice") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
   action_t action = ACTION(test_exe_alloc_set_, default_tick,
                            HANDLE_NULL);
 
-  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, action) == KIT_OK);
   handle_t h = { .id = 0, .generation = 0 };
 
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
 
-  REQUIRE(execution_schedule_and_join(&exe, default_tick) ==
-          STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, default_tick) == KIT_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
 
   execution_destroy(&exe);
@@ -344,22 +343,21 @@ TEST("seq execution set value impact twice with continuation") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
   action_t action = ACTION(test_exe_alloc_set_continue_, default_tick,
                            HANDLE_NULL);
 
-  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, action) == KIT_OK);
   handle_t h = { .id = 0, .generation = 0 };
 
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
 
-  REQUIRE(execution_schedule_and_join(&exe, default_tick) ==
-          STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, default_tick) == KIT_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
 
   execution_destroy(&exe);
@@ -405,22 +403,22 @@ TEST("seq execution two actions") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
   action_t a0 = ACTION(test_exe_allocate_into_, 1, HANDLE_NULL);
-  REQUIRE(execution_queue(&exe, a0) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a0) == KIT_OK);
 
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
   action_t a1 = ACTION(test_exe_add_18_, 1, HANDLE_NULL);
   action_t a2 = ACTION(test_exe_add_24_, 1, HANDLE_NULL);
-  REQUIRE(execution_queue(&exe, a1) == STATUS_OK);
-  REQUIRE(execution_queue(&exe, a2) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a1) == KIT_OK);
+  REQUIRE(execution_queue(&exe, a2) == KIT_OK);
 
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
   handle_t h = { .id = 0, .generation = 0 };
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
@@ -445,13 +443,13 @@ TEST("seq execution invalid impact") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
   action_t action = ACTION(test_exe_set_42_, 1, HANDLE_NULL);
-  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, action) == KIT_OK);
 
   REQUIRE(execution_schedule_and_join(&exe, 1) ==
           ERROR_INVALID_HANDLE_ID);
@@ -502,20 +500,20 @@ TEST("seq execution sync impacts applied first") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
   action_t a[] = { ACTION_UNSAFE(test_exe_0_alloc_set_42_, 1,
                                  HANDLE_NULL),
                    ACTION_UNSAFE(test_exe_1_set_43_, 1, HANDLE_NULL),
                    ACTION_UNSAFE(test_exe_1_alloc_, 1, HANDLE_NULL) };
-  REQUIRE(execution_queue(&exe, a[0]) == STATUS_OK);
-  REQUIRE(execution_queue(&exe, a[1]) == STATUS_OK);
-  REQUIRE(execution_queue(&exe, a[2]) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
+  REQUIRE(execution_queue(&exe, a[1]) == KIT_OK);
+  REQUIRE(execution_queue(&exe, a[2]) == KIT_OK);
 
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
   handle_t h[] = { { .id = 0, .generation = 0 },
                    { .id = 1, .generation = 0 } };
@@ -542,16 +540,16 @@ TEST("seq execution queue action impact") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
   action_t a = ACTION(test_exe_queue_, 1, HANDLE_NULL);
   handle_t h = { .id = 0, .generation = 0 };
 
-  REQUIRE(execution_queue(&exe, a) == STATUS_OK);
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a) == KIT_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
 
   execution_destroy(&exe);
@@ -613,17 +611,17 @@ TEST("seq execution no multithreading") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
   action_t a[] = { ACTION_UNSAFE(test_exe_foo_, 1, HANDLE_NULL),
                    ACTION_UNSAFE(test_exe_bar_, 1, HANDLE_NULL) };
 
-  REQUIRE(execution_queue(&exe, a[0]) == STATUS_OK);
-  REQUIRE(execution_queue(&exe, a[1]) == STATUS_OK);
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
+  REQUIRE(execution_queue(&exe, a[1]) == KIT_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
   REQUIRE(foo_end + bar_end == 1);
 
@@ -646,18 +644,18 @@ TEST("execution two parallel actions") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
   action_t a[] = { ACTION_UNSAFE(test_exe_foo_, 1, HANDLE_NULL),
                    ACTION_UNSAFE(test_exe_bar_, 1, HANDLE_NULL) };
 
-  REQUIRE(execution_queue(&exe, a[0]) == STATUS_OK);
-  REQUIRE(execution_queue(&exe, a[1]) == STATUS_OK);
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
+  REQUIRE(execution_queue(&exe, a[1]) == KIT_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
   REQUIRE(foo_end == 1);
   REQUIRE(bar_end == 1);
@@ -694,17 +692,17 @@ TEST("execution join one") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 1) == KIT_OK);
 
   action_t a = ACTION(test_exe_delay_alloc_set_42_, 1, HANDLE_NULL);
   handle_t h = { .id = 0, .generation = 0 };
 
-  REQUIRE(execution_queue(&exe, a) == STATUS_OK);
-  REQUIRE(execution_schedule(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a) == KIT_OK);
+  REQUIRE(execution_schedule(&exe, 1) == KIT_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == -1);
   execution_join(&exe);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
@@ -723,17 +721,17 @@ TEST("execution join four") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
   action_t a = ACTION(test_exe_delay_alloc_set_42_, 1, HANDLE_NULL);
   handle_t h = { .id = 0, .generation = 0 };
 
-  REQUIRE(execution_queue(&exe, a) == STATUS_OK);
-  REQUIRE(execution_schedule(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a) == KIT_OK);
+  REQUIRE(execution_schedule(&exe, 1) == KIT_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == -1);
   execution_join(&exe);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
@@ -752,16 +750,16 @@ TEST("execution set value impact") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
   action_t action = ACTION(test_exe_alloc_set_, 1, HANDLE_NULL);
 
-  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, action) == KIT_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
   handle_t h = { .id = 0, .generation = 0 };
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
@@ -780,23 +778,22 @@ TEST("execution set value impact twice") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
   action_t action = ACTION(test_exe_alloc_set_, default_tick,
                            HANDLE_NULL);
 
-  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, action) == KIT_OK);
   handle_t h = { .id = 0, .generation = 0 };
 
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
 
-  REQUIRE(execution_schedule_and_join(&exe, default_tick) ==
-          STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, default_tick) == KIT_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
 
   execution_destroy(&exe);
@@ -813,23 +810,22 @@ TEST("execution set value impact twice with continuation") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
   action_t action = ACTION(test_exe_alloc_set_continue_, default_tick,
                            HANDLE_NULL);
 
-  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, action) == KIT_OK);
   handle_t h = { .id = 0, .generation = 0 };
 
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
 
-  REQUIRE(execution_schedule_and_join(&exe, default_tick) ==
-          STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, default_tick) == KIT_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 43);
 
   execution_destroy(&exe);
@@ -846,23 +842,23 @@ TEST("execution two actions") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
   action_t a0 = ACTION(test_exe_allocate_into_, 1, HANDLE_NULL);
-  REQUIRE(execution_queue(&exe, a0) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a0) == KIT_OK);
 
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
   action_t a1 = ACTION(test_exe_add_18_, 1, HANDLE_NULL);
   action_t a2 = ACTION(test_exe_add_24_, 1, HANDLE_NULL);
-  REQUIRE(execution_queue(&exe, a1) == STATUS_OK);
-  REQUIRE(execution_queue(&exe, a2) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a1) == KIT_OK);
+  REQUIRE(execution_queue(&exe, a2) == KIT_OK);
 
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
   handle_t h = { .id = 0, .generation = 0 };
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
@@ -881,14 +877,14 @@ TEST("execution invalid impact") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
   action_t action = ACTION(test_exe_set_42_, 1, HANDLE_NULL);
-  REQUIRE(execution_queue(&exe, action) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, action) == KIT_OK);
 
   REQUIRE(execution_schedule_and_join(&exe, 1) ==
           ERROR_INVALID_HANDLE_ID);
@@ -907,21 +903,21 @@ TEST("execution sync impacts applied first") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
   action_t a[] = { ACTION_UNSAFE(test_exe_0_alloc_set_42_, 1,
                                  HANDLE_NULL),
                    ACTION_UNSAFE(test_exe_1_set_43_, 1, HANDLE_NULL),
                    ACTION_UNSAFE(test_exe_1_alloc_, 1, HANDLE_NULL) };
-  REQUIRE(execution_queue(&exe, a[0]) == STATUS_OK);
-  REQUIRE(execution_queue(&exe, a[1]) == STATUS_OK);
-  REQUIRE(execution_queue(&exe, a[2]) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
+  REQUIRE(execution_queue(&exe, a[1]) == KIT_OK);
+  REQUIRE(execution_queue(&exe, a[2]) == KIT_OK);
 
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
   handle_t h[] = { { .id = 0, .generation = 0 },
                    { .id = 1, .generation = 0 } };
@@ -942,17 +938,17 @@ TEST("execution queue action impact") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
   action_t a = ACTION(test_exe_queue_, 1, HANDLE_NULL);
   handle_t h = { .id = 0, .generation = 0 };
 
-  REQUIRE(execution_queue(&exe, a) == STATUS_OK);
-  REQUIRE(execution_schedule_and_join(&exe, 1) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a) == KIT_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
   REQUIRE(state.get_integer(state.state, h, 0, -1) == 42);
 
   execution_destroy(&exe);
@@ -1062,21 +1058,21 @@ TEST("execution action order") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == STATUS_OK);
+  REQUIRE(state_init(&state, alloc) == KIT_OK);
 
   execution_t exe;
-  REQUIRE(execution_init(&exe, state, pool, alloc) == STATUS_OK);
-  REQUIRE(execution_set_thread_count(&exe, 4) == STATUS_OK);
+  REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
   action_t a[] = {
     ACTION_UNSAFE(test_exe_order_alloc_0_, 1, HANDLE_NULL),
     ACTION_UNSAFE(test_exe_order_dealloc_0_, 1, HANDLE_NULL)
   };
 
-  REQUIRE(execution_queue(&exe, a[0]) == STATUS_OK);
-  REQUIRE(execution_queue(&exe, a[1]) == STATUS_OK);
+  REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
+  REQUIRE(execution_queue(&exe, a[1]) == KIT_OK);
 
-  REQUIRE(execution_schedule_and_join(&exe, 2) == STATUS_OK);
+  REQUIRE(execution_schedule_and_join(&exe, 2) == KIT_OK);
 
   execution_destroy(&exe);
 }
@@ -1095,23 +1091,22 @@ TEST("execution queue concurrency") {
                                    .join    = pool_join_ };
 
     read_write_t state;
-    ok = ok && (state_init(&state, alloc) == STATUS_OK);
+    ok = ok && (state_init(&state, alloc) == KIT_OK);
 
     execution_t exe;
-    ok = ok &&
-         (execution_init(&exe, state, pool, alloc) == STATUS_OK);
-    ok = ok && (execution_set_thread_count(&exe, 4) == STATUS_OK);
+    ok = ok && (execution_init(&exe, state, pool, alloc) == KIT_OK);
+    ok = ok && (execution_set_thread_count(&exe, 4) == KIT_OK);
 
     action_t action = ACTION(test_exe_alloc_set_, 1, HANDLE_NULL);
     handle_t h      = { .id = 0, .generation = 0 };
 
-    ok = ok && (execution_schedule(&exe, 1) == STATUS_OK);
+    ok = ok && (execution_schedule(&exe, 1) == KIT_OK);
 
-    ok = ok && (execution_queue(&exe, action) == STATUS_OK);
+    ok = ok && (execution_queue(&exe, action) == KIT_OK);
     ok = ok && (state.get_integer(state.state, h, 0, -1) == -1);
     execution_join(&exe);
     ok = ok && (state.get_integer(state.state, h, 0, -1) == -1);
-    ok = ok && (execution_schedule_and_join(&exe, 1) == STATUS_OK);
+    ok = ok && (execution_schedule_and_join(&exe, 1) == KIT_OK);
     ok = ok && (state.get_integer(state.state, h, 0, -1) == 42);
 
     execution_destroy(&exe);

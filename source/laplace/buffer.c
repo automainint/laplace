@@ -89,7 +89,7 @@ static void buffer_free(laplace_buffer_void_t *const buffer,
   }
 }
 
-laplace_status_t laplace_buffer_set_chunk_size(
+kit_status_t laplace_buffer_set_chunk_size(
     laplace_buffer_void_t *const buffer, ptrdiff_t const chunk_size) {
   if (buffer == NULL)
     return LAPLACE_ERROR_INVALID_BUFFER;
@@ -97,7 +97,7 @@ laplace_status_t laplace_buffer_set_chunk_size(
     return LAPLACE_ERROR_INVALID_CHUNK_SIZE;
 
   buffer->chunk_size = chunk_size;
-  return STATUS_OK;
+  return KIT_OK;
 }
 
 laplace_handle_t laplace_buffer_allocate(
@@ -341,11 +341,11 @@ laplace_buffer_realloc_result_t laplace_buffer_reallocate(
 
   STORE_(&buffer->blocks.values[handle.id].size, size, RLS_);
 
-  result.status = LAPLACE_STATUS_OK;
+  result.status = KIT_OK;
   return result;
 }
 
-laplace_status_t laplace_buffer_reserve(
+kit_status_t laplace_buffer_reserve(
     laplace_buffer_void_t *const buffer, ptrdiff_t const size) {
   if (size < 0)
     return LAPLACE_ERROR_INVALID_SIZE;
@@ -392,11 +392,11 @@ laplace_status_t laplace_buffer_reserve(
                RLX_) == LAPLACE_ID_UNDEFINED)
     buffer->next_block++;
 
-  return LAPLACE_STATUS_OK;
+  return KIT_OK;
 }
 
-laplace_status_t laplace_buffer_deallocate(
-    laplace_buffer_void_t *buffer, laplace_handle_t handle) {
+kit_status_t laplace_buffer_deallocate(laplace_buffer_void_t *buffer,
+                                       laplace_handle_t handle) {
   if (handle.id < 0 || handle.id >= buffer->blocks.size)
     return LAPLACE_ERROR_INVALID_HANDLE_ID;
 
@@ -420,12 +420,13 @@ laplace_status_t laplace_buffer_deallocate(
   if (buffer->next_block < buffer->reserved)
     buffer->next_block = buffer->reserved;
 
-  return LAPLACE_STATUS_OK;
+  return KIT_OK;
 }
 
-laplace_status_t laplace_buffer_check(
-    laplace_buffer_void_t const *buffer, laplace_handle_t handle,
-    ptrdiff_t const index, ptrdiff_t const size) {
+kit_status_t laplace_buffer_check(laplace_buffer_void_t const *buffer,
+                                  laplace_handle_t             handle,
+                                  ptrdiff_t const              index,
+                                  ptrdiff_t const              size) {
   if (handle.id < 0 || handle.id >= buffer->blocks.size)
     return LAPLACE_ERROR_INVALID_HANDLE_ID;
   ptrdiff_t const block = LOAD_(
@@ -437,7 +438,7 @@ laplace_status_t laplace_buffer_check(
   if (generation != handle.generation)
     return LAPLACE_ERROR_INVALID_HANDLE_GENERATION;
   if (size == 0)
-    return LAPLACE_STATUS_OK;
+    return KIT_OK;
   if (size < 0)
     return LAPLACE_ERROR_INVALID_SIZE;
   if (index < 0 || block + index < 0 ||
@@ -446,7 +447,7 @@ laplace_status_t laplace_buffer_check(
           LOAD_(&buffer->blocks.values[handle.id].size, ACQ_))
     return LAPLACE_ERROR_INVALID_INDEX;
 
-  return LAPLACE_STATUS_OK;
+  return KIT_OK;
 }
 
 ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
@@ -459,7 +460,7 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
   }
 
   ptrdiff_t size = 0;
-  if (laplace_buffer_check(buffer, handle, 0, 0) == LAPLACE_STATUS_OK)
+  if (laplace_buffer_check(buffer, handle, 0, 0) == KIT_OK)
     size = LOAD_(&buffer->blocks.values[handle.id].size, ACQ_);
 
   if (mtx_lock(&buffer->read_lock) != thrd_success) {

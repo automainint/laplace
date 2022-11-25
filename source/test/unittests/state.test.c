@@ -43,7 +43,7 @@ TEST("state apply noop") {
   state_init(&a, kit_alloc_default());
   a.acquire(a.state);
   impact_t i = NOOP();
-  REQUIRE(a.apply(a.state, &i) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &i) == KIT_OK);
   a.release(a.state);
 }
 
@@ -71,7 +71,7 @@ TEST("state apply allocate into int and get") {
   a.acquire(a.state);
   handle_t h = { .id = 42, .generation = -1 };
   impact_t i = INTEGER_ALLOCATE_INTO(h, 1);
-  REQUIRE(a.apply(a.state, &i) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &i) == KIT_OK);
   h.generation++;
   REQUIRE(a.get_integer(a.state, h, 0, -1) == 0);
   a.release(a.state);
@@ -83,10 +83,10 @@ TEST("state apply allocate int and get") {
   a.acquire(a.state);
   handle_t ret = { .id = 0, .generation = -1 };
   impact_t i   = INTEGER_ALLOCATE_INTO(ret, 2);
-  REQUIRE(a.apply(a.state, &i) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &i) == KIT_OK);
   ret.generation++;
   impact_t j = INTEGER_ALLOCATE(1, ret, 0);
-  REQUIRE(a.apply(a.state, &j) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &j) == KIT_OK);
   a.adjust_loop(a.state);
   handle_t h = { .id         = a.get_integer(a.state, ret, 0, -1),
                  .generation = a.get_integer(a.state, ret, 1, -1) };
@@ -101,11 +101,11 @@ TEST("state apply reserve int and allocate into") {
   state_init(&a, kit_alloc_default());
   a.acquire(a.state);
   impact_t i = INTEGER_RESERVE(10);
-  REQUIRE(a.apply(a.state, &i) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &i) == KIT_OK);
   handle_t h = { .id = 0, .generation = -1 };
   impact_t j = INTEGER_ALLOCATE_INTO(h, 1);
   h.generation++;
-  REQUIRE(a.apply(a.state, &j) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &j) == KIT_OK);
   REQUIRE(a.get_integer(a.state, h, 0, -1) == 0);
   a.release(a.state);
 }
@@ -116,15 +116,15 @@ TEST("state apply reserve int and allocate") {
   a.acquire(a.state);
   ptrdiff_t reserved = 10;
   impact_t  i        = INTEGER_RESERVE(reserved);
-  REQUIRE(a.apply(a.state, &i) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &i) == KIT_OK);
   handle_t ret = { .id = 0, .generation = -1 };
   impact_t j   = INTEGER_ALLOCATE_INTO(ret, 4);
-  REQUIRE(a.apply(a.state, &j) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &j) == KIT_OK);
   ret.generation++;
   impact_t k = INTEGER_ALLOCATE(1, ret, 0);
-  REQUIRE(a.apply(a.state, &k) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &k) == KIT_OK);
   impact_t l = INTEGER_ALLOCATE(1, ret, 2);
-  REQUIRE(a.apply(a.state, &l) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &l) == KIT_OK);
   a.adjust_loop(a.state);
   REQUIRE(a.get_integer(a.state, ret, 0, -1) == reserved);
   REQUIRE(a.get_integer(a.state, ret, 1, -1) == 0);
@@ -139,10 +139,10 @@ TEST("state apply allocate int, set and get") {
   a.acquire(a.state);
   handle_t ret = { .id = 0, .generation = -1 };
   impact_t i   = INTEGER_ALLOCATE_INTO(ret, 2);
-  REQUIRE(a.apply(a.state, &i) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &i) == KIT_OK);
   ret.generation++;
   impact_t j = INTEGER_ALLOCATE(1, ret, 0);
-  REQUIRE(a.apply(a.state, &j) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &j) == KIT_OK);
   a.adjust_loop(a.state);
   a.adjust_done(a.state);
   handle_t h = { .id         = a.get_integer(a.state, ret, 0, -1),
@@ -150,7 +150,7 @@ TEST("state apply allocate int, set and get") {
   REQUIRE(h.id != -1);
   REQUIRE(h.generation == 0);
   impact_t k = INTEGER_SET(h, 0, 42);
-  REQUIRE(a.apply(a.state, &k) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &k) == KIT_OK);
   a.adjust_loop(a.state);
   REQUIRE(a.get_integer(a.state, h, 0, -1) == 42);
   a.release(a.state);
@@ -162,10 +162,10 @@ TEST("state deallocate int") {
   a.acquire(a.state);
   handle_t h = { .id = 0, .generation = -1 };
   impact_t i = INTEGER_ALLOCATE_INTO(h, 1);
-  REQUIRE(a.apply(a.state, &i) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &i) == KIT_OK);
   h.generation++;
   impact_t j = INTEGER_DEALLOCATE(h);
-  REQUIRE(a.apply(a.state, &j) == STATUS_OK);
+  REQUIRE(a.apply(a.state, &j) == KIT_OK);
   a.release(a.state);
 }
 
@@ -177,9 +177,9 @@ TEST("state apply add int") {
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { INTEGER_ALLOCATE_INTO(h0, 1),
                    INTEGER_ADD(h, 0, 18), INTEGER_ADD(h, 0, 24) };
-  REQUIRE(a.apply(a.state, i) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 1) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 2) == STATUS_OK);
+  REQUIRE(a.apply(a.state, i) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 1) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 2) == KIT_OK);
   a.adjust_loop(a.state);
   REQUIRE(a.get_integer(a.state, h, 0, -1) == 42);
   a.release(a.state);
@@ -200,7 +200,7 @@ TEST("state apply allocate into byte and get") {
   a.acquire(a.state);
   handle_t h   = { .id = 42, .generation = -1 };
   impact_t i[] = { BYTE_ALLOCATE_INTO(h, 1) };
-  REQUIRE(a.apply(a.state, i) == STATUS_OK);
+  REQUIRE(a.apply(a.state, i) == KIT_OK);
   h.generation++;
   REQUIRE(a.get_byte(a.state, h, 0, -1) == 0);
   a.release(a.state);
@@ -213,9 +213,9 @@ TEST("state apply allocate byte and get") {
   handle_t ret0 = { .id = 0, .generation = -1 };
   handle_t ret  = { .id = 0, .generation = 0 };
   impact_t i[]  = { INTEGER_ALLOCATE_INTO(ret0, 2),
-                    BYTE_ALLOCATE(1, ret, 0) };
-  REQUIRE(a.apply(a.state, i) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 1) == STATUS_OK);
+                   BYTE_ALLOCATE(1, ret, 0) };
+  REQUIRE(a.apply(a.state, i) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 1) == KIT_OK);
   a.adjust_loop(a.state);
   handle_t h = { .id         = a.get_integer(a.state, ret, 0, -1),
                  .generation = a.get_integer(a.state, ret, 1, -1) };
@@ -233,9 +233,9 @@ TEST("state apply allocate byte, set and get") {
   handle_t ret  = { .id = 0, .generation = 0 };
   handle_t h    = { .id = -1, .generation = -1 };
   impact_t i[]  = { INTEGER_ALLOCATE_INTO(ret0, 2),
-                    BYTE_ALLOCATE(1, ret, 0), BYTE_SET(h, 0, 42) };
-  REQUIRE(a.apply(a.state, i) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 1) == STATUS_OK);
+                   BYTE_ALLOCATE(1, ret, 0), BYTE_SET(h, 0, 42) };
+  REQUIRE(a.apply(a.state, i) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 1) == KIT_OK);
   a.adjust_loop(a.state);
   a.adjust_done(a.state);
   h.id         = a.get_integer(a.state, ret, 0, -1);
@@ -243,7 +243,7 @@ TEST("state apply allocate byte, set and get") {
   REQUIRE(h.id != -1);
   REQUIRE(h.generation == 0);
   i[2].byte_set.handle = h;
-  REQUIRE(a.apply(a.state, i + 2) == STATUS_OK);
+  REQUIRE(a.apply(a.state, i + 2) == KIT_OK);
   a.adjust_loop(a.state);
   REQUIRE(a.get_byte(a.state, h, 0, -1) == 42);
   a.release(a.state);
@@ -256,8 +256,8 @@ TEST("state apply reserve byte and allocate into") {
   handle_t h0  = { .id = 0, .generation = -1 };
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { BYTE_RESERVE(10), BYTE_ALLOCATE_INTO(h0, 1) };
-  REQUIRE(a.apply(a.state, i) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 1) == STATUS_OK);
+  REQUIRE(a.apply(a.state, i) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 1) == KIT_OK);
   REQUIRE(a.get_byte(a.state, h, 0, -1) == 0);
   a.release(a.state);
 }
@@ -270,12 +270,12 @@ TEST("state apply reserve byte and allocate") {
   handle_t  ret      = { .id = 0, .generation = 0 };
   ptrdiff_t reserved = 10;
   impact_t  i[]      = { INTEGER_ALLOCATE_INTO(ret0, 4),
-                         BYTE_RESERVE(reserved), BYTE_ALLOCATE(1, ret, 0),
-                         BYTE_ALLOCATE(1, ret, 2) };
-  REQUIRE(a.apply(a.state, i) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 1) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 2) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 3) == STATUS_OK);
+                   BYTE_RESERVE(reserved), BYTE_ALLOCATE(1, ret, 0),
+                   BYTE_ALLOCATE(1, ret, 2) };
+  REQUIRE(a.apply(a.state, i) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 1) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 2) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 3) == KIT_OK);
   a.adjust_loop(a.state);
   REQUIRE(a.get_integer(a.state, ret, 0, -1) == reserved);
   REQUIRE(a.get_integer(a.state, ret, 1, -1) == 0);
@@ -291,8 +291,8 @@ TEST("state deallocate byte") {
   handle_t h0  = { .id = 0, .generation = -1 };
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { BYTE_ALLOCATE_INTO(h0, 1), BYTE_DEALLOCATE(h) };
-  REQUIRE(a.apply(a.state, i) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 1) == STATUS_OK);
+  REQUIRE(a.apply(a.state, i) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 1) == KIT_OK);
   a.release(a.state);
 }
 
@@ -304,9 +304,9 @@ TEST("state apply add byte") {
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { BYTE_ALLOCATE_INTO(h0, 1), BYTE_ADD(h, 0, 18),
                    BYTE_ADD(h, 0, 24) };
-  REQUIRE(a.apply(a.state, i) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 1) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 2) == STATUS_OK);
+  REQUIRE(a.apply(a.state, i) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 1) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 2) == KIT_OK);
   a.adjust_loop(a.state);
   REQUIRE(a.get_byte(a.state, h, 0, -1) == 42);
   a.release(a.state);
@@ -320,9 +320,9 @@ TEST("state apply random") {
   handle_t  h    = { .id = 0, .generation = 0 };
   ptrdiff_t size = 1000;
   impact_t  i[]  = { INTEGER_ALLOCATE_INTO(h0, size),
-                     INTEGER_RANDOM(1, 100, h, 0, size) };
-  REQUIRE(a.apply(a.state, i) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 1) == STATUS_OK);
+                   INTEGER_RANDOM(1, 100, h, 0, size) };
+  REQUIRE(a.apply(a.state, i) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 1) == KIT_OK);
   a.adjust_loop(a.state);
   int ok = 1;
   for (ptrdiff_t k = 0; k < size; k++)
@@ -337,7 +337,7 @@ TEST("state apply seed") {
   state_init(&a, kit_alloc_default());
   a.acquire(a.state);
   impact_t i[] = { INTEGER_SEED(42) };
-  REQUIRE(a.apply(a.state, i) == STATUS_OK);
+  REQUIRE(a.apply(a.state, i) == KIT_OK);
   a.release(a.state);
 }
 
@@ -351,13 +351,13 @@ TEST("state random with equal seed") {
   handle_t  h    = { .id = 0, .generation = 0 };
   ptrdiff_t size = 1000;
   impact_t  i[] = { INTEGER_SEED(42), INTEGER_ALLOCATE_INTO(h0, size),
-                    INTEGER_RANDOM(1, 100, h, 0, size) };
-  REQUIRE(foo.apply(foo.state, i) == STATUS_OK);
-  REQUIRE(bar.apply(bar.state, i) == STATUS_OK);
-  REQUIRE(foo.apply(foo.state, i + 1) == STATUS_OK);
-  REQUIRE(bar.apply(bar.state, i + 1) == STATUS_OK);
-  REQUIRE(foo.apply(foo.state, i + 2) == STATUS_OK);
-  REQUIRE(bar.apply(bar.state, i + 2) == STATUS_OK);
+                   INTEGER_RANDOM(1, 100, h, 0, size) };
+  REQUIRE(foo.apply(foo.state, i) == KIT_OK);
+  REQUIRE(bar.apply(bar.state, i) == KIT_OK);
+  REQUIRE(foo.apply(foo.state, i + 1) == KIT_OK);
+  REQUIRE(bar.apply(bar.state, i + 1) == KIT_OK);
+  REQUIRE(foo.apply(foo.state, i + 2) == KIT_OK);
+  REQUIRE(bar.apply(bar.state, i + 2) == KIT_OK);
   foo.adjust_loop(foo.state);
   bar.adjust_loop(bar.state);
   int ok = 1;
@@ -379,14 +379,14 @@ TEST("state random with different seed") {
   handle_t  h    = { .id = 0, .generation = 0 };
   ptrdiff_t size = 1000;
   impact_t  i[]  = { INTEGER_SEED(42), INTEGER_SEED(4242),
-                     INTEGER_ALLOCATE_INTO(h0, size),
-                     INTEGER_RANDOM(1, 100, h, 0, size) };
-  REQUIRE(foo.apply(foo.state, i) == STATUS_OK);
-  REQUIRE(bar.apply(bar.state, i + 1) == STATUS_OK);
-  REQUIRE(foo.apply(foo.state, i + 2) == STATUS_OK);
-  REQUIRE(bar.apply(bar.state, i + 2) == STATUS_OK);
-  REQUIRE(foo.apply(foo.state, i + 3) == STATUS_OK);
-  REQUIRE(bar.apply(bar.state, i + 3) == STATUS_OK);
+                   INTEGER_ALLOCATE_INTO(h0, size),
+                   INTEGER_RANDOM(1, 100, h, 0, size) };
+  REQUIRE(foo.apply(foo.state, i) == KIT_OK);
+  REQUIRE(bar.apply(bar.state, i + 1) == KIT_OK);
+  REQUIRE(foo.apply(foo.state, i + 2) == KIT_OK);
+  REQUIRE(bar.apply(bar.state, i + 2) == KIT_OK);
+  REQUIRE(foo.apply(foo.state, i + 3) == KIT_OK);
+  REQUIRE(bar.apply(bar.state, i + 3) == KIT_OK);
   foo.adjust_loop(foo.state);
   bar.adjust_loop(bar.state);
 
@@ -417,10 +417,10 @@ TEST("state allocation determinism") {
   impact_t  j[] = { INTEGER_DEALLOCATE(h) };
   handle_t *jh  = &j->integer_deallocate.handle;
 
-  REQUIRE(a.apply(a.state, i) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 1) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 2) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 3) == STATUS_OK);
+  REQUIRE(a.apply(a.state, i) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 1) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 2) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 3) == KIT_OK);
 
   a.adjust_loop(a.state);
   a.adjust_done(a.state);
@@ -434,10 +434,10 @@ TEST("state allocation determinism") {
 
   jh->id         = a.get_integer(a.state, h, 0, -1);
   jh->generation = a.get_integer(a.state, h, 1, -1);
-  REQUIRE(a.apply(a.state, j) == STATUS_OK);
+  REQUIRE(a.apply(a.state, j) == KIT_OK);
 
-  REQUIRE(a.apply(a.state, i + 4) == STATUS_OK);
-  REQUIRE(a.apply(a.state, i + 5) == STATUS_OK);
+  REQUIRE(a.apply(a.state, i + 4) == KIT_OK);
+  REQUIRE(a.apply(a.state, i + 5) == KIT_OK);
 
   a.adjust_loop(a.state);
   a.adjust_done(a.state);
@@ -449,13 +449,13 @@ TEST("state allocation determinism") {
 
   jh->id         = a.get_integer(a.state, h, 4, -1);
   jh->generation = a.get_integer(a.state, h, 5, -1);
-  REQUIRE(a.apply(a.state, j) == STATUS_OK);
+  REQUIRE(a.apply(a.state, j) == KIT_OK);
 
   jh->id         = a.get_integer(a.state, h, 6, -1);
   jh->generation = a.get_integer(a.state, h, 7, -1);
-  REQUIRE(a.apply(a.state, j) == STATUS_OK);
+  REQUIRE(a.apply(a.state, j) == KIT_OK);
 
-  REQUIRE(a.apply(a.state, i + 1) == STATUS_OK);
+  REQUIRE(a.apply(a.state, i + 1) == KIT_OK);
 
   a.adjust_loop(a.state);
   a.adjust_done(a.state);

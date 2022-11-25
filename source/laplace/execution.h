@@ -19,7 +19,7 @@ typedef struct laplace_execution laplace_execution_t;
 
 typedef int (*laplace_pool_routine_fn)(void *execution);
 
-typedef laplace_status_t (*laplace_pool_run_fn)(
+typedef kit_status_t (*laplace_pool_run_fn)(
     void *state, ptrdiff_t count, laplace_pool_routine_fn routine,
     laplace_execution_t *execution);
 
@@ -41,8 +41,8 @@ typedef struct {
 } laplace_action_state_t;
 
 struct laplace_execution {
-  laplace_status_t status;
-  ptrdiff_t        thread_count;
+  kit_status_t status;
+  ptrdiff_t    thread_count;
 
   laplace_read_write_t  _access;
   laplace_thread_pool_t _thread_pool;
@@ -67,28 +67,29 @@ struct laplace_execution {
   cnd_t _on_fence;
 };
 
-laplace_status_t laplace_execution_init(
-    laplace_execution_t *execution, laplace_read_write_t access,
-    laplace_thread_pool_t thread_pool, kit_allocator_t alloc);
+kit_status_t laplace_execution_init(laplace_execution_t  *execution,
+                                    laplace_read_write_t  access,
+                                    laplace_thread_pool_t thread_pool,
+                                    kit_allocator_t       alloc);
 
 void laplace_execution_destroy(laplace_execution_t *execution);
 
-laplace_status_t laplace_execution_set_thread_count(
+kit_status_t laplace_execution_set_thread_count(
     laplace_execution_t *execution, ptrdiff_t thread_count);
 
 laplace_read_only_t laplace_execution_read_only(
     laplace_execution_t const *execution);
 
-laplace_status_t laplace_execution_queue(
-    laplace_execution_t *execution, laplace_action_t action);
+kit_status_t laplace_execution_queue(laplace_execution_t *execution,
+                                     laplace_action_t     action);
 
-laplace_status_t laplace_execution_schedule(
-    laplace_execution_t *execution, laplace_time_t time);
+kit_status_t laplace_execution_schedule(
+    laplace_execution_t *execution, laplace_time_t time_elapsed);
 
 void laplace_execution_join(laplace_execution_t *execution);
 
-laplace_status_t laplace_execution_schedule_and_join(
-    laplace_execution_t *execution, laplace_time_t time);
+kit_status_t laplace_execution_schedule_and_join(
+    laplace_execution_t *execution, laplace_time_t time_elapsed);
 
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
 #  define execution_t laplace_execution_t

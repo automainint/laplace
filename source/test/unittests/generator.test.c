@@ -45,7 +45,7 @@ TEST("generator example") {
   memset(&access, 0, sizeof access);
 
   generator_t gen;
-  REQUIRE(generator_init(&gen, action, access, alloc) == STATUS_OK);
+  REQUIRE(generator_init(&gen, action, access, alloc) == KIT_OK);
   REQUIRE(generator_status(&gen) == GENERATOR_RUNNING);
 
   impact_list_t foo = generator_run(&gen);

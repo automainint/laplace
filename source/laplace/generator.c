@@ -2,9 +2,10 @@
 
 #include <string.h>
 
-laplace_status_t laplace_generator_init(
-    laplace_generator_t *generator, laplace_action_t action,
-    laplace_read_only_t access, kit_allocator_t alloc) {
+kit_status_t laplace_generator_init(laplace_generator_t *generator,
+                                    laplace_action_t     action,
+                                    laplace_read_only_t  access,
+                                    kit_allocator_t      alloc) {
   if (action.size > LAPLACE_COROUTINE_SIZE)
     return LAPLACE_ERROR_INVALID_SIZE;
   memset(generator, 0, sizeof *generator);
@@ -13,7 +14,7 @@ laplace_status_t laplace_generator_init(
   generator->promise.access = access;
   generator->promise.self   = action.self;
   generator->tick_duration  = action.tick_duration;
-  return LAPLACE_STATUS_OK;
+  return KIT_OK;
 }
 
 laplace_impact_list_t laplace_generator_run(

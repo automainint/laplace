@@ -33,9 +33,10 @@ typedef struct {
   laplace_time_t clock;
 } laplace_generator_t;
 
-laplace_status_t laplace_generator_init(
-    laplace_generator_t *generator, laplace_action_t action,
-    laplace_read_only_t access, kit_allocator_t alloc);
+kit_status_t laplace_generator_init(laplace_generator_t *generator,
+                                    laplace_action_t     action,
+                                    laplace_read_only_t  access,
+                                    kit_allocator_t      alloc);
 
 laplace_impact_list_t laplace_generator_run(
     laplace_generator_t *generator);

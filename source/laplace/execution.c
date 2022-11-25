@@ -78,7 +78,7 @@
     BROADCAST_(_on_fence)                                       \
   }
 
-static laplace_status_t sync_routine_(
+static kit_status_t sync_routine_(
     laplace_execution_t *const execution, laplace_time_t time) {
   for (; time != 0; time--) {
     for (int done = 0; !done;) {
@@ -173,16 +173,16 @@ static laplace_status_t sync_routine_(
 
       if (execution->_access.apply != NULL) {
         for (ptrdiff_t i = 0; i < execution->_sync.size; i++) {
-          laplace_status_t s = execution->_access.apply(
+          kit_status_t s = execution->_access.apply(
               execution->_access.state, execution->_sync.values + i);
-          if (s != LAPLACE_STATUS_OK)
+          if (s != KIT_OK)
             return s;
         }
 
         for (ptrdiff_t i = 0; i < execution->_async.size; i++) {
-          laplace_status_t s = execution->_access.apply(
+          kit_status_t s = execution->_access.apply(
               execution->_access.state, execution->_async.values + i);
-          if (s != LAPLACE_STATUS_OK)
+          if (s != KIT_OK)
             return s;
         }
       }
@@ -223,10 +223,10 @@ static laplace_status_t sync_routine_(
     }
   }
 
-  return LAPLACE_STATUS_OK;
+  return KIT_OK;
 }
 
-static laplace_status_t routine_internal_(
+static kit_status_t routine_internal_(
     laplace_execution_t *const execution) {
   LOCK_
   while (!execution->_done) {
@@ -361,7 +361,7 @@ static laplace_status_t routine_internal_(
         }
         UNLOCK_
 
-        laplace_status_t res = LAPLACE_STATUS_OK;
+        kit_status_t res = KIT_OK;
 
         ONCE_BEGIN_ {
           execution->_queue_index = 0;
@@ -375,7 +375,7 @@ static laplace_status_t routine_internal_(
         }
         ONCE_END_
 
-        if (res != LAPLACE_STATUS_OK)
+        if (res != KIT_OK)
           return res;
 
         LOCK_
@@ -388,7 +388,7 @@ static laplace_status_t routine_internal_(
                                            execution->_async.values +
                                                i);
 
-            if (res != LAPLACE_STATUS_OK)
+            if (res != KIT_OK)
               return res;
 
             LOCK_
@@ -452,13 +452,13 @@ static laplace_status_t routine_internal_(
   }
   UNLOCK_
 
-  return LAPLACE_STATUS_OK;
+  return KIT_OK;
 }
 
 static int routine_(laplace_execution_t *const execution) {
-  laplace_status_t s = routine_internal_(execution);
+  kit_status_t s = routine_internal_(execution);
 
-  if (s != LAPLACE_STATUS_OK) {
+  if (s != KIT_OK) {
     LOCK_
     execution->status = s;
     execution->_done  = 1;
@@ -472,8 +472,8 @@ static int routine_(laplace_execution_t *const execution) {
   return 0;
 }
 
-static laplace_status_t append_tick_(
-    laplace_execution_t *const execution, laplace_time_t const time) {
+static kit_status_t append_tick_(laplace_execution_t *const execution,
+                                 laplace_time_t const       time) {
   if (mtx_lock(&execution->_lock) != thrd_success)
     return LAPLACE_ERROR_BAD_MUTEX_LOCK;
   execution->_ticks += time;
@@ -482,10 +482,10 @@ static laplace_status_t append_tick_(
   if (cnd_broadcast(&execution->_on_tick) != thrd_success)
     return LAPLACE_ERROR_BAD_CNDVAR_BROADCAST;
 
-  return LAPLACE_STATUS_OK;
+  return KIT_OK;
 }
 
-laplace_status_t laplace_execution_init(
+kit_status_t laplace_execution_init(
     laplace_execution_t *const  execution,
     laplace_read_write_t const  access,
     laplace_thread_pool_t const thread_pool, kit_allocator_t alloc) {
@@ -527,7 +527,7 @@ laplace_status_t laplace_execution_init(
   DA_INIT(execution->_sync, 0, alloc);
   DA_INIT(execution->_async, 0, alloc);
 
-  return LAPLACE_STATUS_OK;
+  return KIT_OK;
 }
 
 void laplace_execution_destroy(laplace_execution_t *const execution) {
@@ -559,7 +559,7 @@ void laplace_execution_destroy(laplace_execution_t *const execution) {
   DA_DESTROY(execution->_async);
 }
 
-laplace_status_t laplace_execution_set_thread_count(
+kit_status_t laplace_execution_set_thread_count(
     laplace_execution_t *const execution,
     ptrdiff_t const            thread_count) {
   if (execution->_thread_pool.run == NULL ||
@@ -581,26 +581,26 @@ laplace_status_t laplace_execution_set_thread_count(
     UNLOCK_
 
     if (thread_count != 0) {
-      laplace_status_t const s = execution->_thread_pool.run(
+      kit_status_t const s = execution->_thread_pool.run(
           execution->_thread_pool.state, thread_count,
           (laplace_pool_routine_fn) routine_, execution);
 
-      if (s != LAPLACE_STATUS_OK)
+      if (s != KIT_OK)
         return s;
     }
   } else {
-    laplace_status_t const s = execution->_thread_pool.run(
+    kit_status_t const s = execution->_thread_pool.run(
         execution->_thread_pool.state,
         thread_count - execution->thread_count,
         (laplace_pool_routine_fn) routine_, execution);
 
-    if (s != LAPLACE_STATUS_OK)
+    if (s != KIT_OK)
       return s;
   }
 
   execution->thread_count = thread_count;
 
-  return LAPLACE_STATUS_OK;
+  return KIT_OK;
 }
 
 laplace_read_only_t laplace_execution_read_only(
@@ -621,7 +621,7 @@ laplace_read_only_t laplace_execution_read_only(
   return read_only;
 }
 
-laplace_status_t laplace_execution_queue(
+kit_status_t laplace_execution_queue(
     laplace_execution_t *const execution,
     laplace_action_t const     action) {
   LOCK_
@@ -639,7 +639,7 @@ laplace_status_t laplace_execution_queue(
   execution->_queue.values[n].clock         = execution->_ticks;
   execution->_queue.values[n].tick_duration = action.tick_duration;
 
-  laplace_status_t s = laplace_generator_init(
+  kit_status_t s = laplace_generator_init(
       &execution->_queue.values[n].generator, action,
       laplace_execution_read_only(execution), execution->_alloc);
 
@@ -648,12 +648,12 @@ laplace_status_t laplace_execution_queue(
   return s;
 }
 
-laplace_status_t laplace_execution_schedule(
-    laplace_execution_t *execution, laplace_time_t time) {
+kit_status_t laplace_execution_schedule(
+    laplace_execution_t *execution, laplace_time_t time_elapsed) {
   if (execution->thread_count == 0)
-    return sync_routine_(execution, time);
+    return sync_routine_(execution, time_elapsed);
 
-  return append_tick_(execution, time);
+  return append_tick_(execution, time_elapsed);
 }
 
 void laplace_execution_join(laplace_execution_t *execution) {
@@ -668,12 +668,13 @@ void laplace_execution_join(laplace_execution_t *execution) {
   (void) mtx_unlock(&execution->_lock);
 }
 
-laplace_status_t laplace_execution_schedule_and_join(
-    laplace_execution_t *const execution, laplace_time_t const time) {
-  laplace_status_t const s = laplace_execution_schedule(execution,
-                                                        time);
+kit_status_t laplace_execution_schedule_and_join(
+    laplace_execution_t *const execution,
+    laplace_time_t const       time_elapsed) {
+  kit_status_t const s = laplace_execution_schedule(execution,
+                                                    time_elapsed);
 
-  if (s != LAPLACE_STATUS_OK)
+  if (s != KIT_OK)
     return s;
 
   laplace_execution_join(execution);

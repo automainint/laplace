@@ -10,13 +10,13 @@ extern "C" {
 typedef struct {
   ptrdiff_t id;
   union {
-    laplace_status_t error;
-    ptrdiff_t        generation;
+    kit_status_t error;
+    ptrdiff_t    generation;
   };
 } laplace_handle_t;
 
 #define LAPLACE_HANDLE_NULL \
-  { .id = LAPLACE_ID_UNDEFINED, .error = LAPLACE_STATUS_OK }
+  { .id = LAPLACE_ID_UNDEFINED, .error = KIT_OK }
 
 extern laplace_handle_t const laplace_handle_null;
 
