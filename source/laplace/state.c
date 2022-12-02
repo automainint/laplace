@@ -143,9 +143,6 @@ static laplace_byte_t get_byte(void *p, laplace_handle_t handle,
   return x;
 }
 
-DA_TYPE(integers_t, laplace_integer_t);
-DA_TYPE(bytes_t, laplace_byte_t);
-
 static int64_t rng(mt64_state_t *const mt64, int64_t const min,
                    int64_t const max) {
   uint64_t x = mt64_generate(mt64);
@@ -228,7 +225,7 @@ static kit_status_t apply(void *const                   p,
       mt64_init(&internal->mt64, impact->integer_seed.seed);
       break;
     case LAPLACE_IMPACT_INTEGER_RANDOM: {
-      DA(nums, laplace_integer_t);
+      laplace_integers_t nums;
       DA_INIT(nums, impact->integer_random.return_size,
               internal->alloc);
       for (ptrdiff_t i = 0; i < nums.size; i++)
@@ -242,7 +239,7 @@ static kit_status_t apply(void *const                   p,
       DA_DESTROY(nums);
     } break;
     case LAPLACE_IMPACT_BYTE_RANDOM: {
-      DA(nums, laplace_byte_t);
+      laplace_bytes_t nums;
       DA_INIT(nums, impact->byte_random.return_size, internal->alloc);
       for (ptrdiff_t i = 0; i < nums.size; i++)
         nums.values[i] = (laplace_byte_t) rng(

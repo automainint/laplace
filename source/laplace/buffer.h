@@ -44,18 +44,18 @@ typedef struct {
   ptrdiff_t offset;
 } laplace_buf_info_t_;
 
-#define LAPLACE_BUFFER_DATA             \
-  struct {                              \
-    ptrdiff_t cell_size;                \
-    ptrdiff_t chunk_size;               \
-    ptrdiff_t reserved;                 \
-    ptrdiff_t next_block;               \
-    mtx_t     read_lock;                \
-    cnd_t     read_sync;                \
-    ptrdiff_t read_count;               \
-    KIT_ATOMIC(ptrdiff_t) next_chunk;   \
-    KIT_DA(info, laplace_buf_info_t_);  \
-    KIT_DA(blocks, LAPLACE_BUF_BLOCK_); \
+#define LAPLACE_BUFFER_DATA            \
+  struct {                             \
+    ptrdiff_t cell_size;               \
+    ptrdiff_t chunk_size;              \
+    ptrdiff_t reserved;                \
+    ptrdiff_t next_block;              \
+    mtx_t     read_lock;               \
+    cnd_t     read_sync;               \
+    ptrdiff_t read_count;              \
+    KIT_ATOMIC(ptrdiff_t) next_chunk;  \
+    KIT_DA(laplace_buf_info_t_) info;  \
+    KIT_DA(LAPLACE_BUF_BLOCK_) blocks; \
   }
 
 #define LAPLACE_BUFFER_CELL(element_type_) \
@@ -66,13 +66,13 @@ typedef struct {
 
 typedef struct {
   LAPLACE_BUFFER_DATA;
-  KIT_DA(data, void);
+  KIT_DA(void) data;
 } laplace_buffer_void_t;
 
-#define LAPLACE_BUFFER_TYPE(element_type_)            \
-  struct {                                            \
-    LAPLACE_BUFFER_DATA;                              \
-    KIT_DA(data, LAPLACE_BUFFER_CELL(element_type_)); \
+#define LAPLACE_BUFFER_TYPE(element_type_)           \
+  struct {                                           \
+    LAPLACE_BUFFER_DATA;                             \
+    KIT_DA(LAPLACE_BUFFER_CELL(element_type_)) data; \
   }
 
 #define LAPLACE_BUFFER_INIT(status_, buf_, alloc_)                \

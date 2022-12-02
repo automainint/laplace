@@ -48,10 +48,10 @@ struct laplace_execution {
   laplace_thread_pool_t _thread_pool;
   kit_allocator_t       _alloc;
 
-  KIT_DA(_queue, laplace_action_state_t);
-  KIT_DA(_forks, laplace_action_state_t);
-  KIT_DA(_sync, laplace_impact_t);
-  KIT_DA(_async, laplace_impact_t);
+  KIT_DA(laplace_action_state_t) _queue;
+  KIT_DA(laplace_action_state_t) _forks;
+  KIT_DA(laplace_impact_t) _sync;
+  KIT_DA(laplace_impact_t) _async;
 
   int            _done;
   int            _tick_done;

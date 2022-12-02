@@ -7,7 +7,7 @@
 enum { default_tick = 10 };
 
 typedef struct {
-  DA(threads, thrd_t);
+  DA(thrd_t) threads;
 } pool_state_t_;
 
 static void pool_release_(void *state) {

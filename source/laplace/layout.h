@@ -18,9 +18,9 @@ typedef struct {
   } name;
 } laplace_layout_field_t;
 
-KIT_DA_TYPE(laplace_layout_code_t, char);
+typedef KIT_DA(char) laplace_layout_code_t;
 
-KIT_DA_TYPE(laplace_layout_t, laplace_layout_field_t);
+typedef KIT_DA(laplace_layout_field_t) laplace_layout_t;
 
 void laplace_layout_init(laplace_layout_t *layout,
                          kit_allocator_t   alloc);

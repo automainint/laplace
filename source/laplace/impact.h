@@ -8,6 +8,9 @@
 extern "C" {
 #endif
 
+typedef KIT_DA(laplace_integer_t) laplace_integers_t;
+typedef KIT_DA(laplace_byte_t) laplace_bytes_t;
+
 typedef enum {
   LAPLACE_IMPACT_ASYNC,
   LAPLACE_IMPACT_SYNC,
@@ -112,15 +115,15 @@ typedef struct {
 } laplace_integer_add_t;
 
 typedef struct {
-  laplace_handle_t handle;
-  ptrdiff_t        index;
-  KIT_DA(values, laplace_integer_t);
+  laplace_handle_t   handle;
+  ptrdiff_t          index;
+  laplace_integers_t values;
 } laplace_integer_write_values_t;
 
 typedef struct {
-  laplace_handle_t handle;
-  ptrdiff_t        index;
-  KIT_DA(deltas, laplace_integer_t);
+  laplace_handle_t   handle;
+  ptrdiff_t          index;
+  laplace_integers_t deltas;
 } laplace_integer_write_deltas_t;
 
 typedef struct {
@@ -162,13 +165,13 @@ typedef struct {
 typedef struct {
   laplace_handle_t handle;
   ptrdiff_t        index;
-  KIT_DA(values, laplace_byte_t);
+  laplace_bytes_t  values;
 } laplace_byte_write_values_t;
 
 typedef struct {
   laplace_handle_t handle;
   ptrdiff_t        index;
-  KIT_DA(deltas, laplace_byte_t);
+  laplace_bytes_t  deltas;
 } laplace_byte_write_deltas_t;
 
 typedef struct {
@@ -226,7 +229,7 @@ struct laplace_impact {
   ptrdiff_t order;
 };
 
-KIT_DA_TYPE(laplace_impact_list_t, laplace_impact_t);
+typedef KIT_DA(laplace_impact_t) laplace_impact_list_t;
 
 void laplace_impact_destroy(laplace_impact_t *impact);
 

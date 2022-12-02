@@ -17,7 +17,7 @@ typedef struct {
 
 typedef struct {
   laplace_time_t time;
-  KIT_DA(history, laplace_event_t);
+  KIT_DA(laplace_event_t) history;
 } laplace_controller_t;
 
 kit_status_t laplace_controller_init(laplace_controller_t *controller,

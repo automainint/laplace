@@ -157,10 +157,10 @@ TEST("impact list allocations") {
 
   handle_t h = { .id = 0, .generation = -1 };
 
-  DA(iv, laplace_integer_t);
-  DA(id, laplace_integer_t);
-  DA(bv, laplace_byte_t);
-  DA(bd, laplace_byte_t);
+  laplace_integers_t iv;
+  laplace_integers_t id;
+  laplace_bytes_t    bv;
+  laplace_bytes_t    bd;
 
   DA_INIT(iv, 0, alloc);
   DA_INIT(id, 0, alloc);
