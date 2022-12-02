@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include <kit/options.h>
+#include <kit/status.h>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -17,7 +17,7 @@ typedef int8_t  laplace_byte_t;
 enum { LAPLACE_ID_UNDEFINED = -1, LAPLACE_COROUTINE_SIZE = 400 };
 
 enum {
-  LAPLACE_ERROR_BAD_ALLOC,
+  LAPLACE_ERROR_BAD_ALLOC = 1,
   LAPLACE_ERROR_BAD_MUTEX_INIT,
   LAPLACE_ERROR_BAD_MUTEX_LOCK,
   LAPLACE_ERROR_BAD_MUTEX_UNLOCK,
