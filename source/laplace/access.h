@@ -16,6 +16,8 @@ typedef void (*laplace_release_fn)(void *state);
 typedef kit_status_t (*laplace_clone_fn)(
     void *state, laplace_read_write_t *cloned);
 
+typedef kit_status_t (*laplace_reset_fn)(void *state);
+
 typedef ptrdiff_t (*laplace_integers_size_fn)(
     void *state, laplace_handle_t handle);
 
@@ -51,6 +53,7 @@ struct laplace_read_write {
   laplace_acquire_fn acquire;
   laplace_release_fn release;
   laplace_clone_fn   clone;
+  laplace_reset_fn   reset;
 
   laplace_integers_size_fn integers_size;
   laplace_bytes_size_fn    bytes_size;

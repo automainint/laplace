@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
 kit_status_t laplace_state_init(laplace_read_write_t *state,
-                                kit_allocator_t       alloc);
+                                uint64_t seed, kit_allocator_t alloc);
 
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
 #  define state_init laplace_state_init

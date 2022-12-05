@@ -17,6 +17,7 @@ typedef struct {
 
 typedef struct {
   laplace_time_t time;
+  ptrdiff_t      index;
   KIT_DA(laplace_event_t) history;
 } laplace_controller_t;
 
@@ -50,7 +51,8 @@ kit_status_t laplace_schedule_and_join(
 #  define controller_destroy laplace_controller_destroy
 #  define controller_queue laplace_controller_queue
 #  define schedule laplace_schedule
-#  define shedule_and_join laplace_schedule_and_join
+#  define schedule_and_join laplace_schedule_and_join
+
 #endif
 
 #ifdef __cplusplus

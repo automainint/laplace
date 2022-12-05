@@ -562,6 +562,11 @@ void laplace_execution_destroy(laplace_execution_t *const execution) {
 kit_status_t laplace_execution_set_thread_count(
     laplace_execution_t *const execution,
     ptrdiff_t const            thread_count) {
+  if (execution->_thread_pool.run == NULL &&
+      execution->_thread_pool.join == NULL &&
+      execution->thread_count == 0 && thread_count == 0)
+    return KIT_OK;
+
   if (execution->_thread_pool.run == NULL ||
       execution->_thread_pool.join == NULL)
     return LAPLACE_ERROR_NO_THREAD_POOL;

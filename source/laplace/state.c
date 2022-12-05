@@ -9,6 +9,7 @@
 typedef struct {
   ATOMIC(ptrdiff_t) ref_count;
   kit_allocator_t  alloc;
+  uint64_t         seed;
   kit_mt64_state_t mt64;
   LAPLACE_BUFFER_TYPE(laplace_integer_t) integers;
   LAPLACE_BUFFER_TYPE(laplace_byte_t) bytes;
@@ -39,7 +40,8 @@ static void release(void *p) {
 static kit_status_t clone(void *p, laplace_read_write_t *cloned) {
   state_internal_t *self = (state_internal_t *) p;
 
-  kit_status_t s = laplace_state_init(cloned, self->alloc);
+  kit_status_t s = laplace_state_init(cloned, self->seed,
+                                      self->alloc);
   if (s != KIT_OK)
     return s;
 
@@ -58,6 +60,32 @@ static kit_status_t clone(void *p, laplace_read_write_t *cloned) {
     destroy(clone_self);
     return s;
   }
+
+  return KIT_OK;
+}
+
+static kit_status_t reset(void *p) {
+  state_internal_t *self = (state_internal_t *) p;
+
+  mt64_init(&self->mt64, self->seed);
+
+  LAPLACE_BUFFER_DESTROY(self->integers);
+  LAPLACE_BUFFER_DESTROY(self->bytes);
+
+  memset(&self->integers, 0, sizeof self->integers);
+  memset(&self->bytes, 0, sizeof self->bytes);
+
+  kit_status_t s;
+
+  LAPLACE_BUFFER_INIT(s, self->integers, self->alloc);
+
+  if (s != KIT_OK)
+    return s;
+
+  LAPLACE_BUFFER_INIT(s, self->bytes, self->alloc);
+
+  if (s != KIT_OK)
+    return s;
 
   return KIT_OK;
 }
@@ -278,6 +306,7 @@ static void adjust_done(void *p) {
 }
 
 kit_status_t laplace_state_init(laplace_read_write_t *const p,
+                                uint64_t const              seed,
                                 kit_allocator_t const       alloc) {
   state_internal_t *internal = (state_internal_t *) alloc.allocate(
       alloc.state, sizeof(state_internal_t));
@@ -288,7 +317,8 @@ kit_status_t laplace_state_init(laplace_read_write_t *const p,
   atomic_store_explicit(&internal->ref_count, 0,
                         memory_order_relaxed);
   internal->alloc = alloc;
-  mt64_init(&internal->mt64, mt64_seed());
+  internal->seed  = seed;
+  mt64_init(&internal->mt64, seed);
 
   kit_status_t s;
 
@@ -308,6 +338,7 @@ kit_status_t laplace_state_init(laplace_read_write_t *const p,
   p->acquire       = acquire;
   p->release       = release;
   p->clone         = clone;
+  p->reset         = reset;
   p->integers_size = integers_size;
   p->bytes_size    = bytes_size;
   p->read_integers = read_integers;

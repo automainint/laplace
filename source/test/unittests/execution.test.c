@@ -1,5 +1,6 @@
 #include "../../laplace/execution.h"
 #include "../../laplace/state.h"
+#include <kit/mersenne_twister_64.h>
 
 #define KIT_TEST_FILE execution
 #include <kit_test/test.h>
@@ -86,7 +87,22 @@ TEST("execution set thread count") {
   execution_destroy(&exe);
 }
 
-TEST("execution set thread count to zero") {
+TEST("execution set zero thread count without thread pool") {
+  read_write_t state;
+  memset(&state, 0, sizeof state);
+
+  laplace_thread_pool_t pool;
+  memset(&pool, 0, sizeof pool);
+
+  execution_t exe;
+  REQUIRE(execution_init(&exe, state, pool, kit_alloc_default()) ==
+          KIT_OK);
+  REQUIRE(execution_set_thread_count(&exe, 0) == KIT_OK);
+  REQUIRE(exe.thread_count == 0);
+  execution_destroy(&exe);
+}
+
+TEST("execution set zero thread count with thread pool") {
   read_write_t state;
   memset(&state, 0, sizeof state);
 
@@ -131,8 +147,8 @@ static action_t const test_null_self_ = ACTION_UNSAFE(
 TEST("seq execution queue action") {
   action_status_ = 0;
 
-  read_write_t          state;
-  laplace_thread_pool_t pool;
+  read_write_t  state;
+  thread_pool_t pool;
 
   memset(&state, 0, sizeof state);
   memset(&pool, 0, sizeof pool);
@@ -192,7 +208,7 @@ TEST("seq execution queue action and access null self") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -210,7 +226,7 @@ TEST("seq execution read only") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -272,7 +288,7 @@ TEST("seq execution set value impact") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -294,7 +310,7 @@ TEST("seq execution set value impact twice") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -343,7 +359,7 @@ TEST("seq execution set value impact twice with continuation") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -403,7 +419,7 @@ TEST("seq execution two actions") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -443,7 +459,7 @@ TEST("seq execution invalid impact") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -500,7 +516,7 @@ TEST("seq execution sync impacts applied first") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -540,7 +556,7 @@ TEST("seq execution queue action impact") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -611,7 +627,7 @@ TEST("seq execution no multithreading") {
 
   kit_allocator_t alloc = kit_alloc_default();
   read_write_t    state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -644,7 +660,7 @@ TEST("execution two parallel actions") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -692,7 +708,7 @@ TEST("execution join one") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -721,7 +737,7 @@ TEST("execution join four") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -750,7 +766,7 @@ TEST("execution set value impact") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -778,7 +794,7 @@ TEST("execution set value impact twice") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -810,7 +826,7 @@ TEST("execution set value impact twice with continuation") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -842,7 +858,7 @@ TEST("execution two actions") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -877,7 +893,7 @@ TEST("execution invalid impact") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -903,7 +919,7 @@ TEST("execution sync impacts applied first") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -938,7 +954,7 @@ TEST("execution queue action impact") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -1058,7 +1074,7 @@ TEST("execution action order") {
                                  .join    = pool_join_ };
 
   read_write_t state;
-  REQUIRE(state_init(&state, alloc) == KIT_OK);
+  REQUIRE(state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
@@ -1091,7 +1107,7 @@ TEST("execution queue concurrency") {
                                    .join    = pool_join_ };
 
     read_write_t state;
-    ok = ok && (state_init(&state, alloc) == KIT_OK);
+    ok = ok && (state_init(&state, mt64_seed(), alloc) == KIT_OK);
 
     execution_t exe;
     ok = ok && (execution_init(&exe, state, pool, alloc) == KIT_OK);
