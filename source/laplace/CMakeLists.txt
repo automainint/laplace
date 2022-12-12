@@ -1,5 +1,5 @@
 target_sources(
-  ${LAPLACE_LIBRARY}
+  laplace
     PRIVATE
       handle.c impact.c access.c buffer.c action.c execution.c
       generator.c controller.c layout.c state.c

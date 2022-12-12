@@ -8,11 +8,9 @@ TEST("layout add 3 fields") {
   layout_t layout;
   layout_init(&layout, kit_alloc_default());
 
-  SZ(empty, "");
-
-  layout_add_field(&layout, 3, empty);
-  layout_add_field(&layout, 1, empty);
-  layout_add_field(&layout, 2, empty);
+  layout_add_field(&layout, 3, SZ(""));
+  layout_add_field(&layout, 1, SZ(""));
+  layout_add_field(&layout, 2, SZ(""));
 
   REQUIRE(layout.size == 3);
   REQUIRE(layout_index_of(&layout, 1) == 0);
@@ -26,13 +24,10 @@ TEST("layout codegen two fields") {
   layout_t layout;
   layout_init(&layout, kit_alloc_default());
 
-  SZ(prefix, "n_");
-  SZ(delim, ",\n");
+  layout_add_field(&layout, 1, SZ("foo"));
+  layout_add_field(&layout, 2, SZ("bar"));
 
-  LAYOUT_ADD_FIELD_S(layout, 1, "foo");
-  LAYOUT_ADD_FIELD_S(layout, 2, "bar");
-
-  layout_code_t code = layout_codegen(&layout, 2, prefix, delim,
+  layout_code_t code = layout_codegen(&layout, 2, SZ("n_"), SZ(",\n"),
                                       kit_alloc_default());
   layout_destroy(&layout);
 

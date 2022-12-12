@@ -8,14 +8,16 @@ static int test_state_ = -1;
 STATIC_CORO(laplace_impact_list_t, test_exe_state_0_,
             kit_allocator_t alloc;
             read_only_t access; handle_t self;) {
-  test_state_ = 0;
+  if (test_state_ == -1)
+    test_state_ = 0;
 }
 CORO_END
 
 STATIC_CORO(laplace_impact_list_t, test_exe_state_1_,
             kit_allocator_t alloc;
             read_only_t access; handle_t self;) {
-  test_state_ = 1;
+  if (test_state_ == 0)
+    test_state_ = 1;
 }
 CORO_END
 

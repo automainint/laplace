@@ -81,9 +81,8 @@ def gen_cmake(folder: str, target_name: str):
   write_subdirs(folder, target_name)
 
 def main():
-  gen_cmake(os.path.join('source', 'laplace'), '${LAPLACE_LIBRARY}')
-  gen_cmake(os.path.join('source', 'codegen'), '${LAPLACE_CODEGEN}')
-  gen_cmake(os.path.join('source', 'test', 'unittests'), '${LAPLACE_TEST}')
+  gen_cmake(os.path.join('source', 'laplace'), 'laplace')
+  gen_cmake(os.path.join('source', 'test', 'unittests'), 'laplace_test_suite')
 
 if __name__ == '__main__':
   main()

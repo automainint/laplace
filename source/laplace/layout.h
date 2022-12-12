@@ -37,15 +37,8 @@ laplace_layout_code_t laplace_layout_codegen(
     laplace_layout_t const *layout, ptrdiff_t indent,
     kit_str_t prefix, kit_str_t delim, kit_allocator_t alloc);
 
-#define LAPLACE_LAYOUT_ADD_FIELD_S(layout_, id_, str_)  \
-  do {                                                  \
-    KIT_SZ(name_, str_);                                \
-    laplace_layout_add_field(&(layout_), (id_), name_); \
-  } while (0)
-
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
 #  define LAYOUT_FIELD_NAME_SIZE LAPLACE_LAYOUT_FIELD_NAME_SIZE
-#  define LAYOUT_ADD_FIELD_S LAPLACE_LAYOUT_ADD_FIELD_S
 
 #  define layout_field_t laplace_layout_field_t
 #  define layout_code_t laplace_layout_code_t
