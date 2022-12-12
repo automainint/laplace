@@ -10,18 +10,22 @@ with concurrency support and lockstep synchronization.
     The project is far from complete.
 
 ##  Related repositories
-- [kit](https://github.com/automainint/kit) - collection of C libraries.
+- [kit](https://github.com/automainint/kit) - a collection of C libraries.
 - [eval](https://github.com/automainint/eval) - deterministic math and algorithms.
 - [peer](https://github.com/automainint/peer) - network synchronization library.
-- [unival](https://github.com/automainint/unival) - universal data container and file format.
 - [quadwar](https://github.com/automainint/quadwar) - playground for new features and experiments.
 
-##  How to build
+##  Hacking
+### Build the source code
 ```shell
-cmake -D CMAKE_BUILD_TYPE=Release -B build -S .
-cmake --build build --config Release
+cmake -B build -S .
+cmake --build build
 ```
 
 Laplace CMake configuration options:
 - `LAPLACE_ENABLE_TESTING` - enable testing. `ON` by default.
 
+### Run tests
+```shell
+./build/laplace_test_suite
+```
