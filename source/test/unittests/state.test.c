@@ -1,6 +1,7 @@
 #include "../../laplace/state.h"
 #include "../../laplace/impact.h"
 #include <kit/mersenne_twister_64.h>
+#include <kit/secure_random.h>
 
 #define KIT_TEST_FILE state
 #include <kit_test/test.h>
@@ -27,7 +28,9 @@ TEST("state acquire and release") {
   free_count  = 0;
 
   read_write_t access;
-  state_init(&access, mt64_seed(), alloc);
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&access, seed, alloc);
 
   REQUIRE(alloc_count > 0);
   REQUIRE(free_count == 0);
@@ -41,7 +44,9 @@ TEST("state acquire and release") {
 
 TEST("state apply noop") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   impact_t i = NOOP();
   REQUIRE(a.apply(a.state, &i) == KIT_OK);
@@ -51,7 +56,9 @@ TEST("state apply noop") {
 TEST("state apply may fail") {
   impact_t     i = TICK_CONTINUE();
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   REQUIRE(a.apply(a.state, &i) == ERROR_WRONG_IMPACT);
   a.release(a.state);
@@ -59,7 +66,9 @@ TEST("state apply may fail") {
 
 TEST("state get int may fail") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t h = { .id = 0, .generation = 0 };
   REQUIRE(a.get_integer(a.state, h, 0, -1) == -1);
@@ -68,7 +77,9 @@ TEST("state get int may fail") {
 
 TEST("state apply allocate into int and get") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t h = { .id = 42, .generation = -1 };
   impact_t i = INTEGER_ALLOCATE_INTO(h, 1);
@@ -80,7 +91,9 @@ TEST("state apply allocate into int and get") {
 
 TEST("state apply allocate int and get") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t ret = { .id = 0, .generation = -1 };
   impact_t i   = INTEGER_ALLOCATE_INTO(ret, 2);
@@ -99,7 +112,9 @@ TEST("state apply allocate int and get") {
 
 TEST("state apply reserve int and allocate into") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   impact_t i = INTEGER_RESERVE(10);
   REQUIRE(a.apply(a.state, &i) == KIT_OK);
@@ -113,7 +128,9 @@ TEST("state apply reserve int and allocate into") {
 
 TEST("state apply reserve int and allocate") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   ptrdiff_t reserved = 10;
   impact_t  i        = INTEGER_RESERVE(reserved);
@@ -136,7 +153,9 @@ TEST("state apply reserve int and allocate") {
 
 TEST("state apply allocate int, set and get") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t ret = { .id = 0, .generation = -1 };
   impact_t i   = INTEGER_ALLOCATE_INTO(ret, 2);
@@ -159,7 +178,9 @@ TEST("state apply allocate int, set and get") {
 
 TEST("state deallocate int") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t h = { .id = 0, .generation = -1 };
   impact_t i = INTEGER_ALLOCATE_INTO(h, 1);
@@ -172,7 +193,9 @@ TEST("state deallocate int") {
 
 TEST("state apply add int") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t h0  = { .id = 0, .generation = -1 };
   handle_t h   = { .id = 0, .generation = 0 };
@@ -188,7 +211,9 @@ TEST("state apply add int") {
 
 TEST("state get byte may fail") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t h = { .id = 0, .generation = 0 };
   REQUIRE(a.get_byte(a.state, h, 0, -1) == -1);
@@ -197,7 +222,9 @@ TEST("state get byte may fail") {
 
 TEST("state apply allocate into byte and get") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t h   = { .id = 42, .generation = -1 };
   impact_t i[] = { BYTE_ALLOCATE_INTO(h, 1) };
@@ -209,7 +236,9 @@ TEST("state apply allocate into byte and get") {
 
 TEST("state apply allocate byte and get") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t ret0 = { .id = 0, .generation = -1 };
   handle_t ret  = { .id = 0, .generation = 0 };
@@ -228,7 +257,9 @@ TEST("state apply allocate byte and get") {
 
 TEST("state apply allocate byte, set and get") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t ret0 = { .id = 0, .generation = -1 };
   handle_t ret  = { .id = 0, .generation = 0 };
@@ -252,7 +283,9 @@ TEST("state apply allocate byte, set and get") {
 
 TEST("state apply reserve byte and allocate into") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t h0  = { .id = 0, .generation = -1 };
   handle_t h   = { .id = 0, .generation = 0 };
@@ -265,7 +298,9 @@ TEST("state apply reserve byte and allocate into") {
 
 TEST("state apply reserve byte and allocate") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t  ret0     = { .id = 0, .generation = -1 };
   handle_t  ret      = { .id = 0, .generation = 0 };
@@ -287,7 +322,9 @@ TEST("state apply reserve byte and allocate") {
 
 TEST("state deallocate byte") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t h0  = { .id = 0, .generation = -1 };
   handle_t h   = { .id = 0, .generation = 0 };
@@ -299,7 +336,9 @@ TEST("state deallocate byte") {
 
 TEST("state apply add byte") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t h0  = { .id = 0, .generation = -1 };
   handle_t h   = { .id = 0, .generation = 0 };
@@ -315,7 +354,9 @@ TEST("state apply add byte") {
 
 TEST("state apply random") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t  h0   = { .id = 0, .generation = -1 };
   handle_t  h    = { .id = 0, .generation = 0 };
@@ -335,7 +376,9 @@ TEST("state apply random") {
 
 TEST("state apply seed") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   impact_t i[] = { INTEGER_SEED(42) };
   REQUIRE(a.apply(a.state, i) == KIT_OK);
@@ -344,8 +387,10 @@ TEST("state apply seed") {
 
 TEST("state random with equal seed") {
   read_write_t foo, bar;
-  state_init(&foo, mt64_seed(), kit_alloc_default());
-  state_init(&bar, mt64_seed(), kit_alloc_default());
+  uint64_t     seed[2];
+  secure_random(sizeof seed, seed);
+  state_init(&foo, seed[0], kit_alloc_default());
+  state_init(&bar, seed[1], kit_alloc_default());
   foo.acquire(foo.state);
   bar.acquire(bar.state);
   handle_t  h0   = { .id = 0, .generation = -1 };
@@ -372,8 +417,10 @@ TEST("state random with equal seed") {
 
 TEST("state random with different seed") {
   read_write_t foo, bar;
-  state_init(&foo, mt64_seed(), kit_alloc_default());
-  state_init(&bar, mt64_seed(), kit_alloc_default());
+  uint64_t     seed[2];
+  secure_random(sizeof seed, seed);
+  state_init(&foo, seed[0], kit_alloc_default());
+  state_init(&bar, seed[1], kit_alloc_default());
   foo.acquire(foo.state);
   bar.acquire(bar.state);
   handle_t  h0   = { .id = 0, .generation = -1 };
@@ -404,7 +451,9 @@ TEST("state random with different seed") {
 
 TEST("state allocation determinism") {
   read_write_t a;
-  state_init(&a, mt64_seed(), kit_alloc_default());
+  uint64_t     seed;
+  secure_random(sizeof seed, &seed);
+  state_init(&a, seed, kit_alloc_default());
   a.acquire(a.state);
   handle_t h0 = { .id = 0, .generation = -1 };
   handle_t h  = { .id = 0, .generation = 0 };

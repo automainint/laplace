@@ -1,5 +1,5 @@
 #include "../../laplace/buffer.h"
-#include <kit/threads.h>
+#include <kit/thread.h>
 
 #define KIT_TEST_FILE buffer
 #include <kit_test/test.h>
