@@ -17,14 +17,16 @@ static ptrdiff_t buffer_alloc(laplace_buffer_void_t *const buffer,
   ptrdiff_t offset = 0;
 
   while (offset < buffer->data.size) {
-    laplace_buf_info_t_ *info = LAPLACE_BUF_INFO_(*buffer).values +
-                                offset;
+    laplace_buf_info_t_ *info = buffer->info.values + offset;
     if (info->empty && info->offset >= size)
       break;
     offset += info->offset;
   }
 
   if (size >= PTRDIFF_MAX - offset)
+    /*  No assertion.
+     *  Tested in test suite.
+     */
     return LAPLACE_ID_UNDEFINED;
 
   if (offset >= buffer->data.size) {
@@ -37,18 +39,25 @@ static ptrdiff_t buffer_alloc(laplace_buffer_void_t *const buffer,
           (void) mtx_unlock(&buffer->read_lock);
           success = 0;
         }
-    } else
+    } else {
+      assert(0);
       success = 0;
+    }
 
     if (success) {
-      DA_RESIZE(buffer->info, offset + size);
+      DA_RESIZE(buffer->changed, offset + size);
+      assert(buffer->changed.size == offset + size);
+      if (buffer->changed.size != offset + size)
+        success = 0;
 
+      DA_RESIZE(buffer->info, offset + size);
+      assert(buffer->info.size == offset + size);
       if (buffer->info.size != offset + size)
         success = 0;
 
       da_resize((da_void_t *) &buffer->data, buffer->cell_size,
                 offset + size);
-
+      assert(buffer->data.size == offset + size);
       if (buffer->data.size != offset + size)
         success = 0;
 
@@ -60,10 +69,13 @@ static ptrdiff_t buffer_alloc(laplace_buffer_void_t *const buffer,
   }
 
   for (ptrdiff_t i = 0; i < size; i++) {
-    laplace_buf_info_t_ *info = LAPLACE_BUF_INFO_(*buffer).values +
-                                offset + i;
-    info->empty  = 0;
-    info->offset = size - i;
+    STORE_(&buffer->changed.values[offset + i].flag, 0, RLX_);
+  }
+
+  for (ptrdiff_t i = 0; i < size; i++) {
+    laplace_buf_info_t_ *info = buffer->info.values + offset + i;
+    info->empty               = 0;
+    info->offset              = size - i;
   }
 
   return offset;
@@ -75,15 +87,14 @@ static void buffer_free(laplace_buffer_void_t *const buffer,
   ptrdiff_t end   = begin;
 
   while (end < buffer->data.size) {
-    assert(end >= 0 && end < LAPLACE_BUF_INFO_(*buffer).size);
-    end += LAPLACE_BUF_INFO_(*buffer).values[end].offset;
-    if (end < buffer->data.size &&
-        !LAPLACE_BUF_INFO_(*buffer).values[end].empty)
+    assert(end >= 0 && end < buffer->info.size);
+    end += buffer->info.values[end].offset;
+    if (end < buffer->data.size && !buffer->info.values[end].empty)
       break;
   }
 
   for (ptrdiff_t i = begin; i < end; i++) {
-    laplace_buf_info_t_ *info = LAPLACE_BUF_INFO_(*buffer).values + i;
+    laplace_buf_info_t_ *info = buffer->info.values + i;
     info->empty               = 1;
     info->offset              = end - i;
   }
@@ -127,6 +138,7 @@ laplace_handle_t laplace_buffer_allocate(
         return h;
       }
   } else {
+    assert(0);
     h.id    = LAPLACE_ID_UNDEFINED;
     h.error = LAPLACE_ERROR_BAD_MUTEX_LOCK;
     return h;
@@ -238,6 +250,7 @@ laplace_handle_t laplace_buffer_allocate_into(
         return h;
       }
   } else {
+    assert(0);
     h.id    = LAPLACE_ID_UNDEFINED;
     h.error = LAPLACE_ERROR_BAD_MUTEX_LOCK;
     return h;
@@ -331,6 +344,7 @@ laplace_buffer_realloc_result_t laplace_buffer_reallocate(
         return result;
       }
   } else {
+    assert(0);
     result.status = LAPLACE_ERROR_BAD_MUTEX_LOCK;
     return result;
   }
@@ -360,8 +374,10 @@ kit_status_t laplace_buffer_reserve(
           (void) mtx_unlock(&buffer->read_lock);
           return LAPLACE_ERROR_BAD_CNDVAR_WAIT;
         }
-    } else
+    } else {
+      assert(0);
       return LAPLACE_ERROR_BAD_MUTEX_LOCK;
+    }
 
     DA_RESIZE(buffer->blocks, size);
 
@@ -453,6 +469,7 @@ kit_status_t laplace_buffer_check(laplace_buffer_void_t const *buffer,
 ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
                               laplace_handle_t       handle) {
   if (mtx_lock(&buffer->read_lock) != thrd_success) {
+    assert(0);
     return 0;
   } else {
     buffer->read_count++;

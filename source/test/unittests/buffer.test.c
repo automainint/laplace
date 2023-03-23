@@ -68,7 +68,7 @@ TEST("buffer get size") {
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
   REQUIRE(h.id != ID_UNDEFINED);
-  REQUIRE(BUFFER_SIZE(buf, h) == 10);
+  REQUIRE(BUFFER_SIZE_THREAD_SAFE(buf, h) == 10);
   BUFFER_DESTROY(buf);
 }
 
@@ -300,7 +300,7 @@ TEST("buffer get size") {
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 1);
-  REQUIRE(BUFFER_SIZE(buf, h) == 1);
+  REQUIRE(BUFFER_SIZE_THREAD_SAFE(buf, h) == 1);
   BUFFER_DESTROY(buf);
 }
 
@@ -782,7 +782,7 @@ static int test_read_concurrency_run(void *p) {
 
   while (atomic_load_explicit(&data->done, memory_order_acquire) ==
          0) {
-    ptrdiff_t size = BUFFER_SIZE(data->buf, data->h);
+    ptrdiff_t size = BUFFER_SIZE_THREAD_SAFE(data->buf, data->h);
     int64_t   x;
     for (ptrdiff_t i = 0; i < size; i++) {
       kit_status_t s;
