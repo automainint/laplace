@@ -18,7 +18,8 @@ typedef struct {
 #define LAPLACE_HANDLE_NULL \
   { .id = LAPLACE_ID_UNDEFINED, .error = KIT_OK }
 
-extern laplace_handle_t const laplace_handle_null;
+static laplace_handle_t const laplace_handle_null =
+    LAPLACE_HANDLE_NULL;
 
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
 #  define HANDLE_NULL LAPLACE_HANDLE_NULL
