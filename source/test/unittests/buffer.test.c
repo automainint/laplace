@@ -580,7 +580,7 @@ TEST("buffer fill two blocks") {
   REQUIRE(s == KIT_OK);
   BUFFER_SET(s, buf, bar, 0, 42);
   REQUIRE(s == KIT_OK);
-  BUFFER_ADJUST_LOOP(buf, int64_t);
+  for (int _ = 1; _;) BUFFER_ADJUST(_, buf, int64_t);
   int64_t x;
   BUFFER_READ_THREAD_SAFE(s, buf, foo, 0, 1, &x);
   REQUIRE(s == KIT_OK);
@@ -685,7 +685,7 @@ TEST("buffer add delta concurrency") {
   for (int i = 0; i < THREAD_COUNT; i++)
     thrd_create(pool + i, test_int_add_delta, &data);
   for (int i = 0; i < THREAD_COUNT; i++) thrd_join(pool[i], NULL);
-  BUFFER_ADJUST_LOOP(data.buf, int64_t);
+  for (int _ = 1; _;) BUFFER_ADJUST(_, data.buf, int64_t);
   int64_t x;
   BUFFER_READ_THREAD_SAFE(s, data.buf, data.h, 0, 1, &x);
   REQUIRE(s == KIT_OK);
@@ -704,7 +704,7 @@ TEST("buffer add delta concurrency harder") {
   for (int i = 0; i < THREAD_COUNT; i++)
     thrd_create(pool + i, test_int_add_delta, &data);
   for (int i = 0; i < THREAD_COUNT; i++) thrd_join(pool[i], NULL);
-  BUFFER_ADJUST_LOOP(data.buf, int64_t);
+  for (int _ = 1; _;) BUFFER_ADJUST(_, data.buf, int64_t);
   int64_t x;
   BUFFER_READ_THREAD_SAFE(s, data.buf, data.h, 0, 1, &x);
   REQUIRE(s == KIT_OK);

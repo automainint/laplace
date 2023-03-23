@@ -403,12 +403,6 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
     (return_) = (end_ != (buffer_).data.size);                       \
   } while (0)
 
-#define LAPLACE_BUFFER_ADJUST_LOOP(buffer_, element_type_)       \
-  do {                                                           \
-    for (int running_ = 1; running_;)                            \
-      LAPLACE_BUFFER_ADJUST(running_, (buffer_), element_type_); \
-  } while (0)
-
 #define LAPLACE_BUFFER_ADJUST_DONE(buffer_)       \
   atomic_store_explicit(&(buffer_).next_chunk, 0, \
                         memory_order_relaxed)
