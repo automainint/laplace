@@ -4,21 +4,7 @@
 #define KIT_TEST_FILE buffer
 #include <kit_test/test.h>
 
-TEST("create int buffer") {
-  kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
-  REQUIRE(s == KIT_OK);
-  BUFFER_DESTROY(buf);
-}
-
-TEST("create byte buffer") {
-  kit_status_t s;
-  BUFFER_CREATE(s, buf, int8_t);
-  REQUIRE(s == KIT_OK);
-  BUFFER_DESTROY(buf);
-}
-
-TEST("buffer init") {
+TEST("buffer init int") {
   kit_status_t s;
   BUFFER_TYPE(int64_t) buf;
   BUFFER_INIT(s, buf, kit_alloc_default());
@@ -26,9 +12,18 @@ TEST("buffer init") {
   BUFFER_DESTROY(buf);
 }
 
+TEST("buffer init byte") {
+  kit_status_t s;
+  BUFFER_TYPE(int8_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
+  REQUIRE(s == KIT_OK);
+  BUFFER_DESTROY(buf);
+}
+
 TEST("buffer get chunk size") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   REQUIRE(buf.chunk_size == BUFFER_DEFAULT_CHUNK_SIZE);
   BUFFER_DESTROY(buf);
@@ -36,7 +31,8 @@ TEST("buffer get chunk size") {
 
 TEST("buffer set chunk size") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   REQUIRE(BUFFER_SET_CHUNK_SIZE(buf, 42) == KIT_OK);
   REQUIRE(buf.chunk_size == 42);
@@ -45,7 +41,8 @@ TEST("buffer set chunk size") {
 
 TEST("buffer set chunk size may fail") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   REQUIRE(BUFFER_SET_CHUNK_SIZE(buf, -1) == ERROR_INVALID_CHUNK_SIZE);
   BUFFER_DESTROY(buf);
@@ -53,7 +50,8 @@ TEST("buffer set chunk size may fail") {
 
 TEST("buffer allocate") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
@@ -63,7 +61,8 @@ TEST("buffer allocate") {
 
 TEST("buffer get size") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
@@ -74,7 +73,8 @@ TEST("buffer get size") {
 
 TEST("buffer allocate negative size will fail") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, -1);
@@ -84,7 +84,8 @@ TEST("buffer allocate negative size will fail") {
 
 TEST("buffer allocate zero size will fail") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 0);
@@ -94,7 +95,8 @@ TEST("buffer allocate zero size will fail") {
 
 TEST("buffer allocate too big will fail") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, PTRDIFF_MAX);
@@ -104,7 +106,8 @@ TEST("buffer allocate too big will fail") {
 
 TEST("buffer allocate into") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t a = { .id = 42, .generation = -1 };
   handle_t b;
@@ -116,7 +119,8 @@ TEST("buffer allocate into") {
 
 TEST("buffer allocate and allocate into") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t a;
   BUFFER_ALLOCATE(a, buf, 10);
@@ -131,7 +135,8 @@ TEST("buffer reserve, allocate into and allocate") {
   kit_status_t    s;
   ptrdiff_t const reserved = 42;
   handle_t const  h        = { .id = 1, .generation = -1 };
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   REQUIRE(BUFFER_RESERVE(buf, reserved) == KIT_OK);
   handle_t a;
@@ -145,7 +150,8 @@ TEST("buffer reserve, allocate into and allocate") {
 
 TEST("buffer allocate into undefined will fail") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t a = { .id = ID_UNDEFINED, .generation = -1 };
   handle_t b;
@@ -157,7 +163,8 @@ TEST("buffer allocate into undefined will fail") {
 
 TEST("buffer allocate into wrong generation will fail") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t a = { .id = 42, .generation = 0 };
   handle_t b;
@@ -169,7 +176,8 @@ TEST("buffer allocate into wrong generation will fail") {
 
 TEST("buffer allocate into invalid size will fail") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t a = { .id = 42, .generation = -1 };
   handle_t b;
@@ -182,7 +190,8 @@ TEST("buffer allocate into invalid size will fail") {
 TEST("buffer reserve and allocate") {
   kit_status_t    s;
   ptrdiff_t const reserved = 42;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   REQUIRE(BUFFER_RESERVE(buf, reserved) == KIT_OK);
   handle_t h;
@@ -193,7 +202,8 @@ TEST("buffer reserve and allocate") {
 
 TEST("buffer reserve may fail") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   REQUIRE(BUFFER_RESERVE(buf, -1) == ERROR_INVALID_SIZE);
   BUFFER_DESTROY(buf);
@@ -201,7 +211,8 @@ TEST("buffer reserve may fail") {
 
 TEST("buffer deallocate") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
@@ -212,7 +223,8 @@ TEST("buffer deallocate") {
 TEST("buffer deallocate invalid handle id") {
   kit_status_t s;
   handle_t     h = { .id = 42, .generation = -1 };
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   REQUIRE(BUFFER_DEALLOCATE(buf, h) == ERROR_INVALID_HANDLE_ID);
   BUFFER_DESTROY(buf);
@@ -220,7 +232,8 @@ TEST("buffer deallocate invalid handle id") {
 
 TEST("buffer deallocate invalid handle generation") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
@@ -232,7 +245,8 @@ TEST("buffer deallocate invalid handle generation") {
 
 TEST("buffer deallocate twice will fail") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
@@ -245,7 +259,8 @@ TEST("buffer reserve, allocate into, deallocate and allocate") {
   kit_status_t    s;
   ptrdiff_t const reserved = 42;
   handle_t const  h        = { .id = 1, .generation = -1 };
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   REQUIRE(BUFFER_RESERVE(buf, reserved) == KIT_OK);
   handle_t a;
@@ -259,7 +274,8 @@ TEST("buffer reserve, allocate into, deallocate and allocate") {
 
 TEST("buffer get value") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 1);
@@ -272,7 +288,8 @@ TEST("buffer get value") {
 
 TEST("buffer get invalid id") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t const h = { .id = 0, .generation = -1 };
   int64_t        x;
@@ -283,7 +300,8 @@ TEST("buffer get invalid id") {
 
 TEST("buffer get invalid generation") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 1);
@@ -296,7 +314,8 @@ TEST("buffer get invalid generation") {
 
 TEST("buffer get size") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 1);
@@ -306,7 +325,8 @@ TEST("buffer get size") {
 
 TEST("buffer get invalid index") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 1);
@@ -318,7 +338,8 @@ TEST("buffer get invalid index") {
 
 TEST("buffer set invalid id") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t const h = { .id = 0, .generation = -1 };
   BUFFER_SET(s, buf, h, 0, 42);
@@ -328,7 +349,8 @@ TEST("buffer set invalid id") {
 
 TEST("buffer set invalid generation") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 1);
@@ -340,7 +362,8 @@ TEST("buffer set invalid generation") {
 
 TEST("buffer set value") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 1);
@@ -355,13 +378,14 @@ TEST("buffer set value") {
 
 TEST("buffer set value and adjust") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
   BUFFER_SET(s, buf, h, 0, 42);
   REQUIRE(s == KIT_OK);
-  for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
+  for (int _ = 1; _;) BUFFER_ADJUST(_, buf, int64_t);
   int64_t x;
   BUFFER_READ_THREAD_SAFE(s, buf, h, 0, 1, &x);
   REQUIRE(s == KIT_OK);
@@ -371,7 +395,8 @@ TEST("buffer set value and adjust") {
 
 TEST("buffer set value, deallocate and get value") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t foo, bar;
   BUFFER_ALLOCATE(foo, buf, 1);
@@ -379,7 +404,7 @@ TEST("buffer set value, deallocate and get value") {
   BUFFER_SET(s, buf, bar, 0, 42);
   REQUIRE(s == KIT_OK);
   REQUIRE(BUFFER_DEALLOCATE(buf, foo) == KIT_OK);
-  for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
+  for (int _ = 1; _;) BUFFER_ADJUST(_, buf, int64_t);
   int64_t x;
   BUFFER_READ_THREAD_SAFE(s, buf, bar, 0, 1, &x);
   REQUIRE(s == KIT_OK);
@@ -389,13 +414,14 @@ TEST("buffer set value, deallocate and get value") {
 
 TEST("buffer set value, deallocate, allocate and get value") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 1);
   BUFFER_SET(s, buf, h, 0, 42);
   REQUIRE(s == KIT_OK);
-  for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
+  for (int _ = 1; _;) BUFFER_ADJUST(_, buf, int64_t);
   REQUIRE(BUFFER_DEALLOCATE(buf, h) == KIT_OK);
   BUFFER_ALLOCATE(h, buf, 1);
   int64_t x;
@@ -407,13 +433,14 @@ TEST("buffer set value, deallocate, allocate and get value") {
 
 TEST("buffer add delta and adjust") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
   BUFFER_ADD(s, buf, h, 0, 42);
   REQUIRE(s == KIT_OK);
-  for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
+  for (int _ = 1; _;) BUFFER_ADJUST(_, buf, int64_t);
   int64_t x;
   BUFFER_READ_THREAD_SAFE(s, buf, h, 0, 1, &x);
   REQUIRE(s == KIT_OK);
@@ -423,7 +450,8 @@ TEST("buffer add delta and adjust") {
 
 TEST("buffer add delta twice and adjust") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
@@ -431,7 +459,7 @@ TEST("buffer add delta twice and adjust") {
   REQUIRE(s == KIT_OK);
   BUFFER_ADD(s, buf, h, 0, 22);
   REQUIRE(s == KIT_OK);
-  for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
+  for (int _ = 1; _;) BUFFER_ADJUST(_, buf, int64_t);
   int64_t x;
   BUFFER_READ_THREAD_SAFE(s, buf, h, 0, 1, &x);
   REQUIRE(s == KIT_OK);
@@ -441,7 +469,8 @@ TEST("buffer add delta twice and adjust") {
 
 TEST("buffer set value and add delta and adjust") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
@@ -449,7 +478,7 @@ TEST("buffer set value and add delta and adjust") {
   REQUIRE(s == KIT_OK);
   BUFFER_ADD(s, buf, h, 0, 22);
   REQUIRE(s == KIT_OK);
-  for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
+  for (int _ = 1; _;) BUFFER_ADJUST(_, buf, int64_t);
   int64_t x;
   BUFFER_READ_THREAD_SAFE(s, buf, h, 0, 1, &x);
   REQUIRE(s == KIT_OK);
@@ -459,14 +488,15 @@ TEST("buffer set value and add delta and adjust") {
 
 TEST("buffer adjust one chunk") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   REQUIRE(BUFFER_SET_CHUNK_SIZE(buf, 100) == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 100);
   for (int i = 0; i < 100; ++i) BUFFER_SET(s, buf, h, i, i);
   int running;
-  BUFFER_ADJUST(running, buf);
+  BUFFER_ADJUST(running, buf, int64_t);
   REQUIRE(!running);
   int ok = 1;
   for (int i = 0; i < 100; ++i) {
@@ -481,13 +511,14 @@ TEST("buffer adjust one chunk") {
 
 TEST("buffer adjust by chunks") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   REQUIRE(BUFFER_SET_CHUNK_SIZE(buf, 100) == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 100);
   for (int i = 0; i < 100; ++i) BUFFER_SET(s, buf, h, i, i);
-  for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
+  for (int _ = 1; _;) BUFFER_ADJUST(_, buf, int64_t);
   int ok = 1;
   for (int i = 0; i < 100; ++i) {
     int64_t x;
@@ -501,16 +532,17 @@ TEST("buffer adjust by chunks") {
 
 TEST("buffer adjust by chunks twice") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   REQUIRE(BUFFER_SET_CHUNK_SIZE(buf, 100) == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 100);
   for (int i = 0; i < 100; ++i) BUFFER_SET(s, buf, h, i, i);
-  for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
+  for (int _ = 1; _;) BUFFER_ADJUST(_, buf, int64_t);
   BUFFER_ADJUST_DONE(buf);
   for (int i = 0; i < 100; ++i) BUFFER_ADD(s, buf, h, i, i);
-  for (int _ = 1; _;) BUFFER_ADJUST(_, buf);
+  for (int _ = 1; _;) BUFFER_ADJUST(_, buf, int64_t);
   int ok = 1;
   for (int i = 0; i < 100; ++i) {
     int64_t x;
@@ -524,7 +556,8 @@ TEST("buffer adjust by chunks twice") {
 
 TEST("buffer allocate two blocks") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t foo, bar;
   BUFFER_ALLOCATE(foo, buf, 10);
@@ -537,7 +570,8 @@ TEST("buffer allocate two blocks") {
 
 TEST("buffer fill two blocks") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t foo, bar;
   BUFFER_ALLOCATE(foo, buf, 10);
@@ -546,7 +580,7 @@ TEST("buffer fill two blocks") {
   REQUIRE(s == KIT_OK);
   BUFFER_SET(s, buf, bar, 0, 42);
   REQUIRE(s == KIT_OK);
-  BUFFER_ADJUST_LOOP(buf);
+  BUFFER_ADJUST_LOOP(buf, int64_t);
   int64_t x;
   BUFFER_READ_THREAD_SAFE(s, buf, foo, 0, 1, &x);
   REQUIRE(s == KIT_OK);
@@ -559,7 +593,8 @@ TEST("buffer fill two blocks") {
 
 TEST("buffer size with 2 blocks") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 20);
@@ -570,7 +605,8 @@ TEST("buffer size with 2 blocks") {
 
 TEST("buffer size after deallocate one") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
@@ -581,7 +617,8 @@ TEST("buffer size after deallocate one") {
 
 TEST("buffer size after deallocate and allocate into one") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
@@ -593,7 +630,8 @@ TEST("buffer size after deallocate and allocate into one") {
 
 TEST("buffer deallocate efficiency") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t a, b;
   BUFFER_ALLOCATE(a, buf, 10);
@@ -606,7 +644,8 @@ TEST("buffer deallocate efficiency") {
 
 TEST("buffer reallocate") {
   kit_status_t s;
-  BUFFER_CREATE(s, buf, int64_t);
+  BUFFER_TYPE(int64_t) buf;
+  BUFFER_INIT(s, buf, kit_alloc_default());
   REQUIRE(s == KIT_OK);
   handle_t h;
   BUFFER_ALLOCATE(h, buf, 10);
@@ -646,7 +685,7 @@ TEST("buffer add delta concurrency") {
   for (int i = 0; i < THREAD_COUNT; i++)
     thrd_create(pool + i, test_int_add_delta, &data);
   for (int i = 0; i < THREAD_COUNT; i++) thrd_join(pool[i], NULL);
-  BUFFER_ADJUST_LOOP(data.buf);
+  BUFFER_ADJUST_LOOP(data.buf, int64_t);
   int64_t x;
   BUFFER_READ_THREAD_SAFE(s, data.buf, data.h, 0, 1, &x);
   REQUIRE(s == KIT_OK);
@@ -665,7 +704,7 @@ TEST("buffer add delta concurrency harder") {
   for (int i = 0; i < THREAD_COUNT; i++)
     thrd_create(pool + i, test_int_add_delta, &data);
   for (int i = 0; i < THREAD_COUNT; i++) thrd_join(pool[i], NULL);
-  BUFFER_ADJUST_LOOP(data.buf);
+  BUFFER_ADJUST_LOOP(data.buf, int64_t);
   int64_t x;
   BUFFER_READ_THREAD_SAFE(s, data.buf, data.h, 0, 1, &x);
   REQUIRE(s == KIT_OK);
@@ -676,7 +715,7 @@ TEST("buffer add delta concurrency harder") {
 static int test_int_adjust(void *p) {
   test_int_buffer_data_t *data = (test_int_buffer_data_t *) p;
   int                     _;
-  BUFFER_ADJUST(_, data->buf);
+  BUFFER_ADJUST(_, data->buf, int64_t);
   (void) _;
   return 0;
 }
@@ -741,7 +780,7 @@ typedef struct {
 static int test_byte_adjust(void *p) {
   test_byte_buffer_data_t *data = (test_byte_buffer_data_t *) p;
   int                      _;
-  BUFFER_ADJUST(_, data->buf);
+  BUFFER_ADJUST(_, data->buf, int8_t);
   (void) _;
   return 0;
 }

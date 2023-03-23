@@ -93,10 +93,6 @@ typedef struct {
     }                                                             \
   } while (0)
 
-#define LAPLACE_BUFFER_CREATE(status_, name_, element_type_) \
-  LAPLACE_BUFFER_TYPE(element_type_) name_;                  \
-  LAPLACE_BUFFER_INIT(status_, name_, kit_alloc_default())
-
 #define LAPLACE_BUFFER_DESTROY(buffer_)                              \
   do {                                                               \
     if (mtx_lock(&(buffer_).read_lock) == thrd_success) {            \
@@ -376,7 +372,7 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
 /*  FIXME
  *  Measure performance.
  */
-#define LAPLACE_BUFFER_ADJUST(return_, buffer_)                      \
+#define LAPLACE_BUFFER_ADJUST(return_, buffer_, element_type_)       \
   do {                                                               \
     ptrdiff_t const begin_ = atomic_fetch_add_explicit(              \
         &(buffer_).next_chunk, (buffer_).chunk_size,                 \
@@ -385,27 +381,32 @@ ptrdiff_t laplace_buffer_size(laplace_buffer_void_t *buffer,
     if (end_ > (buffer_).data.size)                                  \
       end_ = (buffer_).data.size;                                    \
     assert(begin_ >= 0 && end_ <= (buffer_).data.size);              \
-    for (ptrdiff_t i_ = begin_; i_ < end_; i_++) {                   \
-      assert((buffer_).changed.size == (buffer_).data.size);         \
+    assert((buffer_).changed.size == (buffer_).data.size);           \
+    for (ptrdiff_t i_ = begin_; i_ < end_;) {                        \
       while (i_ < end_ && atomic_exchange_explicit(                  \
                               &(buffer_).changed.values[i_].flag, 0, \
                               memory_order_relaxed) == 0)            \
         i_++;                                                        \
-      if (i_ >= end_)                                                \
-        break;                                                       \
-      atomic_fetch_add_explicit(                                     \
-          &(buffer_).data.values[i_].value,                          \
-          atomic_exchange_explicit(&(buffer_).data.values[i_].delta, \
-                                   0, memory_order_relaxed),         \
-          memory_order_relaxed);                                     \
+      while (i_ < end_) {                                            \
+        element_type_ const delta_ = atomic_exchange_explicit(       \
+            &(buffer_).data.values[i_].delta, 0,                     \
+            memory_order_relaxed);                                   \
+        if (delta_ == 0) {                                           \
+          i_++;                                                      \
+          break;                                                     \
+        }                                                            \
+        atomic_fetch_add_explicit(&(buffer_).data.values[i_].value,  \
+                                  delta_, memory_order_relaxed);     \
+        i_++;                                                        \
+      }                                                              \
     }                                                                \
     (return_) = (end_ != (buffer_).data.size);                       \
   } while (0)
 
-#define LAPLACE_BUFFER_ADJUST_LOOP(buffer_)       \
-  do {                                            \
-    for (int running_ = 1; running_;)             \
-      LAPLACE_BUFFER_ADJUST(running_, (buffer_)); \
+#define LAPLACE_BUFFER_ADJUST_LOOP(buffer_, element_type_)       \
+  do {                                                           \
+    for (int running_ = 1; running_;)                            \
+      LAPLACE_BUFFER_ADJUST(running_, (buffer_), element_type_); \
   } while (0)
 
 #define LAPLACE_BUFFER_ADJUST_DONE(buffer_)       \

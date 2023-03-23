@@ -292,9 +292,10 @@ static void adjust_loop(void *p) {
 
   for (int ints = 1, bytes = 1; ints || bytes;) {
     if (ints)
-      LAPLACE_BUFFER_ADJUST(ints, internal->integers);
+      LAPLACE_BUFFER_ADJUST(ints, internal->integers,
+                            laplace_integer_t);
     if (bytes)
-      LAPLACE_BUFFER_ADJUST(bytes, internal->bytes);
+      LAPLACE_BUFFER_ADJUST(bytes, internal->bytes, laplace_byte_t);
   }
 }
 
