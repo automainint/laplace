@@ -6,7 +6,8 @@ if(NOT DEFINED CMAKE_BUILD_PARALLEL_LEVEL)
   set(CMAKE_BUILD_PARALLEL_LEVEL 4 CACHE STRING "" FORCE)
 endif()
 
-option(LAPLACE_ENABLE_TESTING "Enable testing" ON)
+option(LAPLACE_ENABLE_STATIC_DISPATCH "Enable static dispatch"  OFF)
+option(LAPLACE_ENABLE_TESTING         "Enable testing"          ON)
 
 project(
   laplace
@@ -37,6 +38,10 @@ target_link_libraries(laplace PUBLIC kit::kit)
 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(laplace PUBLIC -pedantic -Wall -Werror)
+endif()
+
+if(LAPLACE_ENABLE_STATIC_DISPATCH)
+  target_compile_definitions(laplace PUBLIC LAPLACE_ENABLE_STATIC_DISPATCH)
 endif()
 
 enable_testing()

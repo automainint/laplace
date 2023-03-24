@@ -141,10 +141,10 @@ STATIC_CORO(laplace_impact_list_t, test_exe_null_self_,
 }
 CORO_END
 
-static action_t const test_noop_ = ACTION_UNSAFE(test_exe_noop_, 1,
+static action_t const test_noop_ = ACTION_UNSAFE(0, test_exe_noop_, 1,
                                                  HANDLE_NULL);
 static action_t const test_null_self_ = ACTION_UNSAFE(
-    test_exe_null_self_, 1, HANDLE_NULL);
+    0, test_exe_null_self_, 1, HANDLE_NULL);
 
 TEST("seq execution queue action") {
   action_status_ = 0;
@@ -301,7 +301,7 @@ TEST("seq execution set value impact") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t action = ACTION(test_exe_alloc_set_, 1, HANDLE_NULL);
+  action_t action = ACTION(0, test_exe_alloc_set_, 1, HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
   REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
@@ -325,7 +325,7 @@ TEST("seq execution set value impact twice") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t action = ACTION(test_exe_alloc_set_, default_tick,
+  action_t action = ACTION(0, test_exe_alloc_set_, default_tick,
                            HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
@@ -376,8 +376,8 @@ TEST("seq execution set value impact twice with continuation") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t action = ACTION(test_exe_alloc_set_continue_, default_tick,
-                           HANDLE_NULL);
+  action_t action = ACTION(0, test_exe_alloc_set_continue_,
+                           default_tick, HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
   handle_t h = { .id = 0, .generation = 0 };
@@ -438,13 +438,13 @@ TEST("seq execution two actions") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t a0 = ACTION(test_exe_allocate_into_, 1, HANDLE_NULL);
+  action_t a0 = ACTION(0, test_exe_allocate_into_, 1, HANDLE_NULL);
   REQUIRE(execution_queue(&exe, a0) == KIT_OK);
 
   REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
-  action_t a1 = ACTION(test_exe_add_18_, 1, HANDLE_NULL);
-  action_t a2 = ACTION(test_exe_add_24_, 1, HANDLE_NULL);
+  action_t a1 = ACTION(0, test_exe_add_18_, 1, HANDLE_NULL);
+  action_t a2 = ACTION(0, test_exe_add_24_, 1, HANDLE_NULL);
   REQUIRE(execution_queue(&exe, a1) == KIT_OK);
   REQUIRE(execution_queue(&exe, a2) == KIT_OK);
 
@@ -480,7 +480,7 @@ TEST("seq execution invalid impact") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t action = ACTION(test_exe_set_42_, 1, HANDLE_NULL);
+  action_t action = ACTION(0, test_exe_set_42_, 1, HANDLE_NULL);
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
 
   REQUIRE(execution_schedule_and_join(&exe, 1) ==
@@ -539,10 +539,11 @@ TEST("seq execution sync impacts applied first") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t a[] = { ACTION_UNSAFE(test_exe_0_alloc_set_42_, 1,
-                                 HANDLE_NULL),
-                   ACTION_UNSAFE(test_exe_1_set_43_, 1, HANDLE_NULL),
-                   ACTION_UNSAFE(test_exe_1_alloc_, 1, HANDLE_NULL) };
+  action_t a[] = {
+    ACTION_UNSAFE(0, test_exe_0_alloc_set_42_, 1, HANDLE_NULL),
+    ACTION_UNSAFE(0, test_exe_1_set_43_, 1, HANDLE_NULL),
+    ACTION_UNSAFE(0, test_exe_1_alloc_, 1, HANDLE_NULL)
+  };
   REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
   REQUIRE(execution_queue(&exe, a[1]) == KIT_OK);
   REQUIRE(execution_queue(&exe, a[2]) == KIT_OK);
@@ -560,7 +561,7 @@ TEST("seq execution sync impacts applied first") {
 STATIC_CORO(impact_list_t, test_exe_queue_, kit_allocator_t alloc;
             read_only_t access; handle_t self;) {
   impact_t i[] = { QUEUE_ACTION(
-      ACTION_UNSAFE(test_exe_0_alloc_set_42_, 1, HANDLE_NULL)) };
+      ACTION_UNSAFE(0, test_exe_0_alloc_set_42_, 1, HANDLE_NULL)) };
 
   DA_INIT(af return_value, 1, af alloc);
   af return_value.values[0] = i[0];
@@ -581,7 +582,7 @@ TEST("seq execution queue action impact") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t a = ACTION(test_exe_queue_, 1, HANDLE_NULL);
+  action_t a = ACTION(0, test_exe_queue_, 1, HANDLE_NULL);
   handle_t h = { .id = 0, .generation = 0 };
 
   REQUIRE(execution_queue(&exe, a) == KIT_OK);
@@ -654,8 +655,8 @@ TEST("seq execution no multithreading") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t a[] = { ACTION_UNSAFE(test_exe_foo_, 1, HANDLE_NULL),
-                   ACTION_UNSAFE(test_exe_bar_, 1, HANDLE_NULL) };
+  action_t a[] = { ACTION_UNSAFE(0, test_exe_foo_, 1, HANDLE_NULL),
+                   ACTION_UNSAFE(0, test_exe_bar_, 1, HANDLE_NULL) };
 
   REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
   REQUIRE(execution_queue(&exe, a[1]) == KIT_OK);
@@ -690,8 +691,8 @@ TEST("execution two parallel actions") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t a[] = { ACTION_UNSAFE(test_exe_foo_, 1, HANDLE_NULL),
-                   ACTION_UNSAFE(test_exe_bar_, 1, HANDLE_NULL) };
+  action_t a[] = { ACTION_UNSAFE(0, test_exe_foo_, 1, HANDLE_NULL),
+                   ACTION_UNSAFE(0, test_exe_bar_, 1, HANDLE_NULL) };
 
   REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
   REQUIRE(execution_queue(&exe, a[1]) == KIT_OK);
@@ -740,7 +741,8 @@ TEST("execution join one") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 1) == KIT_OK);
 
-  action_t a = ACTION(test_exe_delay_alloc_set_42_, 1, HANDLE_NULL);
+  action_t a = ACTION(0, test_exe_delay_alloc_set_42_, 1,
+                      HANDLE_NULL);
   handle_t h = { .id = 0, .generation = 0 };
 
   REQUIRE(execution_queue(&exe, a) == KIT_OK);
@@ -771,7 +773,8 @@ TEST("execution join four") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t a = ACTION(test_exe_delay_alloc_set_42_, 1, HANDLE_NULL);
+  action_t a = ACTION(0, test_exe_delay_alloc_set_42_, 1,
+                      HANDLE_NULL);
   handle_t h = { .id = 0, .generation = 0 };
 
   REQUIRE(execution_queue(&exe, a) == KIT_OK);
@@ -802,7 +805,7 @@ TEST("execution set value impact") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t action = ACTION(test_exe_alloc_set_, 1, HANDLE_NULL);
+  action_t action = ACTION(0, test_exe_alloc_set_, 1, HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
   REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
@@ -832,7 +835,7 @@ TEST("execution set value impact twice") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t action = ACTION(test_exe_alloc_set_, default_tick,
+  action_t action = ACTION(0, test_exe_alloc_set_, default_tick,
                            HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
@@ -866,8 +869,8 @@ TEST("execution set value impact twice with continuation") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t action = ACTION(test_exe_alloc_set_continue_, default_tick,
-                           HANDLE_NULL);
+  action_t action = ACTION(0, test_exe_alloc_set_continue_,
+                           default_tick, HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
   handle_t h = { .id = 0, .generation = 0 };
@@ -900,13 +903,13 @@ TEST("execution two actions") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t a0 = ACTION(test_exe_allocate_into_, 1, HANDLE_NULL);
+  action_t a0 = ACTION(0, test_exe_allocate_into_, 1, HANDLE_NULL);
   REQUIRE(execution_queue(&exe, a0) == KIT_OK);
 
   REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
-  action_t a1 = ACTION(test_exe_add_18_, 1, HANDLE_NULL);
-  action_t a2 = ACTION(test_exe_add_24_, 1, HANDLE_NULL);
+  action_t a1 = ACTION(0, test_exe_add_18_, 1, HANDLE_NULL);
+  action_t a2 = ACTION(0, test_exe_add_24_, 1, HANDLE_NULL);
   REQUIRE(execution_queue(&exe, a1) == KIT_OK);
   REQUIRE(execution_queue(&exe, a2) == KIT_OK);
 
@@ -937,7 +940,7 @@ TEST("execution invalid impact") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t action = ACTION(test_exe_set_42_, 1, HANDLE_NULL);
+  action_t action = ACTION(0, test_exe_set_42_, 1, HANDLE_NULL);
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
 
   REQUIRE(execution_schedule_and_join(&exe, 1) ==
@@ -965,10 +968,11 @@ TEST("execution sync impacts applied first") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t a[] = { ACTION_UNSAFE(test_exe_0_alloc_set_42_, 1,
-                                 HANDLE_NULL),
-                   ACTION_UNSAFE(test_exe_1_set_43_, 1, HANDLE_NULL),
-                   ACTION_UNSAFE(test_exe_1_alloc_, 1, HANDLE_NULL) };
+  action_t a[] = {
+    ACTION_UNSAFE(0, test_exe_0_alloc_set_42_, 1, HANDLE_NULL),
+    ACTION_UNSAFE(0, test_exe_1_set_43_, 1, HANDLE_NULL),
+    ACTION_UNSAFE(0, test_exe_1_alloc_, 1, HANDLE_NULL)
+  };
   REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
   REQUIRE(execution_queue(&exe, a[1]) == KIT_OK);
   REQUIRE(execution_queue(&exe, a[2]) == KIT_OK);
@@ -1002,7 +1006,7 @@ TEST("execution queue action impact") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t a = ACTION(test_exe_queue_, 1, HANDLE_NULL);
+  action_t a = ACTION(0, test_exe_queue_, 1, HANDLE_NULL);
   handle_t h = { .id = 0, .generation = 0 };
 
   REQUIRE(execution_queue(&exe, a) == KIT_OK);
@@ -1034,7 +1038,7 @@ STATIC_CORO(impact_list_t, test_exe_order_alloc_1_,
   thrd_sleep(&t, NULL);
 
   impact_t i[] = { QUEUE_ACTION(
-      ACTION_UNSAFE(test_exe_order_alloc_2_, 1, HANDLE_NULL)) };
+      ACTION_UNSAFE(0, test_exe_order_alloc_2_, 1, HANDLE_NULL)) };
 
   DA_INIT(af return_value, 1, af alloc);
   af return_value.values[0] = i[0];
@@ -1055,7 +1059,7 @@ STATIC_CORO(impact_list_t, test_exe_order_alloc_0_,
   thrd_sleep(&t, NULL);
 
   impact_t i1[] = { QUEUE_ACTION(
-      ACTION_UNSAFE(test_exe_order_alloc_1_, 1, HANDLE_NULL)) };
+      ACTION_UNSAFE(0, test_exe_order_alloc_1_, 1, HANDLE_NULL)) };
 
   DA_INIT(af return_value, 1, af alloc);
   af return_value.values[0] = i1[0];
@@ -1079,7 +1083,7 @@ STATIC_CORO(impact_list_t, test_exe_order_dealloc_1_,
             kit_allocator_t alloc;
             read_only_t access; handle_t self;) {
   impact_t i[] = { QUEUE_ACTION(
-      ACTION_UNSAFE(test_exe_order_dealloc_2_, 1, HANDLE_NULL)) };
+      ACTION_UNSAFE(0, test_exe_order_dealloc_2_, 1, HANDLE_NULL)) };
 
   DA_INIT(af return_value, 1, af alloc);
   af return_value.values[0] = i[0];
@@ -1097,7 +1101,7 @@ STATIC_CORO(impact_list_t, test_exe_order_dealloc_0_,
   AF_YIELD_VOID;
 
   impact_t i1[] = { QUEUE_ACTION(
-      ACTION_UNSAFE(test_exe_order_dealloc_1_, 1, HANDLE_NULL)) };
+      ACTION_UNSAFE(0, test_exe_order_dealloc_1_, 1, HANDLE_NULL)) };
 
   DA_INIT(af return_value, 1, af alloc);
   af return_value.values[0] = i1[0];
@@ -1125,8 +1129,8 @@ TEST("execution action order") {
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
   action_t a[] = {
-    ACTION_UNSAFE(test_exe_order_alloc_0_, 1, HANDLE_NULL),
-    ACTION_UNSAFE(test_exe_order_dealloc_0_, 1, HANDLE_NULL)
+    ACTION_UNSAFE(0, test_exe_order_alloc_0_, 1, HANDLE_NULL),
+    ACTION_UNSAFE(0, test_exe_order_dealloc_0_, 1, HANDLE_NULL)
   };
 
   REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
@@ -1159,7 +1163,7 @@ TEST("execution queue concurrency") {
     ok = ok && (execution_init(&exe, state, pool, alloc) == KIT_OK);
     ok = ok && (execution_set_thread_count(&exe, 4) == KIT_OK);
 
-    action_t action = ACTION(test_exe_alloc_set_, 1, HANDLE_NULL);
+    action_t action = ACTION(0, test_exe_alloc_set_, 1, HANDLE_NULL);
     handle_t h      = { .id = 0, .generation = 0 };
 
     ok = ok && (execution_schedule(&exe, 1) == KIT_OK);

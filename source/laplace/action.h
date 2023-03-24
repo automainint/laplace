@@ -14,6 +14,8 @@ extern "C" {
 typedef struct laplace_promise laplace_promise_t;
 
 typedef struct {
+  ptrdiff_t id; /* Unique Id for each coroutine function. Only
+                   required for static action dispatch. */
   ptrdiff_t            size;
   kit_af_state_machine coro;
   laplace_time_t       tick_duration;

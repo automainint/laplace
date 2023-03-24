@@ -21,11 +21,11 @@ STATIC_CORO(laplace_impact_list_t, test_exe_state_1_,
 }
 CORO_END
 
-static action_t const test_state_0_ = ACTION_UNSAFE(test_exe_state_0_,
-                                                    1, HANDLE_NULL);
+static action_t const test_state_0_ = ACTION_UNSAFE(
+    0, test_exe_state_0_, 1, HANDLE_NULL);
 
-static action_t const test_state_1_ = ACTION_UNSAFE(test_exe_state_1_,
-                                                    1, HANDLE_NULL);
+static action_t const test_state_1_ = ACTION_UNSAFE(
+    0, test_exe_state_1_, 1, HANDLE_NULL);
 
 TEST("controller schedule two events") {
   test_state_ = -1;

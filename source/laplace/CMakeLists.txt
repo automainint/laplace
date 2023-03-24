@@ -1,8 +1,8 @@
 target_sources(
   laplace
     PRIVATE
-      impact.c buffer.c execution.c generator.c controller.c
-      layout.c state.c
+      impact.c buffer.c action_dispatch.c execution.c
+      generator.c controller.c layout.c state.c
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/handle.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/generator.h>

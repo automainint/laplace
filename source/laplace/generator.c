@@ -13,6 +13,7 @@ kit_status_t laplace_generator_init(laplace_generator_t *generator,
   generator->promise.alloc  = alloc;
   generator->promise.access = access;
   generator->promise.self   = action.self;
+  generator->action_id      = action.id;
   generator->tick_duration  = action.tick_duration;
   return KIT_OK;
 }
@@ -20,6 +21,15 @@ kit_status_t laplace_generator_init(laplace_generator_t *generator,
 laplace_impact_list_t laplace_generator_run(
     laplace_generator_t *const generator) {
   AF_EXECUTE(&generator->promise);
+  laplace_impact_list_t list = generator->promise.return_value;
+  memset(&generator->promise.return_value, 0,
+         sizeof generator->promise.return_value);
+  return list;
+}
+
+laplace_impact_list_t laplace_generator_run_static(
+    laplace_generator_t *const generator) {
+  laplace_action_dispatch(generator->action_id, &generator->promise);
   laplace_impact_list_t list = generator->promise.return_value;
   memset(&generator->promise.return_value, 0,
          sizeof generator->promise.return_value);
