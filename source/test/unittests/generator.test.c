@@ -95,7 +95,6 @@ void laplace_action_dispatch(ptrdiff_t const          action_id,
        */
       test_dispatch_fallback_ = 1;
       AF_EXECUTE(promise);
-      break;
   }
 }
 
