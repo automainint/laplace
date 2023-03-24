@@ -23,6 +23,8 @@ cmake --build build
 ```
 
 Laplace CMake configuration options:
+- `LAPLACE_ENABLE_CUSTOM_ALLOC_DISPATCH` - enable custom allocator dispatch function. `OFF` by default.
+- `LAPLACE_ENABLE_STATIC_DISPATCH` - enable static action dispatch. `ON` by default.
 - `LAPLACE_ENABLE_TESTING` - enable testing. `ON` by default.
 
 ### Run tests

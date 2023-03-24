@@ -135,25 +135,26 @@ TEST("impact queue action") {
   REQUIRE(impact_mode_of(&i) == IMPACT_SYNC);
 }
 
-static int alloc_count, free_count;
+static int alloc_count = 0;
+static int free_count  = 0;
 
-static void *allocate(void *_, size_t size) {
-  alloc_count++;
-  return kit_alloc_default().allocate(_, size);
-}
+static void *allocate(int request, void *_, ptrdiff_t size,
+                      ptrdiff_t previous_size, void *pointer) {
+  switch (request) {
+    case KIT_ALLOCATE: alloc_count++; break;
+    case KIT_DEALLOCATE: free_count++; break;
+    default:;
+  }
 
-static void deallocate(void *_, void *p) {
-  free_count++;
-  kit_alloc_default().deallocate(_, p);
+  return kit_alloc_dispatch(kit_alloc_default(), request, size,
+                            previous_size, pointer);
 }
 
 TEST("impact list allocations") {
   alloc_count = 0;
   free_count  = 0;
 
-  kit_allocator_t alloc = { .state      = NULL,
-                            .allocate   = allocate,
-                            .deallocate = deallocate };
+  kit_allocator_t alloc = { .state = NULL, .allocate = allocate };
 
   handle_t h = { .id = 0, .generation = -1 };
 

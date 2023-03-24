@@ -26,7 +26,7 @@ static void destroy(state_internal_t *internal) {
   LAPLACE_BUFFER_DESTROY(internal->integers);
   LAPLACE_BUFFER_DESTROY(internal->bytes);
 
-  internal->alloc.deallocate(internal->alloc.state, internal);
+  kit_alloc_dispatch(internal->alloc, KIT_DEALLOCATE, 0, 0, internal);
 }
 
 static void release(void *p) {
@@ -309,8 +309,9 @@ static void adjust_done(void *p) {
 kit_status_t laplace_state_init(laplace_read_write_t *const p,
                                 uint64_t const              seed,
                                 kit_allocator_t const       alloc) {
-  state_internal_t *internal = (state_internal_t *) alloc.allocate(
-      alloc.state, sizeof(state_internal_t));
+  state_internal_t *internal = (state_internal_t *)
+      kit_alloc_dispatch(alloc, KIT_ALLOCATE,
+                         sizeof(state_internal_t), 0, NULL);
 
   if (internal == NULL)
     return LAPLACE_ERROR_BAD_ALLOC;

@@ -6,8 +6,9 @@ if(NOT DEFINED CMAKE_BUILD_PARALLEL_LEVEL)
   set(CMAKE_BUILD_PARALLEL_LEVEL 4 CACHE STRING "" FORCE)
 endif()
 
-option(LAPLACE_ENABLE_STATIC_DISPATCH "Enable static dispatch"  ON)
-option(LAPLACE_ENABLE_TESTING         "Enable testing"          ON)
+option(LAPLACE_ENABLE_CUSTOM_ALLOC_DISPATCH "Enable custom alloc dispatch"  OFF)
+option(LAPLACE_ENABLE_STATIC_DISPATCH       "Enable static action dispatch" ON)
+option(LAPLACE_ENABLE_TESTING               "Enable testing"                ON)
 
 project(
   laplace
@@ -24,7 +25,8 @@ if(NOT kit_FOUND)
     kit
     GIT_REPOSITORY https://github.com/automainint/kit.git
     GIT_TAG dev)
-  set(KIT_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+  set(KIT_ENABLE_CUSTOM_ALLOC_DISPATCH  ${LAPLACE_ENABLE_CUSTOM_ALLOC_DISPATCH} CACHE BOOL "" FORCE)
+  set(KIT_ENABLE_TESTING                OFF                                     CACHE BOOL "" FORCE)
   FetchContent_MakeAvailable(kit)
 endif()
 

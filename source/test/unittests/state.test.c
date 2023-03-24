@@ -9,20 +9,20 @@
 static int alloc_count = 0;
 static int free_count  = 0;
 
-static void *allocate(void *_, size_t size) {
-  alloc_count++;
-  return kit_alloc_default().allocate(_, size);
-}
+static void *allocate(int request, void *_, ptrdiff_t size,
+                      ptrdiff_t previous_size, void *pointer) {
+  switch (request) {
+    case KIT_ALLOCATE: alloc_count++; break;
+    case KIT_DEALLOCATE: free_count++; break;
+    default:;
+  }
 
-static void deallocate(void *_, void *p) {
-  free_count++;
-  kit_alloc_default().deallocate(_, p);
+  return kit_alloc_dispatch(kit_alloc_default(), request, size,
+                            previous_size, pointer);
 }
 
 TEST("state acquire and release") {
-  kit_allocator_t alloc = { .state      = NULL,
-                            .allocate   = allocate,
-                            .deallocate = deallocate };
+  kit_allocator_t alloc = { .state = NULL, .allocate = allocate };
 
   alloc_count = 0;
   free_count  = 0;
