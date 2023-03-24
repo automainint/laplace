@@ -6,7 +6,7 @@ if(NOT DEFINED CMAKE_BUILD_PARALLEL_LEVEL)
   set(CMAKE_BUILD_PARALLEL_LEVEL 4 CACHE STRING "" FORCE)
 endif()
 
-option(LAPLACE_ENABLE_STATIC_DISPATCH "Enable static dispatch"  OFF)
+option(LAPLACE_ENABLE_STATIC_DISPATCH "Enable static dispatch"  ON)
 option(LAPLACE_ENABLE_TESTING         "Enable testing"          ON)
 
 project(

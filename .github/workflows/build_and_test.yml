@@ -35,6 +35,29 @@ jobs:
         run: |
           ctest -V -C $BUILD_TYPE
 
+  build-dynamic-dispatch:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build
+        shell: bash
+        run: |
+          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D LAPLACE_ENABLE_STATIC_DISPATCH=OFF -B build -S .
+          cmake --build build --config $BUILD_TYPE
+
+      - name: Run tests
+        shell: bash
+        working-directory: ${{ github.workspace }}/build
+        run: |
+          ctest -V -C $BUILD_TYPE
+
+
   integration:
     strategy:
       matrix:
