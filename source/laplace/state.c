@@ -37,7 +37,7 @@ static void release(void *p) {
     destroy(internal);
 }
 
-static kit_status_t clone(void *p, laplace_read_write_t *cloned) {
+static kit_status_t clone_(void *p, laplace_read_write_t *cloned) {
   state_internal_t *self = (state_internal_t *) p;
 
   kit_status_t s = laplace_state_init(cloned, self->seed,
@@ -339,7 +339,7 @@ kit_status_t laplace_state_init(laplace_read_write_t *const p,
   p->state         = internal;
   p->acquire       = acquire;
   p->release       = release;
-  p->clone         = clone;
+  p->clone         = clone_;
   p->reset         = reset;
   p->integers_size = integers_size;
   p->bytes_size    = bytes_size;
