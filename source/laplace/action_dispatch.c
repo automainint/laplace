@@ -7,7 +7,6 @@
 void laplace_action_dispatch(laplace_promise_t *const promise) {
   /*  Fallback to dynamic dispatch.
    */
-  assert(0);
-  promise->_state_machine(promise, kit_af_request_execute);
+  promise->_state_machine(promise, AF_REQUEST_EXECUTE);
 }
 #endif

@@ -87,14 +87,14 @@ void laplace_action_dispatch(laplace_promise_t *const promise) {
     case TEST_ACTION_42:
       /*  Execute the coroutine.
        */
-      test_action_42_(promise, af_request_execute);
+      test_action_42_(promise, AF_REQUEST_EXECUTE);
       break;
 
     default:
       /*  Fallback to dynamic dispatch.
        */
       test_dispatch_fallback_ = 1;
-      promise->_state_machine(promise, kit_af_request_execute);
+      promise->_state_machine(promise, AF_REQUEST_EXECUTE);
   }
 }
 
