@@ -2,6 +2,7 @@
 #define LAPLACE_GENERATOR_H
 
 #include "impact.h"
+#include "promise.h"
 
 #include <assert.h>
 
@@ -14,14 +15,6 @@ typedef enum {
   LAPLACE_GENERATOR_FINISHED = 1
 } laplace_generator_status_t;
 
-struct laplace_promise {
-  KIT_AF_STATE_DATA;
-  laplace_impact_list_t return_value;
-  kit_allocator_t       alloc;
-  laplace_read_only_t   access;
-  laplace_handle_t      self;
-};
-
 typedef struct {
   union {
     laplace_promise_t promise;
@@ -29,16 +22,9 @@ typedef struct {
       char _padding[LAPLACE_COROUTINE_SIZE];
     };
   };
-  ptrdiff_t      action_id;
   laplace_time_t tick_duration;
   laplace_time_t clock;
 } laplace_generator_t;
-
-/*  Application should implement this function for static action
- *  dispatch.
- */
-void laplace_action_dispatch(ptrdiff_t          action_id,
-                             laplace_promise_t *promise);
 
 kit_status_t laplace_generator_init(laplace_generator_t *generator,
                                     laplace_action_t     action,
@@ -68,6 +54,12 @@ laplace_generator_status_t laplace_generator_status(
   static_assert(offsetof(AF_TYPE(coro_), return_value) ==           \
                     offsetof(laplace_promise_t, return_value),      \
                 "Wrong return_value offset");                       \
+  static_assert(offsetof(AF_TYPE(coro_), action_id) ==              \
+                    offsetof(laplace_promise_t, action_id),         \
+                "Wrong action_id offset");                          \
+  static_assert(offsetof(AF_TYPE(coro_), alloc) ==                  \
+                    offsetof(laplace_promise_t, alloc),             \
+                "Wrong alloc offset");                              \
   static_assert(offsetof(AF_TYPE(coro_), access) ==                 \
                     offsetof(laplace_promise_t, access),            \
                 "Wrong access offset");                             \

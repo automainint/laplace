@@ -4,8 +4,8 @@
 #define KIT_TEST_FILE buffer
 #include <kit_test/test.h>
 
-CORO(impact_list_t, test_impact_gen_, kit_allocator_t alloc;
-     read_only_t access; handle_t self;) {
+CORO(impact_list_t, test_impact_gen_, ptrdiff_t action_id;
+     kit_allocator_t alloc; read_only_t access; handle_t self;) {
   impact_list_t list;
 
   DA_INIT(list, 1, af alloc);
@@ -65,8 +65,8 @@ TEST("generator example") {
 #ifdef LAPLACE_ENABLE_STATIC_DISPATCH
 enum { TEST_ACTION_42 = 42 };
 
-CORO(impact_list_t, test_action_42_, kit_allocator_t alloc;
-     read_only_t access; handle_t self;) {
+CORO(impact_list_t, test_action_42_, ptrdiff_t action_id;
+     kit_allocator_t alloc; read_only_t access; handle_t self;) {
   impact_list_t list;
 
   DA_INIT(list, 1, af alloc);

@@ -127,15 +127,17 @@ TEST("execution set zero thread count with thread pool") {
 static int action_status_ = 0;
 
 STATIC_CORO(laplace_impact_list_t, test_exe_noop_,
-            kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+            ptrdiff_t       action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   action_status_++;
 }
 CORO_END
 
 STATIC_CORO(laplace_impact_list_t, test_exe_null_self_,
-            kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+            ptrdiff_t       action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   action_status_ = (int) af access.integers_size(af access.state,
                                                  af self);
 }
@@ -267,8 +269,9 @@ TEST("seq execution custom state") {
   execution_destroy(&exe);
 }
 
-STATIC_CORO(impact_list_t, test_exe_alloc_set_, kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_alloc_set_, ptrdiff_t action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   static handle_t const h0 = { .id = 0, .generation = -1 };
   static handle_t const h  = { .id = 0, .generation = 0 };
 
@@ -341,8 +344,9 @@ TEST("seq execution set value impact twice") {
 }
 
 STATIC_CORO(impact_list_t, test_exe_alloc_set_continue_,
-            kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+            ptrdiff_t       action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   static handle_t const h0 = { .id = 0, .generation = -1 };
   static handle_t const h  = { .id = 0, .generation = 0 };
 
@@ -392,8 +396,9 @@ TEST("seq execution set value impact twice with continuation") {
 }
 
 STATIC_CORO(impact_list_t, test_exe_allocate_into_,
-            kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+            ptrdiff_t       action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   DA_INIT(af return_value, 1, af alloc);
   handle_t h   = { .id = 0, .generation = -1 };
   impact_t i[] = { INTEGER_ALLOCATE_INTO(h, 1) };
@@ -403,8 +408,9 @@ STATIC_CORO(impact_list_t, test_exe_allocate_into_,
 }
 CORO_END
 
-STATIC_CORO(impact_list_t, test_exe_add_18_, kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_add_18_, ptrdiff_t action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   DA_INIT(af return_value, 1, af alloc);
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { INTEGER_ADD(h, 0, 18) };
@@ -414,8 +420,9 @@ STATIC_CORO(impact_list_t, test_exe_add_18_, kit_allocator_t alloc;
 }
 CORO_END
 
-STATIC_CORO(impact_list_t, test_exe_add_24_, kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_add_24_, ptrdiff_t action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   DA_INIT(af return_value, 1, af alloc);
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { INTEGER_ADD(h, 0, 24) };
@@ -456,8 +463,9 @@ TEST("seq execution two actions") {
   execution_destroy(&exe);
 }
 
-STATIC_CORO(impact_list_t, test_exe_set_42_, kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_set_42_, ptrdiff_t action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   DA_INIT(af return_value, 1, af alloc);
   handle_t h   = { .id = 1, .generation = 0 };
   impact_t i[] = { INTEGER_SET(h, 0, 42) };
@@ -490,8 +498,9 @@ TEST("seq execution invalid impact") {
 }
 
 STATIC_CORO(impact_list_t, test_exe_0_alloc_set_42_,
-            kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+            ptrdiff_t       action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   DA_INIT(af return_value, 2, af alloc);
   handle_t h0  = { .id = 0, .generation = -1 };
   handle_t h   = { .id = 0, .generation = 0 };
@@ -504,8 +513,9 @@ STATIC_CORO(impact_list_t, test_exe_0_alloc_set_42_,
 }
 CORO_END
 
-STATIC_CORO(impact_list_t, test_exe_1_set_43_, kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_1_set_43_, ptrdiff_t action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   DA_INIT(af return_value, 1, af alloc);
   handle_t h   = { .id = 1, .generation = 0 };
   impact_t i[] = { INTEGER_SET(h, 0, 43) };
@@ -515,8 +525,9 @@ STATIC_CORO(impact_list_t, test_exe_1_set_43_, kit_allocator_t alloc;
 }
 CORO_END
 
-STATIC_CORO(impact_list_t, test_exe_1_alloc_, kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_1_alloc_, ptrdiff_t action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   DA_INIT(af return_value, 1, af alloc);
   handle_t h   = { .id = 1, .generation = -1 };
   impact_t i[] = { INTEGER_ALLOCATE_INTO(h, 1) };
@@ -558,8 +569,9 @@ TEST("seq execution sync impacts applied first") {
   execution_destroy(&exe);
 }
 
-STATIC_CORO(impact_list_t, test_exe_queue_, kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_queue_, ptrdiff_t action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   impact_t i[] = { QUEUE_ACTION(
       ACTION_UNSAFE(0, test_exe_0_alloc_set_42_, 1, HANDLE_NULL)) };
 
@@ -597,8 +609,9 @@ static ATOMIC(int) foo_end;
 static ATOMIC(int) bar_begin;
 static ATOMIC(int) bar_end;
 
-STATIC_CORO(impact_list_t, test_exe_foo_, kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_foo_, ptrdiff_t action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   atomic_fetch_add_explicit(&foo_begin, 1, memory_order_acq_rel);
 
   struct timespec t = { .tv_sec = 0, .tv_nsec = 300000000 };
@@ -617,8 +630,9 @@ STATIC_CORO(impact_list_t, test_exe_foo_, kit_allocator_t alloc;
 }
 CORO_END
 
-STATIC_CORO(impact_list_t, test_exe_bar_, kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+STATIC_CORO(impact_list_t, test_exe_bar_, ptrdiff_t action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   atomic_fetch_add_explicit(&bar_begin, 1, memory_order_acq_rel);
 
   struct timespec t = { .tv_sec = 0, .tv_nsec = 300000000 };
@@ -705,8 +719,9 @@ TEST("execution two parallel actions") {
 }
 
 STATIC_CORO(impact_list_t, test_exe_delay_alloc_set_42_,
-            kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+            ptrdiff_t       action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   struct timespec t = { .tv_sec = 0, .tv_nsec = 100000000 };
   thrd_sleep(&t, NULL);
 
@@ -1017,8 +1032,9 @@ TEST("execution queue action impact") {
 }
 
 STATIC_CORO(impact_list_t, test_exe_order_alloc_2_,
-            kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+            ptrdiff_t       action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   struct timespec t = { .tv_sec = 0, .tv_nsec = 20000000 };
   thrd_sleep(&t, NULL);
 
@@ -1032,8 +1048,9 @@ STATIC_CORO(impact_list_t, test_exe_order_alloc_2_,
 CORO_END
 
 STATIC_CORO(impact_list_t, test_exe_order_alloc_1_,
-            kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+            ptrdiff_t       action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   struct timespec t = { .tv_sec = 0, .tv_nsec = 20000000 };
   thrd_sleep(&t, NULL);
 
@@ -1047,8 +1064,9 @@ STATIC_CORO(impact_list_t, test_exe_order_alloc_1_,
 CORO_END
 
 STATIC_CORO(impact_list_t, test_exe_order_alloc_0_,
-            kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+            ptrdiff_t       action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   impact_t i0[] = { NOOP() };
 
   DA_INIT(af return_value, 1, af alloc);
@@ -1068,8 +1086,9 @@ STATIC_CORO(impact_list_t, test_exe_order_alloc_0_,
 CORO_END
 
 STATIC_CORO(impact_list_t, test_exe_order_dealloc_2_,
-            kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+            ptrdiff_t       action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { INTEGER_DEALLOCATE(h) };
 
@@ -1080,8 +1099,9 @@ STATIC_CORO(impact_list_t, test_exe_order_dealloc_2_,
 CORO_END
 
 STATIC_CORO(impact_list_t, test_exe_order_dealloc_1_,
-            kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+            ptrdiff_t       action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   impact_t i[] = { QUEUE_ACTION(
       ACTION_UNSAFE(0, test_exe_order_dealloc_2_, 1, HANDLE_NULL)) };
 
@@ -1092,8 +1112,9 @@ STATIC_CORO(impact_list_t, test_exe_order_dealloc_1_,
 CORO_END
 
 STATIC_CORO(impact_list_t, test_exe_order_dealloc_0_,
-            kit_allocator_t alloc;
-            read_only_t access; handle_t self;) {
+            ptrdiff_t       action_id;
+            kit_allocator_t alloc; read_only_t access;
+            handle_t                           self;) {
   impact_t i0[] = { NOOP() };
 
   DA_INIT(af return_value, 1, af alloc);

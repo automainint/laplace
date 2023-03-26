@@ -11,8 +11,6 @@
 extern "C" {
 #endif
 
-typedef struct laplace_promise laplace_promise_t;
-
 typedef struct {
   ptrdiff_t id; /* Unique Id for each coroutine function. Only
                    required for static action dispatch. */

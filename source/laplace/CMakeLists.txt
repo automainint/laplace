@@ -7,7 +7,9 @@ target_sources(
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/handle.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/generator.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/execution.h>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/action_dispatch.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/action.h>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/async_function.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/buffer.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/state.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/layout.h>

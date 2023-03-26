@@ -1,8 +1,7 @@
-#include "generator.h"
+#include "action_dispatch.h"
 
 #ifndef LAPLACE_ENABLE_STATIC_DISPATCH
-void laplace_action_dispatch(ptrdiff_t const          action_id,
-                             laplace_promise_t *const promise) {
+void laplace_action_dispatch(laplace_promise_t *const promise) {
   /*  Fallback to dynamic dispatch.
    */
   assert(0);
