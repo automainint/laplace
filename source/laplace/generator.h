@@ -31,12 +31,6 @@ kit_status_t laplace_generator_init(laplace_generator_t *generator,
                                     laplace_read_only_t  access,
                                     kit_allocator_t      alloc);
 
-/*  If static dispatch is disabled, this will fallback to dynamic
- *  dispatch.
- */
-laplace_impact_list_t laplace_generator_run_static(
-    laplace_generator_t *generator);
-
 laplace_impact_list_t laplace_generator_run(
     laplace_generator_t *generator);
 
@@ -76,7 +70,6 @@ laplace_generator_status_t laplace_generator_status(
 #  define generator_t laplace_generator_t
 
 #  define generator_init laplace_generator_init
-#  define generator_run_static laplace_generator_run_static
 #  define generator_run laplace_generator_run
 #  define generator_status laplace_generator_status
 #endif

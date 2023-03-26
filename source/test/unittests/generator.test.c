@@ -82,9 +82,8 @@ CORO_END
 
 int test_dispatch_fallback_ = 0;
 
-void laplace_action_dispatch(ptrdiff_t const          action_id,
-                             laplace_promise_t *const promise) {
-  switch (action_id) {
+void laplace_action_dispatch(laplace_promise_t *const promise) {
+  switch (promise->action_id) {
     case TEST_ACTION_42:
       /*  Execute the coroutine.
        */
@@ -95,7 +94,7 @@ void laplace_action_dispatch(ptrdiff_t const          action_id,
       /*  Fallback to dynamic dispatch.
        */
       test_dispatch_fallback_ = 1;
-      AF_EXECUTE(promise);
+      promise->_state_machine(promise, kit_af_request_execute);
   }
 }
 

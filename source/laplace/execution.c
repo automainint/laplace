@@ -94,13 +94,8 @@ static kit_status_t sync_routine_(
 
         int is_continue = 0;
 
-#ifdef LAPLACE_ENABLE_STATIC_DISPATCH
-        laplace_impact_list_t list = laplace_generator_run_static(
-            &action->generator);
-#else
         laplace_impact_list_t list = laplace_generator_run(
             &action->generator);
-#endif
 
         for (ptrdiff_t j = 0; j < list.size; j++) {
           laplace_impact_t *impact = list.values + j;
@@ -270,13 +265,8 @@ static kit_status_t routine_internal_(
 
           int is_continue = 0;
 
-#ifdef LAPLACE_ENABLE_STATIC_DISPATCH
-          laplace_impact_list_t list = laplace_generator_run_static(
-              &action->generator);
-#else
           laplace_impact_list_t list = laplace_generator_run(
               &action->generator);
-#endif
 
           for (ptrdiff_t j = 0; j < list.size; j++) {
             laplace_impact_t *impact = list.values + j;

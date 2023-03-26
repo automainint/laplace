@@ -2,11 +2,12 @@
 #define LAPLACE_ASYNC_FUNCTION_H
 
 #include "action_dispatch.h"
-#include "promise.h"
+#include <kit/async_function.h>
 
 /*  Redefine async function dispatch.
  */
 
+#undef KIT_AF_EXECUTE
 #undef KIT_AF_AWAIT
 #undef KIT_AF_YIELD_AWAIT
 
@@ -31,5 +32,8 @@
         return;                                       \
       }                                               \
   } while (0)
+
+/*  No need for AF_EXECUTE macro.
+ */
 
 #endif
