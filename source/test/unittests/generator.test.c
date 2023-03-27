@@ -94,7 +94,8 @@ void laplace_action_dispatch(laplace_promise_t *const promise) {
       /*  Fallback to dynamic dispatch.
        */
       test_dispatch_fallback_ = 1;
-      promise->_state_machine(promise, AF_REQUEST_EXECUTE);
+      if (promise->_state_machine != NULL)
+        promise->_state_machine(promise, AF_REQUEST_EXECUTE);
   }
 }
 
@@ -105,8 +106,8 @@ TEST("generator static dispatch example") {
 
   kit_allocator_t alloc = { .state = NULL, .allocate = allocate };
 
-  action_t action = ACTION(TEST_ACTION_42, test_action_42_, 1,
-                           handle_null);
+  action_t action = ACTION_STATIC(TEST_ACTION_42, test_action_42_, 1,
+                                  handle_null);
 
   read_only_t access;
   memset(&access, 0, sizeof access);

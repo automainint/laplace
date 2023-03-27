@@ -43,6 +43,14 @@ laplace_generator_status_t laplace_generator_status(
     .tick_duration = (tick_duration_), .self = __VA_ARGS__      \
   }
 
+/*  No need for a function pointer when static dispatch is enabled.
+ */
+#define LAPLACE_ACTION_STATIC(id_, coro_, tick_duration_, ...) \
+  {                                                            \
+    .id = id_, .size = sizeof(AF_TYPE(coro_)), .coro = NULL,   \
+    .tick_duration = (tick_duration_), .self = __VA_ARGS__     \
+  }
+
 #define LAPLACE_ACTION(id_, coro_, tick_duration_, ...)             \
   LAPLACE_ACTION_UNSAFE(id_, coro_, (tick_duration_), __VA_ARGS__); \
   static_assert(offsetof(AF_TYPE(coro_), return_value) ==           \
@@ -65,6 +73,7 @@ laplace_generator_status_t laplace_generator_status(
 #  define GENERATOR_RUNNING LAPLACE_GENERATOR_RUNNING
 #  define GENERATOR_FINISHED LAPLACE_GENERATOR_FINISHED
 #  define ACTION_UNSAFE LAPLACE_ACTION_UNSAFE
+#  define ACTION_STATIC LAPLACE_ACTION_STATIC
 #  define ACTION LAPLACE_ACTION
 
 #  define generator_t laplace_generator_t
