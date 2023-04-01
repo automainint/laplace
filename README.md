@@ -1,4 +1,4 @@
-#   The Laplace engine
+#The Laplace     engine
 The quality of a real-time strategy game relies on low-latency responsiveness and vertical scalability.
 Vertical scalability requires parallelism on the local instance and lockstep networking.
 Lockstep systems require a totally deterministic engine. In addition, extensibility is a useful feature.
@@ -23,7 +23,6 @@ cmake --build build
 ```
 
 Laplace CMake configuration options:
-- `LAPLACE_ENABLE_CUSTOM_ALLOC_DISPATCH` - enable custom allocator dispatch function. `OFF` by default.
 - `LAPLACE_ENABLE_STATIC_DISPATCH` - enable static action dispatch. `ON` by default.
 - `LAPLACE_ENABLE_TESTING` - enable testing. `ON` by default.
 
