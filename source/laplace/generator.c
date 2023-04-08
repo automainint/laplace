@@ -9,11 +9,13 @@ kit_status_t laplace_generator_init(laplace_generator_t *generator,
   if (action.size > LAPLACE_COROUTINE_SIZE)
     return LAPLACE_ERROR_INVALID_SIZE;
   memset(generator, 0, sizeof *generator);
-  AF_INIT_EXPLICIT(generator->promise, action.size, action.coro);
-  generator->promise.alloc  = alloc;
-  generator->promise.access = access;
-  generator->promise.self   = action.self;
-  generator->tick_duration  = action.tick_duration;
+  generator->promise._index         = 0;
+  generator->promise._id            = action.id;
+  generator->promise._state_machine = action.coro;
+  generator->promise.alloc          = alloc;
+  generator->promise.access         = access;
+  generator->promise.self           = action.self;
+  generator->tick_duration          = action.tick_duration;
   return KIT_OK;
 }
 

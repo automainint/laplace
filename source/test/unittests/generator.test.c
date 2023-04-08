@@ -62,7 +62,7 @@ TEST("generator example") {
   REQUIRE(alloc_count == free_count);
 }
 
-#ifdef LAPLACE_ENABLE_STATIC_DISPATCH
+#ifdef KIT_ENABLE_CUSTOM_ASYNC_FUNCTION_DISPATCH
 CORO(impact_list_t, test_action_42_, kit_allocator_t alloc;
      read_only_t access; handle_t self;) {
   impact_list_t list;
@@ -78,25 +78,26 @@ CORO(impact_list_t, test_action_42_, kit_allocator_t alloc;
 }
 CORO_END
 
-static ptrdiff_t const TEST_ACTION_42 = (ptrdiff_t) test_action_42_;
+enum { TEST_ACTION_42 = 42 };
 
 int test_dispatch_fallback_ = 0;
 
-void laplace_action_dispatch(void *const promise_) {
+void kit_async_function_dispatch(void *const promise_) {
   laplace_promise_t *const promise = (laplace_promise_t *) promise_;
 
-  ptrdiff_t const id = (ptrdiff_t) promise->_state_machine;
+  switch (promise->_id) {
+    case TEST_ACTION_42:
+      /*  Execute the coroutine.
+       */
+      test_action_42_(promise);
+      break;
 
-  if (id == TEST_ACTION_42) {
-    /*  Execute the coroutine.
-     */
-    test_action_42_(promise);
-  } else {
-    /*  Fallback to dynamic dispatch.
-     */
-    test_dispatch_fallback_ = 1;
-    if (promise->_state_machine != NULL)
-      promise->_state_machine(promise);
+    default:
+      /*  Fallback to dynamic dispatch.
+       */
+      test_dispatch_fallback_ = 1;
+      if (promise->_state_machine != NULL)
+        promise->_state_machine(promise);
   }
 }
 
@@ -107,7 +108,8 @@ TEST("generator static dispatch example") {
 
   kit_allocator_t alloc = { .state = NULL, .allocate = allocate };
 
-  action_t action = ACTION(test_action_42_, 1, handle_null);
+  action_t action = ACTION_ID(test_action_42_, TEST_ACTION_42, 1,
+                              handle_null);
 
   read_only_t access;
   memset(&access, 0, sizeof access);

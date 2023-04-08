@@ -35,7 +35,7 @@ jobs:
         run: |
           ctest -V -C $BUILD_TYPE
 
-  build-dynamic-dispatch:
+  build-static-dispatch:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
@@ -48,7 +48,7 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D LAPLACE_ENABLE_STATIC_DISPATCH=OFF -B build -S .
+          cmake -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D KIT_ENABLE_CUSTOM_ASYNC_FUNCTION_DISPATCH=ON -B build -S .
           cmake --build build --config $BUILD_TYPE
 
       - name: Run tests

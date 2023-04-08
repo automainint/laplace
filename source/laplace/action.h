@@ -13,6 +13,7 @@ extern "C" {
 
 typedef struct {
   ptrdiff_t            size;
+  ptrdiff_t            id;
   kit_af_state_machine coro;
   laplace_time_t       tick_duration;
   laplace_handle_t     self;

@@ -37,14 +37,36 @@ laplace_impact_list_t laplace_generator_run(
 laplace_generator_status_t laplace_generator_status(
     laplace_generator_t const *generator);
 
-#define LAPLACE_ACTION_UNSAFE(coro_, tick_duration_, ...)  \
-  {                                                        \
-    .size = sizeof(AF_TYPE(coro_)), .coro = (coro_),       \
-    .tick_duration = (tick_duration_), .self = __VA_ARGS__ \
+#define LAPLACE_ACTION_UNSAFE(coro_, tick_duration_, ...)     \
+  {                                                           \
+    .size = sizeof(AF_TYPE(coro_)), .id = 0, .coro = (coro_), \
+    .tick_duration = (tick_duration_), .self = __VA_ARGS__    \
   }
 
 #define LAPLACE_ACTION(coro_, tick_duration_, ...)             \
   LAPLACE_ACTION_UNSAFE(coro_, (tick_duration_), __VA_ARGS__); \
+  static_assert(offsetof(AF_TYPE(coro_), return_value) ==      \
+                    offsetof(laplace_promise_t, return_value), \
+                "Wrong return_value offset");                  \
+  static_assert(offsetof(AF_TYPE(coro_), alloc) ==             \
+                    offsetof(laplace_promise_t, alloc),        \
+                "Wrong alloc offset");                         \
+  static_assert(offsetof(AF_TYPE(coro_), access) ==            \
+                    offsetof(laplace_promise_t, access),       \
+                "Wrong access offset");                        \
+  static_assert(offsetof(AF_TYPE(coro_), self) ==              \
+                    offsetof(laplace_promise_t, self),         \
+                "Wrong self offset")
+
+#define LAPLACE_ACTION_ID_UNSAFE(coro_, id_, tick_duration_, ...) \
+  {                                                               \
+    .size = sizeof(AF_TYPE(coro_)), .id = (id_), .coro = NULL,    \
+    .tick_duration = (tick_duration_), .self = __VA_ARGS__        \
+  }
+
+#define LAPLACE_ACTION_ID(coro_, id_, tick_duration_, ...)     \
+  LAPLACE_ACTION_ID_UNSAFE(coro_, (id_), (tick_duration_),     \
+                           __VA_ARGS__);                       \
   static_assert(offsetof(AF_TYPE(coro_), return_value) ==      \
                     offsetof(laplace_promise_t, return_value), \
                 "Wrong return_value offset");                  \
@@ -63,6 +85,8 @@ laplace_generator_status_t laplace_generator_status(
 #  define GENERATOR_FINISHED LAPLACE_GENERATOR_FINISHED
 #  define ACTION_UNSAFE LAPLACE_ACTION_UNSAFE
 #  define ACTION LAPLACE_ACTION
+#  define ACTION_ID_UNSAFE LAPLACE_ACTION_ID_UNSAFE
+#  define ACTION_ID LAPLACE_ACTION_ID
 
 #  define generator_t laplace_generator_t
 
