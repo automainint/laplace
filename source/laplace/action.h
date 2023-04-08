@@ -2,9 +2,9 @@
 #define LAPLACE_ACTION_H
 
 #include "access.h"
-#include "async_function.h"
 #include "handle.h"
 #include <kit/allocator.h>
+#include <kit/async_function.h>
 #include <stdlib.h>
 
 #ifdef __cplusplus
@@ -12,8 +12,6 @@ extern "C" {
 #endif
 
 typedef struct {
-  ptrdiff_t id; /* Unique Id for each coroutine function. Only
-                   required for static action dispatch. */
   ptrdiff_t            size;
   kit_af_state_machine coro;
   laplace_time_t       tick_duration;

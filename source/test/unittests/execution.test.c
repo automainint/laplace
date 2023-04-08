@@ -127,26 +127,24 @@ TEST("execution set zero thread count with thread pool") {
 static int action_status_ = 0;
 
 STATIC_CORO(laplace_impact_list_t, test_exe_noop_,
-            ptrdiff_t       action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   action_status_++;
 }
 CORO_END
 
 STATIC_CORO(laplace_impact_list_t, test_exe_null_self_,
-            ptrdiff_t       action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
-  action_status_ = (int) af access.integers_size(af access.state,
-                                                 af self);
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  action_status_ = (int) self->access.integers_size(
+      self->access.state, self->self);
 }
 CORO_END
 
-static action_t const test_noop_ = ACTION_UNSAFE(0, test_exe_noop_, 1,
+static action_t const test_noop_ = ACTION_UNSAFE(test_exe_noop_, 1,
                                                  HANDLE_NULL);
 static action_t const test_null_self_ = ACTION_UNSAFE(
-    0, test_exe_null_self_, 1, HANDLE_NULL);
+    test_exe_null_self_, 1, HANDLE_NULL);
 
 TEST("seq execution queue action") {
   action_status_ = 0;
@@ -269,24 +267,23 @@ TEST("seq execution custom state") {
   execution_destroy(&exe);
 }
 
-STATIC_CORO(impact_list_t, test_exe_alloc_set_, ptrdiff_t action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
+STATIC_CORO(impact_list_t, test_exe_alloc_set_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   static handle_t const h0 = { .id = 0, .generation = -1 };
   static handle_t const h  = { .id = 0, .generation = 0 };
 
-  DA_INIT(af return_value, 2, af alloc);
+  DA_INIT(self->return_value, 2, self->alloc);
   impact_t i0[] = { INTEGER_ALLOCATE_INTO(h0, 1),
                     INTEGER_SET(h, 0, 42) };
 
-  af return_value.values[0] = i0[0];
-  af return_value.values[1] = i0[1];
+  self->return_value.values[0] = i0[0];
+  self->return_value.values[1] = i0[1];
   AF_YIELD_VOID;
 
-  DA_INIT(af return_value, 1, af alloc);
+  DA_INIT(self->return_value, 1, self->alloc);
   impact_t i1[] = { INTEGER_SET(h, 0, 43) };
 
-  af return_value.values[0] = i1[0];
+  self->return_value.values[0] = i1[0];
   AF_RETURN_VOID;
 }
 CORO_END
@@ -304,7 +301,7 @@ TEST("seq execution set value impact") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t action = ACTION(0, test_exe_alloc_set_, 1, HANDLE_NULL);
+  action_t action = ACTION(test_exe_alloc_set_, 1, HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
   REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
@@ -328,7 +325,7 @@ TEST("seq execution set value impact twice") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t action = ACTION(0, test_exe_alloc_set_, default_tick,
+  action_t action = ACTION(test_exe_alloc_set_, default_tick,
                            HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
@@ -344,25 +341,24 @@ TEST("seq execution set value impact twice") {
 }
 
 STATIC_CORO(impact_list_t, test_exe_alloc_set_continue_,
-            ptrdiff_t       action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   static handle_t const h0 = { .id = 0, .generation = -1 };
   static handle_t const h  = { .id = 0, .generation = 0 };
 
-  DA_INIT(af return_value, 3, af alloc);
+  DA_INIT(self->return_value, 3, self->alloc);
   impact_t i0[] = { INTEGER_ALLOCATE_INTO(h0, 1),
                     INTEGER_SET(h, 0, 42), TICK_CONTINUE() };
 
-  af return_value.values[0] = i0[0];
-  af return_value.values[1] = i0[1];
-  af return_value.values[2] = i0[2];
+  self->return_value.values[0] = i0[0];
+  self->return_value.values[1] = i0[1];
+  self->return_value.values[2] = i0[2];
   AF_YIELD_VOID;
 
-  DA_INIT(af return_value, 1, af alloc);
+  DA_INIT(self->return_value, 1, self->alloc);
   impact_t i1[] = { INTEGER_SET(h, 0, 43) };
 
-  af return_value.values[0] = i1[0];
+  self->return_value.values[0] = i1[0];
   AF_RETURN_VOID;
 }
 CORO_END
@@ -380,8 +376,8 @@ TEST("seq execution set value impact twice with continuation") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t action = ACTION(0, test_exe_alloc_set_continue_,
-                           default_tick, HANDLE_NULL);
+  action_t action = ACTION(test_exe_alloc_set_continue_, default_tick,
+                           HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
   handle_t h = { .id = 0, .generation = 0 };
@@ -396,38 +392,35 @@ TEST("seq execution set value impact twice with continuation") {
 }
 
 STATIC_CORO(impact_list_t, test_exe_allocate_into_,
-            ptrdiff_t       action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
-  DA_INIT(af return_value, 1, af alloc);
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  DA_INIT(self->return_value, 1, self->alloc);
   handle_t h   = { .id = 0, .generation = -1 };
   impact_t i[] = { INTEGER_ALLOCATE_INTO(h, 1) };
 
-  af return_value.values[0] = i[0];
+  self->return_value.values[0] = i[0];
   AF_RETURN_VOID;
 }
 CORO_END
 
-STATIC_CORO(impact_list_t, test_exe_add_18_, ptrdiff_t action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
-  DA_INIT(af return_value, 1, af alloc);
+STATIC_CORO(impact_list_t, test_exe_add_18_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  DA_INIT(self->return_value, 1, self->alloc);
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { INTEGER_ADD(h, 0, 18) };
 
-  af return_value.values[0] = i[0];
+  self->return_value.values[0] = i[0];
   AF_RETURN_VOID;
 }
 CORO_END
 
-STATIC_CORO(impact_list_t, test_exe_add_24_, ptrdiff_t action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
-  DA_INIT(af return_value, 1, af alloc);
+STATIC_CORO(impact_list_t, test_exe_add_24_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  DA_INIT(self->return_value, 1, self->alloc);
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { INTEGER_ADD(h, 0, 24) };
 
-  af return_value.values[0] = i[0];
+  self->return_value.values[0] = i[0];
   AF_RETURN_VOID;
 }
 CORO_END
@@ -445,13 +438,13 @@ TEST("seq execution two actions") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t a0 = ACTION(0, test_exe_allocate_into_, 1, HANDLE_NULL);
+  action_t a0 = ACTION(test_exe_allocate_into_, 1, HANDLE_NULL);
   REQUIRE(execution_queue(&exe, a0) == KIT_OK);
 
   REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
-  action_t a1 = ACTION(0, test_exe_add_18_, 1, HANDLE_NULL);
-  action_t a2 = ACTION(0, test_exe_add_24_, 1, HANDLE_NULL);
+  action_t a1 = ACTION(test_exe_add_18_, 1, HANDLE_NULL);
+  action_t a2 = ACTION(test_exe_add_24_, 1, HANDLE_NULL);
   REQUIRE(execution_queue(&exe, a1) == KIT_OK);
   REQUIRE(execution_queue(&exe, a2) == KIT_OK);
 
@@ -463,14 +456,13 @@ TEST("seq execution two actions") {
   execution_destroy(&exe);
 }
 
-STATIC_CORO(impact_list_t, test_exe_set_42_, ptrdiff_t action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
-  DA_INIT(af return_value, 1, af alloc);
+STATIC_CORO(impact_list_t, test_exe_set_42_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  DA_INIT(self->return_value, 1, self->alloc);
   handle_t h   = { .id = 1, .generation = 0 };
   impact_t i[] = { INTEGER_SET(h, 0, 42) };
 
-  af return_value.values[0] = i[0];
+  self->return_value.values[0] = i[0];
   AF_RETURN_VOID;
 }
 CORO_END
@@ -488,7 +480,7 @@ TEST("seq execution invalid impact") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t action = ACTION(0, test_exe_set_42_, 1, HANDLE_NULL);
+  action_t action = ACTION(test_exe_set_42_, 1, HANDLE_NULL);
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
 
   REQUIRE(execution_schedule_and_join(&exe, 1) ==
@@ -498,41 +490,38 @@ TEST("seq execution invalid impact") {
 }
 
 STATIC_CORO(impact_list_t, test_exe_0_alloc_set_42_,
-            ptrdiff_t       action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
-  DA_INIT(af return_value, 2, af alloc);
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  DA_INIT(self->return_value, 2, self->alloc);
   handle_t h0  = { .id = 0, .generation = -1 };
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { INTEGER_SET(h, 0, 42),
                    INTEGER_ALLOCATE_INTO(h0, 1) };
 
-  af return_value.values[0] = i[0];
-  af return_value.values[1] = i[1];
+  self->return_value.values[0] = i[0];
+  self->return_value.values[1] = i[1];
   AF_RETURN_VOID;
 }
 CORO_END
 
-STATIC_CORO(impact_list_t, test_exe_1_set_43_, ptrdiff_t action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
-  DA_INIT(af return_value, 1, af alloc);
+STATIC_CORO(impact_list_t, test_exe_1_set_43_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  DA_INIT(self->return_value, 1, self->alloc);
   handle_t h   = { .id = 1, .generation = 0 };
   impact_t i[] = { INTEGER_SET(h, 0, 43) };
 
-  af return_value.values[0] = i[0];
+  self->return_value.values[0] = i[0];
   AF_RETURN_VOID;
 }
 CORO_END
 
-STATIC_CORO(impact_list_t, test_exe_1_alloc_, ptrdiff_t action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
-  DA_INIT(af return_value, 1, af alloc);
+STATIC_CORO(impact_list_t, test_exe_1_alloc_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
+  DA_INIT(self->return_value, 1, self->alloc);
   handle_t h   = { .id = 1, .generation = -1 };
   impact_t i[] = { INTEGER_ALLOCATE_INTO(h, 1) };
 
-  af return_value.values[0] = i[0];
+  self->return_value.values[0] = i[0];
   AF_RETURN_VOID;
 }
 CORO_END
@@ -550,11 +539,10 @@ TEST("seq execution sync impacts applied first") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t a[] = {
-    ACTION_UNSAFE(0, test_exe_0_alloc_set_42_, 1, HANDLE_NULL),
-    ACTION_UNSAFE(0, test_exe_1_set_43_, 1, HANDLE_NULL),
-    ACTION_UNSAFE(0, test_exe_1_alloc_, 1, HANDLE_NULL)
-  };
+  action_t a[] = { ACTION_UNSAFE(test_exe_0_alloc_set_42_, 1,
+                                 HANDLE_NULL),
+                   ACTION_UNSAFE(test_exe_1_set_43_, 1, HANDLE_NULL),
+                   ACTION_UNSAFE(test_exe_1_alloc_, 1, HANDLE_NULL) };
   REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
   REQUIRE(execution_queue(&exe, a[1]) == KIT_OK);
   REQUIRE(execution_queue(&exe, a[2]) == KIT_OK);
@@ -569,14 +557,13 @@ TEST("seq execution sync impacts applied first") {
   execution_destroy(&exe);
 }
 
-STATIC_CORO(impact_list_t, test_exe_queue_, ptrdiff_t action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
+STATIC_CORO(impact_list_t, test_exe_queue_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   impact_t i[] = { QUEUE_ACTION(
-      ACTION_UNSAFE(0, test_exe_0_alloc_set_42_, 1, HANDLE_NULL)) };
+      ACTION_UNSAFE(test_exe_0_alloc_set_42_, 1, HANDLE_NULL)) };
 
-  DA_INIT(af return_value, 1, af alloc);
-  af return_value.values[0] = i[0];
+  DA_INIT(self->return_value, 1, self->alloc);
+  self->return_value.values[0] = i[0];
   AF_RETURN_VOID;
 }
 CORO_END
@@ -594,7 +581,7 @@ TEST("seq execution queue action impact") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t a = ACTION(0, test_exe_queue_, 1, HANDLE_NULL);
+  action_t a = ACTION(test_exe_queue_, 1, HANDLE_NULL);
   handle_t h = { .id = 0, .generation = 0 };
 
   REQUIRE(execution_queue(&exe, a) == KIT_OK);
@@ -609,9 +596,8 @@ static ATOMIC(int) foo_end;
 static ATOMIC(int) bar_begin;
 static ATOMIC(int) bar_end;
 
-STATIC_CORO(impact_list_t, test_exe_foo_, ptrdiff_t action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
+STATIC_CORO(impact_list_t, test_exe_foo_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   atomic_fetch_add_explicit(&foo_begin, 1, memory_order_acq_rel);
 
   struct timespec t = { .tv_sec = 0, .tv_nsec = 300000000 };
@@ -624,15 +610,14 @@ STATIC_CORO(impact_list_t, test_exe_foo_, ptrdiff_t action_id;
 
   impact_t i[] = { NOOP() };
 
-  DA_INIT(af return_value, 1, af alloc);
-  af return_value.values[0] = i[0];
+  DA_INIT(self->return_value, 1, self->alloc);
+  self->return_value.values[0] = i[0];
   AF_RETURN_VOID;
 }
 CORO_END
 
-STATIC_CORO(impact_list_t, test_exe_bar_, ptrdiff_t action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
+STATIC_CORO(impact_list_t, test_exe_bar_, kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   atomic_fetch_add_explicit(&bar_begin, 1, memory_order_acq_rel);
 
   struct timespec t = { .tv_sec = 0, .tv_nsec = 300000000 };
@@ -645,8 +630,8 @@ STATIC_CORO(impact_list_t, test_exe_bar_, ptrdiff_t action_id;
 
   impact_t i[] = { NOOP() };
 
-  DA_INIT(af return_value, 1, af alloc);
-  af return_value.values[0] = i[0];
+  DA_INIT(self->return_value, 1, self->alloc);
+  self->return_value.values[0] = i[0];
   AF_RETURN_VOID;
 }
 CORO_END
@@ -669,8 +654,8 @@ TEST("seq execution no multithreading") {
   execution_t exe;
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
 
-  action_t a[] = { ACTION_UNSAFE(0, test_exe_foo_, 1, HANDLE_NULL),
-                   ACTION_UNSAFE(0, test_exe_bar_, 1, HANDLE_NULL) };
+  action_t a[] = { ACTION_UNSAFE(test_exe_foo_, 1, HANDLE_NULL),
+                   ACTION_UNSAFE(test_exe_bar_, 1, HANDLE_NULL) };
 
   REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
   REQUIRE(execution_queue(&exe, a[1]) == KIT_OK);
@@ -705,8 +690,8 @@ TEST("execution two parallel actions") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t a[] = { ACTION_UNSAFE(0, test_exe_foo_, 1, HANDLE_NULL),
-                   ACTION_UNSAFE(0, test_exe_bar_, 1, HANDLE_NULL) };
+  action_t a[] = { ACTION_UNSAFE(test_exe_foo_, 1, HANDLE_NULL),
+                   ACTION_UNSAFE(test_exe_bar_, 1, HANDLE_NULL) };
 
   REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
   REQUIRE(execution_queue(&exe, a[1]) == KIT_OK);
@@ -719,20 +704,19 @@ TEST("execution two parallel actions") {
 }
 
 STATIC_CORO(impact_list_t, test_exe_delay_alloc_set_42_,
-            ptrdiff_t       action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   struct timespec t = { .tv_sec = 0, .tv_nsec = 100000000 };
   thrd_sleep(&t, NULL);
 
-  DA_INIT(af return_value, 2, af alloc);
+  DA_INIT(self->return_value, 2, self->alloc);
   handle_t h0  = { .id = 0, .generation = -1 };
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { INTEGER_SET(h, 0, 42),
                    INTEGER_ALLOCATE_INTO(h0, 1) };
 
-  af return_value.values[0] = i[0];
-  af return_value.values[1] = i[1];
+  self->return_value.values[0] = i[0];
+  self->return_value.values[1] = i[1];
   AF_RETURN_VOID;
 }
 CORO_END
@@ -756,8 +740,7 @@ TEST("execution join one") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 1) == KIT_OK);
 
-  action_t a = ACTION(0, test_exe_delay_alloc_set_42_, 1,
-                      HANDLE_NULL);
+  action_t a = ACTION(test_exe_delay_alloc_set_42_, 1, HANDLE_NULL);
   handle_t h = { .id = 0, .generation = 0 };
 
   REQUIRE(execution_queue(&exe, a) == KIT_OK);
@@ -788,8 +771,7 @@ TEST("execution join four") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t a = ACTION(0, test_exe_delay_alloc_set_42_, 1,
-                      HANDLE_NULL);
+  action_t a = ACTION(test_exe_delay_alloc_set_42_, 1, HANDLE_NULL);
   handle_t h = { .id = 0, .generation = 0 };
 
   REQUIRE(execution_queue(&exe, a) == KIT_OK);
@@ -820,7 +802,7 @@ TEST("execution set value impact") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t action = ACTION(0, test_exe_alloc_set_, 1, HANDLE_NULL);
+  action_t action = ACTION(test_exe_alloc_set_, 1, HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
   REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
@@ -850,7 +832,7 @@ TEST("execution set value impact twice") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t action = ACTION(0, test_exe_alloc_set_, default_tick,
+  action_t action = ACTION(test_exe_alloc_set_, default_tick,
                            HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
@@ -884,8 +866,8 @@ TEST("execution set value impact twice with continuation") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t action = ACTION(0, test_exe_alloc_set_continue_,
-                           default_tick, HANDLE_NULL);
+  action_t action = ACTION(test_exe_alloc_set_continue_, default_tick,
+                           HANDLE_NULL);
 
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
   handle_t h = { .id = 0, .generation = 0 };
@@ -918,13 +900,13 @@ TEST("execution two actions") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t a0 = ACTION(0, test_exe_allocate_into_, 1, HANDLE_NULL);
+  action_t a0 = ACTION(test_exe_allocate_into_, 1, HANDLE_NULL);
   REQUIRE(execution_queue(&exe, a0) == KIT_OK);
 
   REQUIRE(execution_schedule_and_join(&exe, 1) == KIT_OK);
 
-  action_t a1 = ACTION(0, test_exe_add_18_, 1, HANDLE_NULL);
-  action_t a2 = ACTION(0, test_exe_add_24_, 1, HANDLE_NULL);
+  action_t a1 = ACTION(test_exe_add_18_, 1, HANDLE_NULL);
+  action_t a2 = ACTION(test_exe_add_24_, 1, HANDLE_NULL);
   REQUIRE(execution_queue(&exe, a1) == KIT_OK);
   REQUIRE(execution_queue(&exe, a2) == KIT_OK);
 
@@ -955,7 +937,7 @@ TEST("execution invalid impact") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t action = ACTION(0, test_exe_set_42_, 1, HANDLE_NULL);
+  action_t action = ACTION(test_exe_set_42_, 1, HANDLE_NULL);
   REQUIRE(execution_queue(&exe, action) == KIT_OK);
 
   REQUIRE(execution_schedule_and_join(&exe, 1) ==
@@ -983,11 +965,10 @@ TEST("execution sync impacts applied first") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t a[] = {
-    ACTION_UNSAFE(0, test_exe_0_alloc_set_42_, 1, HANDLE_NULL),
-    ACTION_UNSAFE(0, test_exe_1_set_43_, 1, HANDLE_NULL),
-    ACTION_UNSAFE(0, test_exe_1_alloc_, 1, HANDLE_NULL)
-  };
+  action_t a[] = { ACTION_UNSAFE(test_exe_0_alloc_set_42_, 1,
+                                 HANDLE_NULL),
+                   ACTION_UNSAFE(test_exe_1_set_43_, 1, HANDLE_NULL),
+                   ACTION_UNSAFE(test_exe_1_alloc_, 1, HANDLE_NULL) };
   REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
   REQUIRE(execution_queue(&exe, a[1]) == KIT_OK);
   REQUIRE(execution_queue(&exe, a[2]) == KIT_OK);
@@ -1021,7 +1002,7 @@ TEST("execution queue action impact") {
   REQUIRE(execution_init(&exe, state, pool, alloc) == KIT_OK);
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
-  action_t a = ACTION(0, test_exe_queue_, 1, HANDLE_NULL);
+  action_t a = ACTION(test_exe_queue_, 1, HANDLE_NULL);
   handle_t h = { .id = 0, .generation = 0 };
 
   REQUIRE(execution_queue(&exe, a) == KIT_OK);
@@ -1032,100 +1013,94 @@ TEST("execution queue action impact") {
 }
 
 STATIC_CORO(impact_list_t, test_exe_order_alloc_2_,
-            ptrdiff_t       action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   struct timespec t = { .tv_sec = 0, .tv_nsec = 20000000 };
   thrd_sleep(&t, NULL);
 
   handle_t h   = { .id = 0, .generation = -1 };
   impact_t i[] = { INTEGER_ALLOCATE_INTO(h, 1) };
 
-  DA_INIT(af return_value, 1, af alloc);
-  af return_value.values[0] = i[0];
+  DA_INIT(self->return_value, 1, self->alloc);
+  self->return_value.values[0] = i[0];
   AF_RETURN_VOID;
 }
 CORO_END
 
 STATIC_CORO(impact_list_t, test_exe_order_alloc_1_,
-            ptrdiff_t       action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   struct timespec t = { .tv_sec = 0, .tv_nsec = 20000000 };
   thrd_sleep(&t, NULL);
 
   impact_t i[] = { QUEUE_ACTION(
-      ACTION_UNSAFE(0, test_exe_order_alloc_2_, 1, HANDLE_NULL)) };
+      ACTION_UNSAFE(test_exe_order_alloc_2_, 1, HANDLE_NULL)) };
 
-  DA_INIT(af return_value, 1, af alloc);
-  af return_value.values[0] = i[0];
+  DA_INIT(self->return_value, 1, self->alloc);
+  self->return_value.values[0] = i[0];
   AF_RETURN_VOID;
 }
 CORO_END
 
 STATIC_CORO(impact_list_t, test_exe_order_alloc_0_,
-            ptrdiff_t       action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   impact_t i0[] = { NOOP() };
 
-  DA_INIT(af return_value, 1, af alloc);
-  af return_value.values[0] = i0[0];
+  DA_INIT(self->return_value, 1, self->alloc);
+  self->return_value.values[0] = i0[0];
   AF_YIELD_VOID;
 
   struct timespec t = { .tv_sec = 0, .tv_nsec = 20000000 };
   thrd_sleep(&t, NULL);
 
   impact_t i1[] = { QUEUE_ACTION(
-      ACTION_UNSAFE(0, test_exe_order_alloc_1_, 1, HANDLE_NULL)) };
+      ACTION_UNSAFE(test_exe_order_alloc_1_, 1, HANDLE_NULL)) };
 
-  DA_INIT(af return_value, 1, af alloc);
-  af return_value.values[0] = i1[0];
+  DA_INIT(self->return_value, 1, self->alloc);
+  self->return_value.values[0] = i1[0];
   AF_RETURN_VOID;
 }
 CORO_END
 
 STATIC_CORO(impact_list_t, test_exe_order_dealloc_2_,
-            ptrdiff_t       action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   handle_t h   = { .id = 0, .generation = 0 };
   impact_t i[] = { INTEGER_DEALLOCATE(h) };
 
-  DA_INIT(af return_value, 1, af alloc);
-  af return_value.values[0] = i[0];
+  DA_INIT(self->return_value, 1, self->alloc);
+  self->return_value.values[0] = i[0];
   AF_RETURN_VOID;
 }
 CORO_END
 
 STATIC_CORO(impact_list_t, test_exe_order_dealloc_1_,
-            ptrdiff_t       action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   impact_t i[] = { QUEUE_ACTION(
-      ACTION_UNSAFE(0, test_exe_order_dealloc_2_, 1, HANDLE_NULL)) };
+      ACTION_UNSAFE(test_exe_order_dealloc_2_, 1, HANDLE_NULL)) };
 
-  DA_INIT(af return_value, 1, af alloc);
-  af return_value.values[0] = i[0];
+  DA_INIT(self->return_value, 1, self->alloc);
+  self->return_value.values[0] = i[0];
   AF_RETURN_VOID;
 }
 CORO_END
 
 STATIC_CORO(impact_list_t, test_exe_order_dealloc_0_,
-            ptrdiff_t       action_id;
-            kit_allocator_t alloc; read_only_t access;
-            handle_t                           self;) {
+            kit_allocator_t alloc;
+            read_only_t access; handle_t self;) {
   impact_t i0[] = { NOOP() };
 
-  DA_INIT(af return_value, 1, af alloc);
-  af return_value.values[0] = i0[0];
+  DA_INIT(self->return_value, 1, self->alloc);
+  self->return_value.values[0] = i0[0];
   AF_YIELD_VOID;
 
   impact_t i1[] = { QUEUE_ACTION(
-      ACTION_UNSAFE(0, test_exe_order_dealloc_1_, 1, HANDLE_NULL)) };
+      ACTION_UNSAFE(test_exe_order_dealloc_1_, 1, HANDLE_NULL)) };
 
-  DA_INIT(af return_value, 1, af alloc);
-  af return_value.values[0] = i1[0];
+  DA_INIT(self->return_value, 1, self->alloc);
+  self->return_value.values[0] = i1[0];
   AF_RETURN_VOID;
 }
 CORO_END
@@ -1150,8 +1125,8 @@ TEST("execution action order") {
   REQUIRE(execution_set_thread_count(&exe, 4) == KIT_OK);
 
   action_t a[] = {
-    ACTION_UNSAFE(0, test_exe_order_alloc_0_, 1, HANDLE_NULL),
-    ACTION_UNSAFE(0, test_exe_order_dealloc_0_, 1, HANDLE_NULL)
+    ACTION_UNSAFE(test_exe_order_alloc_0_, 1, HANDLE_NULL),
+    ACTION_UNSAFE(test_exe_order_dealloc_0_, 1, HANDLE_NULL)
   };
 
   REQUIRE(execution_queue(&exe, a[0]) == KIT_OK);
@@ -1184,7 +1159,7 @@ TEST("execution queue concurrency") {
     ok = ok && (execution_init(&exe, state, pool, alloc) == KIT_OK);
     ok = ok && (execution_set_thread_count(&exe, 4) == KIT_OK);
 
-    action_t action = ACTION(0, test_exe_alloc_set_, 1, HANDLE_NULL);
+    action_t action = ACTION(test_exe_alloc_set_, 1, HANDLE_NULL);
     handle_t h      = { .id = 0, .generation = 0 };
 
     ok = ok && (execution_schedule(&exe, 1) == KIT_OK);

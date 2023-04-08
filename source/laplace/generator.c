@@ -1,6 +1,5 @@
 #include "generator.h"
 
-#include "action_dispatch.h"
 #include <string.h>
 
 kit_status_t laplace_generator_init(laplace_generator_t *generator,
@@ -11,17 +10,16 @@ kit_status_t laplace_generator_init(laplace_generator_t *generator,
     return LAPLACE_ERROR_INVALID_SIZE;
   memset(generator, 0, sizeof *generator);
   AF_INIT_EXPLICIT(generator->promise, action.size, action.coro);
-  generator->promise.action_id = action.id;
-  generator->promise.alloc     = alloc;
-  generator->promise.access    = access;
-  generator->promise.self      = action.self;
-  generator->tick_duration     = action.tick_duration;
+  generator->promise.alloc  = alloc;
+  generator->promise.access = access;
+  generator->promise.self   = action.self;
+  generator->tick_duration  = action.tick_duration;
   return KIT_OK;
 }
 
 laplace_impact_list_t laplace_generator_run(
     laplace_generator_t *const generator) {
-  laplace_action_dispatch(&generator->promise);
+  AF_EXECUTE(generator->promise);
   laplace_impact_list_t list = generator->promise.return_value;
   memset(&generator->promise.return_value, 0,
          sizeof generator->promise.return_value);

@@ -4,15 +4,15 @@
 #define KIT_TEST_FILE buffer
 #include <kit_test/test.h>
 
-CORO(impact_list_t, test_impact_gen_, ptrdiff_t action_id;
-     kit_allocator_t alloc; read_only_t access; handle_t self;) {
+CORO(impact_list_t, test_impact_gen_, kit_allocator_t alloc;
+     read_only_t access; handle_t self;) {
   impact_list_t list;
 
-  DA_INIT(list, 1, af alloc);
+  DA_INIT(list, 1, self->alloc);
   list.values[0].type = IMPACT_NOOP;
   AF_YIELD(list);
 
-  DA_INIT(list, 2, af alloc);
+  DA_INIT(list, 2, self->alloc);
   list.values[0].type = IMPACT_NOOP;
   list.values[1].type = IMPACT_NOOP;
   AF_RETURN(list);
@@ -40,7 +40,7 @@ TEST("generator example") {
 
   kit_allocator_t alloc = { .state = NULL, .allocate = allocate };
 
-  action_t action = ACTION(0, test_impact_gen_, 1, handle_null);
+  action_t action = ACTION(test_impact_gen_, 1, handle_null);
 
   read_only_t access;
   memset(&access, 0, sizeof access);
@@ -63,39 +63,40 @@ TEST("generator example") {
 }
 
 #ifdef LAPLACE_ENABLE_STATIC_DISPATCH
-enum { TEST_ACTION_42 = 42 };
-
-CORO(impact_list_t, test_action_42_, ptrdiff_t action_id;
-     kit_allocator_t alloc; read_only_t access; handle_t self;) {
+CORO(impact_list_t, test_action_42_, kit_allocator_t alloc;
+     read_only_t access; handle_t self;) {
   impact_list_t list;
 
-  DA_INIT(list, 1, af alloc);
+  DA_INIT(list, 1, self->alloc);
   list.values[0].type = IMPACT_NOOP;
   AF_YIELD(list);
 
-  DA_INIT(list, 2, af alloc);
+  DA_INIT(list, 2, self->alloc);
   list.values[0].type = IMPACT_NOOP;
   list.values[1].type = IMPACT_NOOP;
   AF_RETURN(list);
 }
 CORO_END
 
+static ptrdiff_t const TEST_ACTION_42 = (ptrdiff_t) test_action_42_;
+
 int test_dispatch_fallback_ = 0;
 
-void laplace_action_dispatch(laplace_promise_t *const promise) {
-  switch (promise->action_id) {
-    case TEST_ACTION_42:
-      /*  Execute the coroutine.
-       */
-      test_action_42_(promise, AF_REQUEST_EXECUTE);
-      break;
+void laplace_action_dispatch(void *const promise_) {
+  laplace_promise_t *const promise = (laplace_promise_t *) promise_;
 
-    default:
-      /*  Fallback to dynamic dispatch.
-       */
-      test_dispatch_fallback_ = 1;
-      if (promise->_state_machine != NULL)
-        promise->_state_machine(promise, AF_REQUEST_EXECUTE);
+  ptrdiff_t const id = (ptrdiff_t) promise->_state_machine;
+
+  if (id == TEST_ACTION_42) {
+    /*  Execute the coroutine.
+     */
+    test_action_42_(promise);
+  } else {
+    /*  Fallback to dynamic dispatch.
+     */
+    test_dispatch_fallback_ = 1;
+    if (promise->_state_machine != NULL)
+      promise->_state_machine(promise);
   }
 }
 
@@ -106,8 +107,7 @@ TEST("generator static dispatch example") {
 
   kit_allocator_t alloc = { .state = NULL, .allocate = allocate };
 
-  action_t action = ACTION_STATIC(TEST_ACTION_42, test_action_42_, 1,
-                                  handle_null);
+  action_t action = ACTION(test_action_42_, 1, handle_null);
 
   read_only_t access;
   memset(&access, 0, sizeof access);

@@ -1,15 +1,14 @@
 target_sources(
   laplace
     PRIVATE
-      impact.c buffer.c action_dispatch.c execution.c
-      generator.c controller.c layout.c state.c
+      impact.c buffer.c execution.c generator.c controller.c
+      layout.c state.c
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/handle.h>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/promise.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/generator.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/execution.h>
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/action_dispatch.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/action.h>
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/async_function.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/buffer.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/state.h>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/layout.h>
