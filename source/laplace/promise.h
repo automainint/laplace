@@ -16,7 +16,7 @@ typedef struct {
   laplace_impact_list_t return_value;
   kit_allocator_t       alloc;
   laplace_read_only_t   access;
-  laplace_handle_t      self;
+  laplace_handle_t      self; // FIXME Rename?
 } laplace_promise_t;
 
 #ifndef LAPLACE_DISABLE_SHORT_NAMES
